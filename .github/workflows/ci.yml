@@ -1,0 +1,335 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    name: ${{ matrix.os }} - ${{ matrix.compiler }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Linux builds - current versions
+          - os: ubuntu-latest
+            compiler: gcc
+            cc: gcc-13
+            cxx: g++-13
+            install_compiler: gcc-13 g++-13
+
+          - os: ubuntu-latest
+            compiler: clang
+            cc: clang-18
+            cxx: clang++-18
+            install_compiler: clang-18
+
+          # Linux builds - minimum supported versions
+          - os: ubuntu-20.04
+            compiler: gcc-min
+            cc: gcc-10
+            cxx: g++-10
+            install_compiler: gcc-10 g++-10
+
+          - os: ubuntu-20.04
+            compiler: clang-min
+            cc: clang-12
+            cxx: clang++-12
+            install_compiler: clang-12
+
+          # macOS builds
+          - os: macos-latest
+            compiler: clang
+            cc: clang
+            cxx: clang++
+            install_compiler: ""
+
+          - os: macos-13
+            compiler: gcc
+            cc: gcc-13
+            cxx: g++-13
+            install_compiler: gcc@13
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    # Cache Boost to speed up builds significantly
+    - name: Cache Boost
+      uses: actions/cache@v4
+      with:
+        path: |
+          build/_deps
+        key: ${{ runner.os }}-${{ matrix.compiler }}-boost-1.85.0-v2
+        restore-keys: |
+          ${{ runner.os }}-${{ matrix.compiler }}-boost-
+
+    - name: Install dependencies (Ubuntu)
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y cmake ninja-build ${{ matrix.install_compiler }}
+
+    - name: Install dependencies (macOS)
+      if: runner.os == 'macOS'
+      run: |
+        brew install cmake ninja
+        if [ -n "${{ matrix.install_compiler }}" ]; then
+          brew install ${{ matrix.install_compiler }}
+        fi
+
+    - name: Set up compiler
+      run: |
+        echo "CC=${{ matrix.cc }}" >> $GITHUB_ENV
+        echo "CXX=${{ matrix.cxx }}" >> $GITHUB_ENV
+
+    - name: Verify compiler
+      run: |
+        echo "CC=$CC"
+        echo "CXX=$CXX"
+        $CC --version
+        $CXX --version
+
+    - name: Configure CMake
+      run: |
+        cmake -B build \
+          -G Ninja \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_C_COMPILER=${{ matrix.cc }} \
+          -DCMAKE_CXX_COMPILER=${{ matrix.cxx }}
+
+    - name: Build
+      run: cmake --build build --config Release
+
+    - name: Run tests
+      working-directory: build
+      run: ctest --output-on-failure --config Release
+
+    - name: Test installation
+      run: |
+        cmake --install build --prefix $HOME/atlas-install
+        test -f $HOME/atlas-install/bin/atlas
+        $HOME/atlas-install/bin/atlas --help
+
+    # Upload test artifacts on failure for debugging
+    - name: Upload test artifacts on failure
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-artifacts-${{ matrix.os }}-${{ matrix.compiler }}
+        path: |
+          build/Testing/Temporary/
+        retention-days: 7
+        if-no-files-found: ignore
+
+  build-without-tests:
+    name: Build without tests
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Cache Boost
+      uses: actions/cache@v4
+      with:
+        path: |
+          build/_deps
+        key: ubuntu-latest-no-tests-boost-1.85.0-v2
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y cmake ninja-build gcc-13 g++-13
+
+    - name: Configure CMake (tests disabled)
+      run: |
+        cmake -B build \
+          -G Ninja \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_C_COMPILER=gcc-13 \
+          -DCMAKE_CXX_COMPILER=g++-13 \
+          -DATLAS_BUILD_TESTS=OFF
+
+    - name: Build
+      run: cmake --build build --config Release
+
+    - name: Verify atlas binary exists
+      run: test -f build/src/tools/atlas
+
+    - name: Test atlas binary runs
+      run: ./build/src/tools/atlas --help
+
+    - name: Verify help output contains expected text
+      run: |
+        ./build/src/tools/atlas --help | grep -q "Atlas Strong Type Generator"
+
+  test-fetchcontent-example:
+    name: Test FetchContent example
+    runs-on: ubuntu-latest
+    needs: build-and-test
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y cmake ninja-build g++-13
+
+    - name: Build and test FetchContent example
+      run: |
+        cd examples/fetchcontent_example
+        cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=g++-13
+        cmake --build build
+        ./build/main
+
+    - name: Verify example output
+      run: |
+        cd examples/fetchcontent_example
+        ./build/main | grep -q "FetchContent integration test passed"
+
+  code-coverage:
+    name: Code Coverage
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Cache Boost
+      uses: actions/cache@v4
+      with:
+        path: |
+          build/_deps
+        key: ubuntu-latest-coverage-boost-1.85.0-v2
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          cmake \
+          ninja-build \
+          gcc-13 \
+          g++-13 \
+          lcov
+
+    - name: Configure with coverage flags
+      run: |
+        cmake -B build \
+          -G Ninja \
+          -DCMAKE_BUILD_TYPE=Debug \
+          -DCMAKE_CXX_FLAGS="--coverage -fprofile-arcs -ftest-coverage" \
+          -DCMAKE_C_COMPILER=gcc-13 \
+          -DCMAKE_CXX_COMPILER=g++-13
+
+    - name: Build
+      run: cmake --build build
+
+    - name: Run tests
+      working-directory: build
+      run: ctest --output-on-failure
+
+    - name: Generate coverage report
+      run: |
+        lcov --capture --directory build \
+          --output-file coverage.info \
+          --rc lcov_branch_coverage=1 \
+          --ignore-errors mismatch
+        lcov --remove coverage.info \
+          '/usr/*' \
+          '*/build/_deps/*' \
+          '*/tests/*' \
+          --output-file coverage.info \
+          --rc lcov_branch_coverage=1 \
+          --ignore-errors unused
+        lcov --list coverage.info \
+          --rc lcov_branch_coverage=1
+
+    - name: Generate HTML coverage report
+      run: |
+        genhtml coverage.info \
+          --output-directory coverage-html \
+          --branch-coverage \
+          --ignore-errors source
+
+    - name: Upload coverage HTML
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-report
+        path: coverage-html/
+        retention-days: 30
+
+    # Optional: Upload to Codecov (requires CODECOV_TOKEN secret)
+    - name: Upload coverage to Codecov
+      if: github.repository == 'jodyhagins/Atlas'
+      uses: codecov/codecov-action@v4
+      continue-on-error: true
+      with:
+        files: ./coverage.info
+        fail_ci_if_error: false
+        token: ${{ secrets.CODECOV_TOKEN }}
+
+  test-cmake-package:
+    name: Test CMake Package Config
+    runs-on: ubuntu-latest
+    needs: build-and-test
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y cmake ninja-build g++-13
+
+    - name: Build and install Atlas
+      run: |
+        cmake -B build \
+          -G Ninja \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_CXX_COMPILER=g++-13 \
+          -DATLAS_BUILD_TESTS=OFF
+        cmake --build build
+        cmake --install build --prefix $HOME/atlas-install
+
+    - name: Test find_package
+      run: |
+        cat > test_find_package.cpp << 'EOF'
+        #include <StrongTypeGenerator.hpp>
+        #include <iostream>
+        int main() {
+            wjh::atlas::StrongTypeDescription desc{
+                .kind = "struct",
+                .type_namespace = "test",
+                .type_name = "TestType",
+                .description = "strong int"
+            };
+            auto code = wjh::atlas::generate_strong_type(desc);
+            std::cout << "Generated " << code.size() << " bytes of code\n";
+            return 0;
+        }
+        EOF
+
+        cat > CMakeLists.txt << 'EOF'
+        cmake_minimum_required(VERSION 3.20)
+        project(TestFindPackage CXX)
+        set(CMAKE_CXX_STANDARD 20)
+        find_package(Atlas REQUIRED)
+        add_executable(test_find test_find_package.cpp)
+        target_link_libraries(test_find PRIVATE atlas_lib)
+        target_include_directories(test_find PRIVATE ${CMAKE_INSTALL_PREFIX}/include/atlas)
+        EOF
+
+        cmake -B build-test \
+          -DCMAKE_PREFIX_PATH=$HOME/atlas-install \
+          -DCMAKE_CXX_COMPILER=g++-13
+        cmake --build build-test
+        ./build-test/test_find
