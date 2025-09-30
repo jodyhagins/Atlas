@@ -157,7 +157,7 @@ jobs:
           -DATLAS_BUILD_TESTS=OFF
 
     - name: Build
-      run: cmake --build build --config Release
+      run: cmake --build build
 
     - name: Verify atlas binary exists
       run: test -f build/src/tools/atlas
