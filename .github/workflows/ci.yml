@@ -30,13 +30,13 @@ jobs:
             install_compiler: clang-18
 
           # Linux builds - minimum supported versions
-          - os: ubuntu-20.04
+          - os: ubuntu-22.04
             compiler: gcc-min
             cc: gcc-10
             cxx: g++-10
             install_compiler: gcc-10 g++-10
 
-          - os: ubuntu-20.04
+          - os: ubuntu-22.04
             compiler: clang-min
             cc: clang-12
             cxx: clang++-12
