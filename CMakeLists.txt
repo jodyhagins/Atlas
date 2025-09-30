@@ -92,7 +92,7 @@ target_compile_options(atlas_lib
 
 # Add boost and mustache include directories
 target_include_directories(atlas_lib
-    PRIVATE
+    SYSTEM PRIVATE
         ${boost_mustache_SOURCE_DIR}/include
         ${boost_SOURCE_DIR}
 )

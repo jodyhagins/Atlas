@@ -936,6 +936,10 @@ generate_strong_types_file(
 
     // Create a temporary description for guard generation
     StrongTypeDescription temp_desc{
+        .kind = "struct",
+        .type_namespace = "foo",
+        .type_name = "Bar",
+        .description = "string int; ->",
         .guard_prefix = guard_prefix,
         .guard_separator = guard_separator,
         .upcase_guard = upcase_guard};

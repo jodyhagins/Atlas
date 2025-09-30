@@ -6,6 +6,7 @@
 // ----------------------------------------------------------------------
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include "doctest.hpp"
+#include "test_common.hpp"
 
 #include <cstdlib>
 #include <filesystem>
@@ -110,7 +111,8 @@ public:
         // Compile
         std::ostringstream cmd;
         cmd << "cd " << temp_dir_ << " && ";
-        cmd << "c++ -std=c++20 -I. -o test main.cpp 2>/dev/null";
+        cmd << wjh::atlas::test::find_working_compiler()
+            << " -std=c++20 -I. -o test main.cpp 2>/dev/null";
 
         int result = system(cmd.str().c_str());
         return (result == 0);
@@ -328,7 +330,8 @@ int main() {
 
             std::ostringstream cmd;
             cmd << "cd " << tester.temp_dir_ << " && ";
-            cmd << "c++ -std=c++20 -I. -o test_arithmetic test_arithmetic.cpp "
+            cmd << wjh::atlas::test::find_working_compiler()
+                << " -std=c++20 -I. -o test_arithmetic test_arithmetic.cpp "
                    "2>/dev/null && ./test_arithmetic 2>/dev/null";
 
             int compile_result = system(cmd.str().c_str());
@@ -383,7 +386,8 @@ int main() {
 
             std::ostringstream cmd;
             cmd << "cd " << tester.temp_dir_ << " && ";
-            cmd << "c++ -std=c++20 -I. -o test_comparison test_comparison.cpp "
+            cmd << wjh::atlas::test::find_working_compiler()
+                << " -std=c++20 -I. -o test_comparison test_comparison.cpp "
                    "2>/dev/null && ./test_comparison 2>/dev/null";
 
             int result_code = system(cmd.str().c_str());

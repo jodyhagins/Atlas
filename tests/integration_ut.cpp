@@ -7,6 +7,7 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include "StrongTypeGenerator.hpp"
 #include "doctest.hpp"
+#include "test_common.hpp"
 
 #include <cstdlib>
 #include <filesystem>
@@ -42,9 +43,12 @@ compile_and_test_code(std::string const & code, std::string const & test_name)
         out << "int main() { return 0; }\n";
     }
 
-    // Try to compile it
-    std::string compile_cmd = "c++ -std=c++20 -I" + temp_dir.string() + " -c " +
-        test_path.string() + " -o " + (temp_dir / "test.o").string() + " 2>&1";
+    // Use the common compiler finder
+    std::string compiler = wjh::atlas::test::find_working_compiler();
+
+    std::string compile_cmd = compiler + " -std=c++20 -I" + temp_dir.string() +
+        " -c " + test_path.string() + " -o " + (temp_dir / "test.o").string() +
+        " 2>&1";
 
     int result = std::system(compile_cmd.c_str());
 

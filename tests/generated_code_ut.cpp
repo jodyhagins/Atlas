@@ -8,7 +8,9 @@
 #include "StrongTypeGenerator.hpp"
 #include "doctest.hpp"
 #include "rapidcheck.hpp"
+#include "test_common.hpp"
 
+#include <cstdlib>
 #include <filesystem>
 #include <fstream>
 #include <sstream>
@@ -75,7 +77,8 @@ public:
         // Compile
         std::ostringstream cmd;
         cmd << "cd " << temp_dir_ << " && ";
-        cmd << "c++ -std=c++20 -I. -o " << exe_path.filename().string() << " "
+        cmd << wjh::atlas::test::find_working_compiler()
+            << " -std=c++20 -I. -o " << exe_path.filename().string() << " "
             << main_path.filename().string() << " 2>&1";
 
         auto result = system(cmd.str().c_str());
