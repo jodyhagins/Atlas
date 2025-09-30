@@ -135,7 +135,7 @@ Test discovery happens automatically at build time using DocTest's CMake integra
 
 ### Build Prerequisites
 
-- A C++20-capable compiler (e.g., GCC ≥ 10, Clang ≥ 12, MSVC ≥ 19.29)
+- A C++20-capable compiler (e.g., GCC ≥ 11, Clang ≥ 12, MSVC ≥ 19.29)
 - CMake ≥ 3.20
 - Git (for fetching dependencies)
 - Optional: System Boost installation (use `-DUSE_SYSTEM_BOOST=ON` to skip fetching Boost)

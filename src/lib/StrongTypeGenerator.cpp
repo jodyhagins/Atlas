@@ -522,7 +522,13 @@ is_relational_operator(std::string_view sv)
         sv);
 }
 
-template <typename PredT = decltype([](unsigned u) { return std::isspace(u); })>
+// Default predicate for strip - checks if character is whitespace
+struct IsSpacePred
+{
+    bool operator()(unsigned u) const { return std::isspace(u); }
+};
+
+template <typename PredT = IsSpacePred>
 std::string_view
 strip(std::string_view sv, PredT pred = PredT{})
 {

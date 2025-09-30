@@ -28,6 +28,11 @@ if(MSVC)
     set(ATLAS_WARNING_FLAGS /W4 /WX)
 else()
     set(ATLAS_WARNING_FLAGS -Wall -Wextra -Wpedantic -Werror)
+    # Disable specific warnings for compatibility with older compilers
+    # Boost Describe uses GNU zero-variadic-macro-arguments extension
+    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        list(APPEND ATLAS_WARNING_FLAGS -Wno-gnu-zero-variadic-macro-arguments)
+    endif()
 endif()
 
 # Include standard installation directories
