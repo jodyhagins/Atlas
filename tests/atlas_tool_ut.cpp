@@ -35,7 +35,8 @@ public:
     AtlasTester()
     {
         build_dir_ = build_dir();
-        temp_dir_ = std::filesystem::temp_directory_path() / "atlas_tool_test";
+        temp_dir_ = std::filesystem::temp_directory_path() /
+            ("atlas_tool_test_" + std::to_string(::getpid()));
         std::filesystem::create_directories(temp_dir_);
     }
 

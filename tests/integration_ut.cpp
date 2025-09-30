@@ -20,12 +20,13 @@ namespace {
 // Helper to write generated code to a file, compile it, and check if it
 // compiles
 bool
-compile_and_test_code(std::string const & code, std::string const & test_name)
+compile_and_test_code(std::string const & code)
 {
     namespace fs = std::filesystem;
 
     // Create a temporary directory for our test
-    auto temp_dir = fs::temp_directory_path() / ("atlas_test_" + test_name);
+    auto temp_dir = fs::temp_directory_path() /
+        ("atlas_test_" + std::to_string(::getpid()));
     fs::create_directories(temp_dir);
 
     // Write the generated header
@@ -70,7 +71,7 @@ TEST_SUITE("Integration Tests")
                 .description = "strong int"};
 
             auto code = generate_strong_type(desc);
-            CHECK(compile_and_test_code(code, "basic_int"));
+            CHECK(compile_and_test_code(code));
         }
 
         SUBCASE("arithmetic operators compile") {
@@ -81,7 +82,7 @@ TEST_SUITE("Integration Tests")
                 .description = "strong int; +, -, *, /"};
 
             auto code = generate_strong_type(desc);
-            CHECK(compile_and_test_code(code, "arithmetic"));
+            CHECK(compile_and_test_code(code));
         }
 
         SUBCASE("comparison operators compile") {
@@ -92,7 +93,7 @@ TEST_SUITE("Integration Tests")
                 .description = "strong int; ==, !=, <, <=, >, >="};
 
             auto code = generate_strong_type(desc);
-            CHECK(compile_and_test_code(code, "comparison"));
+            CHECK(compile_and_test_code(code));
         }
 
         SUBCASE("spaceship operator compiles") {
@@ -103,7 +104,7 @@ TEST_SUITE("Integration Tests")
                 .description = "strong int; <=>"};
 
             auto code = generate_strong_type(desc);
-            CHECK(compile_and_test_code(code, "spaceship"));
+            CHECK(compile_and_test_code(code));
         }
 
         SUBCASE("iostream operators compile") {
@@ -114,7 +115,7 @@ TEST_SUITE("Integration Tests")
                 .description = "strong int; in, out"};
 
             auto code = generate_strong_type(desc);
-            CHECK(compile_and_test_code(code, "iostream"));
+            CHECK(compile_and_test_code(code));
         }
 
         SUBCASE("class with private members compiles") {
@@ -125,7 +126,7 @@ TEST_SUITE("Integration Tests")
                 .description = "strong int"};
 
             auto code = generate_strong_type(desc);
-            CHECK(compile_and_test_code(code, "class_private"));
+            CHECK(compile_and_test_code(code));
         }
 
         SUBCASE("complex type with std::string compiles") {
@@ -136,7 +137,7 @@ TEST_SUITE("Integration Tests")
                 .description = "strong std::string; ==, !=, out"};
 
             auto code = generate_strong_type(desc);
-            CHECK(compile_and_test_code(code, "string_wrapper"));
+            CHECK(compile_and_test_code(code));
         }
 
         SUBCASE("nested namespace compiles") {
@@ -147,7 +148,7 @@ TEST_SUITE("Integration Tests")
                 .description = "strong int"};
 
             auto code = generate_strong_type(desc);
-            CHECK(compile_and_test_code(code, "nested_ns"));
+            CHECK(compile_and_test_code(code));
         }
 
         SUBCASE("pointer-like operators compile") {
@@ -158,7 +159,7 @@ TEST_SUITE("Integration Tests")
                 .description = "strong int; @, &of, ->"};
 
             auto code = generate_strong_type(desc);
-            CHECK(compile_and_test_code(code, "pointer_like"));
+            CHECK(compile_and_test_code(code));
         }
 
         SUBCASE("callable operators compile") {
@@ -169,7 +170,7 @@ TEST_SUITE("Integration Tests")
                 .description = "strong int; (), (&)"};
 
             auto code = generate_strong_type(desc);
-            CHECK(compile_and_test_code(code, "callable"));
+            CHECK(compile_and_test_code(code));
         }
 
         SUBCASE("all operators combined compile") {
@@ -181,7 +182,7 @@ TEST_SUITE("Integration Tests")
                                "--, bool, out"};
 
             auto code = generate_strong_type(desc);
-            CHECK(compile_and_test_code(code, "everything"));
+            CHECK(compile_and_test_code(code));
         }
     }
 

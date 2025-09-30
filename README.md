@@ -123,6 +123,16 @@ cmake --build build
 cmake --install build --prefix /usr/local  # or your preferred location
 ```
 
+### Building and Running Tests
+
+```bash
+cmake -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+cd build && ctest --output-on-failure
+```
+
+Test discovery happens automatically at build time using DocTest's CMake integration.
+
 ### Build Prerequisites
 
 - A C++20-capable compiler (e.g., GCC ≥ 10, Clang ≥ 12, MSVC ≥ 19.29)

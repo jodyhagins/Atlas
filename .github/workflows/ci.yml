@@ -104,11 +104,11 @@ jobs:
           -DCMAKE_CXX_COMPILER=${{ matrix.cxx }}
 
     - name: Build
-      run: cmake --build build --config Release
+      run: cmake --build build
 
     - name: Run tests
       working-directory: build
-      run: ctest --output-on-failure --config Release
+      run: ctest --output-on-failure
 
     - name: Test installation
       run: |

@@ -11,7 +11,12 @@ Participation in this project is governed by the Code of Conduct found in `CODE_
 1. Fork the repository and create your branch from `main`.
 2. Ensure you have a C++20 toolchain.
 3. Build the CLI with cmake (see `README.md`).
-4. Run any relevant tests or sample builds before submitting changes.
+4. Run tests before submitting changes:
+   ```bash
+   cmake -B build -DCMAKE_BUILD_TYPE=Release
+   cmake --build build
+   cd build && ctest --output-on-failure
+   ```
 
 ## Issues and Feature Requests
 
