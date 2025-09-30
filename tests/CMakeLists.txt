@@ -10,7 +10,7 @@ message(STATUS "Processing third-party DocTest...")
 FetchContent_Declare(
     DocTest
     GIT_REPOSITORY https://github.com/jodyhagins/doctest.git
-    GIT_TAG 6b7985bc2562a135964bc03d69a3ef7af12b9309 # order-by-rand
+    GIT_TAG dev
     SYSTEM
 )
 FetchContent_MakeAvailable(DocTest)
