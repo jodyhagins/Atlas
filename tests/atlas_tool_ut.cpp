@@ -57,7 +57,7 @@ public:
     {
         std::ostringstream cmd;
         cmd << "cd " << build_dir_ << " && ";
-        cmd << "./atlas --kind=" << kind << " --namespace=" << ns
+        cmd << "./bin/atlas --kind=" << kind << " --namespace=" << ns
             << " --name=" << name << " --description=\"" << description
             << "\" 2>&1";
 
@@ -126,7 +126,7 @@ TEST_SUITE("Atlas Tool Integration Tests")
     {
         SUBCASE("help command works") {
             std::ostringstream cmd;
-            cmd << "cd " << build_dir() << " && ./atlas --help 2>&1";
+            cmd << "cd " << build_dir() << " && ./bin/atlas --help 2>&1";
 
             std::string output;
             FILE * pipe = popen(cmd.str().c_str(), "r");
@@ -147,7 +147,7 @@ TEST_SUITE("Atlas Tool Integration Tests")
 
         SUBCASE("error handling for missing arguments") {
             std::ostringstream cmd;
-            cmd << "cd " << build_dir() << " && ./atlas --kind=struct 2>&1";
+            cmd << "cd " << build_dir() << " && ./bin/atlas --kind=struct 2>&1";
 
             std::string output;
             FILE * pipe = popen(cmd.str().c_str(), "r");
@@ -168,7 +168,7 @@ TEST_SUITE("Atlas Tool Integration Tests")
         SUBCASE("error handling for invalid arguments") {
             std::ostringstream cmd;
             cmd << "cd " << build_dir()
-                << "  && ./atlas --invalid-arg=value 2>&1";
+                << "  && ./bin/atlas --invalid-arg=value 2>&1";
 
             std::string output;
             FILE * pipe = popen(cmd.str().c_str(), "r");
@@ -422,7 +422,7 @@ int main() {
             // Run atlas with input file
             std::ostringstream cmd;
             cmd << "cd " << build_dir() << " && ";
-            cmd << "./atlas --input=" << input_path << " 2>&1";
+            cmd << "./bin/atlas --input=" << input_path << " 2>&1";
 
             std::string output;
             FILE * pipe = popen(cmd.str().c_str(), "r");
@@ -452,7 +452,7 @@ int main() {
             // Run atlas with output file
             std::ostringstream cmd;
             cmd << "cd " << build_dir() << " && ";
-            cmd << "./atlas --kind=struct --namespace=test --name=MyInt "
+            cmd << "./bin/atlas --kind=struct --namespace=test --name=MyInt "
                 << "--description=\"strong int\" "
                 << "--output=" << output_path << " 2>&1";
 
@@ -488,7 +488,7 @@ int main() {
             // Run atlas
             std::ostringstream cmd;
             cmd << "cd " << build_dir() << " && ";
-            cmd << "./atlas --input=" << input_path
+            cmd << "./bin/atlas --input=" << input_path
                 << " --output=" << output_path << " 2>&1";
 
             int exit_code = system(cmd.str().c_str());
@@ -530,7 +530,7 @@ int main() {
 
             std::ostringstream cmd;
             cmd << "cd " << build_dir() << " && ";
-            cmd << "./atlas --input=" << input_path << " 2>&1";
+            cmd << "./bin/atlas --input=" << input_path << " 2>&1";
 
             std::string output;
             FILE * pipe = popen(cmd.str().c_str(), "r");
@@ -551,7 +551,7 @@ int main() {
         SUBCASE("error handling for missing input file") {
             std::ostringstream cmd;
             cmd << "cd " << build_dir() << " && ";
-            cmd << "./atlas --input=nonexistent.txt 2>&1";
+            cmd << "./bin/atlas --input=nonexistent.txt 2>&1";
 
             std::string output;
             FILE * pipe = popen(cmd.str().c_str(), "r");
@@ -593,7 +593,7 @@ int main() {
             // Run atlas with input file
             std::ostringstream cmd;
             cmd << "cd " << build_dir() << " && ";
-            cmd << "./atlas --input=" << input_path << " 2>&1";
+            cmd << "./bin/atlas --input=" << input_path << " 2>&1";
 
             std::string output;
             FILE * pipe = popen(cmd.str().c_str(), "r");
