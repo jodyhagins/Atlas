@@ -160,14 +160,14 @@ jobs:
       run: cmake --build build
 
     - name: Verify atlas binary exists
-      run: test -f build/src/tools/atlas
+      run: test -f build/bin/atlas
 
     - name: Test atlas binary runs
-      run: ./build/src/tools/atlas --help
+      run: ./build/bin/atlas --help
 
     - name: Verify help output contains expected text
       run: |
-        ./build/src/tools/atlas --help | grep -q "Atlas Strong Type Generator"
+        ./build/bin/atlas --help | grep -q "Atlas Strong Type Generator"
 
   test-fetchcontent-example:
     name: Test FetchContent example
