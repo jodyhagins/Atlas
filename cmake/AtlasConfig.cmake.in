@@ -2,8 +2,11 @@
 
 include(CMakeFindDependencyMacro)
 
-# Find Boost dependencies if not already found
-if(NOT TARGET Boost::json)
+# Find Boost dependencies only if Atlas was built with system Boost
+# If Atlas was built with FetchContent Boost, downstream projects are responsible
+# for providing Boost (either via their own FetchContent or system installation)
+set(_atlas_used_system_boost "@USE_SYSTEM_BOOST@")
+if(_atlas_used_system_boost AND NOT TARGET Boost::json)
     find_dependency(Boost REQUIRED COMPONENTS json)
 endif()
 

@@ -18,9 +18,8 @@ FetchContent_Declare(
     SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../..
 )
 
-# Use system Boost for faster builds in this example
-set(USE_SYSTEM_BOOST ON CACHE BOOL "Use system Boost")
-
+# Let Atlas use FetchContent for Boost (default behavior)
+# This ensures the example works even when Boost is not installed on the system
 FetchContent_MakeAvailable(Atlas)
 
 # Directory for generated headers
