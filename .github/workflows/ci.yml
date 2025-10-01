@@ -188,12 +188,12 @@ jobs:
         cd examples/fetchcontent_example
         cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=g++-13
         cmake --build build
-        ./build/main
+        ./build/example_app
 
     - name: Verify example output
       run: |
         cd examples/fetchcontent_example
-        ./build/main | grep -q "FetchContent integration test passed"
+        ./build/example_app | grep -q "FetchContent integration test passed"
 
   code-coverage:
     name: Code Coverage

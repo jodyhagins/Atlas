@@ -39,7 +39,7 @@ add_custom_command(
 
 # Generate a Price strong type
 set(PRICE_HEADER "${GENERATED_DIR}/Price.hpp")
-set(PRICE_DESC "strong double\\; +, -, *, /, ==, !=, <=>, out")
+set(PRICE_DESC "strong double\\; +, -, ==, !=, <=>, out")
 add_custom_command(
     OUTPUT ${PRICE_HEADER}
     COMMAND ${Atlas_EXECUTABLE} --kind=struct --namespace=example --name=Price --description=${PRICE_DESC} > ${PRICE_HEADER}

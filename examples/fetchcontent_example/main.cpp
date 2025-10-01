@@ -34,9 +34,6 @@ main()
     example::Price discount = price1 - price2;
     std::cout << "Price after discount: " << discount << "\n";
 
-    example::Price doublePrice = price1 * 2.0;
-    std::cout << "Double price: " << doublePrice << "\n";
-
     // Test comparison
     if (price1 > price2) {
         std::cout << "price1 is greater than price2\n";
