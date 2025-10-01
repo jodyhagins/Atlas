@@ -1,0 +1,52 @@
+# Build directories
+build/
+build-*/
+cmake-build-*/
+out/
+
+# Installation test artifacts
+install-test-prefix/
+test-package/
+
+# Generated files
+*.o
+*.a
+*.so
+*.dylib
+*.dll
+*.exe
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Backup files
+*.bak
+*.bak2
+*.orig
+
+# Temporary files
+*.tmp
+saved-*.txt
+
+# Documentation build artifacts
+docs/_build/
+docs/.buildinfo
+
+# Coverage reports
+*.gcov
+*.gcda
+*.gcno
+coverage/
+htmlcov/
+.coverage
+
+# Package managers
+.cache/
+*.egg-info/
+__pycache__/
+

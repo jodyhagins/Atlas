@@ -1,7 +1,7 @@
-```
 # Atlas
 
 [![CI](https://github.com/jodyhagins/Atlas/actions/workflows/ci.yml/badge.svg)](https://github.com/jodyhagins/Atlas/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/jodyhagins/Atlas/branch/main/graph/badge.svg)](https://codecov.io/gh/jodyhagins/Atlas)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![C++20](https://img.shields.io/badge/C%2B%2B-20-blue.svg)](https://en.cppreference.com/w/cpp/20)
 
