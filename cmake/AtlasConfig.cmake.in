@@ -1,21 +1,12 @@
 @PACKAGE_INIT@
 
-include(CMakeFindDependencyMacro)
-
-# Find Boost dependencies only if Atlas was built with system Boost
-# If Atlas was built with FetchContent Boost, downstream projects are responsible
-# for providing Boost (either via their own FetchContent or system installation)
-set(_atlas_used_system_boost "@USE_SYSTEM_BOOST@")
-if(_atlas_used_system_boost AND NOT TARGET Boost::json)
-    find_dependency(Boost REQUIRED COMPONENTS json)
-endif()
-
-# Include the targets file
+# Include the targets file (exports the atlas executable)
 if(NOT TARGET Atlas::atlas)
     include("${CMAKE_CURRENT_LIST_DIR}/AtlasTargets.cmake")
 endif()
 
 # Set the executable location for downstream users
+# This is the primary interface for using Atlas in CMake projects
 set(Atlas_EXECUTABLE "${PACKAGE_PREFIX_DIR}/@CMAKE_INSTALL_BINDIR@/atlas")
 
 check_required_components(Atlas)

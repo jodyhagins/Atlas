@@ -85,7 +85,7 @@ add_library(atlas_lib
 target_include_directories(atlas_lib
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/lib>
-        $<INSTALL_INTERFACE:include>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/atlas>
 )
 
 target_link_libraries(atlas_lib
@@ -143,17 +143,12 @@ install(TARGETS atlas
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
-# Install the library for advanced users who want to use it directly
-install(TARGETS atlas_lib
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-)
+# Note: atlas_lib is NOT exported or installed
+# The library uses Boost internally which cannot be reliably exported from FetchContent
+# Users should use the atlas executable tool, not link against the library
 
-install(FILES
-    src/lib/StrongTypeGenerator.hpp
-    src/lib/AtlasCommandLine.hpp
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/atlas
-)
+# Headers are not installed since atlas_lib is not exported
+# Users should use the atlas executable tool to generate code
 
 # Export targets for find_package
 install(EXPORT AtlasTargets

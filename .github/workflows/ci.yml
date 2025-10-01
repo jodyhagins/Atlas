@@ -300,20 +300,12 @@ jobs:
         cmake --build build
         cmake --install build --prefix $HOME/atlas-install
 
-    - name: Test find_package
+    - name: Test find_package and atlas executable
       run: |
-        cat > test_find_package.cpp << 'EOF'
-        #include <StrongTypeGenerator.hpp>
+        cat > test.cpp << 'EOF'
         #include <iostream>
         int main() {
-            wjh::atlas::StrongTypeDescription desc{
-                .kind = "struct",
-                .type_namespace = "test",
-                .type_name = "TestType",
-                .description = "strong int"
-            };
-            auto code = wjh::atlas::generate_strong_type(desc);
-            std::cout << "Generated " << code.size() << " bytes of code\n";
+            std::cout << "Atlas package config test passed!\n";
             return 0;
         }
         EOF
@@ -323,9 +315,17 @@ jobs:
         project(TestFindPackage CXX)
         set(CMAKE_CXX_STANDARD 20)
         find_package(Atlas REQUIRED)
-        add_executable(test_find test_find_package.cpp)
-        target_link_libraries(test_find PRIVATE atlas_lib)
-        target_include_directories(test_find PRIVATE ${CMAKE_INSTALL_PREFIX}/include/atlas)
+        add_executable(test_find test.cpp)
+
+        # Use Atlas executable to generate a strong type
+        add_custom_command(
+            OUTPUT generated.hpp
+            COMMAND ${Atlas_EXECUTABLE} --kind=struct --namespace=test --name=TestType "--description=strong int" > generated.hpp
+            COMMENT "Generating test strong type"
+            VERBATIM
+        )
+        add_custom_target(gen_types DEPENDS generated.hpp)
+        add_dependencies(test_find gen_types)
         EOF
 
         cmake -B build-test \
@@ -333,3 +333,7 @@ jobs:
           -DCMAKE_CXX_COMPILER=g++-13
         cmake --build build-test
         ./build-test/test_find
+
+        # Verify the generated header exists and is valid
+        test -f build-test/generated.hpp
+        grep -q "struct TestType" build-test/generated.hpp
