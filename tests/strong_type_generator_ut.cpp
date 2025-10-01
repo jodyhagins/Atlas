@@ -684,6 +684,70 @@ TEST_SUITE("StrongTypeGenerator")
         }
     }
 
+    TEST_CASE("Constexpr Code Generation")
+    {
+        SUBCASE("default constexpr on all operations") {
+            auto desc = make_description(
+                "struct",
+                "test",
+                "Value",
+                "strong int; +, -, ==, !=, bool");
+            auto code = generate_strong_type(desc);
+
+            // Verify constexpr appears on operations
+            CHECK(code.find("constexpr explicit Value") != std::string::npos);
+            CHECK(code.find("constexpr Value & operator +=") != std::string::npos);
+            CHECK(code.find("constexpr Value & operator -=") != std::string::npos);
+            CHECK(code.find("constexpr bool operator ==") != std::string::npos);
+            CHECK(code.find("constexpr explicit operator bool") != std::string::npos);
+        }
+
+        SUBCASE("no-constexpr removes all constexpr") {
+            auto desc = make_description(
+                "struct",
+                "test",
+                "Value",
+                "strong int; +, -, ==, !=, bool, no-constexpr");
+            auto code = generate_strong_type(desc);
+
+            // Verify NO constexpr on operations (except possibly in comments)
+            CHECK(code.find("constexpr explicit Value") == std::string::npos);
+            CHECK(code.find("constexpr Value & operator") == std::string::npos);
+            CHECK(code.find("constexpr bool operator") == std::string::npos);
+        }
+
+        SUBCASE("stream operators are never constexpr") {
+            auto desc = make_description(
+                "struct",
+                "test",
+                "Value",
+                "strong int; in, out");
+            auto code = generate_strong_type(desc);
+
+            // Only the constructor should have constexpr, not stream operators
+            CHECK(code.find("constexpr explicit Value") != std::string::npos);
+            CHECK(code.find("constexpr std::ostream") == std::string::npos);
+            CHECK(code.find("constexpr std::istream") == std::string::npos);
+        }
+
+        SUBCASE("no-constexpr-hash leaves operations constexpr") {
+            auto desc = make_description(
+                "struct",
+                "test",
+                "Value",
+                "strong int; +, ==, no-constexpr-hash");
+            auto code = generate_strong_type(desc);
+
+            // Operations should have constexpr
+            CHECK(code.find("constexpr explicit Value") != std::string::npos);
+            CHECK(code.find("constexpr Value & operator +=") != std::string::npos);
+            CHECK(code.find("constexpr bool operator ==") != std::string::npos);
+
+            // Hash should NOT have constexpr
+            CHECK(code.find("constexpr std::size_t operator ()") == std::string::npos);
+        }
+    }
+
     TEST_CASE("Property-Based Tests")
     {
         SUBCASE("generated code is valid C++ structure") {
