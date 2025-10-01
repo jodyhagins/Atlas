@@ -7,6 +7,7 @@
 #ifndef WJH_ATLAS_D12E103EDCC54717A84227722361BE22
 #define WJH_ATLAS_D12E103EDCC54717A84227722361BE22
 
+#include "InteractionGenerator.hpp"
 #include "StrongTypeGenerator.hpp"
 
 #include <stdexcept>
@@ -40,6 +41,7 @@ public:
         bool help = false;
         std::string input_file;
         std::string output_file;
+        bool interactions_mode = false;
     };
 
     struct FileGenerationResult
@@ -61,6 +63,10 @@ public:
 
     // Parse input file and return type descriptions
     static FileGenerationResult parse_input_file(Arguments const & args);
+
+    // Parse interaction file and return interaction descriptions
+    static InteractionFileDescription parse_interaction_file(
+        std::string const & filename);
 
     // Generate a file header guard with prefix + SHA of content
     static std::string make_file_guard(

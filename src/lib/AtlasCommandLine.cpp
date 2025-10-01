@@ -87,6 +87,16 @@ parse_impl(std::vector<std::string> const & args)
             result.input_file = value;
         } else if (key == "output") {
             result.output_file = value;
+        } else if (key == "interactions") {
+            if (value == "true" || value == "1" || value == "yes") {
+                result.interactions_mode = true;
+            } else if (value == "false" || value == "0" || value == "no") {
+                result.interactions_mode = false;
+            } else {
+                throw AtlasCommandLineError(
+                    "Invalid value for --interactions: '" + value +
+                    "'. Expected true/false, 1/0, or yes/no.");
+            }
         } else {
             throw AtlasCommandLineError("Unknown argument: --" + key);
         }
@@ -103,6 +113,13 @@ void
 AtlasCommandLine::
 validate_arguments(Arguments const & args)
 {
+    // Interactions mode requires an input file
+    if (args.interactions_mode && args.input_file.empty()) {
+        throw AtlasCommandLineError(
+            "Interactions mode (--interactions=true) requires an input file. "
+            "Use --input=<file> to specify the interaction file.");
+    }
+
     // If input file is specified, we don't need command line type arguments
     if (not args.input_file.empty()) {
         // Input file mode - no command line type arguments required
@@ -407,6 +424,9 @@ FILE MODE:
     --input=<file>              Read type descriptions from input file
                                 (one or more type definitions)
     --output=<file>             Write generated code to file instead of stdout
+    --interactions=<bool>       Parse input file as interaction definitions
+                                instead of type definitions (default: false)
+                                Values: true/false, 1/0, yes/no
 
 OPTIONAL ARGUMENTS:
     --default-value=<value>     Default value for default constructor
@@ -486,6 +506,232 @@ CONSTEXPR BEHAVIOR:
 
 For more information, see the Atlas documentation.
 )";
+}
+
+InteractionFileDescription
+AtlasCommandLine::
+parse_interaction_file(std::string const & filename)
+{
+    std::ifstream file(filename);
+    if (not file) {
+        throw AtlasCommandLineError(
+            "Cannot open interaction file: " + filename);
+    }
+
+    InteractionFileDescription result;
+    std::string line;
+    int line_number = 0;
+
+    // Helper to trim whitespace
+    auto trim = [](std::string const & str) -> std::string {
+        size_t start = str.find_first_not_of(" \t\r\n");
+        if (start == std::string::npos) {
+            return "";
+        }
+        size_t end = str.find_last_not_of(" \t\r\n");
+        return str.substr(start, end - start + 1);
+    };
+
+    // Helper to check if line starts with a prefix
+    auto starts_with = [](std::string const & str,
+                          std::string const & prefix) -> bool {
+        return str.size() >= prefix.size() &&
+            str.substr(0, prefix.size()) == prefix;
+    };
+
+    // Helper to extract value after '='
+    auto extract_after_equals =
+        [&trim](std::string const & line) -> std::string {
+        auto pos = line.find('=');
+        if (pos == std::string::npos) {
+            return "";
+        }
+        return trim(line.substr(pos + 1));
+    };
+
+    // State tracking
+    std::string current_namespace;
+    std::string current_value_access = "atlas::value";
+    bool current_constexpr = true;
+    std::string pending_concept_name;
+
+    while (std::getline(file, line)) {
+        ++line_number;
+        line = trim(line);
+
+        // Skip empty lines and comments
+        if (line.empty() || line[0] == '#') {
+            continue;
+        }
+
+        // Parse directives
+        if (starts_with(line, "include ")) {
+            std::string include = trim(line.substr(8));
+            if (include.empty()) {
+                throw AtlasCommandLineError(
+                    "Empty include directive at line " +
+                    std::to_string(line_number) + " in " + filename +
+                    ". Expected: include <header> or include \"header\"");
+            }
+            result.includes.push_back(include);
+        } else if (line == "include") {
+            throw AtlasCommandLineError(
+                "Malformed include directive at line " +
+                std::to_string(line_number) + " in " + filename +
+                ". Expected: include <header> or include \"header\"");
+        } else if (starts_with(line, "concept=")) {
+            std::string value = extract_after_equals(line);
+            if (value.empty()) {
+                throw AtlasCommandLineError(
+                    "Empty concept definition at line " +
+                    std::to_string(line_number) + " in " + filename +
+                    ". Expected: concept=TypeName or concept=TypeName : "
+                    "expression");
+            }
+            // Parse: name : concept_expr
+            auto colon_pos = value.find(':');
+            std::string name = trim(
+                colon_pos == std::string::npos ? value
+                                               : value.substr(0, colon_pos));
+            std::string concept_expr = colon_pos == std::string::npos
+                ? name
+                : trim(value.substr(colon_pos + 1));
+
+            if (name.empty()) {
+                throw AtlasCommandLineError(
+                    "Empty concept name at line " +
+                    std::to_string(line_number) + " in " + filename);
+            }
+
+            if (not result.constraints.contains(name)) {
+                result.constraints[name] = TypeConstraint{.name = name};
+            }
+            result.constraints[name].concept_expr = concept_expr;
+            pending_concept_name = name;
+        } else if (starts_with(line, "enable_if=")) {
+            std::string expr = extract_after_equals(line);
+            if (not pending_concept_name.empty()) {
+                result.constraints[pending_concept_name].enable_if_expr = expr;
+                pending_concept_name.clear();
+            }
+            // If no pending concept, this enable_if applies to the last concept
+            else if (not result.constraints.empty())
+            {
+                result.constraints.rbegin()->second.enable_if_expr = expr;
+            }
+        } else if (starts_with(line, "namespace=")) {
+            current_namespace = extract_after_equals(line);
+        } else if (starts_with(line, "value_access=")) {
+            current_value_access = extract_after_equals(line);
+        } else if (starts_with(line, "guard_prefix=")) {
+            result.guard_prefix = extract_after_equals(line);
+        } else if (starts_with(line, "guard_separator=")) {
+            result.guard_separator = extract_after_equals(line);
+        } else if (starts_with(line, "upcase_guard=")) {
+            std::string value = extract_after_equals(line);
+            if (value == "true" || value == "1" || value == "yes") {
+                result.upcase_guard = true;
+            } else if (value == "false" || value == "0" || value == "no") {
+                result.upcase_guard = false;
+            }
+        } else if (line == "constexpr") {
+            current_constexpr = true;
+        } else if (line == "no-constexpr") {
+            current_constexpr = false;
+        }
+        // Parse interactions: LHS OP RHS -> RESULT or LHS OP RHS <-> RESULT
+        else if (
+            line.find("->") != std::string::npos ||
+            line.find("<->") != std::string::npos)
+        {
+            bool symmetric = line.find("<->") != std::string::npos;
+            std::string arrow = symmetric ? "<->" : "->";
+
+            auto arrow_pos = line.find(arrow);
+            std::string left_side = trim(line.substr(0, arrow_pos));
+            std::string result_type = trim(
+                line.substr(arrow_pos + arrow.size()));
+
+            // Parse left side: LHS OP RHS
+            // Find operator - look for common operators
+            std::vector<std::string> ops = {
+                "<<",
+                ">>",
+                "==",
+                "!=",
+                "<=",
+                ">=",
+                "&&",
+                "||",
+                "+",
+                "-",
+                "*",
+                "/",
+                "%",
+                "&",
+                "|",
+                "^",
+                "<",
+                ">"};
+
+            std::string lhs_type, rhs_type, op_symbol;
+            for (auto const & op : ops) {
+                auto op_pos = left_side.find(" " + op + " ");
+                if (op_pos != std::string::npos) {
+                    lhs_type = trim(left_side.substr(0, op_pos));
+                    rhs_type = trim(left_side.substr(op_pos + op.size() + 2));
+                    op_symbol = op;
+                    break;
+                }
+            }
+
+            if (lhs_type.empty() || rhs_type.empty() || op_symbol.empty()) {
+                throw AtlasCommandLineError(
+                    "Cannot parse interaction at line " +
+                    std::to_string(line_number) + " in " + filename + ": " +
+                    line);
+            }
+
+            if (result_type.empty()) {
+                throw AtlasCommandLineError(
+                    "Missing result type for interaction at line " +
+                    std::to_string(line_number) + " in " + filename + ": " +
+                    line);
+            }
+
+            // Check if types are constraints (templates)
+            bool lhs_is_template = result.constraints.contains(lhs_type);
+            bool rhs_is_template = result.constraints.contains(rhs_type);
+
+            InteractionDescription interaction{
+                .op_symbol = op_symbol,
+                .lhs_type = lhs_type,
+                .rhs_type = rhs_type,
+                .result_type = result_type,
+                .symmetric = symmetric,
+                .lhs_is_template = lhs_is_template,
+                .rhs_is_template = rhs_is_template,
+                .is_constexpr = current_constexpr,
+                .interaction_namespace = current_namespace,
+                .value_access = current_value_access};
+
+            result.interactions.push_back(interaction);
+        } else {
+            throw AtlasCommandLineError(
+                "Unknown directive at line " + std::to_string(line_number) +
+                " in " + filename + ": " + line);
+        }
+    }
+
+    // Warn if no interactions were defined
+    if (result.interactions.empty()) {
+        throw AtlasCommandLineError(
+            "No interactions found in file: " + filename +
+            ". Interaction files must contain at least one interaction "
+            "(e.g., 'Type1 * Type2 -> Result').");
+    }
+
+    return result;
 }
 
 }} // namespace wjh::atlas::v1

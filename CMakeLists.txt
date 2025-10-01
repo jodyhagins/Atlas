@@ -78,6 +78,10 @@ FetchContent_MakeAvailable(boost_mustache)
 add_library(atlas_lib
     src/lib/StrongTypeGenerator.cpp
     src/lib/StrongTypeGenerator.hpp
+    src/lib/InteractionGenerator.cpp
+    src/lib/InteractionGenerator.hpp
+    src/lib/AtlasUtilities.cpp
+    src/lib/AtlasUtilities.hpp
     src/lib/AtlasCommandLine.cpp
     src/lib/AtlasCommandLine.hpp
 )

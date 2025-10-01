@@ -5,19 +5,30 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![C++20](https://img.shields.io/badge/C%2B%2B-20-blue.svg)](https://en.cppreference.com/w/cpp/20)
 
-Atlas is a C++20 code generator that produces strongly typed wrapper classes from a compact domain-specific description. It ships with a reusable library (`StrongTypeGenerator`) and a CLI tool (`atlas`) that turn type descriptions into ready-to-use headers with configurable operators, member access, and header guards.
+Atlas is a C++20 code generator that produces strongly typed wrapper classes and cross-type operator interactions from compact domain-specific descriptions. It ships with reusable libraries (`StrongTypeGenerator` and `InteractionGenerator`) and a CLI tool (`atlas`) that turn type descriptions into ready-to-use headers with configurable operators, member access, and header guards.
 
 ---
 
 ## Key Features
 
+### Strong Type Generation
 - Generate `struct` or `class` wrappers around any underlying C++ type.
 - Opt-in support for arithmetic, comparison, logical, streaming, callable, and pointer-like operators.
 - All operations are `constexpr` by default, with options to opt-out globally or selectively.
 - Automatic header guard synthesis with SHA1-based uniqueness.
 - Heuristics for required `<header>` includes and support for user-specified includes.
+
+### Cross-Type Interaction Generation (NEW)
+- Define operator interactions between different types (e.g., `Price * Quantity -> Total`).
+- Support for symmetric (commutative) and asymmetric operators.
+- Template-based interactions with C++20 concepts and C++17 SFINAE support.
+- Customizable value extraction for flexible type designs.
+- Self-contained generated files with embedded `atlas::value` implementation.
+
+### Developer Experience
 - Command-line interface with descriptive validation and built-in help.
 - Library API that can be embedded into larger C++ build systems.
+- Comprehensive error messages with line numbers for debugging.
 
 ---
 
@@ -48,21 +59,26 @@ atlas/
 │   ├── lib/
 │   │   ├── AtlasCommandLine.hpp     # Command-line parser
 │   │   ├── AtlasCommandLine.cpp
-│   │   ├── StrongTypeGenerator.hpp  # Core generator API
-│   │   └── StrongTypeGenerator.cpp
+│   │   ├── AtlasUtilities.hpp       # Shared utilities (SHA1, header guards)
+│   │   ├── AtlasUtilities.cpp
+│   │   ├── StrongTypeGenerator.hpp  # Strong type generator API
+│   │   ├── StrongTypeGenerator.cpp
+│   │   ├── InteractionGenerator.hpp # Cross-type interaction generator API
+│   │   └── InteractionGenerator.cpp
 │   └── tools/
 │       └── atlas.cpp                # CLI tool entry point
 │
 ├── tests/
 │   ├── CMakeLists.txt
-│   ├── doctest.hpp                  # Testing framework header
-│   ├── rapidcheck.hpp               # Property-based testing header
-│   ├── atlas_command_line_ut.cpp    # Command-line tests
-│   ├── atlas_tool_ut.cpp            # Tool integration tests
-│   ├── error_handling_ut.cpp        # Error handling tests
-│   ├── generated_code_ut.cpp        # Generated code compilation tests
-│   ├── integration_ut.cpp           # End-to-end integration tests
-│   └── strong_type_generator_ut.cpp # Generator unit tests
+│   ├── doctest.hpp                     # Testing framework header
+│   ├── rapidcheck.hpp                  # Property-based testing header
+│   ├── atlas_command_line_ut.cpp       # Command-line tests
+│   ├── atlas_tool_ut.cpp               # Tool integration tests
+│   ├── error_handling_ut.cpp           # Error handling tests
+│   ├── generated_code_ut.cpp           # Generated code compilation tests
+│   ├── integration_ut.cpp              # End-to-end integration tests
+│   ├── interaction_generator_ut.cpp    # Interaction generator tests
+│   └── strong_type_generator_ut.cpp    # Strong type generator tests
 │
 ├── CHANGELOG.md
 ├── CMakeLists.txt
@@ -155,7 +171,7 @@ Atlas supports two modes of operation:
 
 Use this mode to generate a single strong type directly from command-line arguments:
 
-```
+```bash
 atlas --kind=<struct|class> \
       --namespace=<namespace> \
       --name=<type_name> \
@@ -193,7 +209,7 @@ Generates a header that wraps `double` while enabling arithmetic, comparison, st
 
 Use this mode to generate multiple strong types from an input file. All types will be placed in a single header file with a unified header guard:
 
-```
+```bash
 atlas --input=<file> [--output=<file>] [optional flags...]
 ```
 
@@ -209,7 +225,7 @@ atlas --input=<file> [--output=<file>] [optional flags...]
 
 The input file uses a simple key=value format with `[type]` section markers:
 
-```
+```txt
 # File-level configuration (optional)
 guard_prefix=<PREFIX>           # optional prefix for header guard
 guard_separator=_               # optional, default: _
@@ -238,7 +254,7 @@ description=<strong type description>
 
 #### Example Input File (`types.txt`)
 
-```
+```txt
 # Strong types for my application
 guard_prefix=MY_APP_TYPES
 
@@ -275,11 +291,122 @@ This generates all three type definitions in a single output file with one unifi
 
 ---
 
+## Cross-Type Interaction Mode
+
+Atlas can generate operator interactions between different types, useful for scenarios like units of measure (`Distance = Velocity * Time`) or domain-specific calculations (`Total = Price * Quantity`).
+
+### Interactions Mode
+
+```bash
+atlas --input=<file> --interactions=true [--output=<file>]
+```
+
+| Flag              | Required | Description                                          |
+|-------------------|----------|------------------------------------------------------|
+| `--input`         | Yes      | Input file containing interaction definitions.       |
+| `--interactions`  | Yes      | Must be `true` to enable interactions mode.          |
+| `--output`        | No       | Write generated code to a file instead of stdout.    |
+
+### Interaction File Format
+
+```txt
+# Include necessary headers
+include <iostream>
+include "price.hpp"
+include "quantity.hpp"
+
+# Set namespace for interactions
+namespace=commerce
+
+# Asymmetric operator: Price * Quantity -> Total
+Price * Quantity -> Total
+
+# Symmetric operator (commutative): Price * int <-> Price
+# Generates both: Price * int -> Price AND int * Price -> Price
+Price * int <-> Price
+Quantity * int <-> Quantity
+
+# Change namespace
+namespace=math
+
+# Template interactions with concepts (C++20) and SFINAE (C++17)
+concept=Numeric
+enable_if=std::is_arithmetic_v<Numeric>
+
+Distance * Numeric <-> Distance
+Distance / Numeric -> Distance
+
+# Control constexpr
+no-constexpr
+Time / Numeric -> Time
+```
+
+### Interaction Directives
+
+| Directive            | Description                                                      |
+|----------------------|------------------------------------------------------------------|
+| `include <header>`   | Add system header include.                                       |
+| `include "header"`   | Add local header include.                                        |
+| `namespace=name`     | Set namespace for subsequent interactions.                       |
+| `concept=Name`       | Define a template parameter as a C++20 concept.                  |
+| `enable_if=expr`     | Add C++17 SFINAE constraint (used with concept).                 |
+| `constexpr`          | Make subsequent operators constexpr (default).                   |
+| `no-constexpr`       | Make subsequent operators non-constexpr.                         |
+| `value_access=func`  | Customize value extraction (default: `atlas::value`).            |
+
+### Interaction Syntax
+
+```txt
+LHS operator RHS -> Result    # Asymmetric: only generates LHS op RHS
+LHS operator RHS <-> Result   # Symmetric: generates both LHS op RHS and RHS op LHS
+```
+
+Supported operators: `+`, `-`, `*`, `/`, `%`, `&`, `|`, `^`, `<<`, `>>`, `==`, `!=`, `<`, `>`, `<=`, `>=`, `&&`, `||`
+
+### Example: Units of Measure
+
+```txt
+# physics_interactions.txt
+include <type_traits>
+include "distance.hpp"
+include "velocity.hpp"
+include "time.hpp"
+
+namespace=physics
+
+concept=Numeric
+enable_if=std::is_arithmetic_v<Numeric>
+
+# Distance = Velocity * Time
+Velocity * Time -> Distance
+
+# Velocity = Distance / Time
+Distance / Time -> Velocity
+
+# Scalar operations
+Distance * Numeric <-> Distance
+Distance / Numeric -> Distance
+Velocity * Numeric <-> Velocity
+```
+
+Generate with:
+```bash
+atlas --input=physics_interactions.txt --interactions=true --output=physics_ops.hpp
+```
+
+This creates a self-contained header with:
+- All specified includes
+- Embedded `atlas::value` implementation for value extraction
+- Operator functions in the specified namespace
+- Template specializations with C++20 concepts (when available) and C++17 SFINAE fallback
+
+---
+
 ## Description Language
 
 Type descriptions follow the pattern:
 
-```
+```txt
 strong <underlying-type>; <option>, <option>, ...
 ```
 
@@ -308,6 +435,8 @@ Headers created by Atlas include:
 
 ## Library API
 
+### Strong Type Generation
+
 `StrongTypeGenerator` exposes a callable object:
 
 ```cpp
@@ -326,7 +455,32 @@ wjh::atlas::StrongTypeDescription desc{
 std::string header = wjh::atlas::generate_strong_type(desc);
 ```
 
-Use the returned string as a standalone header or embed Atlas in your own generators.
+### Interaction Generation
+
+`InteractionGenerator` exposes a callable object:
+
+```cpp
+#include "InteractionGenerator.hpp"
+
+wjh::atlas::InteractionFileDescription desc;
+desc.includes = {"<iostream>", "\"price.hpp\""};
+desc.interactions.push_back(wjh::atlas::InteractionDescription{
+    .op_symbol = "*",
+    .lhs_type = "Price",
+    .rhs_type = "Quantity",
+    .result_type = "Total",
+    .symmetric = false,
+    .lhs_is_template = false,
+    .rhs_is_template = false,
+    .is_constexpr = true,
+    .interaction_namespace = "commerce",
+    .value_access = "atlas::value"
+});
+
+std::string header = wjh::atlas::generate_interactions(desc);
+```
+
+Use the returned strings as standalone headers or embed Atlas in your own generators.
 
 ---
 

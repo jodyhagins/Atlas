@@ -5,6 +5,7 @@
 // https://opensource.org/licenses/MIT
 // ----------------------------------------------------------------------
 #include "AtlasCommandLine.hpp"
+#include "InteractionGenerator.hpp"
 #include "StrongTypeGenerator.hpp"
 
 #include <cstdlib>
@@ -26,14 +27,24 @@ main(int argc, char ** argv)
 
         std::string output;
 
-        // File input mode - generate multiple types with unified guard
+        // File input mode - generate either types or interactions
         if (not args.input_file.empty()) {
-            auto file_result = atlas::AtlasCommandLine::parse_input_file(args);
-            output = atlas::generate_strong_types_file(
-                file_result.types,
-                file_result.guard_prefix,
-                file_result.guard_separator,
-                file_result.upcase_guard);
+            if (args.interactions_mode) {
+                // Parse as interaction file and generate interactions
+                auto interaction_desc =
+                    atlas::AtlasCommandLine::parse_interaction_file(
+                        args.input_file);
+                output = atlas::generate_interactions(interaction_desc);
+            } else {
+                // Parse as type file and generate strong types
+                auto file_result = atlas::AtlasCommandLine::parse_input_file(
+                    args);
+                output = atlas::generate_strong_types_file(
+                    file_result.types,
+                    file_result.guard_prefix,
+                    file_result.guard_separator,
+                    file_result.upcase_guard);
+            }
         } else { // Command-line mode - single type with individual guard
             auto description = atlas::AtlasCommandLine::to_description(args);
             output = atlas::generate_strong_type(description);
