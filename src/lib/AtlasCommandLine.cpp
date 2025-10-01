@@ -468,9 +468,21 @@ OPERATOR REFERENCE:
     Comparison:     ==, !=, <, <=, >, >=, <=>
     Special:        ++, --, bool, (), (&), [], @, &of, ->
     Stream:         in, out
-    Hash:           hash (enables std::hash specialization for unordered containers)
+    Hash:           hash (enables std::hash specialization)
+                    no-constexpr-hash (hash without constexpr)
     Subscript:      [] (supports C++23 multidimensional subscripts)
     Custom:         #<header> or #"header" for custom includes
+
+CONSTEXPR BEHAVIOR:
+    By default, all operations are marked constexpr for use in constant expressions.
+
+    no-constexpr         Removes constexpr from all operations
+    no-constexpr-hash    Removes constexpr only from hash
+
+    Examples:
+        "strong int; +, -, hash"              # All constexpr
+        "strong std::string; ==, no-constexpr-hash" # Ops are constexpr, hash isn't
+        "strong std::string; ==, hash, no-constexpr" # Nothing constexpr
 
 For more information, see the Atlas documentation.
 )";

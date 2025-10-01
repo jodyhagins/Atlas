@@ -605,7 +605,7 @@ int main() {
                 "struct",
                 "test",
                 "HashableInt",
-                "strong int; ==, hash");
+                "strong int; ==, no-constexpr-hash");
             auto generated = generate_strong_type(desc);
 
             auto test_main = R"(
@@ -667,7 +667,7 @@ int main() {
                 "struct",
                 "test",
                 "HashableString",
-                "strong std::string; ==, hash");
+                "strong std::string; ==, no-constexpr-hash");
             auto generated = generate_strong_type(desc);
 
             auto test_main = R"(
@@ -712,7 +712,7 @@ int main() {
                 "struct",
                 "my::deep::ns",
                 "HashableValue",
-                "strong unsigned; ==, hash");
+                "strong unsigned; ==, no-constexpr-hash");
             auto generated = generate_strong_type(desc);
 
             auto test_main = R"(
@@ -742,7 +742,7 @@ int main() {
                 "struct",
                 "test",
                 "ConsistentHash",
-                "strong int; ==, hash");
+                "strong int; ==, no-constexpr-hash");
             auto generated = generate_strong_type(desc);
 
             auto test_main = R"(
@@ -832,7 +832,7 @@ int main() {
                 "struct",
                 "complete::test",
                 "Comprehensive",
-                "strong int; +, -, ==, !=, <, <=>, ++, bool, out, hash");
+                "strong int; +, -, ==, !=, <, <=>, ++, bool, out, no-constexpr-hash");
             auto generated = generate_strong_type(desc);
 
             auto test_main = R"(
@@ -1001,6 +1001,257 @@ int main() {
 
             auto result = tester.compile_and_test(generated, test_main);
             CHECK(result.success);
+        }
+
+        SUBCASE("no-constexpr opt-out") {
+            auto desc = make_description(
+                "struct",
+                "no_constexpr_test",
+                "Value",
+                "strong int; +, -, ==, !=, no-constexpr");
+            auto generated = generate_strong_type(desc);
+
+            // Verify no constexpr keywords appear in generated code
+            // (Note: "no-constexpr" will appear in the description comment)
+            CHECK(generated.find("constexpr explicit") == std::string::npos);
+            CHECK(generated.find("constexpr Value") == std::string::npos);
+
+            // Verify code still compiles and works at runtime
+            auto test_main = R"(
+int main() {
+    // These work at runtime but not in constexpr context
+    no_constexpr_test::Value v1{10};
+    no_constexpr_test::Value v2{20};
+
+    auto sum = v1 + v2;
+    auto diff = v2 - v1;
+
+    assert(static_cast<int>(sum) == 30);
+    assert(static_cast<int>(diff) == 10);
+    assert(v1 == no_constexpr_test::Value{10});
+    assert(v1 != v2);
+
+    std::cout << "no-constexpr test passed\n";
+    return 0;
+}
+)";
+
+            auto result = tester.compile_and_test(generated, test_main);
+            CHECK(result.success);
+            CHECK(result.output.find("no-constexpr test passed") != std::string::npos);
+        }
+
+        SUBCASE("no-constexpr with hash and bool") {
+            auto desc = make_description(
+                "struct",
+                "no_constexpr_test",
+                "HashValue",
+                "strong int; hash, bool, ==, no-constexpr");
+            auto generated = generate_strong_type(desc);
+
+            // Verify no constexpr keywords appear in code (not just comments)
+            CHECK(generated.find("constexpr explicit") == std::string::npos);
+            CHECK(generated.find("constexpr HashValue") == std::string::npos);
+            CHECK(generated.find("constexpr std::size_t") == std::string::npos);
+
+            auto test_main = R"(
+#include <functional>
+#include <unordered_map>
+
+int main() {
+    no_constexpr_test::HashValue v1{42};
+    no_constexpr_test::HashValue v2{42};
+    no_constexpr_test::HashValue v3{99};
+
+    // Test bool conversion
+    if (v1) {
+        // non-zero value converts to true
+    }
+
+    // Test hash in unordered_map
+    std::unordered_map<no_constexpr_test::HashValue, std::string> map;
+    map[v1] = "forty-two";
+    map[v3] = "ninety-nine";
+
+    assert(map[v2] == "forty-two");  // v2 == v1, so same bucket
+    assert(map[v3] == "ninety-nine");
+    assert(map.size() == 2);
+
+    std::cout << "no-constexpr hash test passed\n";
+    return 0;
+}
+)";
+
+            auto result = tester.compile_and_test(generated, test_main);
+            CHECK(result.success);
+            CHECK(result.output.find("no-constexpr hash test passed") != std::string::npos);
+        }
+
+        SUBCASE("no-constexpr with complex type") {
+            auto desc = make_description(
+                "struct",
+                "no_constexpr_test",
+                "StringWrapper",
+                "strong std::string; ==, !=, out, no-constexpr");
+            auto generated = generate_strong_type(desc);
+
+            // Verify no constexpr keywords in code
+            CHECK(generated.find("constexpr explicit") == std::string::npos);
+            CHECK(generated.find("constexpr StringWrapper") == std::string::npos);
+            CHECK(generated.find("constexpr bool") == std::string::npos);
+
+            auto test_main = R"(
+#include <string>
+#include <sstream>
+
+int main() {
+    no_constexpr_test::StringWrapper s1{"hello"};
+    no_constexpr_test::StringWrapper s2{"world"};
+    no_constexpr_test::StringWrapper s3{"hello"};
+
+    assert(s1 == s3);
+    assert(s1 != s2);
+
+    std::ostringstream oss;
+    oss << s1 << " " << s2;
+    assert(oss.str() == "hello world");
+
+    std::cout << "no-constexpr string test passed\n";
+    return 0;
+}
+)";
+
+            auto result = tester.compile_and_test(generated, test_main);
+            CHECK(result.success);
+            CHECK(result.output.find("no-constexpr string test passed") != std::string::npos);
+        }
+
+        SUBCASE("no-constexpr-hash with everything else constexpr") {
+            auto desc = make_description(
+                "struct",
+                "mixed_constexpr_test",
+                "Value",
+                "strong int; +, -, ==, !=, bool, no-constexpr-hash");
+            auto generated = generate_strong_type(desc);
+
+            // Verify regular operations have constexpr
+            CHECK(generated.find("constexpr explicit Value") != std::string::npos);
+            CHECK(generated.find("constexpr Value & operator +=") != std::string::npos);
+            CHECK(generated.find("constexpr bool operator ==") != std::string::npos);
+
+            // Verify hash does NOT have constexpr
+            CHECK(generated.find("constexpr std::size_t operator ()") == std::string::npos);
+            CHECK(generated.find("std::size_t operator ()") != std::string::npos);
+
+            auto test_main = R"(
+#include <functional>
+#include <unordered_map>
+
+int main() {
+    // Test constexpr operations work
+    constexpr mixed_constexpr_test::Value v1{10};
+    constexpr mixed_constexpr_test::Value v2{20};
+    constexpr auto sum = v1 + v2;
+    static_assert(static_cast<int>(sum) == 30);
+    static_assert(v1 == mixed_constexpr_test::Value{10});
+
+    // Test hash works at runtime (not constexpr)
+    mixed_constexpr_test::Value v3{42};
+    std::unordered_map<mixed_constexpr_test::Value, std::string> map;
+    map[v3] = "forty-two";
+    assert(map[v3] == "forty-two");
+
+    std::cout << "no-constexpr-hash test passed\n";
+    return 0;
+}
+)";
+
+            auto result = tester.compile_and_test(generated, test_main);
+            CHECK(result.success);
+            CHECK(result.output.find("no-constexpr-hash test passed") != std::string::npos);
+        }
+
+        SUBCASE("no-constexpr-hash with std::string") {
+            auto desc = make_description(
+                "struct",
+                "string_hash_test",
+                "StringId",
+                "strong std::string; ==, !=, no-constexpr-hash");
+            auto generated = generate_strong_type(desc);
+
+            // Verify constructors and operators have constexpr
+            CHECK(generated.find("constexpr explicit StringId") != std::string::npos);
+            CHECK(generated.find("constexpr bool operator ==") != std::string::npos);
+
+            // Verify hash does NOT have constexpr
+            CHECK(generated.find("constexpr std::size_t operator ()") == std::string::npos);
+
+            auto test_main = R"(
+#include <string>
+#include <functional>
+#include <unordered_set>
+
+int main() {
+    // Test operations work
+    string_hash_test::StringId id1{"user123"};
+    string_hash_test::StringId id2{"user456"};
+    string_hash_test::StringId id3{"user123"};
+
+    assert(id1 == id3);
+    assert(id1 != id2);
+
+    // Test hash works in unordered_set
+    std::unordered_set<string_hash_test::StringId> ids;
+    ids.insert(id1);
+    ids.insert(id2);
+    assert(ids.size() == 2);
+    assert(ids.count(id3) == 1);  // id3 == id1
+
+    std::cout << "no-constexpr-hash with string test passed\n";
+    return 0;
+}
+)";
+
+            auto result = tester.compile_and_test(generated, test_main);
+            CHECK(result.success);
+            CHECK(result.output.find("no-constexpr-hash with string test passed") != std::string::npos);
+        }
+
+        SUBCASE("regular hash still has constexpr") {
+            auto desc = make_description(
+                "struct",
+                "regular_hash_test",
+                "Value",
+                "strong int; ==, hash");
+            auto generated = generate_strong_type(desc);
+
+            // Verify hash HAS constexpr keyword (even if underlying hash isn't constexpr)
+            CHECK(generated.find("constexpr std::size_t operator ()") != std::string::npos);
+
+            auto test_main = R"(
+#include <functional>
+#include <unordered_map>
+
+int main() {
+    regular_hash_test::Value v1{42};
+    regular_hash_test::Value v2{99};
+
+    // Hash should work at runtime
+    std::unordered_map<regular_hash_test::Value, std::string> map;
+    map[v1] = "forty-two";
+    map[v2] = "ninety-nine";
+
+    assert(map[v1] == "forty-two");
+    assert(map[v2] == "ninety-nine");
+
+    std::cout << "regular hash constexpr test passed\n";
+    return 0;
+}
+)";
+
+            auto result = tester.compile_and_test(generated, test_main);
+            CHECK(result.success);
+            CHECK(result.output.find("regular hash constexpr test passed") != std::string::npos);
         }
     }
 

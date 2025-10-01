@@ -85,6 +85,7 @@ namespace {{{.}}} {
  * - type_namespace: {{{desc.type_namespace}}}
  * - type_name: {{{desc.type_name}}}
  * - description: {{{desc.description}}}
+ * - default_value: "{{{desc.default_value}}}"
  */
 {{{desc.kind}}} {{{full_class_name}}}
 {
@@ -98,24 +99,29 @@ namespace {{{.}}} {
 {{#public_specifier}}
 {{{.}}}
 {{/public_specifier}}
-    constexpr explicit {{{class_name}}}() = default;
+    {{{const_expr}}}explicit {{{class_name}}}() = default;
+    {{{const_expr}}}{{{class_name}}}({{{class_name}}} const &) = default;
+    {{{const_expr}}}{{{class_name}}}({{{class_name}}} &&) = default;
+    {{{const_expr}}}{{{class_name}}} & operator = ({{{class_name}}} const &) = default;
+    {{{const_expr}}}{{{class_name}}} & operator = ({{{class_name}}} &&) = default;
+    {{{const_expr}}}~{{{class_name}}}() = default;
 
     template <
         typename... ArgTs,
         std::enable_if_t<
             std::is_constructible_v<{{{underlying_type}}}, ArgTs...>,
             bool> = true>
-    constexpr explicit {{{class_name}}}(ArgTs && ... args)
+    {{{const_expr}}}explicit {{{class_name}}}(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     { }
 
     /**
      * The explicit cast operator provides a reference to the wrapped object.
      */
-    constexpr explicit operator {{{underlying_type}}} const & () const { return value; }
-    constexpr explicit operator {{{underlying_type}}} & () { return value; }
+    {{{const_expr}}}explicit operator {{{underlying_type}}} const & () const { return value; }
+    {{{const_expr}}}explicit operator {{{underlying_type}}} & () { return value; }
     {{#bool_operator}}
-    {{{.}}}
+    {{>bool_operator}}
     {{/bool_operator}}
     {{#indirection_operator}}
     {{>indirection_operator}}
@@ -173,11 +179,11 @@ constexpr char addressof_operators[] = R"(
     /**
      * Access a pointer to the wrapped object.
      */
-    constexpr {{{underlying_type}}} const * operator {{{op}}} () const
+    {{{const_expr}}}{{{underlying_type}}} const * operator {{{op}}} () const
     {
         return std::addressof(value);
     }
-    constexpr {{{underlying_type}}} * operator {{{op}}} ()
+    {{{const_expr}}}{{{underlying_type}}} * operator {{{op}}} ()
     {
         return std::addressof(value);
     }
@@ -187,7 +193,7 @@ constexpr char relational_operator[] = R"(
     /**
      * Is @p lhs.value {{{op}}} @p rhs.value?
      */
-    friend constexpr bool operator {{{op}}} (
+    friend {{{const_expr}}}bool operator {{{op}}} (
         {{{class_name}}} const & lhs,
         {{{class_name}}} const & rhs)
     {
@@ -199,7 +205,7 @@ constexpr char arithmetic_binary_operators[] = R"(
     /**
      * Apply {{{op}}} assignment to the wrapped objects.
      */
-    friend constexpr {{{class_name}}} & operator {{{op}}}= (
+    friend {{{const_expr}}}{{{class_name}}} & operator {{{op}}}= (
         {{{class_name}}} & lhs,
         {{{class_name}}} const & rhs)
     {
@@ -209,7 +215,7 @@ constexpr char arithmetic_binary_operators[] = R"(
     /**
      * Apply the binary operator {{{op}}} to the wrapped object.
      */
-    friend constexpr {{{class_name}}} operator {{{op}}} (
+    friend {{{const_expr}}}{{{class_name}}} operator {{{op}}} (
         {{{class_name}}} lhs,
         {{{class_name}}} const & rhs)
     {
@@ -226,7 +232,7 @@ constexpr char logical_operator[] = R"(
      * One of the reasons is that short-circuit is no longer available.
      * Proceed with caution.
      */
-    friend constexpr bool operator {{{op}}} (
+    friend {{{const_expr}}}bool operator {{{op}}} (
         {{{class_name}}} const & lhs,
         {{{class_name}}} const & rhs)
     {
@@ -238,7 +244,7 @@ constexpr char unary_operators[] = R"(
     /**
      * Apply the unary {{{op}}} operator to the wrapped object.
      */
-    friend constexpr {{{class_name}}} operator {{{op}}} ({{{class_name}}} const & t)
+    friend {{{const_expr}}}{{{class_name}}} operator {{{op}}} ({{{class_name}}} const & t)
     {
         auto result = t;
         result.value = {{{op}}} t.value;
@@ -250,7 +256,7 @@ constexpr char increment_operator[] = R"(
     /**
      * Apply the prefix {{{op}}} operator to the wrapped object.
      */
-    friend constexpr {{{class_name}}} & operator {{{op}}} ({{{class_name}}} & t)
+    friend {{{const_expr}}}{{{class_name}}} & operator {{{op}}} ({{{class_name}}} & t)
     {
         {{{op}}}t.value;
         return t;
@@ -258,7 +264,7 @@ constexpr char increment_operator[] = R"(
     /**
      * Apply the postfix {{{op}}} operator to the wrapped object.
      */
-    friend constexpr {{{class_name}}} operator {{{op}}} ({{{class_name}}} & t, int)
+    friend {{{const_expr}}}{{{class_name}}} operator {{{op}}} ({{{class_name}}} & t, int)
     {
         auto result = t;
         {{{op}}}t.value;
@@ -270,20 +276,21 @@ constexpr char bool_operator_template[] = R"(
     /**
      * Return the result of casting the wrapped object to bool.
      */
-    constexpr explicit operator bool () const
+    {{{const_expr}}}explicit operator bool () const
     {
         return static_cast<bool>(value);
-    })";
+    }
+)";
 
 constexpr char indirection_operator_template[] = R"(
     /**
      * The indirection operator provides a reference to the wrapped object.
      */
-    constexpr {{{underlying_type}}} const & operator * () const
+    {{{const_expr}}}{{{underlying_type}}} const & operator * () const
     {
         return value;
     }
-    constexpr {{{underlying_type}}} & operator * ()
+    {{{const_expr}}}{{{underlying_type}}} & operator * ()
     {
         return value;
     }
@@ -293,11 +300,11 @@ constexpr char nullary_template[] = R"(
     /**
      * A nullary call operator that returns access to the wrapped type.
      */
-    constexpr {{{underlying_type}}} const & operator () () const
+    {{{const_expr}}}{{{underlying_type}}} const & operator () () const
     {
         return value;
     }
-    constexpr {{{underlying_type}}} & operator () ()
+    {{{const_expr}}}{{{underlying_type}}} & operator () ()
     {
         return value;
     }
@@ -309,13 +316,13 @@ constexpr char callable_template[] = R"(
      * wrapped object.
      */
     template <typename InvocableT>
-    constexpr auto operator () (InvocableT && inv) const
+    {{{const_expr}}}auto operator () (InvocableT && inv) const
     -> decltype(std::invoke(std::forward<InvocableT>(inv), value))
     {
         return std::invoke(std::forward<InvocableT>(inv), value);
     }
     template <typename InvocableT>
-    constexpr auto operator () (InvocableT && inv)
+    {{{const_expr}}}auto operator () (InvocableT && inv)
     -> decltype(std::invoke(std::forward<InvocableT>(inv), value))
     {
         return std::invoke(std::forward<InvocableT>(inv), value);
@@ -326,7 +333,7 @@ constexpr char logical_not_template[] = R"(
     /**
      * Apply the unary logical not operator to the wrapped object.
      */
-    friend constexpr bool operator not ({{{class_name}}} const & t)
+    friend {{{const_expr}}}bool operator not ({{{class_name}}} const & t)
     {
         return not t.value;
     }
@@ -336,7 +343,7 @@ constexpr char spaceship_operator_template[] = R"(
     /**
      * The default three-way comparison (spaceship) operator.
      */
-    friend auto operator <=> (
+    friend {{{const_expr}}}auto operator <=> (
         {{{class_name}}} const &,
         {{{class_name}}} const &) = default;
 )";
@@ -374,7 +381,7 @@ constexpr char hash_specialization_template[] = R"(
 template <>
 struct std::hash<{{{full_qualified_name}}}>
 {
-    constexpr std::size_t operator () ({{{full_qualified_name}}} const & t) const
+    {{{hash_const_expr}}}std::size_t operator () ({{{full_qualified_name}}} const & t) const
     noexcept(
         noexcept(std::hash<{{{underlying_type}}}>{}(
             std::declval<{{{underlying_type}}} const &>())))
@@ -391,23 +398,23 @@ constexpr char subscript_operator_template[] = R"(
      */
 #if __cpp_multidimensional_subscript >= 202110L
     template <typename ArgT, typename... ArgTs>
-    constexpr decltype(auto) operator [] (ArgT && arg, ArgTs && ... args)
+    {{{const_expr}}}decltype(auto) operator [] (ArgT && arg, ArgTs && ... args)
     {
         return value[std::forward<ArgT>(arg), std::forward<ArgTs>(args)...];
     }
     template <typename ArgT, typename... ArgTs>
-    constexpr decltype(auto) operator [] (ArgT && arg, ArgTs && ... args) const
+    {{{const_expr}}}decltype(auto) operator [] (ArgT && arg, ArgTs && ... args) const
     {
         return value[std::forward<ArgT>(arg), std::forward<ArgTs>(args)...];
     }
 #else
     template <typename ArgT>
-    constexpr decltype(auto) operator [] (ArgT && arg)
+    {{{const_expr}}}decltype(auto) operator [] (ArgT && arg)
     {
         return value[std::forward<ArgT>(arg)];
     }
     template <typename ArgT>
-    constexpr decltype(auto) operator [] (ArgT && arg) const
+    {{{const_expr}}}decltype(auto) operator [] (ArgT && arg) const
     {
         return value[std::forward<ArgT>(arg)];
     }
@@ -456,6 +463,8 @@ struct ClassInfo
     bool subscript_operator = false;
     bool has_default_value = false;
     std::string default_initializer = "{}";
+    std::string const_expr = "constexpr ";
+    std::string hash_const_expr = "constexpr ";
     StrongTypeDescription desc;
 };
 BOOST_DESCRIBE_STRUCT(
@@ -486,6 +495,8 @@ BOOST_DESCRIBE_STRUCT(
      subscript_operator,
      has_default_value,
      default_initializer,
+     const_expr,
+     hash_const_expr,
      desc))
 
 constexpr auto arithmetic_binary_op_tags = std::to_array<std::string_view>(
@@ -525,7 +536,7 @@ is_relational_operator(std::string_view sv)
 // Default predicate for strip - checks if character is whitespace
 struct IsSpacePred
 {
-    bool operator()(unsigned u) const { return std::isspace(u); }
+    bool operator () (unsigned u) const { return std::isspace(u); }
 };
 
 template <typename PredT = IsSpacePred>
@@ -666,6 +677,15 @@ parse(StrongTypeDescription const & desc)
                     recognized = true;
                     info.hash_specialization = true;
                     info.includes.push_back("<functional>");
+                } else if (sv == "no-constexpr-hash") {
+                    recognized = true;
+                    info.hash_specialization = true;
+                    info.hash_const_expr = "";
+                    info.includes.push_back("<functional>");
+                } else if (sv == "no-constexpr") {
+                    recognized = true;
+                    info.const_expr = "";
+                    info.hash_const_expr = "";
                 } else if (sv.starts_with('#')) {
                     recognized = true;
                     auto str = std::string(strip(sv.substr(1)));
@@ -804,6 +824,7 @@ render_code(ClassInfo const & info)
          {"addressof_operators", addressof_operators},
          {"relational_operator", relational_operator},
          {"logical_operator", logical_operator},
+         {"bool_operator", bool_operator_template},
          {"indirection_operator", indirection_operator_template},
          {"nullary", nullary_template},
          {"callable", callable_template},

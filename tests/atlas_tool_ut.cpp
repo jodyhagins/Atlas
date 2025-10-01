@@ -577,17 +577,17 @@ int main() {
                 input << "kind=struct\n";
                 input << "namespace=ids\n";
                 input << "name=UserId\n";
-                input << "description=strong int; ==, hash\n\n";
+                input << "description=strong int; ==, no-constexpr-hash\n\n";
                 input << "[type]\n";
                 input << "kind=struct\n";
                 input << "namespace=ids\n";
                 input << "name=ProductId\n";
-                input << "description=strong unsigned; ==, hash\n\n";
+                input << "description=strong unsigned; ==, no-constexpr-hash\n\n";
                 input << "[type]\n";
                 input << "kind=struct\n";
                 input << "namespace=strings\n";
                 input << "name=Label\n";
-                input << "description=strong std::string; ==, hash\n";
+                input << "description=strong std::string; ==, no-constexpr-hash\n";
             }
 
             // Run atlas with input file

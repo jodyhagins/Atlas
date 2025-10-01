@@ -99,6 +99,22 @@ This generates a single header with guard like: `MY_APP_TYPES_A1B2C3D4E5F6...` (
 | `in` | Adds `operator>>` (adds `<istream>`). |
 | `hash` | Generates `std::hash` specialization for use in unordered containers (adds `<functional>`). |
 
+## Constexpr Control Options
+
+By default, all generated operations are marked `constexpr`, allowing use in constant expressions. You can opt out if needed:
+
+| Option | Behavior |
+|--------|----------|
+| `no-constexpr` | Removes `constexpr` from all operations. Use when wrapping types that don't support constexpr operations. |
+| `no-constexpr-hash` | Like `hash`, but omits `constexpr` from only the hash specialization. Everything else remains constexpr. Useful when wrapping types whose `std::hash` isn't constexpr (e.g., `std::string` in some stdlib implementations). |
+
+**Examples:**
+```
+strong std::string; ==, hash              # All constexpr (may not compile with older stdlib)
+strong std::string; ==, no-constexpr-hash # Constexpr ops, runtime hash
+strong std::string; ==, hash, no-constexpr # Nothing constexpr
+```
+
 ## Include Directives
 
 Use `#<header>` or `#"path/to/header"` to force an include. Single quotes are normalized to double quotes, so `#'my/header.hpp'` is valid.

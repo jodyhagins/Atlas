@@ -13,6 +13,7 @@ Atlas is a C++20 code generator that produces strongly typed wrapper classes fro
 
 - Generate `struct` or `class` wrappers around any underlying C++ type.
 - Opt-in support for arithmetic, comparison, logical, streaming, callable, and pointer-like operators.
+- All operations are `constexpr` by default, with options to opt-out globally or selectively.
 - Automatic header guard synthesis with SHA1-based uniqueness.
 - Heuristics for required `<header>` includes and support for user-specified includes.
 - Command-line interface with descriptive validation and built-in help.
@@ -135,7 +136,7 @@ Test discovery happens automatically at build time using DocTest's CMake integra
 
 ### Build Prerequisites
 
-- A C++20-capable compiler (e.g., GCC ≥ 11, Clang ≥ 12, MSVC ≥ 19.29)
+- A C++20-capable compiler (e.g., GCC ≥ 11, Clang ≥ 15, MSVC ≥ 19.29)
 - CMake ≥ 3.20
 - Git (for fetching dependencies)
 - Optional: System Boost installation (use `-DUSE_SYSTEM_BOOST=ON` to skip fetching Boost)
