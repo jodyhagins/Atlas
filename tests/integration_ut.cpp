@@ -134,7 +134,7 @@ TEST_SUITE("Integration Tests")
                 .kind = "struct",
                 .type_namespace = "test",
                 .type_name = "StringWrapper",
-                .description = "strong std::string; ==, !=, out"};
+                .description = "strong std::string; ==, !=, out, no-constexpr"};
 
             auto code = generate_strong_type(desc);
             CHECK(compile_and_test_code(code));

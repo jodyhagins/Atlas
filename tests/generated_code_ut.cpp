@@ -176,7 +176,7 @@ int main() {
                 "class",
                 "test",
                 "MyString",
-                "strong std::string");
+                "strong std::string; no-constexpr");
             auto generated = generate_strong_type(desc);
 
             auto test_main = R"(
@@ -1057,7 +1057,7 @@ int main() {
                 "struct",
                 "subscript_test",
                 "IntArray",
-                "strong std::vector<int>; [], #<vector>");
+                "strong std::vector<int>; [], #<vector>, no-constexpr");
             auto generated = generate_strong_type(desc);
 
             auto test_main = R"(
@@ -1107,7 +1107,7 @@ struct CustomContainer {
                 "struct",
                 "subscript_test",
                 "CustomWrapper",
-                "strong CustomContainer; []");
+                "strong CustomContainer; [], no-constexpr");
             auto generated = std::string(custom_type_code) + "\n" +
                 generate_strong_type(desc);
 
@@ -1308,7 +1308,7 @@ int main() {
                 "struct",
                 "test",
                 "Name",
-                "strong std::string",
+                "strong std::string; no-constexpr",
                 R"("hello")");
             auto generated = generate_strong_type(desc);
 
@@ -1437,7 +1437,7 @@ int main() {
                 "struct",
                 "test",
                 "Numbers",
-                "strong std::vector<int>",
+                "strong std::vector<int>; no-constexpr",
                 "std::vector<int>{1, 2, 3}");
             auto generated = generate_strong_type(desc);
 

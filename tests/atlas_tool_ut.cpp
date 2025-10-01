@@ -230,7 +230,7 @@ TEST_SUITE("Atlas Tool Integration Tests")
                 "struct",
                 "io",
                 "Printable",
-                "strong std::string; in, out");
+                "strong std::string; in, out, no-constexpr");
 
             CHECK(result.success);
             CHECK(
