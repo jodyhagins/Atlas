@@ -589,6 +589,101 @@ TEST_SUITE("StrongTypeGenerator")
         }
     }
 
+    TEST_CASE("Hash Support")
+    {
+        SUBCASE("hash with int type") {
+            auto desc = make_description(
+                "struct",
+                "test",
+                "HashableInt",
+                "strong int; ==, hash");
+            auto code = generate_strong_type(desc);
+
+            CHECK(code.find("#include <functional>") != std::string::npos);
+            CHECK(code.find("template <>") != std::string::npos);
+            CHECK(code.find("struct std::hash<test::HashableInt>") != std::string::npos);
+            CHECK(code.find("constexpr std::size_t operator ()") != std::string::npos);
+        }
+
+        SUBCASE("hash with string type") {
+            auto desc = make_description(
+                "struct",
+                "test",
+                "HashableString",
+                "strong std::string; ==, hash");
+            auto code = generate_strong_type(desc);
+
+            CHECK(code.find("#include <functional>") != std::string::npos);
+            CHECK(code.find("struct std::hash<test::HashableString>") != std::string::npos);
+        }
+
+        SUBCASE("hash with namespaced type") {
+            auto desc = make_description(
+                "struct",
+                "my::deep::ns",
+                "HashableValue",
+                "strong unsigned; ==, hash");
+            auto code = generate_strong_type(desc);
+
+            CHECK(code.find("struct std::hash<my::deep::ns::HashableValue>") != std::string::npos);
+        }
+
+        SUBCASE("no hash without explicit option") {
+            auto desc = make_description(
+                "struct",
+                "test",
+                "NoHash",
+                "strong int; ==");
+            auto code = generate_strong_type(desc);
+
+            CHECK(code.find("struct std::hash<") == std::string::npos);
+            CHECK(code.find("template <>") == std::string::npos);
+        }
+
+        SUBCASE("no-constexpr-hash generates hash without constexpr") {
+            auto desc = make_description(
+                "struct",
+                "test",
+                "RuntimeHash",
+                "strong int; ==, no-constexpr-hash");
+            auto code = generate_strong_type(desc);
+
+            CHECK(code.find("#include <functional>") != std::string::npos);
+            CHECK(code.find("struct std::hash<test::RuntimeHash>") != std::string::npos);
+            // Should NOT have constexpr on hash operator
+            CHECK(code.find("constexpr std::size_t operator () (test::RuntimeHash") == std::string::npos);
+            // Should have non-constexpr version
+            CHECK(code.find("std::size_t operator () (test::RuntimeHash") != std::string::npos);
+        }
+
+        SUBCASE("regular hash has constexpr") {
+            auto desc = make_description(
+                "struct",
+                "test",
+                "ConstexprHash",
+                "strong int; ==, hash");
+            auto code = generate_strong_type(desc);
+
+            // Should have constexpr on hash operator
+            CHECK(code.find("constexpr std::size_t operator () (test::ConstexprHash") != std::string::npos);
+        }
+
+        SUBCASE("no-constexpr removes constexpr from hash too") {
+            auto desc = make_description(
+                "struct",
+                "test",
+                "NoConstexprWithHash",
+                "strong int; ==, hash, no-constexpr");
+            auto code = generate_strong_type(desc);
+
+            CHECK(code.find("struct std::hash<test::NoConstexprWithHash>") != std::string::npos);
+            // Should NOT have constexpr on hash operator
+            CHECK(code.find("constexpr std::size_t operator () (test::NoConstexprWithHash") == std::string::npos);
+            // Should NOT have constexpr on constructor either
+            CHECK(code.find("constexpr explicit NoConstexprWithHash") == std::string::npos);
+        }
+    }
+
     TEST_CASE("Property-Based Tests")
     {
         SUBCASE("generated code is valid C++ structure") {
