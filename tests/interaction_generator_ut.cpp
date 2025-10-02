@@ -141,7 +141,8 @@ TEST_SUITE("InteractionGenerator")
         // Check C++11 SFINAE version
         CHECK(contains(
             code,
-            "typename std::enable_if<std::is_floating_point_v<T>, bool>::type = true"));
+            "typename std::enable_if<std::is_floating_point_v<T>, bool>::type "
+            "= true"));
 
         // Check operator uses template parameter
         CHECK(contains(code, "operator*(Distance lhs, T rhs)"));
@@ -212,7 +213,8 @@ TEST_SUITE("InteractionGenerator")
         // Should have SFINAE version only (C++11 compatible)
         CHECK(contains(
             code,
-            "typename std::enable_if<std::is_integral_v<T>, bool>::type = true"));
+            "typename std::enable_if<std::is_integral_v<T>, bool>::type = "
+            "true"));
 
         // Should not have feature detection
         CHECK_FALSE(contains(code, "#if __cpp_concepts"));
@@ -747,19 +749,19 @@ TEST_SUITE("InteractionGenerator")
         {
             InteractionFileDescription desc{
                 .includes = {},
-                .interactions = {
-                    {.op_symbol = "+",
-                     .lhs_type = "MyType",
-                     .rhs_type = "external::OtherType",
-                     .result_type = "MyType",
-                     .symmetric = false,
-                     .lhs_is_template = false,
-                     .rhs_is_template = false,
-                     .is_constexpr = false,
-                     .interaction_namespace = "test",
-                     .lhs_value_access = "atlas::value",
-                     .rhs_value_access = ".getValue()",
-                     .value_access = ""}},
+                .interactions =
+                    {{.op_symbol = "+",
+                      .lhs_type = "MyType",
+                      .rhs_type = "external::OtherType",
+                      .result_type = "MyType",
+                      .symmetric = false,
+                      .lhs_is_template = false,
+                      .rhs_is_template = false,
+                      .is_constexpr = false,
+                      .interaction_namespace = "test",
+                      .lhs_value_access = "atlas::value",
+                      .rhs_value_access = ".getValue()",
+                      .value_access = ""}},
                 .guard_prefix = "",
                 .guard_separator = "_",
                 .upcase_guard = true};
@@ -767,28 +769,33 @@ TEST_SUITE("InteractionGenerator")
             auto code = generate_interactions(desc);
 
             // Should have non-constexpr atlas_value
-            CHECK(contains(code, "inline auto atlas_value(::external::OtherType const& v, value_tag)"));
+            CHECK(contains(
+                code,
+                "inline auto atlas_value(::external::OtherType const& v, "
+                "value_tag)"));
             // Should NOT have constexpr
-            CHECK_FALSE(contains(code, "inline constexpr auto atlas_value(::external::OtherType const& v, value_tag)"));
+            CHECK_FALSE(contains(
+                code,
+                "inline constexpr auto atlas_value(::external::OtherType "
+                "const& v, value_tag)"));
         }
 
-        SUBCASE("Constexpr interaction generates constexpr atlas_value")
-        {
+        SUBCASE("Constexpr interaction generates constexpr atlas_value") {
             InteractionFileDescription desc{
                 .includes = {},
-                .interactions = {
-                    {.op_symbol = "+",
-                     .lhs_type = "MyType",
-                     .rhs_type = "external::OtherType",
-                     .result_type = "MyType",
-                     .symmetric = false,
-                     .lhs_is_template = false,
-                     .rhs_is_template = false,
-                     .is_constexpr = true,
-                     .interaction_namespace = "test",
-                     .lhs_value_access = "atlas::value",
-                     .rhs_value_access = ".data",
-                     .value_access = ""}},
+                .interactions =
+                    {{.op_symbol = "+",
+                      .lhs_type = "MyType",
+                      .rhs_type = "external::OtherType",
+                      .result_type = "MyType",
+                      .symmetric = false,
+                      .lhs_is_template = false,
+                      .rhs_is_template = false,
+                      .is_constexpr = true,
+                      .interaction_namespace = "test",
+                      .lhs_value_access = "atlas::value",
+                      .rhs_value_access = ".data",
+                      .value_access = ""}},
                 .guard_prefix = "",
                 .guard_separator = "_",
                 .upcase_guard = true};
@@ -796,75 +803,92 @@ TEST_SUITE("InteractionGenerator")
             auto code = generate_interactions(desc);
 
             // Should have constexpr atlas_value
-            CHECK(contains(code, "inline constexpr auto atlas_value(::external::OtherType const& v, value_tag)"));
+            CHECK(contains(
+                code,
+                "inline constexpr auto atlas_value(::external::OtherType "
+                "const& v, value_tag)"));
         }
 
-        SUBCASE("Multiple interactions with same RHS type - any non-constexpr makes atlas_value non-constexpr")
+        SUBCASE("Multiple interactions with same RHS type - any non-constexpr "
+                "makes atlas_value non-constexpr")
         {
             InteractionFileDescription desc{
                 .includes = {},
-                .interactions = {
-                    {.op_symbol = "+",
-                     .lhs_type = "Type1",
-                     .rhs_type = "external::Shared",
-                     .result_type = "Type1",
-                     .symmetric = false,
-                     .lhs_is_template = false,
-                     .rhs_is_template = false,
-                     .is_constexpr = true,
-                     .interaction_namespace = "test",
-                     .lhs_value_access = "atlas::value",
-                     .rhs_value_access = ".getValue()",
-                     .value_access = ""},
-                    {.op_symbol = "-",
-                     .lhs_type = "Type2",
-                     .rhs_type = "external::Shared",
-                     .result_type = "Type2",
-                     .symmetric = false,
-                     .lhs_is_template = false,
-                     .rhs_is_template = false,
-                     .is_constexpr = false,
-                     .interaction_namespace = "test",
-                     .lhs_value_access = "atlas::value",
-                     .rhs_value_access = ".getValue()",
-                     .value_access = ""}},
+                .interactions =
+                    {{.op_symbol = "+",
+                      .lhs_type = "Type1",
+                      .rhs_type = "external::Shared",
+                      .result_type = "Type1",
+                      .symmetric = false,
+                      .lhs_is_template = false,
+                      .rhs_is_template = false,
+                      .is_constexpr = true,
+                      .interaction_namespace = "test",
+                      .lhs_value_access = "atlas::value",
+                      .rhs_value_access = ".getValue()",
+                      .value_access = ""},
+                     {.op_symbol = "-",
+                      .lhs_type = "Type2",
+                      .rhs_type = "external::Shared",
+                      .result_type = "Type2",
+                      .symmetric = false,
+                      .lhs_is_template = false,
+                      .rhs_is_template = false,
+                      .is_constexpr = false,
+                      .interaction_namespace = "test",
+                      .lhs_value_access = "atlas::value",
+                      .rhs_value_access = ".getValue()",
+                      .value_access = ""}},
                 .guard_prefix = "",
                 .guard_separator = "_",
                 .upcase_guard = true};
 
             auto code = generate_interactions(desc);
 
-            // Should have non-constexpr atlas_value because one interaction is non-constexpr
-            CHECK(contains(code, "inline auto atlas_value(::external::Shared const& v, value_tag)"));
-            CHECK_FALSE(contains(code, "inline constexpr auto atlas_value(::external::Shared const& v, value_tag)"));
+            // Should have non-constexpr atlas_value because one interaction is
+            // non-constexpr
+            CHECK(contains(
+                code,
+                "inline auto atlas_value(::external::Shared const& v, "
+                "value_tag)"));
+            CHECK_FALSE(contains(
+                code,
+                "inline constexpr auto atlas_value(::external::Shared const& "
+                "v, value_tag)"));
         }
 
-        SUBCASE("value_access fallback also respects is_constexpr")
-        {
+        SUBCASE("value_access fallback also respects is_constexpr") {
             InteractionFileDescription desc{
                 .includes = {},
-                .interactions = {
-                    {.op_symbol = "+",
-                     .lhs_type = "MyType",
-                     .rhs_type = "external::OtherType",
-                     .result_type = "MyType",
-                     .symmetric = false,
-                     .lhs_is_template = false,
-                     .rhs_is_template = false,
-                     .is_constexpr = false,
-                     .interaction_namespace = "test",
-                     .lhs_value_access = "atlas::value",
-                     .rhs_value_access = "",
-                     .value_access = ".data"}},
+                .interactions =
+                    {{.op_symbol = "+",
+                      .lhs_type = "MyType",
+                      .rhs_type = "external::OtherType",
+                      .result_type = "MyType",
+                      .symmetric = false,
+                      .lhs_is_template = false,
+                      .rhs_is_template = false,
+                      .is_constexpr = false,
+                      .interaction_namespace = "test",
+                      .lhs_value_access = "atlas::value",
+                      .rhs_value_access = "",
+                      .value_access = ".data"}},
                 .guard_prefix = "",
                 .guard_separator = "_",
                 .upcase_guard = true};
 
             auto code = generate_interactions(desc);
 
-            // Should have non-constexpr atlas_value when using value_access fallback
-            CHECK(contains(code, "inline auto atlas_value(::external::OtherType const& v, value_tag)"));
-            CHECK_FALSE(contains(code, "inline constexpr auto atlas_value(::external::OtherType const& v, value_tag)"));
+            // Should have non-constexpr atlas_value when using value_access
+            // fallback
+            CHECK(contains(
+                code,
+                "inline auto atlas_value(::external::OtherType const& v, "
+                "value_tag)"));
+            CHECK_FALSE(contains(
+                code,
+                "inline constexpr auto atlas_value(::external::OtherType "
+                "const& v, value_tag)"));
         }
     }
 }

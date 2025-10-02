@@ -395,10 +395,12 @@ value(T && t)
 
     // Collect RHS types that need custom atlas_value functions
     // Map: Fully qualified RHS type -> (value access expression, is_constexpr)
-    struct ValueAccessInfo {
+    struct ValueAccessInfo
+    {
         std::string access_expr;
         bool is_constexpr;
     };
+
     std::map<std::string, ValueAccessInfo> rhs_value_accessors;
 
     for (auto const & interaction : desc.interactions) {
@@ -436,7 +438,8 @@ value(T && t)
             if (it == rhs_value_accessors.end()) {
                 // First time seeing this type
                 rhs_value_accessors[fully_qualified_rhs] = ValueAccessInfo{
-                    value_access_expr, interaction.is_constexpr};
+                    value_access_expr,
+                    interaction.is_constexpr};
             } else {
                 // Type already exists - if ANY interaction is non-constexpr,
                 // the atlas_value must be non-constexpr
@@ -461,7 +464,8 @@ namespace atlas {
             if (info.is_constexpr) {
                 body << "constexpr ";
             }
-            body << "auto atlas_value(" << rhs_type << " const& v, value_tag)\n";
+            body << "auto atlas_value(" << rhs_type
+                << " const& v, value_tag)\n";
             body << "-> decltype("
                 << generate_value_access("v", info.access_expr, "") << ")\n";
             body << "{\n";

@@ -650,7 +650,8 @@ int main() {
                 "struct",
                 "complete::test",
                 "Comprehensive",
-                "strong int; +, -, ==, !=, <, <=>, ++, bool, out, no-constexpr-hash");
+                "strong int; +, -, ==, !=, <, <=>, ++, bool, out, "
+                "no-constexpr-hash");
             auto generated = generate_strong_type(desc);
 
             auto test_main = R"(
@@ -853,7 +854,9 @@ int main() {
 
             auto result = tester.compile_and_test(generated, test_main);
             CHECK(result.success);
-            CHECK(result.output.find("no-constexpr test passed") != std::string::npos);
+            CHECK(
+                result.output.find("no-constexpr test passed") !=
+                std::string::npos);
         }
 
         SUBCASE("no-constexpr with hash and bool") {
@@ -899,7 +902,9 @@ int main() {
 
             auto result = tester.compile_and_test(generated, test_main);
             CHECK(result.success);
-            CHECK(result.output.find("no-constexpr hash test passed") != std::string::npos);
+            CHECK(
+                result.output.find("no-constexpr hash test passed") !=
+                std::string::npos);
         }
 
         SUBCASE("no-constexpr with complex type") {
@@ -912,7 +917,8 @@ int main() {
 
             // Verify no constexpr keywords in code
             CHECK(generated.find("constexpr explicit") == std::string::npos);
-            CHECK(generated.find("constexpr StringWrapper") == std::string::npos);
+            CHECK(
+                generated.find("constexpr StringWrapper") == std::string::npos);
             CHECK(generated.find("constexpr bool") == std::string::npos);
 
             auto test_main = R"(
@@ -938,7 +944,9 @@ int main() {
 
             auto result = tester.compile_and_test(generated, test_main);
             CHECK(result.success);
-            CHECK(result.output.find("no-constexpr string test passed") != std::string::npos);
+            CHECK(
+                result.output.find("no-constexpr string test passed") !=
+                std::string::npos);
         }
 
         SUBCASE("no-constexpr-hash with everything else constexpr") {
@@ -950,13 +958,22 @@ int main() {
             auto generated = generate_strong_type(desc);
 
             // Verify regular operations have constexpr
-            CHECK(generated.find("constexpr explicit Value") != std::string::npos);
-            CHECK(generated.find("constexpr Value & operator +=") != std::string::npos);
-            CHECK(generated.find("constexpr bool operator ==") != std::string::npos);
+            CHECK(
+                generated.find("constexpr explicit Value") !=
+                std::string::npos);
+            CHECK(
+                generated.find("constexpr Value & operator +=") !=
+                std::string::npos);
+            CHECK(
+                generated.find("constexpr bool operator ==") !=
+                std::string::npos);
 
             // Verify hash does NOT have constexpr
-            CHECK(generated.find("constexpr std::size_t operator ()") == std::string::npos);
-            CHECK(generated.find("std::size_t operator ()") != std::string::npos);
+            CHECK(
+                generated.find("constexpr std::size_t operator ()") ==
+                std::string::npos);
+            CHECK(
+                generated.find("std::size_t operator ()") != std::string::npos);
 
             auto test_main = R"(
 #include <functional>
@@ -984,7 +1001,9 @@ int main() {
 
             auto result = tester.compile_and_test(generated, test_main);
             CHECK(result.success);
-            CHECK(result.output.find("no-constexpr-hash test passed") != std::string::npos);
+            CHECK(
+                result.output.find("no-constexpr-hash test passed") !=
+                std::string::npos);
         }
 
         SUBCASE("std::string with no-constexpr") {
@@ -996,9 +1015,15 @@ int main() {
             auto generated = generate_strong_type(desc);
 
             // Verify NO constexpr anywhere
-            CHECK(generated.find("constexpr explicit StringId") == std::string::npos);
-            CHECK(generated.find("constexpr bool operator ==") == std::string::npos);
-            CHECK(generated.find("constexpr std::size_t operator ()") == std::string::npos);
+            CHECK(
+                generated.find("constexpr explicit StringId") ==
+                std::string::npos);
+            CHECK(
+                generated.find("constexpr bool operator ==") ==
+                std::string::npos);
+            CHECK(
+                generated.find("constexpr std::size_t operator ()") ==
+                std::string::npos);
 
             auto test_main = R"(
 #include <string>
@@ -1029,7 +1054,9 @@ int main() {
 
             auto result = tester.compile_and_test(generated, test_main);
             CHECK(result.success);
-            CHECK(result.output.find("string no-constexpr test passed") != std::string::npos);
+            CHECK(
+                result.output.find("string no-constexpr test passed") !=
+                std::string::npos);
         }
 
         SUBCASE("verify hash code generation") {
@@ -1041,10 +1068,15 @@ int main() {
             auto generated = generate_strong_type(desc);
 
             // Just verify correct code generation, don't compile
-            CHECK(generated.find("struct std::hash<codegen_test::Value>") != std::string::npos);
-            CHECK(generated.find("std::size_t operator ()") != std::string::npos);
+            CHECK(
+                generated.find("struct std::hash<codegen_test::Value>") !=
+                std::string::npos);
+            CHECK(
+                generated.find("std::size_t operator ()") != std::string::npos);
             // Should NOT have constexpr since we used no-constexpr
-            CHECK(generated.find("constexpr std::size_t operator ()") == std::string::npos);
+            CHECK(
+                generated.find("constexpr std::size_t operator ()") ==
+                std::string::npos);
         }
     }
 
@@ -1402,7 +1434,8 @@ int main() {
             auto result = tester.compile_and_test(generated, test_main);
             CHECK(result.success);
             CHECK(
-                result.output.find("Default value initialization test passed") !=
+                result.output.find(
+                    "Default value initialization test passed") !=
                 std::string::npos);
         }
 
