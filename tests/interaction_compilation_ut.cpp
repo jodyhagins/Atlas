@@ -259,7 +259,7 @@ namespace external {
         auto interaction_code = gen(interaction_desc);
 
         // Verify atlas_value was generated for external::Delta
-        CHECK(interaction_code.find("atlas_value(external::Delta const& v, value_tag)") != std::string::npos);
+        CHECK(interaction_code.find("atlas_value(::external::Delta const& v, value_tag)") != std::string::npos);
         CHECK(interaction_code.find("v.getValue()") != std::string::npos);
 
         std::string test_program = R"(
@@ -413,7 +413,7 @@ namespace external {
         auto interaction_code = gen(interaction_desc);
 
         // Verify atlas_value was generated for external::Offset using .data
-        CHECK(interaction_code.find("atlas_value(external::Offset const& v, value_tag)") != std::string::npos);
+        CHECK(interaction_code.find("atlas_value(::external::Offset const& v, value_tag)") != std::string::npos);
         CHECK(interaction_code.find("v.data") != std::string::npos);
 
         std::string test_program = R"(

@@ -4,6 +4,7 @@
 // See accompanying file LICENSE or copy at
 // https://opensource.org/licenses/MIT
 // ----------------------------------------------------------------------
+#include "AtlasUtilities.hpp"
 #include "StrongTypeGenerator.hpp"
 
 #include <boost/describe.hpp>
@@ -76,18 +77,6 @@ constexpr char notice_banner[] = R"(
 auto strong_template = R"({{#includes}}
 #include {{{.}}}
 {{/includes}}
-
-#ifndef WJH_ATLAS_34E45276DD204E33A734018DE4B04C40
-#define WJH_ATLAS_34E45276DD204E33A734018DE4B04C40
-namespace atlas {
-struct strong_type_tag
-{
-    friend auto
-    operator<=>(strong_type_tag const&, strong_type_tag const&) = default;
-};
-}
-#endif // WJH_ATLAS_34E45276DD204E33A734018DE4B04C40
-
 {{#class_namespace}}
 
 namespace {{{.}}} {
@@ -530,27 +519,27 @@ constexpr bool
 is_arithmetic_binary_operator(std::string_view sv)
 {
     return std::find(
-        arithmetic_binary_op_tags.begin(),
-        arithmetic_binary_op_tags.end(),
-        sv) != arithmetic_binary_op_tags.end();
+               arithmetic_binary_op_tags.begin(),
+               arithmetic_binary_op_tags.end(),
+               sv) != arithmetic_binary_op_tags.end();
 }
 
 constexpr bool
 is_arithmetic_unary_operator(std::string_view sv)
 {
     return std::find(
-        arithmetic_unary_operators.begin(),
-        arithmetic_unary_operators.end(),
-        sv) != arithmetic_unary_operators.end();
+               arithmetic_unary_operators.begin(),
+               arithmetic_unary_operators.end(),
+               sv) != arithmetic_unary_operators.end();
 }
 
 constexpr bool
 is_relational_operator(std::string_view sv)
 {
     return std::find(
-        relational_operators.begin(),
-        relational_operators.end(),
-        sv) != relational_operators.end();
+               relational_operators.begin(),
+               relational_operators.end(),
+               sv) != relational_operators.end();
 }
 
 // Default predicate for strip - checks if character is whitespace
@@ -907,8 +896,9 @@ operator () (StrongTypeDescription const & desc) const
     std::stringstream strm;
     strm << (notice_banner + 1) << '\n'
         << "#ifndef " << guard << '\n'
-        << "#define " << guard << '\n'
-        << code << "#endif // " << guard << '\n';
+        << "#define " << guard << "\n\n"
+        << strong_type_tag_definition() << code << "#endif // " << guard
+        << '\n';
     return strm.str();
 }
 
@@ -966,12 +956,65 @@ generate_strong_types_file(
                     }
                 }
 
+                // Skip the strong_type_tag definition block if present
+                // It starts with the conditional #include <compare> and then
+                // the tag definition
+                auto content_pos = includes_end;
+                while (content_pos < type_code.size() &&
+                       std::isspace(type_code[content_pos]))
+                {
+                    ++content_pos;
+                }
+
+                // Check for conditional include <compare> before
+                // strong_type_tag
+                if (type_code.substr(content_pos, 5) == "#if d") {
+                    // Look for the #endif of this conditional include
+                    auto endif_pos = type_code.find("#endif\n", content_pos);
+                    if (endif_pos != std::string::npos) {
+                        content_pos = endif_pos + 7; // Skip "#endif\n"
+
+                        // Skip whitespace
+                        while (content_pos < type_code.size() &&
+                               std::isspace(type_code[content_pos]))
+                        {
+                            ++content_pos;
+                        }
+                    }
+                }
+
+                // Now check for strong_type_tag block
+                if (type_code.substr(content_pos, 7) == "#ifndef") {
+                    auto tag_ifndef_end = type_code.find('\n', content_pos);
+                    if (tag_ifndef_end != std::string::npos &&
+                        type_code
+                                .substr(
+                                    content_pos,
+                                    tag_ifndef_end - content_pos)
+                                .find("WJH_ATLAS_"
+                                      "34E45276DD204E33A734018DE4B04C40") !=
+                            std::string::npos)
+                    {
+                        // This is the strong_type_tag block, skip it
+                        auto tag_endif = type_code.find(
+                            "#endif // "
+                            "WJH_ATLAS_34E45276DD204E33A734018DE4B04C40",
+                            content_pos);
+                        if (tag_endif != std::string::npos) {
+                            content_pos = type_code.find('\n', tag_endif);
+                            if (content_pos != std::string::npos) {
+                                ++content_pos;
+                            }
+                        }
+                    }
+                }
+
                 auto endif_pos = type_code.rfind("#endif");
                 if (endif_pos != std::string::npos) {
-                    // Extract content after includes
+                    // Extract content after includes and strong_type_tag
                     std::string content = type_code.substr(
-                        includes_end,
-                        endif_pos - includes_end);
+                        content_pos,
+                        endif_pos - content_pos);
                     combined_code << content;
                 }
             }
@@ -1008,6 +1051,8 @@ generate_strong_types_file(
         output << '\n';
     }
 
+    // Add strong_type_tag definition once for the entire file
+    output << strong_type_tag_definition();
     output << content << "#endif // " << guard << '\n';
 
     return output.str();

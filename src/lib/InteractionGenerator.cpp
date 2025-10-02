@@ -21,53 +21,50 @@ namespace {
 
 // Template for generic compound assignment operator (ONE for all interactions)
 // Two overloads with priority via tag dispatch:
-// 1. If wrapped values support compound assignment, use it (optimized, no temporary)
+// 1. If wrapped values support compound assignment, use it (optimized, no
+// temporary)
 // 2. Otherwise fall back to binary operator + assignment (creates temporary)
 static constexpr char const compound_operator_template[] = R"(
 namespace atlas_detail {
-    // Helper to detect if compound assignment is supported
-    template<typename L, typename R, typename = void>
-    struct has_compound_op_{{{op_id}}} : std::false_type {};
+template<typename L, typename R, typename = void>
+struct has_compound_op_{{{op_id}}} : std::false_type {};
 
-    template<typename L, typename R>
-    struct has_compound_op_{{{op_id}}}<L, R,
-        decltype((void)(atlas::value(std::declval<L&>()) {{{compound_op}}}
-            atlas::value(std::declval<R const&>())))>
-    : std::true_type {};
+template<typename L, typename R>
+struct has_compound_op_{{{op_id}}}<L, R,
+    decltype((void)(atlas::value(std::declval<L&>()) {{{compound_op}}}
+        atlas::value(std::declval<R const&>())))>
+: std::true_type {};
 
-    // Optimized version: use compound assignment on wrapped values directly
-    template<typename L, typename R>
-    inline auto compound_assign_impl_{{{op_id}}}(L & lhs, R const & rhs, std::true_type)
-    -> L &
-    {
-        atlas::value(lhs) {{{compound_op}}} atlas::value(rhs);
-        return lhs;
-    }
-
-    // Fallback version: use binary operator and assignment
-    template<typename L, typename R>
-    inline auto compound_assign_impl_{{{op_id}}}(L & lhs, R const & rhs, std::false_type)
-    -> L &
-    {
-        atlas::value(lhs) = atlas::value(lhs {{{binary_op}}} rhs);
-        return lhs;
-    }
+template<typename L, typename R>
+constexpr L &
+compound_assign_impl_{{{op_id}}}(L & lhs, R const & rhs, std::true_type)
+{
+    atlas::value(lhs) {{{compound_op}}} atlas::value(rhs);
+    return lhs;
 }
 
-    // Public interface
-    template<
-        typename L,
-        typename R,
-        typename std::enable_if<
-            std::is_base_of<atlas::strong_type_tag, L>::value,
-            bool>::type = true>
-    inline auto operator{{{compound_op}}}(L & lhs, R const & rhs)
-    -> decltype(atlas_detail::compound_assign_impl_{{{op_id}}}(lhs, rhs,
-        atlas_detail::has_compound_op_{{{op_id}}}<L, R>{}))
-    {
-        return atlas_detail::compound_assign_impl_{{{op_id}}}(lhs, rhs,
-            atlas_detail::has_compound_op_{{{op_id}}}<L, R>{});
-    }
+template<typename L, typename R>
+constexpr L &
+compound_assign_impl_{{{op_id}}}(L & lhs, R const & rhs, std::false_type)
+{
+    atlas::value(lhs) = atlas::value(lhs {{{binary_op}}} rhs);
+    return lhs;
+}
+}
+
+template<
+    typename L,
+    typename R,
+    typename std::enable_if<
+        std::is_base_of<atlas::strong_type_tag, L>::value,
+        bool>::type = true>
+inline auto operator{{{compound_op}}}(L & lhs, R const & rhs)
+-> decltype(atlas_detail::compound_assign_impl_{{{op_id}}}(lhs, rhs,
+    atlas_detail::has_compound_op_{{{op_id}}}<L, R>{}))
+{
+    return atlas_detail::compound_assign_impl_{{{op_id}}}(lhs, rhs,
+        atlas_detail::has_compound_op_{{{op_id}}}<L, R>{});
+}
 )";
 
 std::string
@@ -191,6 +188,8 @@ generate_operator_function(
         }
         auto constraint = constraints.at(rhs_type);
         oss << generate_template_header(constraint, "T");
+    } else {
+        oss << "inline ";
     }
 
     // Generate function signature
@@ -198,7 +197,7 @@ generate_operator_function(
         oss << "constexpr ";
     }
 
-    oss << interaction.result_type << " operator" << interaction.op_symbol
+    oss << interaction.result_type << "\noperator" << interaction.op_symbol
         << "(";
 
     // Determine actual parameter types
@@ -249,10 +248,6 @@ operator () (InteractionFileDescription const & desc) const
         }
     }
 
-    if (not desc.includes.empty()) {
-        body << "\n";
-    }
-
     // Always include <type_traits> and <utility> for atlas::value
     // Embed atlas::value implementation
     body << R"(
@@ -262,19 +257,11 @@ operator () (InteractionFileDescription const & desc) const
 #ifndef WJH_ATLAS_50E620B544874CB8BE4412EE6773BF90
 #define WJH_ATLAS_50E620B544874CB8BE4412EE6773BF90
 
-#include <type_traits>
+)" << strong_type_tag_definition()
+        << R"(#include <type_traits>
 #include <utility>
 
 namespace atlas {
-
-#ifndef WJH_ATLAS_34E45276DD204E33A734018DE4B04C40
-#define WJH_ATLAS_34E45276DD204E33A734018DE4B04C40
-struct strong_type_tag
-{
-    friend auto
-    operator<=>(strong_type_tag const &, strong_type_tag const &) = default;
-};
-#endif // WJH_ATLAS_34E45276DD204E33A734018DE4B04C40
 
 struct value_tag {};
 
@@ -335,22 +322,6 @@ value(T & val, PriorityTag<0>)
     return val;
 }
 
-template <typename T>
-constexpr auto
-value(T const & t, PriorityTag<1>)
--> decltype(atlas_value(t, atlas::value_tag{}))
-{
-    return atlas_value(t, atlas::value_tag{});
-}
-
-template <typename T>
-constexpr auto
-value(T const & t, PriorityTag<2>)
--> decltype(atlas_value(t))
-{
-    return atlas_value(t);
-}
-
 template <typename T, typename U = typename T::atlas_value_type>
 using val_t = _t<std::conditional<
     std::is_const<T>::value,
@@ -359,10 +330,26 @@ using val_t = _t<std::conditional<
 
 template <typename T, typename U = val_t<T>>
 constexpr auto
-value(T & val, PriorityTag<3>)
+value(T & val, PriorityTag<1>)
 -> decltype(atlas::atlas_detail::value(static_cast<U>(val), value_tag{}))
 {
     return atlas::atlas_detail::value(static_cast<U>(val), value_tag{});
+}
+
+template <typename T>
+constexpr auto
+value(T const & t, PriorityTag<2>)
+-> decltype(atlas_value(t, atlas::value_tag{}))
+{
+    return atlas_value(t, atlas::value_tag{});
+}
+
+template <typename T>
+constexpr auto
+value(T const & t, PriorityTag<3>)
+-> decltype(atlas_value(t))
+{
+    return atlas_value(t);
 }
 
 class Value
@@ -414,18 +401,28 @@ value(T && t)
         // Build fully qualified RHS type name
         std::string fully_qualified_rhs = interaction.rhs_type;
         if (not interaction.interaction_namespace.empty() &&
-            fully_qualified_rhs.find("::") == std::string::npos) {
+            fully_qualified_rhs.find("::") == std::string::npos)
+        {
             // RHS is unqualified - prepend the interaction namespace
-            fully_qualified_rhs = interaction.interaction_namespace + "::" + interaction.rhs_type;
+            fully_qualified_rhs = interaction.interaction_namespace +
+                "::" + interaction.rhs_type;
+        }
+        if (not fully_qualified_rhs.starts_with("::")) {
+            fully_qualified_rhs = "::" + fully_qualified_rhs;
         }
 
-        // Only generate if RHS has a custom value access that's not atlas::value
+        // Only generate if RHS has a custom value access that's not
+        // atlas::value
         if (not interaction.rhs_value_access.empty() &&
-            interaction.rhs_value_access != "atlas::value") {
-            rhs_value_accessors[fully_qualified_rhs] = interaction.rhs_value_access;
-        } else if (not interaction.value_access.empty() &&
-                   interaction.value_access != "atlas::value" &&
-                   interaction.rhs_value_access.empty()) {
+            interaction.rhs_value_access != "atlas::value")
+        {
+            rhs_value_accessors[fully_qualified_rhs] =
+                interaction.rhs_value_access;
+        } else if (
+            not interaction.value_access.empty() &&
+            interaction.value_access != "atlas::value" &&
+            interaction.rhs_value_access.empty())
+        {
             // Fallback to value_access if rhs_value_access not specified
             rhs_value_accessors[fully_qualified_rhs] = interaction.value_access;
         }
@@ -442,10 +439,12 @@ namespace atlas {
 
         for (auto const & [rhs_type, value_access] : rhs_value_accessors) {
             body << "inline constexpr auto atlas_value(" << rhs_type
-                 << " const& v, value_tag)\n";
-            body << "-> decltype(" << generate_value_access("v", value_access, "") << ")\n";
+                << " const& v, value_tag)\n";
+            body << "-> decltype("
+                << generate_value_access("v", value_access, "") << ")\n";
             body << "{\n";
-            body << "    return " << generate_value_access("v", value_access, "") << ";\n";
+            body << "    return "
+                << generate_value_access("v", value_access, "") << ";\n";
             body << "}\n\n";
         }
 

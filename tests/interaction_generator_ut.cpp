@@ -69,7 +69,7 @@ TEST_SUITE("InteractionGenerator")
         // Check operator signature
         CHECK(contains(
             code,
-            "constexpr Distance operator*(Velocity lhs, Time rhs)"));
+            "constexpr Distance\noperator*(Velocity lhs, Time rhs)"));
 
         // Check operator body uses atlas::value
         CHECK(contains(code, "atlas::value(lhs) * atlas::value(rhs)"));
@@ -278,7 +278,7 @@ TEST_SUITE("InteractionGenerator")
         auto code = generate_interactions(desc);
 
         // Find the operator line - should not have constexpr before it
-        auto op_pos = code.find("BigNumber operator+");
+        auto op_pos = code.find("BigNumber\noperator+");
         CHECK(op_pos != std::string::npos);
 
         // Get the line containing the operator
@@ -428,9 +428,9 @@ TEST_SUITE("InteractionGenerator")
         auto code = generate_interactions(desc);
 
         // Check all three operators are present
-        CHECK(contains(code, "Distance operator*(Velocity lhs, Time rhs)"));
-        CHECK(contains(code, "Velocity operator/(Distance lhs, Time rhs)"));
-        CHECK(contains(code, "double operator/(Distance lhs, Distance rhs)"));
+        CHECK(contains(code, "Distance\noperator*(Velocity lhs, Time rhs)"));
+        CHECK(contains(code, "Velocity\noperator/(Distance lhs, Time rhs)"));
+        CHECK(contains(code, "double\noperator/(Distance lhs, Distance rhs)"));
 
         // Check custom guard prefix
         CHECK(contains(code, "PHYSICS_OPS_"));
@@ -458,7 +458,7 @@ TEST_SUITE("InteractionGenerator")
 
         // Should not have namespace declaration for empty namespace
         CHECK_FALSE(contains(code, "namespace  {"));
-        CHECK(contains(code, "C operator+(A lhs, B rhs)"));
+        CHECK(contains(code, "C\noperator+(A lhs, B rhs)"));
     }
 
     TEST_CASE("Header guard customization")
@@ -682,7 +682,7 @@ TEST_SUITE("InteractionGenerator")
             auto code = generate_interactions(desc);
 
             // Find the operator line
-            auto op_pos = code.find("TypeC operator+(TypeA lhs, TypeB rhs)");
+            auto op_pos = code.find("TypeC\noperator+(TypeA lhs, TypeB rhs)");
             RC_ASSERT(op_pos != std::string::npos);
 
             // Get some context before the operator
