@@ -22,21 +22,11 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
-# Compiler warning flags - only for our own targets (not third-party)
-set(ATLAS_WARNING_FLAGS "")
-if(MSVC)
-    set(ATLAS_WARNING_FLAGS /W4 /WX)
-else()
-    set(ATLAS_WARNING_FLAGS -Wall -Wextra -Wpedantic -Werror)
-    # Disable specific warnings for compatibility with older compilers
-    # Boost Describe uses GNU zero-variadic-macro-arguments extension
-    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-        list(APPEND ATLAS_WARNING_FLAGS -Wno-gnu-zero-variadic-macro-arguments)
-    endif()
-endif()
-
 # Include standard installation directories
 include(GNUInstallDirs)
+
+# Include compiler warning configuration
+include(cmake/CompilerWarnings.cmake)
 
 # Include FetchContent module
 include(FetchContent)
@@ -99,10 +89,8 @@ target_link_libraries(atlas_lib
         Boost::uuid
 )
 
-target_compile_options(atlas_lib
-    PUBLIC
-        ${ATLAS_WARNING_FLAGS}
-)
+# Apply compiler warnings to library
+target_apply_atlas_warnings(atlas_lib)
 
 # Add boost and mustache include directories
 target_include_directories(atlas_lib
@@ -117,6 +105,13 @@ target_sources(atlas_lib
         ${boost_mustache_SOURCE_DIR}/src/renderer.cpp
 )
 
+# Disable strict warnings for third-party mustache source
+set_source_files_properties(
+    ${boost_mustache_SOURCE_DIR}/src/renderer.cpp
+    PROPERTIES
+        COMPILE_FLAGS "-Wno-covered-switch-default -Wno-sign-conversion"
+)
+
 add_executable(atlas
     src/tools/atlas.cpp
 )
@@ -128,6 +123,9 @@ target_link_libraries(atlas
     PRIVATE
         atlas_lib
 )
+
+# Apply compiler warnings to executable
+target_apply_atlas_warnings(atlas)
 
 # Export the atlas executable location for downstream users
 set(Atlas_EXECUTABLE $<TARGET_FILE:atlas> CACHE INTERNAL "Path to atlas executable")

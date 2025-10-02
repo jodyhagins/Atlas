@@ -491,12 +491,12 @@ parse_interaction_file(std::string const & filename)
     };
 
     // Helper to extract value after '='
-    auto extract_after_equals = [](std::string const & line) -> std::string {
-        auto pos = line.find('=');
+    auto extract_after_equals = [](std::string const & str) -> std::string {
+        auto pos = str.find('=');
         if (pos == std::string::npos) {
             return "";
         }
-        return trim(line.substr(pos + 1));
+        return trim(str.substr(pos + 1));
     };
 
     // State tracking

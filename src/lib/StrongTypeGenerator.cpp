@@ -434,8 +434,8 @@ struct Operator
 {
     std::string_view op;
 
-    explicit Operator(std::string_view op)
-    : op(op)
+    explicit Operator(std::string_view op_)
+    : op(op_)
     { }
 
     friend bool operator < (Operator const & x, Operator const & y)
@@ -545,7 +545,10 @@ is_relational_operator(std::string_view sv)
 // Default predicate for strip - checks if character is whitespace
 struct IsSpacePred
 {
-    bool operator () (unsigned u) const { return std::isspace(u); }
+    bool operator () (unsigned char u) const
+    {
+        return std::isspace(static_cast<int>(u));
+    }
 };
 
 template <typename PredT = IsSpacePred>
@@ -553,10 +556,14 @@ std::string_view
 strip(std::string_view sv, PredT pred = PredT{})
 {
     auto result = sv;
-    while (not result.empty() && pred(result.front())) {
+    while (not result.empty() &&
+           pred(static_cast<unsigned char>(result.front())))
+    {
         result.remove_prefix(1);
     }
-    while (not result.empty() && pred(result.back())) {
+    while (not result.empty() &&
+           pred(static_cast<unsigned char>(result.back())))
+    {
         result.remove_suffix(1);
     }
     return result;
@@ -578,7 +585,7 @@ split(std::string_view sv, char sep)
 }
 
 inline constexpr auto stripns = [](auto sv) {
-    return strip(sv, [](unsigned c) { return c == ':'; });
+    return strip(sv, [](unsigned char c) { return c == ':'; });
 };
 
 ClassInfo
