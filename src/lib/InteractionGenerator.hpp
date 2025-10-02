@@ -26,20 +26,20 @@ struct TypeConstraint
     /**
      * Unique name/identifier for this constraint (e.g., "std::floating_point")
      */
-    std::string name;
+    std::string name = "";
 
     /**
      * C++20 concept expression (e.g., "std::floating_point")
      * Used in: template<std::floating_point T>
      */
-    std::string concept_expr;
+    std::string concept_expr = "";
 
     /**
      * C++17 SFINAE expression (e.g., "std::is_floating_point_v<T>")
      * Used in: template<typename T,
      * std::enable_if_t<std::is_floating_point_v<T>, bool> = true>
      */
-    std::string enable_if_expr;
+    std::string enable_if_expr = "";
 
     /**
      * Whether a C++20 concept expression was provided
@@ -108,21 +108,21 @@ struct InteractionDescription
     /**
      * Namespace for this interaction
      */
-    std::string interaction_namespace;
+    std::string interaction_namespace = "";
 
     /**
      * Method to access underlying value for LHS type
      * Examples: "atlas::value", ".value", "get_value"
      * If empty, falls back to value_access
      */
-    std::string lhs_value_access;
+    std::string lhs_value_access = "";
 
     /**
      * Method to access underlying value for RHS type
      * Examples: "atlas::value", ".value", "get_value"
      * If empty, falls back to value_access
      */
-    std::string rhs_value_access;
+    std::string rhs_value_access = "";
 
     /**
      * Default method to access underlying value of types
@@ -130,7 +130,7 @@ struct InteractionDescription
      * Examples: "atlas::value", ".value", "get_value"
      * If empty, uses atlas::value
      */
-    std::string value_access;
+    std::string value_access = "";
 };
 
 /**
@@ -145,19 +145,19 @@ struct InteractionFileDescription
      * Include directives to emit at the top of the generated file
      * Examples: "Distance.hpp", "<concepts>", "<atlas/value.hpp>"
      */
-    std::vector<std::string> includes;
+    std::vector<std::string> includes = {};
 
     /**
      * Map of constraint name to constraint definition
      * Key: constraint name (e.g., "std::floating_point")
      * Value: TypeConstraint with concept and/or enable_if expressions
      */
-    std::map<std::string, TypeConstraint> constraints;
+    std::map<std::string, TypeConstraint> constraints = {};
 
     /**
      * List of all operator interactions to generate
      */
-    std::vector<InteractionDescription> interactions;
+    std::vector<InteractionDescription> interactions = {};
 
     /**
      * Prefix for the header guard (empty = use "ATLAS")

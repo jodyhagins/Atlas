@@ -100,20 +100,20 @@ struct Discount
         // Generate interactions with binary operators
         InteractionFileDescription interaction_desc{
             .includes = {},
+            .interactions = {
+                {.op_symbol = "+",
+                 .lhs_type = "Price",
+                 .rhs_type = "Discount",
+                 .result_type = "Price",
+                 .symmetric = false,
+                 .lhs_is_template = false,
+                 .rhs_is_template = false,
+                 .is_constexpr = true,
+                 .interaction_namespace = "test",
+                 .rhs_value_access = ".value"}},
             .guard_prefix = "TEST",
             .guard_separator = "_",
-            .upcase_guard = true,
-            .interactions = {
-                {.lhs_type = "Price",
-                 .lhs_is_template = false,
-                 .op_symbol = "+",
-                 .rhs_type = "Discount",
-                 .rhs_is_template = false,
-                 .result_type = "Price",
-                 .interaction_namespace = "test",
-                 .is_constexpr = true,
-                 .symmetric = false,
-                 .rhs_value_access = ".value"}}};
+            .upcase_guard = true};
 
         InteractionGenerator gen;
         auto interaction_code = gen(interaction_desc);
@@ -170,22 +170,22 @@ namespace external {
         // Generate interaction with different value access for each operand
         InteractionFileDescription interaction_desc{
             .includes = {},
-            .guard_prefix = "TEST",
-            .guard_separator = "_",
-            .upcase_guard = true,
             .interactions = {
-                {.lhs_type = "AtlasValue",
-                 .lhs_is_template = false,
-                 .op_symbol = "+",
+                {.op_symbol = "+",
+                 .lhs_type = "AtlasValue",
                  .rhs_type = "external::LibValue",
-                 .rhs_is_template = false,
                  .result_type = "AtlasValue",
-                 .interaction_namespace = "mylib",
-                 .is_constexpr = false,
                  .symmetric = false,
+                 .lhs_is_template = false,
+                 .rhs_is_template = false,
+                 .is_constexpr = false,
+                 .interaction_namespace = "mylib",
                  .lhs_value_access = "atlas::value",
                  .rhs_value_access = ".getValue()",
-                 .value_access = ""}}};
+                 .value_access = ""}},
+            .guard_prefix = "TEST",
+            .guard_separator = "_",
+            .upcase_guard = true};
 
         InteractionGenerator gen;
         auto interaction_code = gen(interaction_desc);
@@ -238,22 +238,22 @@ namespace external {
         // Generate interaction with custom RHS value access
         InteractionFileDescription interaction_desc{
             .includes = {},
-            .guard_prefix = "TEST",
-            .guard_separator = "_",
-            .upcase_guard = true,
             .interactions = {
-                {.lhs_type = "Counter",
-                 .lhs_is_template = false,
-                 .op_symbol = "+",
+                {.op_symbol = "+",
+                 .lhs_type = "Counter",
                  .rhs_type = "external::Delta",
-                 .rhs_is_template = false,
                  .result_type = "Counter",
-                 .interaction_namespace = "mylib",
-                 .is_constexpr = false,
                  .symmetric = false,
+                 .lhs_is_template = false,
+                 .rhs_is_template = false,
+                 .is_constexpr = false,
+                 .interaction_namespace = "mylib",
                  .lhs_value_access = "atlas::value",
                  .rhs_value_access = ".getValue()",
-                 .value_access = ""}}};
+                 .value_access = ""}},
+            .guard_prefix = "TEST",
+            .guard_separator = "_",
+            .upcase_guard = true};
 
         InteractionGenerator gen;
         auto interaction_code = gen(interaction_desc);
@@ -320,22 +320,22 @@ namespace atlas {
         // Generate interaction that would normally use .data
         InteractionFileDescription interaction_desc{
             .includes = {},
-            .guard_prefix = "TEST",
-            .guard_separator = "_",
-            .upcase_guard = true,
             .interactions = {
-                {.lhs_type = "Value",
-                 .lhs_is_template = false,
-                 .op_symbol = "+",
+                {.op_symbol = "+",
+                 .lhs_type = "Value",
                  .rhs_type = "external::CustomType",
-                 .rhs_is_template = false,
                  .result_type = "Value",
-                 .interaction_namespace = "mylib",
-                 .is_constexpr = false,
                  .symmetric = false,
+                 .lhs_is_template = false,
+                 .rhs_is_template = false,
+                 .is_constexpr = false,
+                 .interaction_namespace = "mylib",
                  .lhs_value_access = "atlas::value",
                  .rhs_value_access = ".data",  // We specify .data
-                 .value_access = ""}}};
+                 .value_access = ""}},
+            .guard_prefix = "TEST",
+            .guard_separator = "_",
+            .upcase_guard = true};
 
         InteractionGenerator gen;
         auto interaction_code = gen(interaction_desc);
@@ -392,22 +392,22 @@ namespace external {
         // Use value_access (not rhs_value_access) - should still generate atlas_value
         InteractionFileDescription interaction_desc{
             .includes = {},
-            .guard_prefix = "TEST",
-            .guard_separator = "_",
-            .upcase_guard = true,
             .interactions = {
-                {.lhs_type = "Amount",
-                 .lhs_is_template = false,
-                 .op_symbol = "+",
+                {.op_symbol = "+",
+                 .lhs_type = "Amount",
                  .rhs_type = "external::Offset",
-                 .rhs_is_template = false,
                  .result_type = "Amount",
-                 .interaction_namespace = "mylib",
-                 .is_constexpr = false,
                  .symmetric = false,
+                 .lhs_is_template = false,
+                 .rhs_is_template = false,
+                 .is_constexpr = false,
+                 .interaction_namespace = "mylib",
                  .lhs_value_access = "atlas::value",  // Explicit for LHS
                  .rhs_value_access = "",  // Empty - will fall back to value_access
-                 .value_access = ".data"}}};  // This should apply to RHS when rhs_value_access is empty
+                 .value_access = ".data"}},  // This should apply to RHS when rhs_value_access is empty
+            .guard_prefix = "TEST",
+            .guard_separator = "_",
+            .upcase_guard = true};
 
         InteractionGenerator gen;
         auto interaction_code = gen(interaction_desc);
