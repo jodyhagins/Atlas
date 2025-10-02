@@ -8,6 +8,9 @@
 #include "AtlasCommandLine.hpp"
 #include "doctest.hpp"
 
+#include <filesystem>
+#include <fstream>
+
 using namespace wjh::atlas;
 
 namespace {
