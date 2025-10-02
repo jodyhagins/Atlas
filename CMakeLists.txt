@@ -105,11 +105,11 @@ target_sources(atlas_lib
         ${boost_mustache_SOURCE_DIR}/src/renderer.cpp
 )
 
-# Disable strict warnings for third-party mustache source
+# Disable all warnings for third-party mustache source
 set_source_files_properties(
     ${boost_mustache_SOURCE_DIR}/src/renderer.cpp
     PROPERTIES
-        COMPILE_FLAGS "-Wno-covered-switch-default -Wno-sign-conversion"
+        COMPILE_FLAGS "-w"
 )
 
 add_executable(atlas
