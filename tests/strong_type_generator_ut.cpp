@@ -601,8 +601,12 @@ TEST_SUITE("StrongTypeGenerator")
 
             CHECK(code.find("#include <functional>") != std::string::npos);
             CHECK(code.find("template <>") != std::string::npos);
-            CHECK(code.find("struct std::hash<test::HashableInt>") != std::string::npos);
-            CHECK(code.find("constexpr std::size_t operator ()") != std::string::npos);
+            CHECK(
+                code.find("struct std::hash<test::HashableInt>") !=
+                std::string::npos);
+            CHECK(
+                code.find("constexpr std::size_t operator ()") !=
+                std::string::npos);
         }
 
         SUBCASE("hash with string type") {
@@ -614,7 +618,9 @@ TEST_SUITE("StrongTypeGenerator")
             auto code = generate_strong_type(desc);
 
             CHECK(code.find("#include <functional>") != std::string::npos);
-            CHECK(code.find("struct std::hash<test::HashableString>") != std::string::npos);
+            CHECK(
+                code.find("struct std::hash<test::HashableString>") !=
+                std::string::npos);
         }
 
         SUBCASE("hash with namespaced type") {
@@ -625,15 +631,14 @@ TEST_SUITE("StrongTypeGenerator")
                 "strong unsigned; ==, hash");
             auto code = generate_strong_type(desc);
 
-            CHECK(code.find("struct std::hash<my::deep::ns::HashableValue>") != std::string::npos);
+            CHECK(
+                code.find("struct std::hash<my::deep::ns::HashableValue>") !=
+                std::string::npos);
         }
 
         SUBCASE("no hash without explicit option") {
-            auto desc = make_description(
-                "struct",
-                "test",
-                "NoHash",
-                "strong int; ==");
+            auto desc =
+                make_description("struct", "test", "NoHash", "strong int; ==");
             auto code = generate_strong_type(desc);
 
             CHECK(code.find("struct std::hash<") == std::string::npos);
@@ -649,11 +654,18 @@ TEST_SUITE("StrongTypeGenerator")
             auto code = generate_strong_type(desc);
 
             CHECK(code.find("#include <functional>") != std::string::npos);
-            CHECK(code.find("struct std::hash<test::RuntimeHash>") != std::string::npos);
+            CHECK(
+                code.find("struct std::hash<test::RuntimeHash>") !=
+                std::string::npos);
             // Should NOT have constexpr on hash operator
-            CHECK(code.find("constexpr std::size_t operator () (test::RuntimeHash") == std::string::npos);
+            CHECK(
+                code.find(
+                    "constexpr std::size_t operator () (test::RuntimeHash") ==
+                std::string::npos);
             // Should have non-constexpr version
-            CHECK(code.find("std::size_t operator () (test::RuntimeHash") != std::string::npos);
+            CHECK(
+                code.find("std::size_t operator () (test::RuntimeHash") !=
+                std::string::npos);
         }
 
         SUBCASE("regular hash has constexpr") {
@@ -665,7 +677,10 @@ TEST_SUITE("StrongTypeGenerator")
             auto code = generate_strong_type(desc);
 
             // Should have constexpr on hash operator
-            CHECK(code.find("constexpr std::size_t operator () (test::ConstexprHash") != std::string::npos);
+            CHECK(
+                code.find(
+                    "constexpr std::size_t operator () (test::ConstexprHash") !=
+                std::string::npos);
         }
 
         SUBCASE("no-constexpr removes constexpr from hash too") {
@@ -676,11 +691,17 @@ TEST_SUITE("StrongTypeGenerator")
                 "strong int; ==, hash, no-constexpr");
             auto code = generate_strong_type(desc);
 
-            CHECK(code.find("struct std::hash<test::NoConstexprWithHash>") != std::string::npos);
+            CHECK(
+                code.find("struct std::hash<test::NoConstexprWithHash>") !=
+                std::string::npos);
             // Should NOT have constexpr on hash operator
-            CHECK(code.find("constexpr std::size_t operator () (test::NoConstexprWithHash") == std::string::npos);
+            CHECK(
+                code.find("constexpr std::size_t operator () "
+                          "(test::NoConstexprWithHash") == std::string::npos);
             // Should NOT have constexpr on constructor either
-            CHECK(code.find("constexpr explicit NoConstexprWithHash") == std::string::npos);
+            CHECK(
+                code.find("constexpr explicit NoConstexprWithHash") ==
+                std::string::npos);
         }
     }
 
@@ -696,10 +717,16 @@ TEST_SUITE("StrongTypeGenerator")
 
             // Verify constexpr appears on operations
             CHECK(code.find("constexpr explicit Value") != std::string::npos);
-            CHECK(code.find("constexpr Value & operator +=") != std::string::npos);
-            CHECK(code.find("constexpr Value & operator -=") != std::string::npos);
+            CHECK(
+                code.find("constexpr Value & operator +=") !=
+                std::string::npos);
+            CHECK(
+                code.find("constexpr Value & operator -=") !=
+                std::string::npos);
             CHECK(code.find("constexpr bool operator ==") != std::string::npos);
-            CHECK(code.find("constexpr explicit operator bool") != std::string::npos);
+            CHECK(
+                code.find("constexpr explicit operator bool") !=
+                std::string::npos);
         }
 
         SUBCASE("no-constexpr removes all constexpr") {
@@ -740,11 +767,15 @@ TEST_SUITE("StrongTypeGenerator")
 
             // Operations should have constexpr
             CHECK(code.find("constexpr explicit Value") != std::string::npos);
-            CHECK(code.find("constexpr Value & operator +=") != std::string::npos);
+            CHECK(
+                code.find("constexpr Value & operator +=") !=
+                std::string::npos);
             CHECK(code.find("constexpr bool operator ==") != std::string::npos);
 
             // Hash should NOT have constexpr
-            CHECK(code.find("constexpr std::size_t operator ()") == std::string::npos);
+            CHECK(
+                code.find("constexpr std::size_t operator ()") ==
+                std::string::npos);
         }
     }
 
@@ -759,7 +790,9 @@ TEST_SUITE("StrongTypeGenerator")
 
                 RC_ASSERT(code.find("#ifndef") < code.find("#define"));
                 RC_ASSERT(code.find("#define") < code.find("struct " + name));
-                RC_ASSERT(code.find("struct " + name) < code.find("#endif"));
+                // Check that struct appears before the last #endif (the main
+                // guard's endif)
+                RC_ASSERT(code.find("struct " + name) < code.rfind("#endif"));
             });
         }
 

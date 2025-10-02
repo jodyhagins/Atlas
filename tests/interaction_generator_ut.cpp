@@ -138,10 +138,10 @@ TEST_SUITE("InteractionGenerator")
         // Check C++20 concept version
         CHECK(contains(code, "template<std::floating_point T>"));
 
-        // Check C++17 SFINAE version
+        // Check C++11 SFINAE version
         CHECK(contains(
             code,
-            "std::enable_if_t<std::is_floating_point_v<T>, bool> = true"));
+            "typename std::enable_if<std::is_floating_point_v<T>, bool>::type = true"));
 
         // Check operator uses template parameter
         CHECK(contains(code, "operator*(Distance lhs, T rhs)"));
@@ -209,10 +209,10 @@ TEST_SUITE("InteractionGenerator")
 
         auto code = generate_interactions(desc);
 
-        // Should have SFINAE version only
+        // Should have SFINAE version only (C++11 compatible)
         CHECK(contains(
             code,
-            "std::enable_if_t<std::is_integral_v<T>, bool> = true"));
+            "typename std::enable_if<std::is_integral_v<T>, bool>::type = true"));
 
         // Should not have feature detection
         CHECK_FALSE(contains(code, "#if __cpp_concepts"));

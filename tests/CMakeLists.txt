@@ -55,6 +55,10 @@ add_executable(interaction_generator_ut
     interaction_generator_ut.cpp
 )
 
+add_executable(interaction_compilation_ut
+    interaction_compilation_ut.cpp
+)
+
 target_link_libraries(strong_type_generator_ut
     PRIVATE
         atlas_lib
@@ -142,6 +146,17 @@ target_include_directories(interaction_generator_ut
         ${rapidcheck_SOURCE_DIR}/extras/doctest/include
 )
 
+target_link_libraries(interaction_compilation_ut
+    PRIVATE
+        atlas_lib
+        doctest::doctest
+)
+
+target_include_directories(interaction_compilation_ut
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
 add_test(NAME AtlasCommandLineTest COMMAND atlas_command_line_ut)
 add_test(NAME ErrorHandlingTest COMMAND error_handling_ut)
 add_test(NAME IntegrationTest COMMAND integration_ut)
@@ -154,3 +169,4 @@ doctest_discover_tests(atlas_tool_ut TEST_PREFIX "Atlas Tool : "
     PROPERTIES ENVIRONMENT "BUILD_DIR=${CMAKE_BINARY_DIR}"
 )
 doctest_discover_tests(interaction_generator_ut TEST_PREFIX "Interaction Generator : ")
+doctest_discover_tests(interaction_compilation_ut TEST_PREFIX "Interaction Compilation : ")

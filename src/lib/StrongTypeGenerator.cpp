@@ -76,6 +76,18 @@ constexpr char notice_banner[] = R"(
 auto strong_template = R"({{#includes}}
 #include {{{.}}}
 {{/includes}}
+
+#ifndef WJH_ATLAS_34E45276DD204E33A734018DE4B04C40
+#define WJH_ATLAS_34E45276DD204E33A734018DE4B04C40
+namespace atlas {
+struct strong_type_tag
+{
+    friend auto
+    operator<=>(strong_type_tag const&, strong_type_tag const&) = default;
+};
+}
+#endif // WJH_ATLAS_34E45276DD204E33A734018DE4B04C40
+
 {{#class_namespace}}
 
 namespace {{{.}}} {
@@ -93,6 +105,7 @@ namespace {{{.}}} {
  * - default_value: "{{{desc.default_value}}}"
  */
 {{{desc.kind}}} {{{full_class_name}}}
+: private atlas::strong_type_tag
 {
 {{#has_default_value}}
     {{{underlying_type}}} value{{{default_initializer}}};
@@ -516,28 +529,28 @@ constexpr auto relational_operators = std::to_array<std::string_view>(
 constexpr bool
 is_arithmetic_binary_operator(std::string_view sv)
 {
-    return std::count(
+    return std::find(
         arithmetic_binary_op_tags.begin(),
         arithmetic_binary_op_tags.end(),
-        sv);
+        sv) != arithmetic_binary_op_tags.end();
 }
 
 constexpr bool
 is_arithmetic_unary_operator(std::string_view sv)
 {
-    return std::count(
+    return std::find(
         arithmetic_unary_operators.begin(),
         arithmetic_unary_operators.end(),
-        sv);
+        sv) != arithmetic_unary_operators.end();
 }
 
 constexpr bool
 is_relational_operator(std::string_view sv)
 {
-    return std::count(
+    return std::find(
         relational_operators.begin(),
         relational_operators.end(),
-        sv);
+        sv) != relational_operators.end();
 }
 
 // Default predicate for strip - checks if character is whitespace

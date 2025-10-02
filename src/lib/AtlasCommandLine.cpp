@@ -5,6 +5,7 @@
 // https://opensource.org/licenses/MIT
 // ----------------------------------------------------------------------
 #include "AtlasCommandLine.hpp"
+#include "AtlasUtilities.hpp"
 
 #include <boost/uuid/detail/sha1.hpp>
 
@@ -13,6 +14,29 @@
 #include <sstream>
 
 namespace wjh::atlas { inline namespace v1 {
+
+namespace {
+
+bool
+parse_bool(std::string value, std::string const & option_name)
+{
+    std::transform(
+        value.begin(),
+        value.end(),
+        value.begin(),
+        [](unsigned char c) { return std::tolower(c); });
+    if (value == "true" || value == "1" || value == "yes") {
+        return true;
+    }
+    if (value == "false" || value == "0" || value == "no") {
+        return false;
+    }
+    throw AtlasCommandLineError(
+        "Invalid value for " + option_name + ": '" + value +
+        "'. Expected true/false, 1/0, or yes/no.");
+}
+
+} // anonymous namespace
 
 AtlasCommandLine::Arguments
 AtlasCommandLine::
@@ -74,29 +98,13 @@ parse_impl(std::vector<std::string> const & args)
         } else if (key == "guard-separator") {
             result.guard_separator = value;
         } else if (key == "upcase-guard") {
-            if (value == "true" || value == "1" || value == "yes") {
-                result.upcase_guard = true;
-            } else if (value == "false" || value == "0" || value == "no") {
-                result.upcase_guard = false;
-            } else {
-                throw AtlasCommandLineError(
-                    "Invalid value for --upcase-guard: '" + value +
-                    "'. Expected true/false, 1/0, or yes/no.");
-            }
+            result.upcase_guard = parse_bool(value, "--upcase-guard");
         } else if (key == "input") {
             result.input_file = value;
         } else if (key == "output") {
             result.output_file = value;
         } else if (key == "interactions") {
-            if (value == "true" || value == "1" || value == "yes") {
-                result.interactions_mode = true;
-            } else if (value == "false" || value == "0" || value == "no") {
-                result.interactions_mode = false;
-            } else {
-                throw AtlasCommandLineError(
-                    "Invalid value for --interactions: '" + value +
-                    "'. Expected true/false, 1/0, or yes/no.");
-            }
+            result.interactions_mode = parse_bool(value, "--interactions");
         } else {
             throw AtlasCommandLineError("Unknown argument: --" + key);
         }
@@ -223,16 +231,6 @@ parse_input_file(Arguments const & args)
     result.guard_separator = args.guard_separator;
     result.upcase_guard = args.upcase_guard;
 
-    // Helper function to trim whitespace
-    auto trim = [](std::string const & str) -> std::string {
-        size_t start = str.find_first_not_of(" \t\r\n");
-        if (start == std::string::npos) {
-            return "";
-        }
-        size_t end = str.find_last_not_of(" \t\r\n");
-        return str.substr(start, end - start + 1);
-    };
-
     std::string line;
     int line_number = 0;
     bool in_type_section = false;
@@ -307,16 +305,7 @@ parse_input_file(Arguments const & args)
             } else if (key == "guard_separator") {
                 result.guard_separator = value;
             } else if (key == "upcase_guard") {
-                if (value == "true" || value == "1" || value == "yes") {
-                    result.upcase_guard = true;
-                } else if (value == "false" || value == "0" || value == "no") {
-                    result.upcase_guard = false;
-                } else {
-                    throw AtlasCommandLineError(
-                        "Invalid upcase_guard value at line " +
-                        std::to_string(line_number) + " in " + args.input_file +
-                        ": expected true/false");
-                }
+                result.upcase_guard = parse_bool(value, "upcase_guard");
             } else {
                 throw AtlasCommandLineError(
                     "Unknown configuration key at line " +
@@ -367,36 +356,8 @@ make_file_guard(
     bool upcase,
     std::string const & content)
 {
-    // Compute SHA1 of content
-    boost::uuids::detail::sha1 sha1;
-    sha1.process_bytes(content.data(), content.size());
-    boost::uuids::detail::sha1::digest_type hash;
-    sha1.get_digest(hash);
-
-    std::string sha_str;
-    for (unsigned int x : hash) {
-        char buffer[64];
-        snprintf(buffer, sizeof(buffer), "%08x", x);
-        sha_str += buffer;
-    }
-
-    // Build guard: prefix + separator + SHA
-    // Use "ATLAS" as default prefix if none provided to ensure valid C++
-    // identifier
-    std::string guard = prefix.empty() ? "ATLAS" : prefix;
-    guard += separator;
-    guard += sha_str;
-
-    // Uppercase if requested
-    if (upcase) {
-        std::transform(
-            guard.begin(),
-            guard.end(),
-            guard.begin(),
-            [](unsigned char c) { return std::toupper(c); });
-    }
-
-    return guard;
+    std::string content_hash = get_sha1(content);
+    return generate_header_guard(prefix, separator, content_hash, upcase);
 }
 
 std::string
@@ -522,16 +483,6 @@ parse_interaction_file(std::string const & filename)
     std::string line;
     int line_number = 0;
 
-    // Helper to trim whitespace
-    auto trim = [](std::string const & str) -> std::string {
-        size_t start = str.find_first_not_of(" \t\r\n");
-        if (start == std::string::npos) {
-            return "";
-        }
-        size_t end = str.find_last_not_of(" \t\r\n");
-        return str.substr(start, end - start + 1);
-    };
-
     // Helper to check if line starts with a prefix
     auto starts_with = [](std::string const & str,
                           std::string const & prefix) -> bool {
@@ -540,8 +491,7 @@ parse_interaction_file(std::string const & filename)
     };
 
     // Helper to extract value after '='
-    auto extract_after_equals =
-        [&trim](std::string const & line) -> std::string {
+    auto extract_after_equals = [](std::string const & line) -> std::string {
         auto pos = line.find('=');
         if (pos == std::string::npos) {
             return "";
@@ -552,6 +502,8 @@ parse_interaction_file(std::string const & filename)
     // State tracking
     std::string current_namespace;
     std::string current_value_access = "atlas::value";
+    std::string current_lhs_value_access; // Empty = use current_value_access
+    std::string current_rhs_value_access; // Empty = use current_value_access
     bool current_constexpr = true;
     std::string pending_concept_name;
 
@@ -623,17 +575,18 @@ parse_interaction_file(std::string const & filename)
             current_namespace = extract_after_equals(line);
         } else if (starts_with(line, "value_access=")) {
             current_value_access = extract_after_equals(line);
+        } else if (starts_with(line, "lhs_value_access=")) {
+            current_lhs_value_access = extract_after_equals(line);
+        } else if (starts_with(line, "rhs_value_access=")) {
+            current_rhs_value_access = extract_after_equals(line);
         } else if (starts_with(line, "guard_prefix=")) {
             result.guard_prefix = extract_after_equals(line);
         } else if (starts_with(line, "guard_separator=")) {
             result.guard_separator = extract_after_equals(line);
         } else if (starts_with(line, "upcase_guard=")) {
-            std::string value = extract_after_equals(line);
-            if (value == "true" || value == "1" || value == "yes") {
-                result.upcase_guard = true;
-            } else if (value == "false" || value == "0" || value == "no") {
-                result.upcase_guard = false;
-            }
+            result.upcase_guard = parse_bool(
+                extract_after_equals(line),
+                "upcase_guard");
         } else if (line == "constexpr") {
             current_constexpr = true;
         } else if (line == "no-constexpr") {
@@ -713,6 +666,8 @@ parse_interaction_file(std::string const & filename)
                 .rhs_is_template = rhs_is_template,
                 .is_constexpr = current_constexpr,
                 .interaction_namespace = current_namespace,
+                .lhs_value_access = current_lhs_value_access,
+                .rhs_value_access = current_rhs_value_access,
                 .value_access = current_value_access};
 
             result.interactions.push_back(interaction);

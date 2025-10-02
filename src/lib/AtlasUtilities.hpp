@@ -34,6 +34,14 @@ std::string generate_header_guard(
     std::string const & content_hash,
     bool upcase);
 
+/**
+ * @brief Trim whitespace from both ends of a string
+ *
+ * @param str Input string to trim
+ * @return Trimmed string with leading and trailing whitespace removed
+ */
+std::string trim(std::string const & str);
+
 }} // namespace wjh::atlas::v1
 
 #endif // WJH_ATLAS_8651ABC1F7E740D3960747B1195C51A7
