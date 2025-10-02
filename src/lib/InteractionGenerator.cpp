@@ -394,8 +394,12 @@ value(T && t)
 )";
 
     // Collect RHS types that need custom atlas_value functions
-    // Map: Fully qualified RHS type -> value access expression
-    std::map<std::string, std::string> rhs_value_accessors;
+    // Map: Fully qualified RHS type -> (value access expression, is_constexpr)
+    struct ValueAccessInfo {
+        std::string access_expr;
+        bool is_constexpr;
+    };
+    std::map<std::string, ValueAccessInfo> rhs_value_accessors;
 
     for (auto const & interaction : desc.interactions) {
         // Build fully qualified RHS type name
@@ -413,18 +417,33 @@ value(T && t)
 
         // Only generate if RHS has a custom value access that's not
         // atlas::value
+        std::string value_access_expr;
         if (not interaction.rhs_value_access.empty() &&
             interaction.rhs_value_access != "atlas::value")
         {
-            rhs_value_accessors[fully_qualified_rhs] =
-                interaction.rhs_value_access;
+            value_access_expr = interaction.rhs_value_access;
         } else if (
             not interaction.value_access.empty() &&
             interaction.value_access != "atlas::value" &&
             interaction.rhs_value_access.empty())
         {
             // Fallback to value_access if rhs_value_access not specified
-            rhs_value_accessors[fully_qualified_rhs] = interaction.value_access;
+            value_access_expr = interaction.value_access;
+        }
+
+        if (not value_access_expr.empty()) {
+            auto it = rhs_value_accessors.find(fully_qualified_rhs);
+            if (it == rhs_value_accessors.end()) {
+                // First time seeing this type
+                rhs_value_accessors[fully_qualified_rhs] = ValueAccessInfo{
+                    value_access_expr, interaction.is_constexpr};
+            } else {
+                // Type already exists - if ANY interaction is non-constexpr,
+                // the atlas_value must be non-constexpr
+                if (not interaction.is_constexpr) {
+                    it->second.is_constexpr = false;
+                }
+            }
         }
     }
 
@@ -437,14 +456,17 @@ value(T && t)
 namespace atlas {
 )";
 
-        for (auto const & [rhs_type, value_access] : rhs_value_accessors) {
-            body << "inline constexpr auto atlas_value(" << rhs_type
-                << " const& v, value_tag)\n";
+        for (auto const & [rhs_type, info] : rhs_value_accessors) {
+            body << "inline ";
+            if (info.is_constexpr) {
+                body << "constexpr ";
+            }
+            body << "auto atlas_value(" << rhs_type << " const& v, value_tag)\n";
             body << "-> decltype("
-                << generate_value_access("v", value_access, "") << ")\n";
+                << generate_value_access("v", info.access_expr, "") << ")\n";
             body << "{\n";
             body << "    return "
-                << generate_value_access("v", value_access, "") << ";\n";
+                << generate_value_access("v", info.access_expr, "") << ";\n";
             body << "}\n\n";
         }
 
