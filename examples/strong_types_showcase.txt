@@ -1,0 +1,105 @@
+# Strong Type Generator Showcase
+# This file demonstrates various features and corner cases
+
+# File-level configuration
+guard_prefix=EXAMPLE
+guard_separator=_
+upcase_guard=true
+
+[type]
+kind=struct
+namespace=finance::core
+name=Money
+description=strong double; +, -, *, /, ==, !=, <, <=, >, >=, <<, hash
+default_value=0.0
+
+[type]
+kind=class
+namespace=ids::v1
+name=UserId
+description=strong unsigned long; ==, !=, <=>, hash, no-constexpr-hash
+default_value=0
+
+[type]
+kind=struct
+namespace=physics::units
+name=Meters
+description=strong double; +, -, *, /, u-, ==, !=, <=>
+
+[type]
+kind=struct
+namespace=physics::units
+name=Seconds
+description=strong double; +, -, *, /, u-, ==, !=, <=>
+
+[type]
+kind=struct
+namespace=physics::units
+name=MetersPerSecond
+description=strong double; +, -, *, /, u-, ==, !=, <=>
+
+[type]
+kind=struct
+namespace=data
+name=ByteCount
+description=strong size_t; +, -, *, /, %, ==, !=, <, <=, >, >=, ++, --, <<
+default_value=0
+
+[type]
+kind=struct
+namespace=graphics::color
+name=RedChannel
+description=strong uint8_t; +, -, *, /, &, |, ^, ~, ==, !=, <=>
+default_value=0
+
+[type]
+kind=class
+namespace=security
+name=EncryptedData
+description=strong std::string; ==, !=, <<, hash
+
+[type]
+kind=struct
+namespace=geo
+name=Latitude
+description=strong double; ==, !=, <, <=, >, >=, u-, <<
+default_value=0.0
+
+[type]
+kind=struct
+namespace=geo
+name=Longitude
+description=strong double; ==, !=, <, <=, >, >=, u-, <<
+default_value=0.0
+
+[type]
+kind=struct
+namespace=concurrency
+name=ThreadId
+description=strong int; ==, !=, <<, hash, no-constexpr, no-constexpr-hash
+
+[type]
+kind=struct
+namespace=math::rational
+name=Numerator
+description=strong long; +, -, *, ==, !=, <=>
+
+[type]
+kind=struct
+namespace=math::rational
+name=Denominator
+description=strong long; *, /, ==, !=, <=>
+default_value=1
+
+[type]
+kind=struct
+namespace=net::ipv4
+name=Octet
+description=strong uint8_t; &, |, ^, ~, <<, >>, ==, !=
+default_value=0
+
+[type]
+kind=class
+namespace=app::config
+name=ConfigKey
+description=strong std::string; +, ==, !=, <, <<, hash, []

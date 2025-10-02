@@ -22,7 +22,7 @@ All notable changes to this project will be documented here. This format follows
 - `no-constexpr` option to disable constexpr for all operations.
 - `no-constexpr-hash` option to selectively disable constexpr for hash only.
 - FetchContent example demonstrating CMake integration.
-- `test_install.sh` script for local validation of installation and find_package.
+- `scripts/test_install.sh` script for local validation of installation and find_package.
 - Comprehensive CI with GCC/Clang on Ubuntu and macOS.
 - Code coverage reporting via codecov.
 

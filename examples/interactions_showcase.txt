@@ -1,0 +1,134 @@
+# Interaction Generator Showcase
+# Demonstrates cross-type operations, templates, custom value access, etc.
+
+guard_prefix=EXAMPLE_INTERACTIONS
+guard_separator=_
+upcase_guard=true
+
+# Physics: Distance and Time interactions
+namespace=physics::units
+value_access=.value
+
+Meters + Meters -> Meters
+Meters - Meters -> Meters
+Meters * double -> Meters
+double * Meters -> Meters
+Meters / double -> Meters
+Meters / Meters -> double
+
+Seconds + Seconds -> Seconds
+Seconds - Seconds -> Seconds
+Seconds * double -> Seconds
+double * Seconds -> Seconds
+Seconds / double -> Seconds
+Seconds / Seconds -> double
+
+# Velocity = Distance / Time
+Meters / Seconds -> MetersPerSecond
+MetersPerSecond * Seconds -> Meters
+Meters / MetersPerSecond -> Seconds
+
+# Finance: Money operations with different value access
+namespace=finance::core
+lhs_value_access=.value
+rhs_value_access=.value
+
+Money + Money -> Money
+Money - Money -> Money
+Money * double -> Money
+Money / double -> Money
+Money / Money -> double
+
+# Graphics: Color channel mixing
+namespace=graphics::color
+value_access=.value
+
+RedChannel + RedChannel -> RedChannel
+RedChannel | RedChannel -> RedChannel
+RedChannel & RedChannel -> RedChannel
+RedChannel ^ RedChannel -> RedChannel
+
+# Data: Byte arithmetic
+namespace=data
+value_access=.value
+
+ByteCount + ByteCount -> ByteCount
+ByteCount - ByteCount -> ByteCount
+ByteCount * size_t -> ByteCount
+ByteCount / size_t -> ByteCount
+ByteCount % ByteCount -> ByteCount
+
+# Network: IP octet operations
+namespace=net::ipv4
+value_access=.value
+
+Octet & Octet -> Octet
+Octet | Octet -> Octet
+Octet ^ Octet -> Octet
+Octet << int -> Octet
+Octet >> int -> Octet
+
+# Math: Rational number operations
+namespace=math::rational
+value_access=.value
+
+Numerator + Numerator -> Numerator
+Numerator - Numerator -> Numerator
+Numerator * Numerator -> Numerator
+Numerator * Denominator -> Numerator
+Denominator * Denominator -> Denominator
+
+# String operations with custom types
+namespace=app::config
+lhs_value_access=.value
+rhs_value_access=atlas::value
+
+ConfigKey + std::string -> ConfigKey
+std::string + ConfigKey -> ConfigKey
+
+# Template interactions with concepts
+namespace=math
+value_access=atlas::value
+
+# C++20 concept
+concept=std::integral T
+T + T -> T
+
+# C++17 enable_if
+enable_if=std::is_floating_point<U>::value
+U * U -> U
+
+# Both concept and enable_if for maximum compatibility
+concept=std::integral V
+enable_if=sizeof(V) <= 8
+V - V -> V
+
+# Cross-namespace interaction - multiply distance by money (for whatever reason)
+namespace=
+lhs_value_access=.value
+rhs_value_access=.value
+
+physics::units::Meters * finance::core::Money -> finance::core::Money
+
+# Non-constexpr interaction
+no-constexpr
+namespace=concurrency
+value_access=.value
+
+ThreadId + ThreadId -> ThreadId
+
+# Geographic coordinate operations
+constexpr
+namespace=geo
+value_access=.value
+
+Latitude + double -> Latitude
+Longitude + double -> Longitude
+Latitude - Latitude -> double
+Longitude - Longitude -> double
+
+# Security: Can't do much with encrypted data, but can concatenate
+namespace=security
+value_access=.value
+
+EncryptedData + EncryptedData -> EncryptedData
