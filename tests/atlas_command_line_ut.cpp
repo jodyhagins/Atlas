@@ -7,11 +7,13 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include "AtlasCommandLine.hpp"
 #include "doctest.hpp"
+#include "rapidcheck.hpp"
 
 #include <filesystem>
 #include <fstream>
 
 using namespace wjh::atlas;
+using namespace wjh::atlas::testing;
 
 namespace {
 
@@ -73,6 +75,57 @@ TEST_SUITE("AtlasCommandLine")
                 "strong double; +, -, *, /, ==, !=, <, <=, >, >=, ++, bool, "
                 "out, in");
         }
+
+        SUBCASE("unknown argument throws error") {
+            std::vector<std::string> args{
+                "--kind=struct",
+                "--namespace=test",
+                "--name=Value",
+                "--description=strong int",
+                "--unknown-flag=value"};
+
+            CHECK_THROWS_AS(
+                AtlasCommandLine::parse(args),
+                AtlasCommandLineError);
+        }
+
+        SUBCASE("empty arguments throws error") {
+            std::vector<std::string> args{};
+
+            CHECK_THROWS_AS(
+                AtlasCommandLine::parse(args),
+                AtlasCommandLineError);
+        }
+
+        SUBCASE("argument without equals sign throws error") {
+            std::vector<std::string> args{"--kind", "struct"};
+
+            CHECK_THROWS_AS(
+                AtlasCommandLine::parse(args),
+                AtlasCommandLineError);
+        }
+
+        SUBCASE("argument without dashes throws error") {
+            std::vector<std::string> args{"kind=struct"};
+
+            CHECK_THROWS_AS(
+                AtlasCommandLine::parse(args),
+                AtlasCommandLineError);
+        }
+
+        SUBCASE("invalid boolean for upcase-guard throws error") {
+            std::vector<std::string> args{
+                "--kind=struct",
+                "--namespace=test",
+                "--name=Value",
+                "--description=strong int",
+                "--upcase-guard=maybe"};
+
+            CHECK_THROWS_AS(
+                AtlasCommandLine::parse(args),
+                AtlasCommandLineError);
+        }
+
     }
 
     TEST_CASE("Help Argument")
@@ -969,6 +1022,85 @@ TEST_SUITE("AtlasCommandLine")
             std::filesystem::remove(temp_file);
         }
 
+        SUBCASE("type with all optional fields specified") {
+            auto temp_file = std::filesystem::temp_directory_path() /
+                ("test_input_" + std::to_string(::getpid()) + ".txt");
+
+            {
+                std::ofstream out(temp_file);
+                out << "# Global config\n";
+                out << "guard_prefix=GLOBAL_\n";
+                out << "guard_separator=__\n";
+                out << "upcase_guard=true\n";
+                out << "\n";
+                out << "[type]\n";
+                out << "kind=class\n";
+                out << "namespace=example::nested\n";
+                out << "name=ComplexType\n";
+                out << "description=strong std::string; +, ==, !=, out\n";
+                out << "default_value=\"\"\n";
+            }
+
+            AtlasCommandLine::Arguments args;
+            args.input_file = temp_file.string();
+
+            auto result = AtlasCommandLine::parse_input_file(args);
+
+            REQUIRE(result.types.size() == 1);
+            CHECK(result.types[0].kind == "class");
+            CHECK(result.types[0].type_namespace == "example::nested");
+            CHECK(result.types[0].type_name == "ComplexType");
+            CHECK(result.types[0].default_value == "\"\"");
+            CHECK(result.types[0].guard_prefix == "GLOBAL_");
+            CHECK(result.upcase_guard == true);
+
+            std::filesystem::remove(temp_file);
+        }
+
+        SUBCASE("upcase_guard false") {
+            auto temp_file = std::filesystem::temp_directory_path() /
+                ("test_input_" + std::to_string(::getpid()) + ".txt");
+
+            {
+                std::ofstream out(temp_file);
+                out << "upcase_guard=false\n";
+                out << "[type]\n";
+                out << "kind=struct\n";
+                out << "namespace=test\n";
+                out << "name=Value\n";
+                out << "description=strong int\n";
+            }
+
+            AtlasCommandLine::Arguments args;
+            args.input_file = temp_file.string();
+
+            auto result = AtlasCommandLine::parse_input_file(args);
+            CHECK(result.upcase_guard == false);
+
+            std::filesystem::remove(temp_file);
+        }
+
+        SUBCASE("invalid line format without equals") {
+            auto temp_file = std::filesystem::temp_directory_path() /
+                ("test_input_" + std::to_string(::getpid()) + ".txt");
+
+            {
+                std::ofstream out(temp_file);
+                out << "this line has no equals sign\n";
+                out << "[type]\n";
+                out << "kind=struct\n";
+            }
+
+            AtlasCommandLine::Arguments args;
+            args.input_file = temp_file.string();
+
+            CHECK_THROWS_AS(
+                AtlasCommandLine::parse_input_file(args),
+                AtlasCommandLineError);
+
+            std::filesystem::remove(temp_file);
+        }
+
         SUBCASE("malformed syntax is rejected") {
             // USER EXPECTATION: Invalid format should produce error
             auto temp_file = std::filesystem::temp_directory_path() /
@@ -1007,6 +1139,48 @@ TEST_SUITE("AtlasCommandLine")
             args.input_file = temp_file.string();
 
             // User expects error so they can fix the typo
+            CHECK_THROWS_AS(
+                AtlasCommandLine::parse_input_file(args),
+                AtlasCommandLineError);
+
+            std::filesystem::remove(temp_file);
+        }
+
+        SUBCASE("empty input file path") {
+            AtlasCommandLine::Arguments args;
+            // args.input_file is empty
+
+            CHECK_THROWS_AS(
+                AtlasCommandLine::parse_input_file(args),
+                AtlasCommandLineError);
+        }
+
+        SUBCASE("non-existent input file") {
+            AtlasCommandLine::Arguments args;
+            args.input_file = "/tmp/nonexistent_file_12345678.txt";
+
+            CHECK_THROWS_AS(
+                AtlasCommandLine::parse_input_file(args),
+                AtlasCommandLineError);
+        }
+
+        SUBCASE("unknown property inside type definition") {
+            auto temp_file = std::filesystem::temp_directory_path() /
+                ("test_input_" + std::to_string(::getpid()) + ".txt");
+
+            {
+                std::ofstream out(temp_file);
+                out << "[type]\n";
+                out << "kind=struct\n";
+                out << "namespace=test\n";
+                out << "name=Value\n";
+                out << "description=strong int\n";
+                out << "unknown_property=foo\n"; // Unknown!
+            }
+
+            AtlasCommandLine::Arguments args;
+            args.input_file = temp_file.string();
+
             CHECK_THROWS_AS(
                 AtlasCommandLine::parse_input_file(args),
                 AtlasCommandLineError);
@@ -1063,6 +1237,419 @@ TEST_SUITE("AtlasCommandLine")
                 AtlasCommandLine::parse(args),
                 AtlasCommandLineError);
         }
+
+        SUBCASE("invalid kind value") {
+            std::vector<std::string> args{
+                "--kind=invalid_kind",
+                "--namespace=test",
+                "--name=Value",
+                "--description=strong int"};
+
+            CHECK_THROWS_AS(
+                AtlasCommandLine::parse(args),
+                AtlasCommandLineError);
+        }
+    }
+
+    TEST_CASE("Interaction File Error Paths")
+    {
+        SUBCASE("malformed include without space") {
+            auto temp_file = std::filesystem::temp_directory_path() /
+                ("test_interactions_" + std::to_string(::getpid()) + ".txt");
+
+            {
+                std::ofstream out(temp_file);
+                out << "namespace=test\n";
+                out << "include\n"; // No space after include!
+                out << "A + B -> C\n";
+            }
+
+            CHECK_THROWS_AS(
+                AtlasCommandLine::parse_interaction_file(temp_file.string()),
+                AtlasCommandLineError);
+
+            std::filesystem::remove(temp_file);
+        }
+
+        SUBCASE("empty concept definition value") {
+            auto temp_file = std::filesystem::temp_directory_path() /
+                ("test_interactions_" + std::to_string(::getpid()) + ".txt");
+
+            {
+                std::ofstream out(temp_file);
+                out << "namespace=test\n";
+                out << "concept=\n"; // Empty after equals!
+                out << "A + B -> C\n";
+            }
+
+            CHECK_THROWS_AS(
+                AtlasCommandLine::parse_interaction_file(temp_file.string()),
+                AtlasCommandLineError);
+
+            std::filesystem::remove(temp_file);
+        }
+
+        SUBCASE("empty concept name with colon") {
+            auto temp_file = std::filesystem::temp_directory_path() /
+                ("test_interactions_" + std::to_string(::getpid()) + ".txt");
+
+            {
+                std::ofstream out(temp_file);
+                out << "namespace=test\n";
+                out << "concept= : std::integral<T>\n"; // Empty name before colon!
+                out << "A + B -> C\n";
+            }
+
+            CHECK_THROWS_AS(
+                AtlasCommandLine::parse_interaction_file(temp_file.string()),
+                AtlasCommandLineError);
+
+            std::filesystem::remove(temp_file);
+        }
+
+        SUBCASE("enable_if without pending concept applies to last constraint") {
+            auto temp_file = std::filesystem::temp_directory_path() /
+                ("test_interactions_" + std::to_string(::getpid()) + ".txt");
+
+            {
+                std::ofstream out(temp_file);
+                out << "namespace=test\n";
+                out << "concept=T\n";
+                out << "enable_if=std::is_integral_v<T>\n"; // First enable_if clears pending
+                out << "enable_if=sizeof(T) > 0\n"; // Second should apply to last constraint
+                out << "A + B -> C\n";
+            }
+
+            auto result = AtlasCommandLine::parse_interaction_file(
+                temp_file.string());
+
+            REQUIRE(result.constraints.size() == 1);
+            // Second enable_if should have overwritten the first
+            CHECK(
+                result.constraints["T"].enable_if_expr ==
+                "sizeof(T) > 0");
+
+            std::filesystem::remove(temp_file);
+        }
+
+        SUBCASE("unknown directive produces error") {
+            auto temp_file = std::filesystem::temp_directory_path() /
+                ("test_interactions_" + std::to_string(::getpid()) + ".txt");
+
+            {
+                std::ofstream out(temp_file);
+                out << "namespace=test\n";
+                out << "unknown_directive=value\n"; // Unknown!
+                out << "A + B -> C\n";
+            }
+
+            CHECK_THROWS_AS(
+                AtlasCommandLine::parse_interaction_file(temp_file.string()),
+                AtlasCommandLineError);
+
+            std::filesystem::remove(temp_file);
+        }
+
+        SUBCASE("no interactions in file produces error") {
+            auto temp_file = std::filesystem::temp_directory_path() /
+                ("test_interactions_" + std::to_string(::getpid()) + ".txt");
+
+            {
+                std::ofstream out(temp_file);
+                out << "# Just comments\n";
+                out << "namespace=test\n";
+                // No actual interactions!
+            }
+
+            CHECK_THROWS_AS(
+                AtlasCommandLine::parse_interaction_file(temp_file.string()),
+                AtlasCommandLineError);
+
+            std::filesystem::remove(temp_file);
+        }
+
+        SUBCASE("interaction with missing operator") {
+            auto temp_file = std::filesystem::temp_directory_path() /
+                ("test_interactions_" + std::to_string(::getpid()) + ".txt");
+
+            {
+                std::ofstream out(temp_file);
+                out << "namespace=test\n";
+                out << "A B -> C\n"; // Missing operator between A and B!
+            }
+
+            CHECK_THROWS_AS(
+                AtlasCommandLine::parse_interaction_file(temp_file.string()),
+                AtlasCommandLineError);
+
+            std::filesystem::remove(temp_file);
+        }
+
+        SUBCASE("interaction with missing result type") {
+            auto temp_file = std::filesystem::temp_directory_path() /
+                ("test_interactions_" + std::to_string(::getpid()) + ".txt");
+
+            {
+                std::ofstream out(temp_file);
+                out << "namespace=test\n";
+                out << "A + B ->\n"; // Missing result type after arrow!
+            }
+
+            CHECK_THROWS_AS(
+                AtlasCommandLine::parse_interaction_file(temp_file.string()),
+                AtlasCommandLineError);
+
+            std::filesystem::remove(temp_file);
+        }
+
+        SUBCASE("interaction with empty LHS") {
+            auto temp_file = std::filesystem::temp_directory_path() /
+                ("test_interactions_" + std::to_string(::getpid()) + ".txt");
+
+            {
+                std::ofstream out(temp_file);
+                out << "namespace=test\n";
+                out << " + B -> C\n"; // Empty LHS!
+            }
+
+            CHECK_THROWS_AS(
+                AtlasCommandLine::parse_interaction_file(temp_file.string()),
+                AtlasCommandLineError);
+
+            std::filesystem::remove(temp_file);
+        }
+
+        SUBCASE("interaction with empty RHS") {
+            auto temp_file = std::filesystem::temp_directory_path() /
+                ("test_interactions_" + std::to_string(::getpid()) + ".txt");
+
+            {
+                std::ofstream out(temp_file);
+                out << "namespace=test\n";
+                out << "A +  -> C\n"; // Empty RHS!
+            }
+
+            CHECK_THROWS_AS(
+                AtlasCommandLine::parse_interaction_file(temp_file.string()),
+                AtlasCommandLineError);
+
+            std::filesystem::remove(temp_file);
+        }
+
+        SUBCASE("interaction file with all features") {
+            auto temp_file = std::filesystem::temp_directory_path() /
+                ("test_interactions_" + std::to_string(::getpid()) + ".txt");
+
+            {
+                std::ofstream out(temp_file);
+                out << "# Test all features\n";
+                out << "guard_prefix=MYPROJECT\n";
+                out << "guard_separator=__\n";
+                out << "upcase_guard=false\n";
+                out << "namespace=algebra\n";
+                out << "include <numeric>\n";
+                out << "include \"myheader.hpp\"\n";
+                out << "concept=T\n";
+                out << "concept=U : std::is_integral_v<U>\n";
+                out << "enable_if=std::is_arithmetic_v<T>\n";
+                out << "constexpr\n";
+                out << "lhs_value_access=getValue\n";
+                out << "rhs_value_access=getData\n";
+                out << "value_access=extract\n";
+                out << "\n";
+                out << "TypeA + TypeB -> TypeC\n";
+                out << "TypeA * TypeB <-> TypeC\n";
+                out << "no-constexpr\n";
+                out << "T - U -> T\n";
+            }
+
+            auto result = AtlasCommandLine::parse_interaction_file(
+                temp_file.string());
+
+            CHECK(result.guard_prefix == "MYPROJECT");
+            CHECK(result.guard_separator == "__");
+            CHECK(result.upcase_guard == false);
+            CHECK(result.includes.size() == 2);
+            CHECK(result.includes[0] == "<numeric>");
+            CHECK(result.includes[1] == "\"myheader.hpp\"");
+            CHECK(result.constraints.size() == 2);
+            CHECK(result.constraints.contains("T"));
+            CHECK(result.constraints.contains("U"));
+            CHECK(result.interactions.size() == 3);
+            CHECK(result.interactions[0].interaction_namespace == "algebra");
+            CHECK(result.interactions[0].symmetric == false);
+            CHECK(result.interactions[1].symmetric == true);
+            CHECK(result.interactions[0].is_constexpr == true);
+            CHECK(result.interactions[2].is_constexpr == false);
+            CHECK(result.interactions[0].lhs_value_access == "getValue");
+            CHECK(result.interactions[0].rhs_value_access == "getData");
+            CHECK(result.interactions[2].lhs_type == "T");
+            CHECK(result.interactions[2].rhs_type == "U");
+
+            std::filesystem::remove(temp_file);
+        }
+    }
+
+    TEST_CASE("Property: Boolean value parsing")
+    {
+        ::rc::check(
+            "valid boolean strings parse without error",
+            [](bool expected_value) {
+                std::vector<std::string> bool_strs =
+                    expected_value ?
+                    std::vector<std::string>{"true", "1", "yes", "True", "YES"} :
+                    std::vector<std::string>{"false", "0", "no", "False", "NO"};
+
+                for (auto const & bool_str : bool_strs) {
+                    std::vector<std::string> args{
+                        "--kind=struct",
+                        "--namespace=test",
+                        "--name=Value",
+                        "--description=strong int",
+                        "--upcase-guard=" + bool_str};
+
+                    auto result = AtlasCommandLine::parse(args);
+                    RC_ASSERT(result.upcase_guard == expected_value);
+                }
+            });
+
+        ::rc::check(
+            "invalid boolean strings throw error",
+            [](std::string const & invalid_str) {
+                RC_PRE(invalid_str != "true" && invalid_str != "false" &&
+                       invalid_str != "1" && invalid_str != "0" &&
+                       invalid_str != "yes" && invalid_str != "no" &&
+                       invalid_str != "True" && invalid_str != "False" &&
+                       invalid_str != "YES" && invalid_str != "NO");
+
+                std::vector<std::string> args{
+                    "--kind=struct",
+                    "--namespace=test",
+                    "--name=Value",
+                    "--description=strong int",
+                    "--upcase-guard=" + invalid_str};
+
+                RC_ASSERT_THROWS_AS(
+                    AtlasCommandLine::parse(args),
+                    AtlasCommandLineError);
+            });
+    }
+
+    TEST_CASE("Property: File parsing with various global configs")
+    {
+        ::rc::check(
+            "all combinations of guard settings work",
+            [](bool upcase, std::string const & sep) {
+                RC_PRE(sep.size() >= 1 && sep.size() <= 3);
+                RC_PRE(sep.find('\n') == std::string::npos);
+                RC_PRE(sep.find('\r') == std::string::npos);
+                RC_PRE(sep.find('=') == std::string::npos);
+                // Exclude whitespace-only strings since they get trimmed
+                RC_PRE(!sep.empty());
+                RC_PRE(std::any_of(sep.begin(), sep.end(), [](char c) {
+                    return !std::isspace(static_cast<unsigned char>(c));
+                }));
+
+                auto temp_file = std::filesystem::temp_directory_path() /
+                    ("test_prop_" + std::to_string(::getpid()) + "_" +
+                     std::to_string(rand()) + ".txt");
+
+                {
+                    std::ofstream out(temp_file);
+                    out << "guard_separator=" << sep << "\n";
+                    out << "upcase_guard=" << (upcase ? "true" : "false") << "\n";
+                    out << "[type]\n";
+                    out << "kind=struct\n";
+                    out << "namespace=test\n";
+                    out << "name=Value\n";
+                    out << "description=strong int\n";
+                }
+
+                AtlasCommandLine::Arguments args;
+                args.input_file = temp_file.string();
+
+                auto result = AtlasCommandLine::parse_input_file(args);
+
+                RC_ASSERT(result.guard_separator == sep);
+                RC_ASSERT(result.upcase_guard == upcase);
+
+                std::filesystem::remove(temp_file);
+            });
+    }
+
+    TEST_CASE("Property: Interaction file with varying operators")
+    {
+        ::rc::check(
+            "all operators parse correctly",
+            [](std::string const & op, bool symmetric) {
+                // Preconditions: operator must be non-empty, contain no whitespace,
+                // and be a known operator symbol (not just letters which would be parsed as types)
+                RC_PRE(!op.empty());
+                RC_PRE(op.find(' ') == std::string::npos);
+                RC_PRE(op.find('\t') == std::string::npos);
+                RC_PRE(op.find('\n') == std::string::npos);
+                RC_PRE(op.find('\r') == std::string::npos);
+                // Must contain at least one operator symbol character
+                RC_PRE(std::any_of(op.begin(), op.end(), [](char c) {
+                    return !std::isalnum(static_cast<unsigned char>(c)) && c != '_';
+                }));
+
+                auto temp_file = std::filesystem::temp_directory_path() /
+                    ("test_inter_" + std::to_string(::getpid()) + "_" +
+                     std::to_string(rand()) + ".txt");
+
+                {
+                    std::ofstream out(temp_file);
+                    out << "namespace=test\n";
+                    out << "TypeA " << op << " TypeB -> TypeC";
+                    if (symmetric) {
+                        out << " symmetric";
+                    }
+                    out << "\n";
+                }
+
+                auto result = AtlasCommandLine::parse_interaction_file(
+                    temp_file.string());
+
+                RC_ASSERT(result.interactions.size() == 1);
+                RC_ASSERT(result.interactions[0].op_symbol == op);
+                RC_ASSERT(result.interactions[0].symmetric == symmetric);
+                RC_ASSERT(result.interactions[0].lhs_type == "TypeA");
+                RC_ASSERT(result.interactions[0].rhs_type == "TypeB");
+                RC_ASSERT(result.interactions[0].result_type == "TypeC");
+
+                std::filesystem::remove(temp_file);
+            });
+    }
+
+    TEST_CASE("Property: Invalid interaction formats always error")
+    {
+        ::rc::check(
+            "missing operator in interaction errors",
+            [](std::string const & lhs, std::string const & rhs) {
+                RC_PRE(!lhs.empty() && !rhs.empty());
+                RC_PRE(lhs.find(' ') == std::string::npos);
+                RC_PRE(rhs.find(' ') == std::string::npos);
+                RC_PRE(lhs.find('\n') == std::string::npos);
+                RC_PRE(rhs.find('\n') == std::string::npos);
+
+                auto temp_file = std::filesystem::temp_directory_path() /
+                    ("test_bad_" + std::to_string(::getpid()) + "_" +
+                     std::to_string(rand()) + ".txt");
+
+                {
+                    std::ofstream out(temp_file);
+                    out << "namespace=test\n";
+                    // No operator between types!
+                    out << lhs << " " << rhs << " -> Result\n";
+                }
+
+                RC_ASSERT_THROWS_AS(
+                    AtlasCommandLine::parse_interaction_file(temp_file.string()),
+                    AtlasCommandLineError);
+
+                std::filesystem::remove(temp_file);
+            });
     }
 }
 

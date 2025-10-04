@@ -364,6 +364,201 @@ TEST_SUITE("Error Handling")
             CHECK(code.find("operator -") != std::string::npos);
         }
     }
+
+    TEST_CASE("String Utility Edge Cases")
+    {
+        SUBCASE("trim edge cases") {
+            // Test with all whitespace string
+            StrongTypeDescription desc{
+                .kind = "struct",
+                .type_namespace = "   ",
+                .type_name = "TestType",
+                .description = "strong int"};
+
+            // Should handle whitespace-only namespace
+            CHECK_NOTHROW(generate_strong_type(desc));
+        }
+
+        SUBCASE("split with no delimiters") {
+            // Description with no semicolon
+            StrongTypeDescription desc{
+                .kind = "struct",
+                .type_namespace = "test",
+                .type_name = "TestType",
+                .description = "strong int no operators"};
+
+            // Should still work - treats whole thing after "strong" as type
+            auto code = generate_strong_type(desc);
+            // The underlying type might be parsed differently
+            CHECK(code.find("struct TestType") != std::string::npos);
+        }
+
+        SUBCASE("split with multiple consecutive delimiters") {
+            StrongTypeDescription desc{
+                .kind = "struct",
+                .type_namespace = "test",
+                .type_name = "TestType",
+                .description = "strong int; +,,,-,,,=="};
+
+            // Should handle multiple commas gracefully
+            CHECK_NOTHROW(generate_strong_type(desc));
+        }
+
+        SUBCASE("empty string handling") {
+            StrongTypeDescription desc{
+                .kind = "struct",
+                .type_namespace = "",
+                .type_name = "",
+                .description = "strong int"};
+
+            // Empty namespace/name should still work
+            CHECK_NOTHROW(generate_strong_type(desc));
+        }
+    }
+
+    TEST_CASE("Default Value Edge Cases")
+    {
+        SUBCASE("default value with complex expression") {
+            StrongTypeDescription desc{
+                .kind = "struct",
+                .type_namespace = "test",
+                .type_name = "TestType",
+                .description = "strong int",
+                .default_value = "{std::numeric_limits<int>::max()}"};
+
+            auto code = generate_strong_type(desc);
+            CHECK(code.find("std::numeric_limits<int>::max()") != std::string::npos);
+        }
+
+        SUBCASE("default value empty string") {
+            StrongTypeDescription desc{
+                .kind = "struct",
+                .type_namespace = "test",
+                .type_name = "TestType",
+                .description = "strong int",
+                .default_value = ""};
+
+            // Empty default value should be allowed
+            CHECK_NOTHROW(generate_strong_type(desc));
+        }
+
+        SUBCASE("default value with braces") {
+            StrongTypeDescription desc{
+                .kind = "struct",
+                .type_namespace = "test",
+                .type_name = "TestType",
+                .description = "strong std::vector<int>",
+                .default_value = "{{1, 2, 3}}"};
+
+            auto code = generate_strong_type(desc);
+            CHECK(code.find("{{1, 2, 3}}") != std::string::npos);
+        }
+    }
+
+    TEST_CASE("Include Directive Edge Cases")
+    {
+        SUBCASE("multiple includes with same header") {
+            StrongTypeDescription desc{
+                .kind = "struct",
+                .type_namespace = "test",
+                .type_name = "TestType",
+                .description = "strong int; #<vector>, #<vector>, #<string>"};
+
+            auto code = generate_strong_type(desc);
+            // Each include should appear
+            CHECK(code.find("#include <vector>") != std::string::npos);
+            CHECK(code.find("#include <string>") != std::string::npos);
+        }
+
+        SUBCASE("include with quotes") {
+            StrongTypeDescription desc{
+                .kind = "struct",
+                .type_namespace = "test",
+                .type_name = "TestType",
+                .description = "strong int; #\"myheader.hpp\""};
+
+            auto code = generate_strong_type(desc);
+            CHECK(code.find("#include \"myheader.hpp\"") != std::string::npos);
+        }
+
+        SUBCASE("include with path") {
+            StrongTypeDescription desc{
+                .kind = "struct",
+                .type_namespace = "test",
+                .type_name = "TestType",
+                .description = "strong int; #<boost/optional.hpp>"};
+
+            auto code = generate_strong_type(desc);
+            CHECK(code.find("#include <boost/optional.hpp>") != std::string::npos);
+        }
+    }
+
+    TEST_CASE("Hash Functionality Edge Cases")
+    {
+        SUBCASE("no-constexpr-hash option") {
+            StrongTypeDescription desc{
+                .kind = "struct",
+                .type_namespace = "test",
+                .type_name = "TestType",
+                .description = "strong int; ==, no-constexpr-hash"};
+
+            auto code = generate_strong_type(desc);
+            // Should have hash specialization but not constexpr
+            CHECK(code.find("struct std::hash") != std::string::npos);
+            // Hash operator() should not be constexpr
+            auto hash_pos = code.find("struct std::hash");
+            auto next_constexpr = code.find("constexpr", hash_pos);
+            auto hash_call = code.find("operator()", hash_pos);
+            // Either no constexpr in hash, or constexpr comes after operator()
+            CHECK((next_constexpr == std::string::npos || next_constexpr > hash_call));
+        }
+
+        SUBCASE("hash with no equality operator") {
+            StrongTypeDescription desc{
+                .kind = "struct",
+                .type_namespace = "test",
+                .type_name = "TestType",
+                .description = "strong int; ==, no-constexpr-hash"};
+
+            auto code = generate_strong_type(desc);
+            // Should have hash specialization
+            CHECK(code.find("struct std::hash") != std::string::npos);
+            CHECK(code.find("operator ==") != std::string::npos);
+        }
+    }
+
+    TEST_CASE("Constexpr Option Combinations")
+    {
+        SUBCASE("no-constexpr affects all operators") {
+            StrongTypeDescription desc{
+                .kind = "struct",
+                .type_namespace = "test",
+                .type_name = "TestType",
+                .description = "strong int; +, -, ==, no-constexpr"};
+
+            auto code = generate_strong_type(desc);
+            // Find operator+ definition
+            auto plus_pos = code.find("operator +");
+            // Look at the line with operator+, should not have constexpr
+            auto line_start = code.rfind('\n', plus_pos) + 1;
+            auto line_end = code.find('\n', plus_pos);
+            std::string op_line = code.substr(line_start, line_end - line_start);
+            CHECK(op_line.find("constexpr") == std::string::npos);
+        }
+
+        SUBCASE("constexpr is default") {
+            StrongTypeDescription desc{
+                .kind = "struct",
+                .type_namespace = "test",
+                .type_name = "TestType",
+                .description = "strong int; +, -"};
+
+            auto code = generate_strong_type(desc);
+            // Operators should be constexpr by default
+            CHECK(code.find("constexpr") != std::string::npos);
+        }
+    }
+
 }
 
 } // anonymous namespace

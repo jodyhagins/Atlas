@@ -68,13 +68,6 @@ public:
     static InteractionFileDescription parse_interaction_file(
         std::string const & filename);
 
-    // Generate a file header guard with prefix + SHA of content
-    static std::string make_file_guard(
-        std::string const & prefix,
-        std::string const & separator,
-        bool upcase,
-        std::string const & content);
-
     // Get help text
     static std::string get_help_text();
 

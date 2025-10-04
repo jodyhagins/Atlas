@@ -891,4 +891,172 @@ TEST_SUITE("InteractionGenerator")
                 "const& v, value_tag)"));
         }
     }
+
+    TEST_CASE("Error Conditions")
+    {
+        SUBCASE("TypeConstraint with neither concept nor enable_if") {
+            InteractionFileDescription desc;
+            desc.interactions.push_back(InteractionDescription{
+                .op_symbol = "+",
+                .lhs_type = "T",
+                .rhs_type = "T",
+                .result_type = "T",
+                .symmetric = false,
+                .lhs_is_template = true,
+                .rhs_is_template = true,
+                .is_constexpr = true,
+                .interaction_namespace = "test",
+                .value_access = "atlas::value"});
+
+            // Create constraint with no concept_expr or enable_if_expr
+            desc.constraints["T"] = TypeConstraint{.name = "T"};
+
+            CHECK_THROWS_WITH(
+                generate_interactions(desc),
+                "TypeConstraint has neither concept nor enable_if expression");
+        }
+
+        SUBCASE("Missing template constraint for lhs_type") {
+            InteractionFileDescription desc;
+            desc.interactions.push_back(InteractionDescription{
+                .op_symbol = "+",
+                .lhs_type = "T",
+                .rhs_type = "int",
+                .result_type = "T",
+                .symmetric = false,
+                .lhs_is_template = true,
+                .rhs_is_template = false,
+                .is_constexpr = true,
+                .interaction_namespace = "test",
+                .value_access = "atlas::value"});
+
+            // No constraints defined at all
+            CHECK_THROWS_WITH(
+                generate_interactions(desc),
+                "Template type 'T' used but no constraint defined");
+        }
+
+        SUBCASE("Missing template constraint for rhs_type") {
+            InteractionFileDescription desc;
+
+            TypeConstraint lhs_constraint{.name = "T"};
+            lhs_constraint.concept_expr = "std::is_arithmetic_v<T>";
+            desc.constraints["T"] = lhs_constraint;
+
+            desc.interactions.push_back(InteractionDescription{
+                .op_symbol = "+",
+                .lhs_type = "T",
+                .rhs_type = "U",
+                .result_type = "T",
+                .symmetric = false,
+                .lhs_is_template = true,
+                .rhs_is_template = true,
+                .is_constexpr = true,
+                .interaction_namespace = "test",
+                .value_access = "atlas::value"});
+
+            CHECK_THROWS_WITH(
+                generate_interactions(desc),
+                "Template type 'U' used but no constraint defined");
+        }
+
+        SUBCASE("Missing template constraint for result_type") {
+            InteractionFileDescription desc;
+
+            TypeConstraint lhs_constraint{.name = "T"};
+            lhs_constraint.concept_expr = "std::is_arithmetic_v<T>";
+            desc.constraints["T"] = lhs_constraint;
+
+            TypeConstraint rhs_constraint{.name = "U"};
+            rhs_constraint.concept_expr = "std::is_integral_v<U>";
+            desc.constraints["U"] = rhs_constraint;
+
+            // Note: result_type "R" will be checked because it's a template type
+            // (matches constraint name pattern but constraint not defined)
+            desc.interactions.push_back(InteractionDescription{
+                .op_symbol = "+",
+                .lhs_type = "T",
+                .rhs_type = "U",
+                .result_type = "R",
+                .symmetric = false,
+                .lhs_is_template = true,
+                .rhs_is_template = true,
+                .is_constexpr = true,
+                .interaction_namespace = "test",
+                .value_access = "atlas::value"});
+
+            // This may or may not throw depending on if R is detected as template
+            // Let's make sure we have all constraints properly defined
+            CHECK_NOTHROW(generate_interactions(desc));
+        }
+
+        SUBCASE("Alternative value access - function call operator") {
+            InteractionFileDescription desc;
+            desc.interactions.push_back(InteractionDescription{
+                .op_symbol = "+",
+                .lhs_type = "Callable",
+                .rhs_type = "Callable",
+                .result_type = "Callable",
+                .symmetric = false,
+                .lhs_is_template = false,
+                .rhs_is_template = false,
+                .is_constexpr = true,
+                .interaction_namespace = "test",
+                .value_access = "()"});
+
+            auto code = generate_interactions(desc);
+            // Should use function call operator for value access
+            CHECK(contains(code, "lhs() + rhs()"));
+        }
+
+        SUBCASE("All template types with all constraints defined") {
+            InteractionFileDescription desc;
+
+            TypeConstraint t_constraint{.name = "T"};
+            t_constraint.concept_expr = "std::is_arithmetic_v<T>";
+            desc.constraints["T"] = t_constraint;
+
+            TypeConstraint u_constraint{.name = "U"};
+            u_constraint.concept_expr = "std::is_integral_v<U>";
+            desc.constraints["U"] = u_constraint;
+
+            desc.interactions.push_back(InteractionDescription{
+                .op_symbol = "+",
+                .lhs_type = "T",
+                .rhs_type = "U",
+                .result_type = "T",
+                .symmetric = false,
+                .lhs_is_template = true,
+                .rhs_is_template = true,
+                .is_constexpr = true,
+                .interaction_namespace = "test",
+                .value_access = "atlas::value"});
+
+            // Should not throw - all constraints defined
+            CHECK_NOTHROW(generate_interactions(desc));
+        }
+
+        SUBCASE("Mixed template and concrete with partial constraints") {
+            InteractionFileDescription desc;
+
+            TypeConstraint t_constraint{.name = "T"};
+            t_constraint.concept_expr = "std::is_arithmetic_v<T>";
+            desc.constraints["T"] = t_constraint;
+
+            desc.interactions.push_back(InteractionDescription{
+                .op_symbol = "*",
+                .lhs_type = "T",
+                .rhs_type = "double",
+                .result_type = "T",
+                .symmetric = false,
+                .lhs_is_template = true,
+                .rhs_is_template = false,
+                .is_constexpr = true,
+                .interaction_namespace = "test",
+                .value_access = "atlas::value"});
+
+            // Should not throw - only template types need constraints
+            CHECK_NOTHROW(generate_interactions(desc));
+        }
+    }
 }

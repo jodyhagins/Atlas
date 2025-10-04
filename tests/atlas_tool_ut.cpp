@@ -656,6 +656,289 @@ int main() {
             CHECK(gen2 == std::string::npos);
         }
     }
+
+    TEST_CASE("Interaction Mode - File Generation")
+    {
+        AtlasTester tester;
+
+        SUBCASE("basic interaction file with concrete types") {
+            // Create interaction input file
+            auto input_path = tester.temp_dir_ / "interactions.txt";
+            {
+                std::ofstream input(input_path);
+                input << "# Basic interaction file\n";
+                input << "include \"Distance.hpp\"\n";
+                input << "include \"Velocity.hpp\"\n";
+                input << "include \"Time.hpp\"\n\n";
+                input << "namespace=physics\n\n";
+                input << "Velocity * Time -> Distance\n";
+            }
+
+            // Run atlas in interaction mode
+            std::ostringstream cmd;
+            cmd << "cd " << build_dir() << " && ";
+            cmd << "./bin/atlas --interactions=true --input=" << input_path
+                << " 2>&1";
+
+            std::string output;
+            FILE * pipe = popen(cmd.str().c_str(), "r");
+            if (pipe) {
+                char buffer[256];
+                while (fgets(buffer, sizeof(buffer), pipe) != nullptr) {
+                    output += buffer;
+                }
+                int exit_code = pclose(pipe);
+                CHECK(exit_code == 0);
+            }
+
+            // Verify generated code
+            CHECK(output.find("#ifndef") != std::string::npos);
+            CHECK(output.find("#include \"Distance.hpp\"") != std::string::npos);
+            CHECK(
+                output.find("#include \"Velocity.hpp\"") != std::string::npos);
+            CHECK(output.find("#include \"Time.hpp\"") != std::string::npos);
+            CHECK(output.find("namespace physics") != std::string::npos);
+            CHECK(
+                output.find("operator*(Velocity lhs, Time rhs)") !=
+                std::string::npos);
+        }
+
+        SUBCASE("symmetric interaction") {
+            auto input_path = tester.temp_dir_ / "symmetric.txt";
+            {
+                std::ofstream input(input_path);
+                input << "include \"Distance.hpp\"\n\n";
+                input << "namespace=physics\n\n";
+                input << "Distance * double <-> Distance\n";
+            }
+
+            std::ostringstream cmd;
+            cmd << "cd " << build_dir() << " && ";
+            cmd << "./bin/atlas --interactions=true --input=" << input_path
+                << " 2>&1";
+
+            std::string output;
+            FILE * pipe = popen(cmd.str().c_str(), "r");
+            if (pipe) {
+                char buffer[256];
+                while (fgets(buffer, sizeof(buffer), pipe) != nullptr) {
+                    output += buffer;
+                }
+                int exit_code = pclose(pipe);
+                CHECK(exit_code == 0);
+            }
+
+            // Should generate both directions
+            CHECK(
+                output.find("operator*(Distance lhs, double rhs)") !=
+                std::string::npos);
+            CHECK(
+                output.find("operator*(double lhs, Distance rhs)") !=
+                std::string::npos);
+        }
+
+        SUBCASE("template types with concepts") {
+            auto input_path = tester.temp_dir_ / "templates.txt";
+            {
+                std::ofstream input(input_path);
+                input << "include <type_traits>\n\n";
+                input << "concept=Number : std::is_arithmetic_v<Number>\n\n";
+                input << "namespace=math\n\n";
+                input << "template Number + template Number -> template Number\n";
+            }
+
+            std::ostringstream cmd;
+            cmd << "cd " << build_dir() << " && ";
+            cmd << "./bin/atlas --interactions=true --input=" << input_path
+                << " 2>&1";
+
+            std::string output;
+            int exit_code = -1;
+            FILE * pipe = popen(cmd.str().c_str(), "r");
+            if (pipe) {
+                char buffer[256];
+                while (fgets(buffer, sizeof(buffer), pipe) != nullptr) {
+                    output += buffer;
+                }
+                exit_code = pclose(pipe);
+            }
+
+            // Verify basic generation (note: template syntax may need work)
+            CHECK(exit_code == 0);
+            CHECK(output.find("Number") != std::string::npos);
+            CHECK(output.find("operator+") != std::string::npos);
+        }
+
+        SUBCASE("interaction mode requires input file") {
+            std::ostringstream cmd;
+            cmd << "cd " << build_dir() << " && ";
+            cmd << "./bin/atlas --interactions=true 2>&1";
+
+            std::string output;
+            FILE * pipe = popen(cmd.str().c_str(), "r");
+            if (pipe) {
+                char buffer[256];
+                while (fgets(buffer, sizeof(buffer), pipe) != nullptr) {
+                    output += buffer;
+                }
+                int exit_code = pclose(pipe);
+                CHECK(exit_code != 0); // Should fail
+            }
+
+            CHECK(output.find("Error:") != std::string::npos);
+            CHECK(
+                output.find("requires an input file") != std::string::npos);
+        }
+
+        SUBCASE("interaction with output file") {
+            auto input_path = tester.temp_dir_ / "simple_interaction.txt";
+            auto output_path = tester.temp_dir_ / "interactions.hpp";
+
+            {
+                std::ofstream input(input_path);
+                input << "include \"MyType.hpp\"\n\n";
+                input << "namespace=test\n\n";
+                input << "MyType + MyType -> MyType\n";
+            }
+
+            std::ostringstream cmd;
+            cmd << "cd " << build_dir() << " && ";
+            cmd << "./bin/atlas --interactions=true --input=" << input_path
+                << " --output=" << output_path << " 2>&1";
+
+            int exit_code = system(cmd.str().c_str());
+            CHECK(exit_code == 0);
+
+            // Verify output file exists
+            std::ifstream output_file(output_path);
+            CHECK(output_file.good());
+
+            std::string content(
+                (std::istreambuf_iterator<char>(output_file)),
+                std::istreambuf_iterator<char>());
+            CHECK(content.find("#include \"MyType.hpp\"") != std::string::npos);
+            CHECK(
+                content.find("operator+(MyType lhs, MyType rhs)") !=
+                std::string::npos);
+        }
+    }
+
+    TEST_CASE("File I/O Error Handling")
+    {
+        AtlasTester tester;
+
+        SUBCASE("error writing to read-only directory") {
+            // Create a read-only directory
+            auto readonly_dir = tester.temp_dir_ / "readonly";
+            std::filesystem::create_directory(readonly_dir);
+            auto output_path = readonly_dir / "output.hpp";
+
+            // Make directory read-only
+            std::filesystem::permissions(
+                readonly_dir,
+                std::filesystem::perms::owner_read |
+                    std::filesystem::perms::owner_exec,
+                std::filesystem::perm_options::replace);
+
+            std::ostringstream cmd;
+            cmd << "cd " << build_dir() << " && ";
+            cmd << "./bin/atlas --kind=struct --namespace=test --name=MyInt "
+                << "--description=\"strong int\" "
+                << "--output=" << output_path << " 2>&1";
+
+            std::string output;
+            FILE * pipe = popen(cmd.str().c_str(), "r");
+            if (pipe) {
+                char buffer[256];
+                while (fgets(buffer, sizeof(buffer), pipe) != nullptr) {
+                    output += buffer;
+                }
+                int exit_code = pclose(pipe);
+                CHECK(exit_code != 0); // Should fail
+            }
+
+            CHECK(output.find("Error:") != std::string::npos);
+            CHECK(
+                (output.find("Cannot open") != std::string::npos ||
+                 output.find("output file") != std::string::npos));
+
+            // Restore permissions for cleanup
+            std::filesystem::permissions(
+                readonly_dir,
+                std::filesystem::perms::owner_all,
+                std::filesystem::perm_options::replace);
+        }
+
+        SUBCASE("error with invalid output path") {
+            std::ostringstream cmd;
+            cmd << "cd " << build_dir() << " && ";
+            cmd << "./bin/atlas --kind=struct --namespace=test --name=MyInt "
+                << "--description=\"strong int\" "
+                << "--output=/nonexistent_directory_12345/output.hpp 2>&1";
+
+            std::string output;
+            FILE * pipe = popen(cmd.str().c_str(), "r");
+            if (pipe) {
+                char buffer[256];
+                while (fgets(buffer, sizeof(buffer), pipe) != nullptr) {
+                    output += buffer;
+                }
+                int exit_code = pclose(pipe);
+                CHECK(exit_code != 0); // Should fail
+            }
+
+            CHECK(output.find("Error:") != std::string::npos);
+        }
+
+        SUBCASE("successful write to /tmp") {
+            auto temp_output = std::filesystem::temp_directory_path() /
+                ("atlas_test_" + std::to_string(::getpid()) + ".hpp");
+
+            std::ostringstream cmd;
+            cmd << "cd " << build_dir() << " && ";
+            cmd << "./bin/atlas --kind=struct --namespace=test --name=TempType "
+                << "--description=\"strong int\" "
+                << "--output=" << temp_output << " 2>&1";
+
+            int exit_code = system(cmd.str().c_str());
+            CHECK(exit_code == 0);
+
+            // Verify file was created
+            CHECK(std::filesystem::exists(temp_output));
+
+            // Read and verify content
+            std::ifstream file(temp_output);
+            std::string content(
+                (std::istreambuf_iterator<char>(file)),
+                std::istreambuf_iterator<char>());
+            CHECK(content.find("struct TempType") != std::string::npos);
+
+            // Cleanup
+            std::filesystem::remove(temp_output);
+        }
+
+        SUBCASE("successful read/write with stdin/stdout simulation") {
+            // This tests the normal stdout path (no --output flag)
+            std::ostringstream cmd;
+            cmd << "cd " << build_dir() << " && ";
+            cmd << "./bin/atlas --kind=struct --namespace=test --name=StdoutType "
+                << "--description=\"strong int\" 2>&1";
+
+            std::string output;
+            FILE * pipe = popen(cmd.str().c_str(), "r");
+            if (pipe) {
+                char buffer[256];
+                while (fgets(buffer, sizeof(buffer), pipe) != nullptr) {
+                    output += buffer;
+                }
+                int exit_code = pclose(pipe);
+                CHECK(exit_code == 0);
+            }
+
+            CHECK(output.find("struct StdoutType") != std::string::npos);
+            CHECK(output.find("namespace test") != std::string::npos);
+        }
+    }
 }
 
 } // anonymous namespace

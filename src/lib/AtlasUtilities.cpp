@@ -63,32 +63,6 @@ trim(std::string const & str)
 }
 
 std::string
-strong_type_tag_definition()
-{
-    static constexpr char const text[] = R"(
-#ifndef WJH_ATLAS_34E45276DD204E33A734018DE4B04C40
-#define WJH_ATLAS_34E45276DD204E33A734018DE4B04C40
-#if defined(__cpp_impl_three_way_comparison) && \
-    __cpp_impl_three_way_comparison >= 201907L
-#include <compare>
-#endif
-namespace atlas {
-struct strong_type_tag
-{
-#if defined(__cpp_impl_three_way_comparison) && \
-    __cpp_impl_three_way_comparison >= 201907L
-    friend auto
-    operator<=>(strong_type_tag const &, strong_type_tag const &) = default;
-#endif
-};
-}
-#endif // WJH_ATLAS_34E45276DD204E33A734018DE4B04C40
-
-)";
-    return text + 1;
-}
-
-std::string
 preamble()
 {
     static constexpr char const result[] = R"(

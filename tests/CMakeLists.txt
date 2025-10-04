@@ -78,6 +78,7 @@ add_executable(structural_validation_demo_ut
     structural_validation_demo_ut.cpp
 )
 
+
 target_link_libraries(strong_type_generator_ut
     PRIVATE
         atlas_test_utils
@@ -124,11 +125,13 @@ target_link_libraries(atlas_command_line_ut
     PRIVATE
         atlas_lib
         doctest::doctest
+        rapidcheck
 )
 
 target_include_directories(atlas_command_line_ut
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}
+        ${rapidcheck_SOURCE_DIR}/extras/doctest/include
 )
 
 target_link_libraries(error_handling_ut
@@ -187,6 +190,7 @@ target_include_directories(structural_validation_demo_ut
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}
 )
+
 
 add_test(NAME AtlasCommandLineTest COMMAND atlas_command_line_ut)
 add_test(NAME ErrorHandlingTest COMMAND error_handling_ut)

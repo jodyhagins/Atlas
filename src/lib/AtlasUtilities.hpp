@@ -42,12 +42,6 @@ std::string generate_header_guard(
  */
 std::string trim(std::string const & str);
 
-
-/**
- * @brief The C++ class definition for atlas::strong_type_tag.
- */
-std::string strong_type_tag_definition();
-
 /**
  * @brief The code necessary in every generated file.
  */

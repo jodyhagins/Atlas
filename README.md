@@ -47,6 +47,12 @@ Run tests:
 cd build && ctest --output-on-failure
 ```
 
+Run code coverage:
+```bash
+cmake --build build/coverage --target coverage
+# See docs/COVERAGE.md for details
+```
+
 Requirements: C++20 compiler (GCC ≥11, Clang ≥15), CMake ≥3.20, and the crushing realization that strong types actually matter
 
 ## Usage
@@ -150,6 +156,13 @@ desc.interactions.push_back({
 });
 std::string header = wjh::atlas::generate_interactions(desc);
 ```
+
+## Documentation
+
+- **[Description Language Reference](docs/description-language.md)** - Complete syntax guide
+- **[CMake Integration](docs/cmake-integration.md)** - Usage in CMake projects
+- **[Code Coverage](docs/COVERAGE.md)** - Coverage analysis guide
+- **[Header Guards](docs/generated-header-guards.md)** - Customizing generated guards
 
 ## Contributing
 

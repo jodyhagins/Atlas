@@ -34,6 +34,16 @@ include(FetchContent)
 # Options
 option(USE_SYSTEM_BOOST "Use system Boost installation" OFF)
 option(ATLAS_BUILD_TESTS "Build Atlas tests (requires CMake 3 for doctest)" ON)
+option(ENABLE_COVERAGE "Enable coverage reporting" OFF)
+
+# Coverage support (must be set before adding subdirectories/targets)
+if(ENABLE_COVERAGE)
+    if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+        message(STATUS "Enabling coverage support")
+        add_compile_options(--coverage -fprofile-arcs -ftest-coverage)
+        add_link_options(--coverage)
+    endif()
+endif()
 
 if(USE_SYSTEM_BOOST)
     find_package(Boost REQUIRED COMPONENTS json)
@@ -185,4 +195,72 @@ export(EXPORT AtlasTargets
     FILE ${CMAKE_CURRENT_BINARY_DIR}/AtlasTargets.cmake
     NAMESPACE Atlas::
 )
+
+# Add custom coverage target
+if(ATLAS_BUILD_TESTS)
+    find_program(LCOV_PATH lcov)
+    find_program(GENHTML_PATH genhtml)
+
+    # Try to find llvm-cov for better branch coverage on Clang
+    # Use wrapper script if available, otherwise try to find llvm-cov directly
+    set(LLVM_GCOV_WRAPPER "${CMAKE_SOURCE_DIR}/scripts/llvm-gcov.sh")
+    if(EXISTS ${LLVM_GCOV_WRAPPER} AND CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        set(GCOV_TOOL ${LLVM_GCOV_WRAPPER})
+        message(STATUS "Using llvm-cov via wrapper for coverage (better branch coverage support)")
+    else()
+        set(GCOV_TOOL gcov)
+    endif()
+
+    if(LCOV_PATH AND GENHTML_PATH)
+        add_custom_target(coverage
+            COMMAND ${CMAKE_COMMAND} -E echo "Running tests for coverage..."
+            COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
+            COMMAND ${CMAKE_COMMAND} -E echo "Collecting coverage data..."
+            COMMAND ${LCOV_PATH} --capture
+                --directory ${CMAKE_BINARY_DIR}
+                --output-file coverage_raw.info
+                --rc branch_coverage=1
+                --rc derive_function_end_line=0
+                --ignore-errors mismatch,source
+                --gcov-tool ${GCOV_TOOL}
+            COMMAND ${CMAKE_COMMAND} -E echo "Filtering to project sources only..."
+            COMMAND ${LCOV_PATH} --remove coverage_raw.info
+                '/usr/*'
+                '*/tests/*'
+                '*/_deps/*'
+                '*/doctest.hpp'
+                --output-file coverage.info
+                --rc branch_coverage=1
+                --rc derive_function_end_line=0
+                --ignore-errors unused
+            COMMAND ${CMAKE_COMMAND} -E echo "Generating HTML report..."
+            COMMAND ${GENHTML_PATH} coverage.info
+                --output-directory coverage_html
+                --rc branch_coverage=1
+                --ignore-errors source,inconsistent
+                --title "Atlas Coverage Report"
+                --legend
+            COMMAND ${CMAKE_COMMAND} -E echo ""
+            COMMAND ${CMAKE_COMMAND} -E echo "========================================"
+            COMMAND ${CMAKE_COMMAND} -E echo "Coverage report generated successfully!"
+            COMMAND ${CMAKE_COMMAND} -E echo ""
+            COMMAND ${CMAKE_COMMAND} -E echo "View the report:"
+            COMMAND ${CMAKE_COMMAND} -E echo "  open ${CMAKE_BINARY_DIR}/coverage_html/index.html"
+            COMMAND ${CMAKE_COMMAND} -E echo ""
+            COMMAND ${CMAKE_COMMAND} -E echo "Or run: scripts/show_coverage.sh"
+            COMMAND ${CMAKE_COMMAND} -E echo "========================================"
+            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+            COMMENT "Generating coverage report"
+        )
+    else()
+        add_custom_target(coverage
+            COMMAND ${CMAKE_COMMAND} -E echo "Running tests..."
+            COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
+            COMMAND ${CMAKE_COMMAND} -E echo "Generating basic coverage report..."
+            COMMAND ${CMAKE_COMMAND} -E echo "Install lcov for HTML reports: brew install lcov (macOS) or apt-get install lcov (Linux)"
+            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+            COMMENT "Running tests (lcov not found for detailed coverage)"
+        )
+    endif()
+endif()
 

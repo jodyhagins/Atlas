@@ -350,18 +350,6 @@ parse_input_file(Arguments const & args)
 
 std::string
 AtlasCommandLine::
-make_file_guard(
-    std::string const & prefix,
-    std::string const & separator,
-    bool upcase,
-    std::string const & content)
-{
-    std::string content_hash = get_sha1(content);
-    return generate_header_guard(prefix, separator, content_hash, upcase);
-}
-
-std::string
-AtlasCommandLine::
 get_help_text()
 {
     return R"(Atlas Strong Type Generator
@@ -519,12 +507,6 @@ parse_interaction_file(std::string const & filename)
         // Parse directives
         if (starts_with(line, "include ")) {
             std::string include = trim(line.substr(8));
-            if (include.empty()) {
-                throw AtlasCommandLineError(
-                    "Empty include directive at line " +
-                    std::to_string(line_number) + " in " + filename +
-                    ". Expected: include <header> or include \"header\"");
-            }
             result.includes.push_back(include);
         } else if (line == "include") {
             throw AtlasCommandLineError(
