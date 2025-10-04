@@ -48,6 +48,11 @@ std::string trim(std::string const & str);
  */
 std::string strong_type_tag_definition();
 
+/**
+ * @brief The code necessary in every generated file.
+ */
+std::string preamble();
+
 }} // namespace wjh::atlas::v1
 
 #endif // WJH_ATLAS_8651ABC1F7E740D3960747B1195C51A7

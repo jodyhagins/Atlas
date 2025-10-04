@@ -904,8 +904,7 @@ operator () (StrongTypeDescription const & desc) const
     strm << (notice_banner + 1) << '\n'
         << "#ifndef " << guard << '\n'
         << "#define " << guard << "\n\n"
-        << strong_type_tag_definition() << code << "#endif // " << guard
-        << '\n';
+        << preamble() << code << "#endif // " << guard << '\n';
     return strm.str();
 }
 
@@ -1059,7 +1058,7 @@ generate_strong_types_file(
     }
 
     // Add strong_type_tag definition once for the entire file
-    output << strong_type_tag_definition();
+    output << preamble();
     output << content << "#endif // " << guard << '\n';
 
     return output.str();

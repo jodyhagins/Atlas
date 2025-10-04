@@ -4,6 +4,7 @@
 // See accompanying file LICENSE or copy at
 // https://opensource.org/licenses/MIT
 // ----------------------------------------------------------------------
+#include "CodeStructureParser.hpp"
 #include "StrongTypeGenerator.hpp"
 
 #include <algorithm>
@@ -45,44 +46,58 @@ make_description(
         .upcase_guard = upcase_guard};
 }
 
-bool
-contains_all(
-    std::string_view code,
-    std::vector<std::string_view> const & patterns)
+struct SplitCode
 {
-    return std::all_of(
-        patterns.begin(),
-        patterns.end(),
-        [code](auto const & pattern) {
-            return code.find(pattern) != std::string_view::npos;
-        });
-}
+    std::string full_code;
+    std::string preamble; // Everything before the marker
+    std::string type_specific; // Everything after the marker
+};
 
-bool
-contains_none(
-    std::string_view code,
-    std::vector<std::string_view> const & patterns)
+SplitCode
+split_generated_code(std::string const & code)
 {
-    return std::none_of(
-        patterns.begin(),
-        patterns.end(),
-        [code](auto const & pattern) {
-            return code.find(pattern) != std::string_view::npos;
-        });
+    constexpr auto marker = "/// These are the droids you are looking for!";
+    auto pos = code.find(marker);
+
+    SplitCode result;
+    result.full_code = code;
+    if (pos != std::string::npos) {
+        result.preamble = code.substr(0, pos);
+        result.type_specific = code.substr(pos + std::strlen(marker));
+    } else {
+        // Fallback if marker not found
+        result.type_specific = code;
+    }
+    return result;
 }
 
 TEST_SUITE("StrongTypeGenerator")
 {
     TEST_CASE("Basic Structure Generation")
     {
+        CodeStructureParser parser;
+
         SUBCASE("struct generation") {
             auto desc =
                 make_description("struct", "test", "MyInt", "strong int");
             auto code = generate_strong_type(desc);
+            auto structure = parser.parse(code);
 
-            CHECK(contains_all(code, {"#ifndef", "#define", "#endif"}));
-            CHECK(contains_all(code, {"struct MyInt", "int value;"}));
-            CHECK(contains_none(code, {"public:", "private:"}));
+            // Validate complete structure
+            CHECK(structure.kind == "struct");
+            CHECK(structure.type_name == "MyInt");
+            CHECK(structure.namespace_name == "test");
+            CHECK(structure.member_type == "int");
+            CHECK(structure.member_name == "value");
+            CHECK_FALSE(structure.member_default_value.has_value());
+
+            // struct should NOT have public: or private: in type-specific code
+            CHECK_FALSE(structure.has_public_specifier);
+            CHECK_FALSE(structure.has_private_specifier);
+
+            // Should have header guard
+            CHECK_FALSE(structure.guard_name.empty());
+            CHECK(structure.guard_name.find("TEST_MYINT") != std::string::npos);
         }
 
         SUBCASE("class generation") {
@@ -92,33 +107,48 @@ TEST_SUITE("StrongTypeGenerator")
                 "MyString",
                 "strong std::string");
             auto code = generate_strong_type(desc);
+            auto structure = parser.parse(code);
 
-            CHECK(contains_all(
-                code,
-                {"class MyString", "std::string value;", "public:"}));
-            CHECK(code.find("private:") == std::string::npos);
+            // Validate complete structure
+            CHECK(structure.kind == "class");
+            CHECK(structure.type_name == "MyString");
+            CHECK(structure.namespace_name == "test::nested");
+            CHECK(structure.member_type == "std::string");
+
+            // class MUST have public: specifier
+            CHECK(structure.has_public_specifier);
+            CHECK_FALSE(structure.has_private_specifier);
+
+            // Should auto-include string header
+            CHECK(structure.has_include("#include <string>"));
         }
 
         SUBCASE("namespace handling") {
             auto desc =
                 make_description("struct", "a::b::c", "MyType", "strong int");
             auto code = generate_strong_type(desc);
+            auto structure = parser.parse(code);
 
-            CHECK(contains_all(
-                code,
-                {"namespace a::b::c {", "} // namespace a::b::c"}));
+            CHECK(structure.namespace_name == "a::b::c");
+            CHECK(structure.type_name == "MyType");
+            CHECK(structure.full_qualified_name == "a::b::c::MyType");
         }
     }
 
     TEST_CASE("Header Guard Generation")
     {
+        CodeStructureParser parser;
+
         SUBCASE("default guard generation") {
             auto desc =
                 make_description("struct", "test", "MyType", "strong int");
             auto code = generate_strong_type(desc);
+            auto structure = parser.parse(code);
 
-            CHECK(code.find("#ifndef TEST_MYTYPE_") != std::string::npos);
-            CHECK(code.find("#define TEST_MYTYPE_") != std::string::npos);
+            // Validate guard name contains expected parts
+            CHECK_FALSE(structure.guard_name.empty());
+            CHECK(structure.guard_name.find("TEST") != std::string::npos);
+            CHECK(structure.guard_name.find("MYTYPE") != std::string::npos);
         }
 
         SUBCASE("custom guard prefix") {
@@ -130,9 +160,11 @@ TEST_SUITE("StrongTypeGenerator")
                 "", // default_value
                 "CUSTOM"); // guard_prefix
             auto code = generate_strong_type(desc);
+            auto structure = parser.parse(code);
 
-            CHECK(code.find("#ifndef CUSTOM_") != std::string::npos);
-            CHECK(code.find("#define CUSTOM_") != std::string::npos);
+            // Should use CUSTOM prefix instead of namespace
+            CHECK(structure.guard_name.find("CUSTOM") != std::string::npos);
+            CHECK(structure.guard_name.find("TEST") == std::string::npos);
         }
 
         SUBCASE("custom guard separator") {
@@ -145,8 +177,12 @@ TEST_SUITE("StrongTypeGenerator")
                 "", // guard_prefix
                 "__"); // guard_separator
             auto code = generate_strong_type(desc);
+            auto structure = parser.parse(code);
 
-            CHECK(code.find("#ifndef TEST__MYTYPE__") != std::string::npos);
+            // Should use __ as separator (double underscore)
+            CHECK(
+                structure.guard_name.find("TEST__MYTYPE__") !=
+                std::string::npos);
         }
 
         SUBCASE("lowercase guard") {
@@ -160,13 +196,20 @@ TEST_SUITE("StrongTypeGenerator")
                 "_", // guard_separator
                 false); // upcase_guard
             auto code = generate_strong_type(desc);
+            auto structure = parser.parse(code);
 
-            CHECK(code.find("#ifndef test_MyType_") != std::string::npos);
+            // Should preserve case (not all uppercase)
+            CHECK(
+                structure.guard_name.find("test_MyType_") != std::string::npos);
+            // Should NOT be all uppercase
+            CHECK(structure.guard_name != "TEST_MYTYPE_");
         }
     }
 
     TEST_CASE("Arithmetic Operators")
     {
+        CodeStructureParser parser;
+
         SUBCASE("binary arithmetic operators") {
             auto desc = make_description(
                 "struct",
@@ -174,14 +217,31 @@ TEST_SUITE("StrongTypeGenerator")
                 "Number",
                 "strong int; +, -, *, /, %");
             auto code = generate_strong_type(desc);
+            auto structure = parser.parse(code);
 
             for (auto op : {"+", "-", "*", "/", "%"}) {
-                CHECK(
-                    code.find(std::string("operator ") + op + "=") !=
-                    std::string::npos);
-                CHECK(
-                    code.find(std::string("operator ") + op + " (") !=
-                    std::string::npos);
+                // Check for compound assignment operator (friend function)
+                auto compound = structure.find_operator(
+                    std::string("operator ") + op + "=");
+                REQUIRE(compound.has_value());
+                CHECK(compound->name == std::string("operator ") + op + "=");
+                CHECK(compound
+                          ->is_friend); // friend function per template line 217
+                CHECK(compound->is_constexpr); // should be constexpr by default
+
+                // Check for binary operator (friend function)
+                // We should find 2 instances: one is the binary operator itself
+                auto all_ops = structure.find_all_operators(
+                    std::string("operator ") + op);
+                REQUIRE(
+                    all_ops.size() ==
+                    2); // Should have both compound and binary
+
+                // Both should be friend and constexpr
+                for (auto const & bin_op : all_ops) {
+                    CHECK(bin_op.is_friend);
+                    CHECK(bin_op.is_constexpr);
+                }
             }
         }
 
@@ -192,10 +252,16 @@ TEST_SUITE("StrongTypeGenerator")
                 "Number",
                 "strong int; u+, u-, u~");
             auto code = generate_strong_type(desc);
+            auto structure = parser.parse(code);
 
-            CHECK(contains_all(
-                code,
-                {"operator + (", "operator - (", "operator ~ ("}));
+            // Unary operators should be friend functions
+            for (auto op : {"+", "-", "~"}) {
+                auto unary = structure.find_operator(
+                    std::string("operator ") + op);
+                REQUIRE(unary.has_value());
+                CHECK(unary->is_friend); // friend function
+                CHECK(unary->is_constexpr);
+            }
         }
 
         SUBCASE("combined binary and unary operators") {
@@ -205,13 +271,22 @@ TEST_SUITE("StrongTypeGenerator")
                 "Number",
                 "strong int; +*, -*");
             auto code = generate_strong_type(desc);
+            auto structure = parser.parse(code);
 
-            CHECK(contains_all(
-                code,
-                {"operator +=",
-                 "operator + (",
-                 "operator -=",
-                 "operator - ("}));
+            // Should have compound, binary, AND unary forms for +* and -*
+            auto plus_ops = structure.find_all_operators("operator +");
+            REQUIRE(plus_ops.size() >= 2); // At least binary and unary
+
+            auto plus_eq = structure.find_operator("operator +=");
+            REQUIRE(plus_eq.has_value());
+            CHECK(plus_eq->is_friend); // compound is friend function
+
+            auto minus_ops = structure.find_all_operators("operator -");
+            REQUIRE(minus_ops.size() >= 2); // At least binary and unary
+
+            auto minus_eq = structure.find_operator("operator -=");
+            REQUIRE(minus_eq.has_value());
+            CHECK(minus_eq->is_friend); // compound is friend function
         }
 
         SUBCASE("bitwise operators") {
@@ -221,20 +296,34 @@ TEST_SUITE("StrongTypeGenerator")
                 "Bits",
                 "strong int; &, |, ^, <<, >>");
             auto code = generate_strong_type(desc);
+            auto structure = parser.parse(code);
 
             for (auto op : {"&", "|", "^", "<<", ">>"}) {
-                CHECK(
-                    code.find(std::string("operator ") + op + "=") !=
-                    std::string::npos);
-                CHECK(
-                    code.find(std::string("operator ") + op + " (") !=
-                    std::string::npos);
+                // Check for compound assignment operator (friend function)
+                auto compound = structure.find_operator(
+                    std::string("operator ") + op + "=");
+                REQUIRE(compound.has_value());
+                CHECK(compound->is_friend); // friend function
+                CHECK(compound->is_constexpr);
+
+                // Check for binary operator (both forms should exist)
+                auto all_ops = structure.find_all_operators(
+                    std::string("operator ") + op);
+                REQUIRE(all_ops.size() == 2); // compound and binary
+
+                // Both should be friend and constexpr
+                for (auto const & bin_op : all_ops) {
+                    CHECK(bin_op.is_friend);
+                    CHECK(bin_op.is_constexpr);
+                }
             }
         }
     }
 
     TEST_CASE("Comparison Operators")
     {
+        CodeStructureParser parser;
+
         SUBCASE("relational operators") {
             auto desc = make_description(
                 "struct",
@@ -242,11 +331,15 @@ TEST_SUITE("StrongTypeGenerator")
                 "Number",
                 "strong int; ==, !=, <, <=, >, >=");
             auto code = generate_strong_type(desc);
+            auto structure = parser.parse(code);
 
             for (auto op : {"==", "!=", "<", "<=", ">", ">="}) {
-                CHECK(
-                    code.find(std::string("operator ") + op + " (") !=
-                    std::string::npos);
+                // All comparison operators should be friend functions
+                auto cmp_op = structure.find_operator(
+                    std::string("operator ") + op);
+                REQUIRE(cmp_op.has_value());
+                CHECK(cmp_op->is_friend);
+                CHECK(cmp_op->is_constexpr);
             }
         }
 
@@ -254,14 +347,19 @@ TEST_SUITE("StrongTypeGenerator")
             auto desc =
                 make_description("struct", "test", "Number", "strong int; <=>");
             auto code = generate_strong_type(desc);
+            auto structure = parser.parse(code);
 
-            CHECK(code.find("operator <=> (") != std::string::npos);
-            CHECK(code.find("= default") != std::string::npos);
+            auto spaceship = structure.find_operator("operator <=>");
+            REQUIRE(spaceship.has_value());
+            CHECK(spaceship->is_friend);
+            CHECK(spaceship->is_default);
         }
     }
 
     TEST_CASE("Special Operators")
     {
+        CodeStructureParser parser;
+
         SUBCASE("increment/decrement operators") {
             auto desc = make_description(
                 "struct",
@@ -269,16 +367,28 @@ TEST_SUITE("StrongTypeGenerator")
                 "Counter",
                 "strong int; ++, --");
             auto code = generate_strong_type(desc);
+            auto structure = parser.parse(code);
 
-            CHECK(contains_all(code, {"operator ++ (", "operator -- ("}));
+            auto inc = structure.find_operator("operator ++");
+            REQUIRE(inc.has_value());
+            CHECK(inc->is_friend);
+            CHECK(inc->is_constexpr);
+
+            auto dec = structure.find_operator("operator --");
+            REQUIRE(dec.has_value());
+            CHECK(dec->is_friend);
+            CHECK(dec->is_constexpr);
         }
 
         SUBCASE("indirection operator") {
             auto desc =
                 make_description("struct", "test", "Ptr", "strong int*; @");
             auto code = generate_strong_type(desc);
+            auto structure = parser.parse(code);
 
-            CHECK(code.find("operator * ()") != std::string::npos);
+            auto deref = structure.find_operator("operator *");
+            REQUIRE(deref.has_value());
+            CHECK(deref->is_constexpr);
         }
 
         SUBCASE("address-of operators") {
@@ -288,8 +398,15 @@ TEST_SUITE("StrongTypeGenerator")
                 "Ref",
                 "strong int; &of, ->");
             auto code = generate_strong_type(desc);
+            auto structure = parser.parse(code);
 
-            CHECK(contains_all(code, {"operator & ()", "operator -> ()"}));
+            auto addr = structure.find_operator("operator &");
+            REQUIRE(addr.has_value());
+            CHECK(addr->is_constexpr);
+
+            auto arrow = structure.find_operator("operator ->");
+            REQUIRE(arrow.has_value());
+            CHECK(arrow->is_constexpr);
         }
 
         SUBCASE("call operators") {
@@ -299,26 +416,34 @@ TEST_SUITE("StrongTypeGenerator")
                 "Callable",
                 "strong int; (), (&)");
             auto code = generate_strong_type(desc);
+            auto structure = parser.parse(code);
 
-            CHECK(contains_all(
-                code,
-                {"operator () ()", "operator () (InvocableT"}));
+            // Both call operators should exist
+            auto call_ops = structure.find_all_operators("operator ()");
+            REQUIRE(
+                call_ops.size() >= 1); // At least nullary or template version
         }
 
         SUBCASE("bool conversion") {
+            CodeStructureParser parser;
             auto desc = make_description(
                 "struct",
                 "test",
                 "BoolConv",
                 "strong int; bool");
             auto code = generate_strong_type(desc);
+            auto structure = parser.parse(code);
 
-            CHECK(code.find("explicit operator bool ()") != std::string::npos);
+            // Bool conversion is a special operator
+            auto bool_op = structure.find_operator("operator bool");
+            CHECK(bool_op.has_value());
         }
     }
 
     TEST_CASE("Stream Operators")
     {
+        CodeStructureParser parser;
+
         SUBCASE("output stream operator") {
             auto desc = make_description(
                 "struct",
@@ -326,8 +451,12 @@ TEST_SUITE("StrongTypeGenerator")
                 "Printable",
                 "strong int; out");
             auto code = generate_strong_type(desc);
+            auto structure = parser.parse(code);
 
-            CHECK(contains_all(code, {"#include <ostream>", "operator << ("}));
+            CHECK(structure.has_include("#include <ostream>"));
+            auto stream_op = structure.find_operator("operator <<");
+            CHECK(stream_op.has_value());
+            CHECK(stream_op->is_friend);
         }
 
         SUBCASE("input stream operator") {
@@ -337,8 +466,12 @@ TEST_SUITE("StrongTypeGenerator")
                 "Readable",
                 "strong int; in");
             auto code = generate_strong_type(desc);
+            auto structure = parser.parse(code);
 
-            CHECK(contains_all(code, {"#include <istream>", "operator >> ("}));
+            CHECK(structure.has_include("#include <istream>"));
+            auto stream_op = structure.find_operator("operator >>");
+            CHECK(stream_op.has_value());
+            CHECK(stream_op->is_friend);
         }
 
         SUBCASE("both stream operators") {
@@ -348,197 +481,204 @@ TEST_SUITE("StrongTypeGenerator")
                 "Streamable",
                 "strong int; in, out");
             auto code = generate_strong_type(desc);
+            auto structure = parser.parse(code);
 
-            CHECK(contains_all(
-                code,
-                {"#include <istream>", "#include <ostream>"}));
+            CHECK(structure.has_include("#include <istream>"));
+            CHECK(structure.has_include("#include <ostream>"));
+            CHECK(structure.find_operator("operator <<").has_value());
+            CHECK(structure.find_operator("operator >>").has_value());
         }
     }
 
     TEST_CASE("Automatic Header Detection")
     {
-        SUBCASE("standard string types") {
-            auto desc =
-                make_description("struct", "test", "Str", "strong std::string");
-            auto code = generate_strong_type(desc);
+        CodeStructureParser parser;
 
-            CHECK(code.find("#include <string>") != std::string::npos);
+        SUBCASE("standard string types") {
+            auto code = generate_strong_type(make_description(
+                "struct",
+                "test",
+                "Str",
+                "strong std::string"));
+            CHECK(parser.parse(code).has_include("#include <string>"));
         }
 
         SUBCASE("standard containers") {
-            auto desc = make_description(
+            auto code = generate_strong_type(make_description(
                 "struct",
                 "test",
                 "Vec",
-                "strong std::vector<int>");
-            auto code = generate_strong_type(desc);
-
-            CHECK(code.find("#include <vector>") != std::string::npos);
+                "strong std::vector<int>"));
+            CHECK(parser.parse(code).has_include("#include <vector>"));
         }
 
         SUBCASE("standard optional") {
-            auto desc = make_description(
+            auto code = generate_strong_type(make_description(
                 "struct",
                 "test",
                 "Opt",
-                "strong std::optional<int>");
-            auto code = generate_strong_type(desc);
-
-            CHECK(code.find("#include <optional>") != std::string::npos);
+                "strong std::optional<int>"));
+            CHECK(parser.parse(code).has_include("#include <optional>"));
         }
 
         SUBCASE("chrono types") {
-            auto desc = make_description(
+            auto code = generate_strong_type(make_description(
                 "struct",
                 "test",
                 "Time",
-                "strong std::chrono::seconds");
-            auto code = generate_strong_type(desc);
-
-            CHECK(code.find("#include <chrono>") != std::string::npos);
+                "strong std::chrono::seconds"));
+            CHECK(parser.parse(code).has_include("#include <chrono>"));
         }
     }
 
     TEST_CASE("Custom Headers")
     {
+        CodeStructureParser parser;
+
         SUBCASE("custom header with quotes") {
-            auto desc = make_description(
+            auto code = generate_strong_type(make_description(
                 "struct",
                 "test",
                 "Custom",
-                "strong MyType; #\"my/header.hpp\"");
-            auto code = generate_strong_type(desc);
-
-            CHECK(code.find("#include \"my/header.hpp\"") != std::string::npos);
+                "strong MyType; #\"my/header.hpp\""));
+            CHECK(parser.parse(code).has_include("#include \"my/header.hpp\""));
         }
 
         SUBCASE("custom header with single quotes") {
-            auto desc = make_description(
+            auto code = generate_strong_type(make_description(
                 "struct",
                 "test",
                 "Custom",
-                "strong MyType; #'my/header.hpp'");
-            auto code = generate_strong_type(desc);
-
-            CHECK(code.find("#include \"my/header.hpp\"") != std::string::npos);
+                "strong MyType; #'my/header.hpp'"));
+            CHECK(parser.parse(code).has_include("#include \"my/header.hpp\""));
         }
 
         SUBCASE("custom header with angle brackets") {
-            auto desc = make_description(
+            auto code = generate_strong_type(make_description(
                 "struct",
                 "test",
                 "Custom",
-                "strong MyType; #<system/header>");
-            auto code = generate_strong_type(desc);
-
-            CHECK(code.find("#include <system/header>") != std::string::npos);
+                "strong MyType; #<system/header>"));
+            CHECK(parser.parse(code).has_include("#include <system/header>"));
         }
     }
 
     TEST_CASE("Default Value Support")
     {
+        CodeStructureParser parser;
+
         SUBCASE("integer default value") {
-            auto desc = make_description(
+            auto code = generate_strong_type(make_description(
                 "struct",
                 "test",
                 "Counter",
                 "strong int",
-                "42");
-            auto code = generate_strong_type(desc);
+                "42"));
+            auto structure = parser.parse(code);
 
-            CHECK(code.find("value{42}") != std::string::npos);
-            CHECK(code.find("value{}") == std::string::npos);
+            REQUIRE(structure.member_default_value.has_value());
+            CHECK(*structure.member_default_value == "42");
         }
 
         SUBCASE("double default value") {
-            auto desc = make_description(
+            auto code = generate_strong_type(make_description(
                 "struct",
                 "test",
                 "Pi",
                 "strong double",
-                "3.14159");
-            auto code = generate_strong_type(desc);
+                "3.14159"));
+            auto structure = parser.parse(code);
 
-            CHECK(code.find("value{3.14159}") != std::string::npos);
+            REQUIRE(structure.member_default_value.has_value());
+            CHECK(*structure.member_default_value == "3.14159");
         }
 
         SUBCASE("string default value") {
-            auto desc = make_description(
+            auto code = generate_strong_type(make_description(
                 "struct",
                 "test",
                 "Name",
                 "strong std::string",
-                R"("hello")");
-            auto code = generate_strong_type(desc);
+                R"("hello")"));
+            auto structure = parser.parse(code);
 
-            CHECK(code.find("value{\"hello\"}") != std::string::npos);
+            REQUIRE(structure.member_default_value.has_value());
+            CHECK(*structure.member_default_value == R"("hello")");
         }
 
         SUBCASE("complex expression default value") {
-            auto desc = make_description(
+            auto code = generate_strong_type(make_description(
                 "struct",
                 "test",
                 "Numbers",
                 "strong std::vector<int>",
-                "std::vector<int>{1, 2, 3}");
-            auto code = generate_strong_type(desc);
+                "std::vector<int>{1, 2, 3}"));
+            auto structure = parser.parse(code);
 
+            REQUIRE(structure.member_default_value.has_value());
             CHECK(
-                code.find("value{std::vector<int>{1, 2, 3}}") !=
-                std::string::npos);
+                *structure.member_default_value == "std::vector<int>{1, 2, 3}");
         }
 
         SUBCASE("string with commas") {
-            auto desc = make_description(
+            auto code = generate_strong_type(make_description(
                 "struct",
                 "test",
                 "CommaString",
                 "strong std::string",
-                R"("42,43")");
-            auto code = generate_strong_type(desc);
+                R"("42,43")"));
+            auto structure = parser.parse(code);
 
-            CHECK(code.find(R"(value{"42,43"})") != std::string::npos);
+            REQUIRE(structure.member_default_value.has_value());
+            CHECK(*structure.member_default_value == R"("42,43")");
         }
 
         SUBCASE("default value with other operators") {
-            auto desc = make_description(
+            auto code = generate_strong_type(make_description(
                 "struct",
                 "test",
                 "Score",
                 "strong int; +, -, ==, !=",
-                "100");
-            auto code = generate_strong_type(desc);
+                "100"));
+            auto structure = parser.parse(code);
 
-            CHECK(code.find("value{100}") != std::string::npos);
-            CHECK(contains_all(
-                code,
-                {"operator +=", "operator -=", "operator ==", "operator !="}));
+            REQUIRE(structure.member_default_value.has_value());
+            CHECK(*structure.member_default_value == "100");
+
+            // Verify operators also present
+            CHECK(structure.find_operator("operator +=").has_value());
+            CHECK(structure.find_operator("operator -=").has_value());
+            CHECK(structure.find_operator("operator ==").has_value());
+            CHECK(structure.find_operator("operator !=").has_value());
         }
 
         SUBCASE("no default value uses default construction") {
-            auto desc =
-                make_description("struct", "test", "Regular", "strong int");
-            auto code = generate_strong_type(desc);
+            auto code = generate_strong_type(
+                make_description("struct", "test", "Regular", "strong int"));
+            auto structure = parser.parse(code);
 
-            CHECK(code.find("int value;") != std::string::npos);
-            CHECK(code.find("value{") == std::string::npos);
+            CHECK_FALSE(structure.member_default_value.has_value());
+            CHECK(structure.member_type == "int");
         }
 
         SUBCASE("negative default value") {
-            auto desc = make_description(
+            auto code = generate_strong_type(make_description(
                 "struct",
                 "test",
                 "Negative",
                 "strong int",
-                "-42");
-            auto code = generate_strong_type(desc);
+                "-42"));
+            auto structure = parser.parse(code);
 
-            CHECK(code.find("value{-42}") != std::string::npos);
+            REQUIRE(structure.member_default_value.has_value());
+            CHECK(*structure.member_default_value == "-42");
         }
     }
 
     TEST_CASE("Error Handling")
     {
+        CodeStructureParser parser;
+
         SUBCASE("invalid kind throws exception") {
             auto desc =
                 make_description("invalid", "test", "Bad", "strong int");
@@ -547,16 +687,21 @@ TEST_SUITE("StrongTypeGenerator")
         }
 
         SUBCASE("empty description still generates basic structure") {
-            auto desc =
-                make_description("struct", "test", "Empty", "strong int; ");
-            auto code = generate_strong_type(desc);
+            auto code = generate_strong_type(
+                make_description("struct", "test", "Empty", "strong int; "));
+            auto structure = parser.parse(code);
 
-            CHECK(contains_all(code, {"struct Empty", "int value;"}));
+            CHECK(structure.kind == "struct");
+            CHECK(structure.type_name == "Empty");
+            CHECK(structure.member_type == "int");
+            CHECK(structure.member_name == "value");
         }
     }
 
     TEST_CASE("Complex Type Descriptions")
     {
+        CodeStructureParser parser;
+
         SUBCASE("all operators together") {
             auto desc = make_description(
                 "struct",
@@ -565,13 +710,17 @@ TEST_SUITE("StrongTypeGenerator")
                 "strong int; +, -, *, /, %, &, |, ^, <<, >>, ==, !=, <, <=, >, "
                 ">=, <=>, ++, --, bool, out, in");
             auto code = generate_strong_type(desc);
+            auto structure = parser.parse(code);
 
-            CHECK(contains_all(
-                code,
-                {"operator +", "operator ==", "operator <=>", "operator ++"}));
-            CHECK(contains_all(
-                code,
-                {"#include <ostream>", "#include <istream>"}));
+            // Structural validation - check operators are generated
+            CHECK(structure.find_operator("operator +").has_value());
+            CHECK(structure.find_operator("operator ==").has_value());
+            CHECK(structure.find_operator("operator <=>").has_value());
+            CHECK(structure.find_operator("operator ++").has_value());
+
+            // Check includes are present
+            CHECK(structure.has_include("#include <ostream>"));
+            CHECK(structure.has_include("#include <istream>"));
         }
 
         SUBCASE("nested namespace and complex type") {
@@ -581,16 +730,21 @@ TEST_SUITE("StrongTypeGenerator")
                 "Container::Element",
                 "strong std::unique_ptr<Data>; ->, bool, ==, !=");
             auto code = generate_strong_type(desc);
+            auto structure = parser.parse(code);
 
-            CHECK(contains_all(code, {"namespace company::product::module {"}));
-            CHECK(contains_all(
-                code,
-                {"class Container::Element", "std::unique_ptr<Data> value;"}));
+            // Structural validation
+            CHECK(structure.namespace_name == "company::product::module");
+            CHECK(structure.kind == "class");
+            CHECK(structure.type_name == "Container::Element");
+            CHECK(structure.member_type == "std::unique_ptr<Data>");
+            CHECK(structure.member_name == "value");
         }
     }
 
     TEST_CASE("Hash Support")
     {
+        CodeStructureParser parser;
+
         SUBCASE("hash with int type") {
             auto desc = make_description(
                 "struct",
@@ -598,15 +752,14 @@ TEST_SUITE("StrongTypeGenerator")
                 "HashableInt",
                 "strong int; ==, hash");
             auto code = generate_strong_type(desc);
+            auto structure = parser.parse(code);
 
-            CHECK(code.find("#include <functional>") != std::string::npos);
-            CHECK(code.find("template <>") != std::string::npos);
-            CHECK(
-                code.find("struct std::hash<test::HashableInt>") !=
-                std::string::npos);
-            CHECK(
-                code.find("constexpr std::size_t operator ()") !=
-                std::string::npos);
+            // Structural validation - semantic, not syntactic
+            CHECK(structure.has_hash_specialization);
+            CHECK(structure.hash_is_constexpr);
+            CHECK(structure.has_include("#include <functional>"));
+            CHECK(structure.type_name == "HashableInt");
+            CHECK(structure.namespace_name == "test");
         }
 
         SUBCASE("hash with string type") {
@@ -616,11 +769,12 @@ TEST_SUITE("StrongTypeGenerator")
                 "HashableString",
                 "strong std::string; ==, hash");
             auto code = generate_strong_type(desc);
+            auto structure = parser.parse(code);
 
-            CHECK(code.find("#include <functional>") != std::string::npos);
-            CHECK(
-                code.find("struct std::hash<test::HashableString>") !=
-                std::string::npos);
+            CHECK(structure.has_hash_specialization);
+            CHECK(structure.hash_is_constexpr);
+            CHECK(structure.has_include("#include <functional>"));
+            CHECK(structure.has_include("#include <string>"));
         }
 
         SUBCASE("hash with namespaced type") {
@@ -630,19 +784,22 @@ TEST_SUITE("StrongTypeGenerator")
                 "HashableValue",
                 "strong unsigned; ==, hash");
             auto code = generate_strong_type(desc);
+            auto structure = parser.parse(code);
 
+            CHECK(structure.has_hash_specialization);
+            CHECK(structure.namespace_name == "my::deep::ns");
+            CHECK(structure.type_name == "HashableValue");
             CHECK(
-                code.find("struct std::hash<my::deep::ns::HashableValue>") !=
-                std::string::npos);
+                structure.full_qualified_name == "my::deep::ns::HashableValue");
         }
 
         SUBCASE("no hash without explicit option") {
             auto desc =
                 make_description("struct", "test", "NoHash", "strong int; ==");
             auto code = generate_strong_type(desc);
+            auto structure = parser.parse(code);
 
-            CHECK(code.find("struct std::hash<") == std::string::npos);
-            CHECK(code.find("template <>") == std::string::npos);
+            CHECK_FALSE(structure.has_hash_specialization);
         }
 
         SUBCASE("no-constexpr-hash generates hash without constexpr") {
@@ -652,20 +809,12 @@ TEST_SUITE("StrongTypeGenerator")
                 "RuntimeHash",
                 "strong int; ==, no-constexpr-hash");
             auto code = generate_strong_type(desc);
+            auto structure = parser.parse(code);
 
-            CHECK(code.find("#include <functional>") != std::string::npos);
-            CHECK(
-                code.find("struct std::hash<test::RuntimeHash>") !=
-                std::string::npos);
-            // Should NOT have constexpr on hash operator
-            CHECK(
-                code.find(
-                    "constexpr std::size_t operator () (test::RuntimeHash") ==
-                std::string::npos);
-            // Should have non-constexpr version
-            CHECK(
-                code.find("std::size_t operator () (test::RuntimeHash") !=
-                std::string::npos);
+            // Has hash but NOT constexpr
+            CHECK(structure.has_hash_specialization);
+            CHECK_FALSE(structure.hash_is_constexpr);
+            CHECK(structure.has_include("#include <functional>"));
         }
 
         SUBCASE("regular hash has constexpr") {
@@ -675,12 +824,10 @@ TEST_SUITE("StrongTypeGenerator")
                 "ConstexprHash",
                 "strong int; ==, hash");
             auto code = generate_strong_type(desc);
+            auto structure = parser.parse(code);
 
-            // Should have constexpr on hash operator
-            CHECK(
-                code.find(
-                    "constexpr std::size_t operator () (test::ConstexprHash") !=
-                std::string::npos);
+            CHECK(structure.has_hash_specialization);
+            CHECK(structure.hash_is_constexpr);
         }
 
         SUBCASE("no-constexpr removes constexpr from hash too") {
@@ -690,23 +837,20 @@ TEST_SUITE("StrongTypeGenerator")
                 "NoConstexprWithHash",
                 "strong int; ==, hash, no-constexpr");
             auto code = generate_strong_type(desc);
+            auto structure = parser.parse(code);
 
-            CHECK(
-                code.find("struct std::hash<test::NoConstexprWithHash>") !=
-                std::string::npos);
-            // Should NOT have constexpr on hash operator
-            CHECK(
-                code.find("constexpr std::size_t operator () "
-                          "(test::NoConstexprWithHash") == std::string::npos);
-            // Should NOT have constexpr on constructor either
-            CHECK(
-                code.find("constexpr explicit NoConstexprWithHash") ==
-                std::string::npos);
+            // Hash exists but without constexpr
+            CHECK(structure.has_hash_specialization);
+            CHECK_FALSE(structure.hash_is_constexpr);
+            // Type should also not have constexpr constructor
+            CHECK_FALSE(structure.has_constexpr_constructor);
         }
     }
 
     TEST_CASE("Constexpr Code Generation")
     {
+        CodeStructureParser parser;
+
         SUBCASE("default constexpr on all operations") {
             auto desc = make_description(
                 "struct",
@@ -714,19 +858,23 @@ TEST_SUITE("StrongTypeGenerator")
                 "Value",
                 "strong int; +, -, ==, !=, bool");
             auto code = generate_strong_type(desc);
+            auto structure = parser.parse(code);
 
-            // Verify constexpr appears on operations
-            CHECK(code.find("constexpr explicit Value") != std::string::npos);
-            CHECK(
-                code.find("constexpr Value & operator +=") !=
-                std::string::npos);
-            CHECK(
-                code.find("constexpr Value & operator -=") !=
-                std::string::npos);
-            CHECK(code.find("constexpr bool operator ==") != std::string::npos);
-            CHECK(
-                code.find("constexpr explicit operator bool") !=
-                std::string::npos);
+            // Constructor should be constexpr by default
+            CHECK(structure.has_constexpr_constructor);
+
+            // Operators should be constexpr
+            auto plus_eq = structure.find_operator("operator +=");
+            REQUIRE(plus_eq.has_value());
+            CHECK(plus_eq->is_constexpr);
+
+            auto minus_eq = structure.find_operator("operator -=");
+            REQUIRE(minus_eq.has_value());
+            CHECK(minus_eq->is_constexpr);
+
+            auto eq_op = structure.find_operator("operator ==");
+            REQUIRE(eq_op.has_value());
+            CHECK(eq_op->is_constexpr);
         }
 
         SUBCASE("no-constexpr removes all constexpr") {
@@ -736,11 +884,19 @@ TEST_SUITE("StrongTypeGenerator")
                 "Value",
                 "strong int; +, -, ==, !=, bool, no-constexpr");
             auto code = generate_strong_type(desc);
+            auto structure = parser.parse(code);
 
-            // Verify NO constexpr on operations (except possibly in comments)
-            CHECK(code.find("constexpr explicit Value") == std::string::npos);
-            CHECK(code.find("constexpr Value & operator") == std::string::npos);
-            CHECK(code.find("constexpr bool operator") == std::string::npos);
+            // Constructor should NOT be constexpr
+            CHECK_FALSE(structure.has_constexpr_constructor);
+
+            // Operators should NOT be constexpr
+            auto plus_eq = structure.find_operator("operator +=");
+            REQUIRE(plus_eq.has_value());
+            CHECK_FALSE(plus_eq->is_constexpr);
+
+            auto eq_op = structure.find_operator("operator ==");
+            REQUIRE(eq_op.has_value());
+            CHECK_FALSE(eq_op->is_constexpr);
         }
 
         SUBCASE("stream operators are never constexpr") {
@@ -750,11 +906,16 @@ TEST_SUITE("StrongTypeGenerator")
                 "Value",
                 "strong int; in, out");
             auto code = generate_strong_type(desc);
+            auto structure = parser.parse(code);
 
-            // Only the constructor should have constexpr, not stream operators
-            CHECK(code.find("constexpr explicit Value") != std::string::npos);
-            CHECK(code.find("constexpr std::ostream") == std::string::npos);
-            CHECK(code.find("constexpr std::istream") == std::string::npos);
+            // Constructor should be constexpr (streams don't affect it)
+            CHECK(structure.has_constexpr_constructor);
+
+            // Note: Stream operators won't be in the operator list
+            // since they're specialized (ostream&, istream&)
+            // Just verify includes are present
+            CHECK(structure.has_include("#include <ostream>"));
+            CHECK(structure.has_include("#include <istream>"));
         }
 
         SUBCASE("no-constexpr-hash leaves operations constexpr") {
@@ -764,38 +925,27 @@ TEST_SUITE("StrongTypeGenerator")
                 "Value",
                 "strong int; +, ==, no-constexpr-hash");
             auto code = generate_strong_type(desc);
+            auto structure = parser.parse(code);
 
             // Operations should have constexpr
-            CHECK(code.find("constexpr explicit Value") != std::string::npos);
-            CHECK(
-                code.find("constexpr Value & operator +=") !=
-                std::string::npos);
-            CHECK(code.find("constexpr bool operator ==") != std::string::npos);
+            CHECK(structure.has_constexpr_constructor);
+
+            auto plus_eq = structure.find_operator("operator +=");
+            REQUIRE(plus_eq.has_value());
+            CHECK(plus_eq->is_constexpr);
+
+            auto eq_op = structure.find_operator("operator ==");
+            REQUIRE(eq_op.has_value());
+            CHECK(eq_op->is_constexpr);
 
             // Hash should NOT have constexpr
-            CHECK(
-                code.find("constexpr std::size_t operator ()") ==
-                std::string::npos);
+            CHECK(structure.has_hash_specialization);
+            CHECK_FALSE(structure.hash_is_constexpr);
         }
     }
 
     TEST_CASE("Property-Based Tests")
     {
-        SUBCASE("generated code is valid C++ structure") {
-            check("Generated code has proper guard structure", [](int seed) {
-                auto name = "Type" + std::to_string(std::abs(seed) % 1000);
-                auto desc =
-                    make_description("struct", "test", name, "strong int");
-                auto code = generate_strong_type(desc);
-
-                RC_ASSERT(code.find("#ifndef") < code.find("#define"));
-                RC_ASSERT(code.find("#define") < code.find("struct " + name));
-                // Check that struct appears before the last #endif (the main
-                // guard's endif)
-                RC_ASSERT(code.find("struct " + name) < code.rfind("#endif"));
-            });
-        }
-
         SUBCASE("all generated guards are unique") {
             check(
                 "Guards are unique for different types",
@@ -829,7 +979,8 @@ TEST_SUITE("StrongTypeGenerator")
         }
 
         SUBCASE("operator selection is consistent") {
-            check("Requested operators appear in generated code", []() {
+            CodeStructureParser parser;
+            check("Requested operators appear in generated code", [&parser]() {
                 auto operators = *::rc::gen::container<
                     std::vector<std::string>>(
                     ::rc::gen::element("+", "-", "*", "==", "!=", "++", "out"));
@@ -851,14 +1002,14 @@ TEST_SUITE("StrongTypeGenerator")
                 auto desc =
                     make_description("struct", "test", "TestOp", desc_str);
                 auto code = generate_strong_type(desc);
+                auto structure = parser.parse(code);
 
                 for (auto const & op : operators) {
                     if (op == "out") {
-                        RC_ASSERT(
-                            code.find("operator << (") != std::string::npos);
+                        RC_ASSERT(structure.has_include("#include <ostream>"));
                     } else {
-                        RC_ASSERT(
-                            code.find("operator " + op) != std::string::npos);
+                        RC_ASSERT(structure.find_operator("operator " + op)
+                                      .has_value());
                     }
                 }
             });

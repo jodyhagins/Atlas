@@ -458,7 +458,8 @@ TEST_SUITE("AtlasCommandLine")
 
             CHECK_THROWS_WITH_AS(
                 AtlasCommandLine::parse(args),
-                "Interactions mode (--interactions=true) requires an input file. "
+                "Interactions mode (--interactions=true) requires an input "
+                "file. "
                 "Use --input=<file> to specify the interaction file.",
                 AtlasCommandLineError);
         }
@@ -475,7 +476,8 @@ TEST_SUITE("AtlasCommandLine")
     TEST_CASE("Interaction File Parsing")
     {
         SUBCASE("valid interaction file can be parsed without errors") {
-            // USER EXPECTATION: A properly formatted interaction file should parse successfully
+            // USER EXPECTATION: A properly formatted interaction file should
+            // parse successfully
             auto temp_file = std::filesystem::temp_directory_path() /
                 ("test_interactions_" + std::to_string(::getpid()) + ".txt");
 
@@ -490,7 +492,8 @@ TEST_SUITE("AtlasCommandLine")
 
             // User expects this to succeed and return interaction descriptions
             CHECK_NOTHROW({
-                auto result = AtlasCommandLine::parse_interaction_file(temp_file.string());
+                auto result = AtlasCommandLine::parse_interaction_file(
+                    temp_file.string());
                 CHECK(result.interactions.size() == 2);
             });
 
@@ -508,7 +511,8 @@ TEST_SUITE("AtlasCommandLine")
                 out << "Vector + Vector <-> Vector\n";
             }
 
-            auto result = AtlasCommandLine::parse_interaction_file(temp_file.string());
+            auto result = AtlasCommandLine::parse_interaction_file(
+                temp_file.string());
 
             // User expects exactly one interaction that is marked symmetric
             REQUIRE(result.interactions.size() == 1);
@@ -530,7 +534,8 @@ TEST_SUITE("AtlasCommandLine")
                 out << "A + B -> C\n";
             }
 
-            auto result = AtlasCommandLine::parse_interaction_file(temp_file.string());
+            auto result = AtlasCommandLine::parse_interaction_file(
+                temp_file.string());
 
             // User expects includes to be captured for code generation
             REQUIRE(result.includes.size() == 2);
@@ -541,7 +546,8 @@ TEST_SUITE("AtlasCommandLine")
         }
 
         SUBCASE("constexpr setting affects subsequent interactions") {
-            // USER EXPECTATION: constexpr/no-constexpr should control generated code
+            // USER EXPECTATION: constexpr/no-constexpr should control generated
+            // code
             auto temp_file = std::filesystem::temp_directory_path() /
                 ("test_interactions_" + std::to_string(::getpid()) + ".txt");
 
@@ -554,7 +560,8 @@ TEST_SUITE("AtlasCommandLine")
                 out << "StringValue + StringValue -> StringValue\n";
             }
 
-            auto result = AtlasCommandLine::parse_interaction_file(temp_file.string());
+            auto result = AtlasCommandLine::parse_interaction_file(
+                temp_file.string());
 
             // User expects first to be constexpr, second not to be
             REQUIRE(result.interactions.size() == 2);
@@ -581,7 +588,8 @@ TEST_SUITE("AtlasCommandLine")
                 out << "A - B -> C\n";
             }
 
-            auto result = AtlasCommandLine::parse_interaction_file(temp_file.string());
+            auto result = AtlasCommandLine::parse_interaction_file(
+                temp_file.string());
 
             // User expects only the 2 interactions, comments ignored
             CHECK(result.interactions.size() == 2);
@@ -611,7 +619,8 @@ TEST_SUITE("AtlasCommandLine")
 
             // User expects all standard operators to parse successfully
             CHECK_NOTHROW({
-                auto result = AtlasCommandLine::parse_interaction_file(temp_file.string());
+                auto result = AtlasCommandLine::parse_interaction_file(
+                    temp_file.string());
                 CHECK(result.interactions.size() == 10);
             });
 
@@ -621,20 +630,22 @@ TEST_SUITE("AtlasCommandLine")
         SUBCASE("nonexistent file produces helpful error") {
             // USER EXPECTATION: Clear error when file doesn't exist
             CHECK_THROWS_WITH_AS(
-                AtlasCommandLine::parse_interaction_file("/nonexistent/file.txt"),
+                AtlasCommandLine::parse_interaction_file(
+                    "/nonexistent/file.txt"),
                 "Cannot open interaction file: /nonexistent/file.txt",
                 AtlasCommandLineError);
         }
 
         SUBCASE("invalid syntax produces error") {
-            // USER EXPECTATION: Malformed interactions should be rejected with error
+            // USER EXPECTATION: Malformed interactions should be rejected with
+            // error
             auto temp_file = std::filesystem::temp_directory_path() /
                 ("test_interactions_" + std::to_string(::getpid()) + ".txt");
 
             {
                 std::ofstream out(temp_file);
                 out << "namespace=test\n";
-                out << "A B -> C\n";  // Missing operator
+                out << "A B -> C\n"; // Missing operator
             }
 
             // User expects clear error message for syntax problems
@@ -653,7 +664,7 @@ TEST_SUITE("AtlasCommandLine")
             {
                 std::ofstream out(temp_file);
                 out << "namespace=test\n";
-                out << "A + B ->\n";  // Missing result type
+                out << "A + B ->\n"; // Missing result type
             }
 
             // User expects validation error for incomplete definitions
@@ -981,13 +992,15 @@ TEST_SUITE("AtlasCommandLine")
         }
 
         SUBCASE("typos in configuration keys are caught") {
-            // USER EXPECTATION: Misspelled keys should fail, not be silently ignored
+            // USER EXPECTATION: Misspelled keys should fail, not be silently
+            // ignored
             auto temp_file = std::filesystem::temp_directory_path() /
                 ("test_input_" + std::to_string(::getpid()) + ".txt");
 
             {
                 std::ofstream out(temp_file);
-                out << "gaurd_prefix=MYPROJECT\n";  // Oops, typo: "gaurd" not "guard"
+                out << "gaurd_prefix=MYPROJECT\n"; // Oops, typo: "gaurd" not
+                                                   // "guard"
             }
 
             AtlasCommandLine::Arguments args;
@@ -1005,11 +1018,10 @@ TEST_SUITE("AtlasCommandLine")
     TEST_CASE("Specific Error Validation Paths")
     {
         SUBCASE("missing --kind specifically") {
-            std::vector<std::string> args{
-                // Missing --kind
-                "--namespace=test",
-                "--name=Value",
-                "--description=strong int"};
+            std::vector<std::string> args{// Missing --kind
+                                          "--namespace=test",
+                                          "--name=Value",
+                                          "--description=strong int"};
 
             CHECK_THROWS_AS(
                 AtlasCommandLine::parse(args),

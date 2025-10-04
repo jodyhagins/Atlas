@@ -5,6 +5,7 @@
 // https://opensource.org/licenses/MIT
 // ----------------------------------------------------------------------
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include "CodeStructureParser.hpp"
 #include "doctest.hpp"
 #include "test_common.hpp"
 
@@ -13,6 +14,8 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+
+using wjh::atlas::testing::CodeStructureParser;
 
 namespace {
 
@@ -194,11 +197,14 @@ TEST_SUITE("Atlas Tool Integration Tests")
                 tester.run_atlas("struct", "test", "MyInt", "strong int");
 
             CHECK(result.success);
-            CHECK(
-                result.generated_code.find("struct MyInt") !=
-                std::string::npos);
-            CHECK(
-                result.generated_code.find("int value;") != std::string::npos);
+
+            CodeStructureParser parser;
+            auto structure = parser.parse(result.generated_code);
+            CHECK(structure.kind == "struct");
+            CHECK(structure.type_name == "MyInt");
+            CHECK(structure.namespace_name == "test");
+            CHECK(structure.member_type == "int");
+            CHECK(structure.member_name == "value");
             CHECK(tester.test_generated_code_compiles(result.generated_code));
         }
 
@@ -210,18 +216,17 @@ TEST_SUITE("Atlas Tool Integration Tests")
                 "strong int; +, -, ==, !=");
 
             CHECK(result.success);
-            CHECK(
-                result.generated_code.find("class Number") !=
-                std::string::npos);
-            CHECK(result.generated_code.find("public:") != std::string::npos);
-            CHECK(
-                result.generated_code.find("operator +") != std::string::npos);
-            CHECK(
-                result.generated_code.find("operator -") != std::string::npos);
-            CHECK(
-                result.generated_code.find("operator ==") != std::string::npos);
-            CHECK(
-                result.generated_code.find("operator !=") != std::string::npos);
+
+            CodeStructureParser parser;
+            auto structure = parser.parse(result.generated_code);
+            CHECK(structure.kind == "class");
+            CHECK(structure.type_name == "Number");
+            CHECK(structure.namespace_name == "example");
+            CHECK(structure.has_public_specifier);
+            CHECK(structure.find_operator("operator +").has_value());
+            CHECK(structure.find_operator("operator -").has_value());
+            CHECK(structure.find_operator("operator ==").has_value());
+            CHECK(structure.find_operator("operator !=").has_value());
             CHECK(tester.test_generated_code_compiles(result.generated_code));
         }
 
@@ -233,19 +238,14 @@ TEST_SUITE("Atlas Tool Integration Tests")
                 "strong std::string; in, out, no-constexpr");
 
             CHECK(result.success);
-            CHECK(
-                result.generated_code.find("#include <istream>") !=
-                std::string::npos);
-            CHECK(
-                result.generated_code.find("#include <ostream>") !=
-                std::string::npos);
-            CHECK(
-                result.generated_code.find("#include <string>") !=
-                std::string::npos);
-            CHECK(
-                result.generated_code.find("operator <<") != std::string::npos);
-            CHECK(
-                result.generated_code.find("operator >>") != std::string::npos);
+
+            CodeStructureParser parser;
+            auto structure = parser.parse(result.generated_code);
+            CHECK(structure.has_include("#include <istream>"));
+            CHECK(structure.has_include("#include <ostream>"));
+            CHECK(structure.has_include("#include <string>"));
+            CHECK(structure.find_operator("operator <<").has_value());
+            CHECK(structure.find_operator("operator >>").has_value());
             CHECK(tester.test_generated_code_compiles(result.generated_code));
         }
 
@@ -257,24 +257,18 @@ TEST_SUITE("Atlas Tool Integration Tests")
                 "strong int; +, -, *, ==, !=, <, <=, >, >=, ++, bool, out");
 
             CHECK(result.success);
-            CHECK(
-                result.generated_code.find("struct CompleteType") !=
-                std::string::npos);
-            CHECK(
-                result.generated_code.find("operator +") != std::string::npos);
-            CHECK(
-                result.generated_code.find("operator *") != std::string::npos);
-            CHECK(
-                result.generated_code.find("operator ==") != std::string::npos);
-            CHECK(
-                result.generated_code.find("operator <") != std::string::npos);
-            CHECK(
-                result.generated_code.find("operator ++") != std::string::npos);
-            CHECK(
-                result.generated_code.find("explicit operator bool") !=
-                std::string::npos);
-            CHECK(
-                result.generated_code.find("operator <<") != std::string::npos);
+
+            CodeStructureParser parser;
+            auto structure = parser.parse(result.generated_code);
+            CHECK(structure.kind == "struct");
+            CHECK(structure.type_name == "CompleteType");
+            CHECK(structure.find_operator("operator +").has_value());
+            CHECK(structure.find_operator("operator *").has_value());
+            CHECK(structure.find_operator("operator ==").has_value());
+            CHECK(structure.find_operator("operator <").has_value());
+            CHECK(structure.find_operator("operator ++").has_value());
+            CHECK(structure.find_operator("operator bool").has_value());
+            CHECK(structure.find_operator("operator <<").has_value());
             CHECK(tester.test_generated_code_compiles(result.generated_code));
         }
     }

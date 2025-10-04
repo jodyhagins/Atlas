@@ -261,12 +261,17 @@ TEST_SUITE("Integration Tests")
                 .description = "strong int"};
 
             auto code = generate_strong_type(desc);
-            // Should not have explicit public: specifier for struct
+            // Should not have explicit public: specifier for struct in the
+            // type-specific section (after the struct declaration)
             size_t struct_pos = code.find("struct TestType");
-            size_t public_pos = code.find("public:");
-            // public: should either not exist, or come after struct definition
-            // starts
-            CHECK((public_pos == std::string::npos || public_pos > struct_pos));
+            REQUIRE(struct_pos != std::string::npos);
+
+            // Look for public: only after the struct declaration
+            auto type_specific = code.substr(struct_pos);
+            size_t public_pos = type_specific.find("public:");
+
+            // public: should not exist in the struct definition
+            CHECK(public_pos == std::string::npos);
         }
 
         SUBCASE("class generates private members with public section") {
