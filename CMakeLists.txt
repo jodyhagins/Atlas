@@ -139,6 +139,7 @@ set(Atlas_EXECUTABLE $<TARGET_FILE:atlas>
 if(ATLAS_BUILD_TESTS AND CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
     enable_testing()
     add_subdirectory(tests)
+    add_subdirectory(examples)
 endif()
 
 # Installation rules

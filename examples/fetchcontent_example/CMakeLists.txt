@@ -29,18 +29,22 @@ add_library(example_types INTERFACE)
 # Much simpler than manual add_custom_command!
 
 # Method 1: Using the simplified atlas_add_type function
-atlas_add_type(UserId int "==, !=, <=>" TARGET example_types OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/UserId.hpp)
+# Note: Must specify NAMESPACE since examples don't follow src/ structure
+atlas_add_type(UserId int "==, !=, no-constexpr"
+    NAMESPACE example
+    TARGET example_types
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/UserId.hpp)
 
 # Method 2: Using the full add_atlas_strong_type function
 add_atlas_strong_type(
     NAME Price
     TYPE double
-    DESCRIPTION "+, -, ==, !=, <=>, out"
+    DESCRIPTION "+, -, ==, !=, <, <=, >, >=, out, no-constexpr"
     NAMESPACE example
     TARGET example_types
-    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/Price.hpp)
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/Price.hpp)
 
 # Main executable
 add_executable(example_app main.cpp)
 target_link_libraries(example_app PRIVATE example_types)
-target_include_directories(example_app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(example_app PRIVATE ${CMAKE_CURRENT_BINARY_DIR})

@@ -46,7 +46,7 @@ main()
     std::cout << "  d2: " << d2 << "\n";
     std::cout << "  d1 + d2: " << (d1 + d2) << "\n";
     std::cout << "  d1 - d2: " << (d1 - d2) << "\n";
-    std::cout << "  d1 * 2.5: " << (d1 * 2.5) << "\n";
+    std::cout << "  d1 / d2: " << (d1 / d2) << "\n";
     std::cout << "\n";
 
     auto now = std::chrono::system_clock::now().time_since_epoch().count();
@@ -57,7 +57,7 @@ main()
     std::cout << "  t1: " << t1 << "\n";
     std::cout << "  t2: " << t2 << "\n";
     std::cout << "  t1 < t2: " << (t1 < t2 ? "true" : "false") << "\n";
-    std::cout << "  t1 <=> t2: " << static_cast<int>(t1 <=> t2) << "\n";
+    std::cout << "  t1 >= t2: " << (t1 >= t2 ? "true" : "false") << "\n";
 
     std::cout << "\nAll inline type examples completed successfully!\n";
     return 0;

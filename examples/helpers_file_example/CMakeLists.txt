@@ -27,8 +27,8 @@ add_library(file_types INTERFACE)
 # This approach is best for larger projects with many types,
 # or when you want to share type definitions across projects
 add_atlas_strong_types_from_file(
-    INPUT types.txt
-    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/DomainTypes.hpp
+    INPUT ${CMAKE_CURRENT_SOURCE_DIR}/types.txt
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/DomainTypes.hpp
     TARGET file_types)
 
 # Main executable
@@ -40,4 +40,4 @@ target_link_libraries(file_example
 
 target_include_directories(file_example
     PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR})
+        ${CMAKE_CURRENT_BINARY_DIR})

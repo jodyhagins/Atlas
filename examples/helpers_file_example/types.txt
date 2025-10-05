@@ -8,32 +8,32 @@ upcase_guard=true
 kind=struct
 namespace=domain
 name=CustomerId
-description=strong int; ==, !=, <=>
+description=strong int; ==, !=, no-constexpr
 default_value=0
 
 [type]
 kind=struct
 namespace=domain
 name=OrderId
-description=strong int; ==, !=, <=>
+description=strong int; ==, !=, no-constexpr
 default_value=0
 
 [type]
 kind=struct
 namespace=domain
 name=Money
-description=strong double; +, -, *, /, ==, !=, <, <=, >, >=, <=>, out
+description=strong double; +, -, *, /, ==, !=, <, <=, >, >=, out, no-constexpr
 default_value=0.0
 
 [type]
 kind=struct
 namespace=domain
 name=Quantity
-description=strong int; +, -, ++, --, ==, !=, <, <=, >, >=, <=>, out
+description=strong int; +, -, ++, --, ==, !=, <, <=, >, >=, out, no-constexpr
 default_value=0
 
 [type]
 kind=struct
 namespace=domain
 name=EmailAddress
-description=strong std::string; ==, !=, <=>
+description=strong std::string; ==, !=, no-constexpr

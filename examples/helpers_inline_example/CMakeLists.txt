@@ -26,7 +26,7 @@ add_library(inline_types INTERFACE)
 # Define multiple types inline without needing a separate file
 # This is great for keeping type definitions close to where they're used
 add_atlas_strong_types_inline(
-    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/CommonTypes.hpp
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/CommonTypes.hpp
     TARGET inline_types
     CONTENT
     "
@@ -37,28 +37,28 @@ guard_prefix=COMMON_TYPES
 kind=struct
 namespace=app
 name=UserId
-description=strong int; ==, !=, <=>
+description=strong int; ==, !=, no-constexpr
 default_value=-1
 
 [type]
 kind=struct
 namespace=app
 name=SessionId
-description=strong int; ==, !=, <=>
+description=strong int; ==, !=, no-constexpr
 default_value=-1
 
 [type]
 kind=struct
 namespace=app
 name=Distance
-description=strong double; +, -, *, /, <=>, out
+description=strong double; +, -, *, /, ==, !=, <, <=, >, >=, out, no-constexpr
 default_value=0.0
 
 [type]
 kind=struct
 namespace=app
 name=Timestamp
-description=strong int64_t; ==, !=, <, <=, >, >=, <=>, out
+description=strong int64_t; ==, !=, <, <=, >, >=, out, no-constexpr
 ")
 
 # Main executable
@@ -70,4 +70,4 @@ target_link_libraries(inline_example
 
 target_include_directories(inline_example
     PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR})
+        ${CMAKE_CURRENT_BINARY_DIR})

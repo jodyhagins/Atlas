@@ -27,7 +27,7 @@ main()
         << "\n";
     std::cout << "  user1 != user3: " << (user1 != user3 ? "true" : "false")
         << "\n";
-    std::cout << "  user1 < user3: " << (user1 < user3 ? "true" : "false")
+    std::cout << "  user2 == user3: " << (user2 == user3 ? "true" : "false")
         << "\n";
     std::cout << "\n";
 

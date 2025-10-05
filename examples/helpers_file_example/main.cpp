@@ -39,7 +39,7 @@ main()
     std::cout << "  price: " << price << "\n";
     std::cout << "  tax: " << tax << "\n";
     std::cout << "  total: " << total << "\n";
-    std::cout << "  price * 2: " << (price * 2.0) << "\n";
+    std::cout << "  total - tax: " << (total - tax) << "\n";
     std::cout << "\n";
 
     // Quantity with increment/decrement
@@ -64,7 +64,7 @@ main()
         << "\n";
     std::cout << "  email1 == email3: " << (email1 == email3 ? "true" : "false")
         << "\n";
-    std::cout << "  email1 <=> email2: " << static_cast<int>(email1 <=> email2)
+    std::cout << "  email2 != email3: " << (email2 != email3 ? "true" : "false")
         << "\n";
 
     std::cout << "\nAll file-based type examples completed successfully!\n";

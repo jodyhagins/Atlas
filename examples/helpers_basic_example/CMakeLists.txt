@@ -25,34 +25,36 @@ add_library(example_types INTERFACE)
 
 # Method 1: Simplified single-type function
 # Note: Explicitly specify NAMESPACE since this example doesn't follow src/ structure
-atlas_add_type(UserId int "==, !=, <=>"
+atlas_add_type(UserId int "==, !=, no-constexpr"
     NAMESPACE example
-    TARGET example_types)
+    TARGET example_types
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/UserId.hpp)
 
 # Method 2: Full function with all options specified
 add_atlas_strong_type(
     NAME Price
     TYPE double
-    DESCRIPTION "+, -, <=>, out"
+    DESCRIPTION "+, -, ==, !=, <, <=, >, >=, out, no-constexpr"
     NAMESPACE example
     DEFAULT_VALUE 0.0
-    TARGET example_types)
+    TARGET example_types
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/Price.hpp)
 
 # Method 3: Generate without automatic target integration
 # Useful when you want more control over source management
 add_atlas_strong_type(
     NAME Handle
     TYPE size_t
-    DESCRIPTION "->, ==, !=, bool"
+    DESCRIPTION "->, ==, !=, bool, no-constexpr"
     NAMESPACE example
-    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/Handle.hpp
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/Handle.hpp
     # No TARGET specified - just generates the file
 )
 
 # Manually add the Handle.hpp to our target
 target_sources(example_types
     INTERFACE
-        ${CMAKE_CURRENT_SOURCE_DIR}/Handle.hpp)
+        ${CMAKE_CURRENT_BINARY_DIR}/Handle.hpp)
 
 # Main executable
 add_executable(basic_example main.cpp)
@@ -63,4 +65,4 @@ target_link_libraries(basic_example
 
 target_include_directories(basic_example
     PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR})
+        ${CMAKE_CURRENT_BINARY_DIR})

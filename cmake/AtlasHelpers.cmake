@@ -295,8 +295,8 @@ endfunction()
 #
 function(add_atlas_strong_types_inline)
     set(options "")
-    set(oneValueArgs OUTPUT CONTENT TARGET)
-    set(multiValueArgs "")
+    set(oneValueArgs OUTPUT TARGET)
+    set(multiValueArgs CONTENT)
     cmake_parse_arguments(ARG "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
     # Validate required arguments
@@ -311,8 +311,12 @@ function(add_atlas_strong_types_inline)
     get_filename_component(output_name ${ARG_OUTPUT} NAME_WE)
     set(TEMP_INPUT "${CMAKE_CURRENT_BINARY_DIR}/.atlas_inline_${output_name}.txt")
 
+    # Join CONTENT list with semicolons (since CMake splits on semicolons during parsing)
+    # We need to restore the semicolons that were used as list separators
+    string(REPLACE ";" ";" CONTENT_JOINED "${ARG_CONTENT}")
+
     # Write content to temporary file
-    file(WRITE ${TEMP_INPUT} "${ARG_CONTENT}")
+    file(WRITE ${TEMP_INPUT} "${CONTENT_JOINED}")
 
     # Determine Atlas executable location
     if(TARGET Atlas::atlas)
