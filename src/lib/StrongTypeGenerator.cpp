@@ -932,12 +932,17 @@ generate_strong_types_file(
                 ++content_start;
 
                 // Skip the NOTICE banner (now between header guard and includes)
-                auto notice_end = type_code.find("// ======================================================================", content_start);
-                if (notice_end != std::string::npos) {
-                    // Find end of closing banner line
-                    notice_end = type_code.find('\n', notice_end);
+                // Banner has TWO separator lines, need to skip past the second one
+                auto notice_start = type_code.find("// ======================================================================", content_start);
+                if (notice_start != std::string::npos) {
+                    // Find the second separator line (closing banner)
+                    auto notice_end = type_code.find("// ======================================================================", notice_start + 1);
                     if (notice_end != std::string::npos) {
-                        content_start = notice_end + 1;
+                        // Skip to end of that line
+                        notice_end = type_code.find('\n', notice_end);
+                        if (notice_end != std::string::npos) {
+                            content_start = notice_end + 1;
+                        }
                     }
                 }
 
