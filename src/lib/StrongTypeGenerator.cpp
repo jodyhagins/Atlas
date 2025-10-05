@@ -901,9 +901,9 @@ operator () (StrongTypeDescription const & desc) const
     auto const code = render_code(info);
     auto const guard = make_guard(desc, code);
     std::stringstream strm;
-    strm << (notice_banner + 1) << '\n'
-        << "#ifndef " << guard << '\n'
+    strm << "#ifndef " << guard << '\n'
         << "#define " << guard << "\n\n"
+        << (notice_banner + 1) << '\n'
         << preamble() << code << "#endif // " << guard << '\n';
     return strm.str();
 }
@@ -922,12 +922,8 @@ generate_strong_types_file(
     for (auto const & desc : descriptions) {
         std::string type_code = generate_strong_type(desc);
 
-        // Find and extract includes, then strip them along with banner/guards
-        auto notice_pos = type_code.find(
-            "// "
-            "=========================================================="
-            "============\n// NOTICE");
-        auto ifndef_pos = type_code.find("#ifndef", notice_pos);
+        // Find header guards (now at the beginning, before NOTICE banner)
+        auto ifndef_pos = type_code.find("#ifndef");
         auto define_pos = type_code.find("#define", ifndef_pos + 1);
 
         if (define_pos != std::string::npos) {
@@ -1044,10 +1040,10 @@ generate_strong_types_file(
     // Build final output
     std::ostringstream output;
 
-    // Add NOTICE banner once at the top, before header guard
-    output << (notice_banner + 1) << '\n'
-        << "#ifndef " << guard << '\n'
-        << "#define " << guard << "\n\n";
+    // Add header guard first, then NOTICE banner
+    output << "#ifndef " << guard << '\n'
+        << "#define " << guard << "\n\n"
+        << (notice_banner + 1) << '\n';
 
     // Add all unique includes (already sorted by std::set)
     for (auto const & include : all_includes) {

@@ -1,3 +1,6 @@
+#ifndef EXAMPLE_INTERACTIONS_596AF7B0094C2CEDD612C8738813EEE3F924CFEA
+#define EXAMPLE_INTERACTIONS_596AF7B0094C2CEDD612C8738813EEE3F924CFEA
+
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
 // ----------------------------------------------------------------------
@@ -12,42 +15,31 @@
 // ----------------------------------------------------------------------
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
 // ======================================================================
-#ifndef EXAMPLE_INTERACTIONS_807B7A3C604622DAD627C1B9AA59CC09B8AF8BB9
-#define EXAMPLE_INTERACTIONS_807B7A3C604622DAD627C1B9AA59CC09B8AF8BB9
-
+#ifndef WJH_ATLAS_50E620B544874CB8BE4412EE6773BF90
+#define WJH_ATLAS_50E620B544874CB8BE4412EE6773BF90
 
 // This is boilerplate that is part of every Atlas interaction file.
 // Nothing to see here, move along.
 
-#ifndef WJH_ATLAS_50E620B544874CB8BE4412EE6773BF90
-    #define WJH_ATLAS_50E620B544874CB8BE4412EE6773BF90
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
+#include <compare>
+#endif
+#include <type_traits>
+#include <utility>
 
-    #ifndef WJH_ATLAS_34E45276DD204E33A734018DE4B04C40
-        #define WJH_ATLAS_34E45276DD204E33A734018DE4B04C40
-        #if defined(__cpp_impl_three_way_comparison) && \
-            __cpp_impl_three_way_comparison >= 201907L
-            #include <compare>
-        #endif
 namespace atlas {
+
 struct strong_type_tag
 {
-        #if defined(__cpp_impl_three_way_comparison) && \
-            __cpp_impl_three_way_comparison >= 201907L
-    friend auto operator <=> (
-        strong_type_tag const &,
-        strong_type_tag const &) = default;
-        #endif
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
+    friend auto
+    operator<=>(strong_type_tag const &, strong_type_tag const &) = default;
+#endif
 };
-} // namespace atlas
-    #endif // WJH_ATLAS_34E45276DD204E33A734018DE4B04C40
 
-    #include <type_traits>
-    #include <utility>
-
-namespace atlas {
-
-struct value_tag
-{ };
+struct value_tag {};
 
 namespace atlas_detail {
 
@@ -107,7 +99,10 @@ value(T & val, PriorityTag<0>)
 }
 
 template <typename T, typename U = typename T::atlas_value_type>
-using val_t = _t<std::conditional<std::is_const<T>::value, U const &, U &>>;
+using val_t = _t<std::conditional<
+    std::is_const<T>::value,
+    U const &,
+    U &>>;
 
 template <typename T, typename U = val_t<T>>
 constexpr auto
@@ -146,7 +141,8 @@ class Value
 
 public:
     template <typename T>
-    constexpr auto operator () (T && t) const
+    constexpr auto
+    operator()(T && t) const
     -> decltype(rval<T>(atlas_detail::value(t, atlas_detail::value_tag{})))
     {
         return rval<T>(atlas_detail::value(t, atlas_detail::value_tag{}));
@@ -155,9 +151,9 @@ public:
 
 } // namespace atlas_detail
 
-    #if defined(__cpp_inline_variables) && __cpp_inline_variables >= 9201606L
+#if defined(__cpp_inline_variables) && __cpp_inline_variables >= 9201606L
 inline constexpr auto value = atlas_detail::Value{};
-    #else
+#else
 template <typename T>
 constexpr auto
 value(T && t)
@@ -165,145 +161,134 @@ value(T && t)
 {
     return atlas_detail::Value{}(std::forward<T>(t));
 }
-    #endif
+#endif
 
 } // namespace atlas
 
 #endif // WJH_ATLAS_50E620B544874CB8BE4412EE6773BF90
 
 
+//////////////////////////////////////////////////////////////////////
+///
+/// These are the droids you are looking for!
+///
+//////////////////////////////////////////////////////////////////////
+
+
 // Custom value accessors for non-Atlas types
 // These allow atlas::value() to work with external library types
-// Users can override by providing atlas_value(T const&) without the tag
-// parameter
+// Users can override by providing atlas_value(T const&) without the tag parameter
 namespace atlas {
-inline constexpr auto
-atlas_value(::concurrency::ThreadId const & v, value_tag)
+inline auto atlas_value(::concurrency::ThreadId const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
 }
 
-inline constexpr auto
-atlas_value(::data::ByteCount const & v, value_tag)
+inline constexpr auto atlas_value(::data::ByteCount const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
 }
 
-inline constexpr auto
-atlas_value(::data::size_t const & v, value_tag)
+inline constexpr auto atlas_value(::data::size_t const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
 }
 
-inline constexpr auto
-atlas_value(::finance::core::Money const & v, value_tag)
+inline constexpr auto atlas_value(::finance::core::Money const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
 }
 
-inline constexpr auto
-atlas_value(::finance::core::double const & v, value_tag)
+inline constexpr auto atlas_value(::finance::core::double const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
 }
 
-inline constexpr auto
-atlas_value(::geo::Latitude const & v, value_tag)
+inline constexpr auto atlas_value(::geo::Latitude const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
 }
 
-inline constexpr auto
-atlas_value(::geo::Longitude const & v, value_tag)
+inline constexpr auto atlas_value(::geo::Longitude const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
 }
 
-inline constexpr auto
-atlas_value(::geo::double const & v, value_tag)
+inline constexpr auto atlas_value(::geo::double const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
 }
 
-inline constexpr auto
-atlas_value(::graphics::color::RedChannel const & v, value_tag)
+inline constexpr auto atlas_value(::graphics::color::RedChannel const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
 }
 
-inline constexpr auto
-atlas_value(::math::rational::Denominator const & v, value_tag)
+inline constexpr auto atlas_value(::math::rational::Denominator const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
 }
 
-inline constexpr auto
-atlas_value(::math::rational::Numerator const & v, value_tag)
+inline constexpr auto atlas_value(::math::rational::Numerator const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
 }
 
-inline constexpr auto
-atlas_value(::net::ipv4::Octet const & v, value_tag)
+inline constexpr auto atlas_value(::net::ipv4::Octet const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
 }
 
-inline constexpr auto
-atlas_value(::net::ipv4::int const & v, value_tag)
+inline constexpr auto atlas_value(::net::ipv4::int const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
 }
 
-inline constexpr auto
-atlas_value(::physics::units::Meters const & v, value_tag)
+inline constexpr auto atlas_value(::physics::units::Meters const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
 }
 
-inline constexpr auto
-atlas_value(::physics::units::MetersPerSecond const & v, value_tag)
+inline constexpr auto atlas_value(::physics::units::MetersPerSecond const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
 }
 
-inline constexpr auto
-atlas_value(::physics::units::Seconds const & v, value_tag)
+inline constexpr auto atlas_value(::physics::units::Seconds const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
 }
 
-inline constexpr auto
-atlas_value(::physics::units::double const & v, value_tag)
+inline constexpr auto atlas_value(::physics::units::double const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
 }
 
-inline constexpr auto
-atlas_value(::security::EncryptedData const & v, value_tag)
+inline constexpr auto atlas_value(::security::EncryptedData const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
 }
 
 } // namespace atlas
+
 
 // Compound assignment operators for cross-type interactions
 // These use ADL to be found automatically for atlas strong types
@@ -311,21 +296,16 @@ atlas_value(::security::EncryptedData const & v, value_tag)
 namespace atlas {
 
 namespace atlas_detail {
-template <typename L, typename R, typename = void>
-struct has_compound_op_modulo
-: std::false_type
-{ };
+template<typename L, typename R, typename = void>
+struct has_compound_op_modulo : std::false_type {};
 
-template <typename L, typename R>
-struct has_compound_op_modulo<
-    L,
-    R,
-    decltype((void)(atlas::value(std::declval<L &>()) %= atlas::value(
-                        std::declval<R const &>())))>
-: std::true_type
-{ };
+template<typename L, typename R>
+struct has_compound_op_modulo<L, R,
+    decltype((void)(atlas::value(std::declval<L&>()) %=
+        atlas::value(std::declval<R const&>())))>
+: std::true_type {};
 
-template <typename L, typename R>
+template<typename L, typename R>
 constexpr L &
 compound_assign_impl_modulo(L & lhs, R const & rhs, std::true_type)
 {
@@ -333,50 +313,40 @@ compound_assign_impl_modulo(L & lhs, R const & rhs, std::true_type)
     return lhs;
 }
 
-template <typename L, typename R>
+template<typename L, typename R>
 constexpr L &
 compound_assign_impl_modulo(L & lhs, R const & rhs, std::false_type)
 {
     atlas::value(lhs) = atlas::value(lhs % rhs);
     return lhs;
 }
-} // namespace atlas_detail
+}
 
-template <
+template<
     typename L,
     typename R,
     typename std::enable_if<
         std::is_base_of<atlas::strong_type_tag, L>::value,
         bool>::type = true>
-inline auto
-operator %= (L & lhs, R const & rhs)
--> decltype(atlas_detail::compound_assign_impl_modulo(
-    lhs,
-    rhs,
+inline auto operator%=(L & lhs, R const & rhs)
+-> decltype(atlas_detail::compound_assign_impl_modulo(lhs, rhs,
     atlas_detail::has_compound_op_modulo<L, R>{}))
 {
-    return atlas_detail::compound_assign_impl_modulo(
-        lhs,
-        rhs,
+    return atlas_detail::compound_assign_impl_modulo(lhs, rhs,
         atlas_detail::has_compound_op_modulo<L, R>{});
 }
 
 namespace atlas_detail {
-template <typename L, typename R, typename = void>
-struct has_compound_op_bitand
-: std::false_type
-{ };
+template<typename L, typename R, typename = void>
+struct has_compound_op_bitand : std::false_type {};
 
-template <typename L, typename R>
-struct has_compound_op_bitand<
-    L,
-    R,
-    decltype((void)(atlas::value(std::declval<L &>()) &= atlas::value(
-                        std::declval<R const &>())))>
-: std::true_type
-{ };
+template<typename L, typename R>
+struct has_compound_op_bitand<L, R,
+    decltype((void)(atlas::value(std::declval<L&>()) &=
+        atlas::value(std::declval<R const&>())))>
+: std::true_type {};
 
-template <typename L, typename R>
+template<typename L, typename R>
 constexpr L &
 compound_assign_impl_bitand(L & lhs, R const & rhs, std::true_type)
 {
@@ -384,50 +354,40 @@ compound_assign_impl_bitand(L & lhs, R const & rhs, std::true_type)
     return lhs;
 }
 
-template <typename L, typename R>
+template<typename L, typename R>
 constexpr L &
 compound_assign_impl_bitand(L & lhs, R const & rhs, std::false_type)
 {
     atlas::value(lhs) = atlas::value(lhs & rhs);
     return lhs;
 }
-} // namespace atlas_detail
+}
 
-template <
+template<
     typename L,
     typename R,
     typename std::enable_if<
         std::is_base_of<atlas::strong_type_tag, L>::value,
         bool>::type = true>
-inline auto
-operator &= (L & lhs, R const & rhs)
--> decltype(atlas_detail::compound_assign_impl_bitand(
-    lhs,
-    rhs,
+inline auto operator&=(L & lhs, R const & rhs)
+-> decltype(atlas_detail::compound_assign_impl_bitand(lhs, rhs,
     atlas_detail::has_compound_op_bitand<L, R>{}))
 {
-    return atlas_detail::compound_assign_impl_bitand(
-        lhs,
-        rhs,
+    return atlas_detail::compound_assign_impl_bitand(lhs, rhs,
         atlas_detail::has_compound_op_bitand<L, R>{});
 }
 
 namespace atlas_detail {
-template <typename L, typename R, typename = void>
-struct has_compound_op_times
-: std::false_type
-{ };
+template<typename L, typename R, typename = void>
+struct has_compound_op_times : std::false_type {};
 
-template <typename L, typename R>
-struct has_compound_op_times<
-    L,
-    R,
-    decltype((void)(atlas::value(std::declval<L &>()) *= atlas::value(
-                        std::declval<R const &>())))>
-: std::true_type
-{ };
+template<typename L, typename R>
+struct has_compound_op_times<L, R,
+    decltype((void)(atlas::value(std::declval<L&>()) *=
+        atlas::value(std::declval<R const&>())))>
+: std::true_type {};
 
-template <typename L, typename R>
+template<typename L, typename R>
 constexpr L &
 compound_assign_impl_times(L & lhs, R const & rhs, std::true_type)
 {
@@ -435,50 +395,40 @@ compound_assign_impl_times(L & lhs, R const & rhs, std::true_type)
     return lhs;
 }
 
-template <typename L, typename R>
+template<typename L, typename R>
 constexpr L &
 compound_assign_impl_times(L & lhs, R const & rhs, std::false_type)
 {
     atlas::value(lhs) = atlas::value(lhs * rhs);
     return lhs;
 }
-} // namespace atlas_detail
+}
 
-template <
+template<
     typename L,
     typename R,
     typename std::enable_if<
         std::is_base_of<atlas::strong_type_tag, L>::value,
         bool>::type = true>
-inline auto
-operator *= (L & lhs, R const & rhs)
--> decltype(atlas_detail::compound_assign_impl_times(
-    lhs,
-    rhs,
+inline auto operator*=(L & lhs, R const & rhs)
+-> decltype(atlas_detail::compound_assign_impl_times(lhs, rhs,
     atlas_detail::has_compound_op_times<L, R>{}))
 {
-    return atlas_detail::compound_assign_impl_times(
-        lhs,
-        rhs,
+    return atlas_detail::compound_assign_impl_times(lhs, rhs,
         atlas_detail::has_compound_op_times<L, R>{});
 }
 
 namespace atlas_detail {
-template <typename L, typename R, typename = void>
-struct has_compound_op_plus
-: std::false_type
-{ };
+template<typename L, typename R, typename = void>
+struct has_compound_op_plus : std::false_type {};
 
-template <typename L, typename R>
-struct has_compound_op_plus<
-    L,
-    R,
-    decltype((void)(atlas::value(std::declval<L &>()) += atlas::value(
-                        std::declval<R const &>())))>
-: std::true_type
-{ };
+template<typename L, typename R>
+struct has_compound_op_plus<L, R,
+    decltype((void)(atlas::value(std::declval<L&>()) +=
+        atlas::value(std::declval<R const&>())))>
+: std::true_type {};
 
-template <typename L, typename R>
+template<typename L, typename R>
 constexpr L &
 compound_assign_impl_plus(L & lhs, R const & rhs, std::true_type)
 {
@@ -486,50 +436,40 @@ compound_assign_impl_plus(L & lhs, R const & rhs, std::true_type)
     return lhs;
 }
 
-template <typename L, typename R>
+template<typename L, typename R>
 constexpr L &
 compound_assign_impl_plus(L & lhs, R const & rhs, std::false_type)
 {
     atlas::value(lhs) = atlas::value(lhs + rhs);
     return lhs;
 }
-} // namespace atlas_detail
+}
 
-template <
+template<
     typename L,
     typename R,
     typename std::enable_if<
         std::is_base_of<atlas::strong_type_tag, L>::value,
         bool>::type = true>
-inline auto
-operator += (L & lhs, R const & rhs)
--> decltype(atlas_detail::compound_assign_impl_plus(
-    lhs,
-    rhs,
+inline auto operator+=(L & lhs, R const & rhs)
+-> decltype(atlas_detail::compound_assign_impl_plus(lhs, rhs,
     atlas_detail::has_compound_op_plus<L, R>{}))
 {
-    return atlas_detail::compound_assign_impl_plus(
-        lhs,
-        rhs,
+    return atlas_detail::compound_assign_impl_plus(lhs, rhs,
         atlas_detail::has_compound_op_plus<L, R>{});
 }
 
 namespace atlas_detail {
-template <typename L, typename R, typename = void>
-struct has_compound_op_minus
-: std::false_type
-{ };
+template<typename L, typename R, typename = void>
+struct has_compound_op_minus : std::false_type {};
 
-template <typename L, typename R>
-struct has_compound_op_minus<
-    L,
-    R,
-    decltype((void)(atlas::value(std::declval<L &>()) -= atlas::value(
-                        std::declval<R const &>())))>
-: std::true_type
-{ };
+template<typename L, typename R>
+struct has_compound_op_minus<L, R,
+    decltype((void)(atlas::value(std::declval<L&>()) -=
+        atlas::value(std::declval<R const&>())))>
+: std::true_type {};
 
-template <typename L, typename R>
+template<typename L, typename R>
 constexpr L &
 compound_assign_impl_minus(L & lhs, R const & rhs, std::true_type)
 {
@@ -537,50 +477,40 @@ compound_assign_impl_minus(L & lhs, R const & rhs, std::true_type)
     return lhs;
 }
 
-template <typename L, typename R>
+template<typename L, typename R>
 constexpr L &
 compound_assign_impl_minus(L & lhs, R const & rhs, std::false_type)
 {
     atlas::value(lhs) = atlas::value(lhs - rhs);
     return lhs;
 }
-} // namespace atlas_detail
+}
 
-template <
+template<
     typename L,
     typename R,
     typename std::enable_if<
         std::is_base_of<atlas::strong_type_tag, L>::value,
         bool>::type = true>
-inline auto
-operator -= (L & lhs, R const & rhs)
--> decltype(atlas_detail::compound_assign_impl_minus(
-    lhs,
-    rhs,
+inline auto operator-=(L & lhs, R const & rhs)
+-> decltype(atlas_detail::compound_assign_impl_minus(lhs, rhs,
     atlas_detail::has_compound_op_minus<L, R>{}))
 {
-    return atlas_detail::compound_assign_impl_minus(
-        lhs,
-        rhs,
+    return atlas_detail::compound_assign_impl_minus(lhs, rhs,
         atlas_detail::has_compound_op_minus<L, R>{});
 }
 
 namespace atlas_detail {
-template <typename L, typename R, typename = void>
-struct has_compound_op_divide
-: std::false_type
-{ };
+template<typename L, typename R, typename = void>
+struct has_compound_op_divide : std::false_type {};
 
-template <typename L, typename R>
-struct has_compound_op_divide<
-    L,
-    R,
-    decltype((void)(atlas::value(std::declval<L &>()) /= atlas::value(
-                        std::declval<R const &>())))>
-: std::true_type
-{ };
+template<typename L, typename R>
+struct has_compound_op_divide<L, R,
+    decltype((void)(atlas::value(std::declval<L&>()) /=
+        atlas::value(std::declval<R const&>())))>
+: std::true_type {};
 
-template <typename L, typename R>
+template<typename L, typename R>
 constexpr L &
 compound_assign_impl_divide(L & lhs, R const & rhs, std::true_type)
 {
@@ -588,50 +518,40 @@ compound_assign_impl_divide(L & lhs, R const & rhs, std::true_type)
     return lhs;
 }
 
-template <typename L, typename R>
+template<typename L, typename R>
 constexpr L &
 compound_assign_impl_divide(L & lhs, R const & rhs, std::false_type)
 {
     atlas::value(lhs) = atlas::value(lhs / rhs);
     return lhs;
 }
-} // namespace atlas_detail
+}
 
-template <
+template<
     typename L,
     typename R,
     typename std::enable_if<
         std::is_base_of<atlas::strong_type_tag, L>::value,
         bool>::type = true>
-inline auto
-operator /= (L & lhs, R const & rhs)
--> decltype(atlas_detail::compound_assign_impl_divide(
-    lhs,
-    rhs,
+inline auto operator/=(L & lhs, R const & rhs)
+-> decltype(atlas_detail::compound_assign_impl_divide(lhs, rhs,
     atlas_detail::has_compound_op_divide<L, R>{}))
 {
-    return atlas_detail::compound_assign_impl_divide(
-        lhs,
-        rhs,
+    return atlas_detail::compound_assign_impl_divide(lhs, rhs,
         atlas_detail::has_compound_op_divide<L, R>{});
 }
 
 namespace atlas_detail {
-template <typename L, typename R, typename = void>
-struct has_compound_op_lshift
-: std::false_type
-{ };
+template<typename L, typename R, typename = void>
+struct has_compound_op_lshift : std::false_type {};
 
-template <typename L, typename R>
-struct has_compound_op_lshift<
-    L,
-    R,
-    decltype((void)(atlas::value(std::declval<L &>()) <<= atlas::value(
-                        std::declval<R const &>())))>
-: std::true_type
-{ };
+template<typename L, typename R>
+struct has_compound_op_lshift<L, R,
+    decltype((void)(atlas::value(std::declval<L&>()) <<=
+        atlas::value(std::declval<R const&>())))>
+: std::true_type {};
 
-template <typename L, typename R>
+template<typename L, typename R>
 constexpr L &
 compound_assign_impl_lshift(L & lhs, R const & rhs, std::true_type)
 {
@@ -639,50 +559,40 @@ compound_assign_impl_lshift(L & lhs, R const & rhs, std::true_type)
     return lhs;
 }
 
-template <typename L, typename R>
+template<typename L, typename R>
 constexpr L &
 compound_assign_impl_lshift(L & lhs, R const & rhs, std::false_type)
 {
     atlas::value(lhs) = atlas::value(lhs << rhs);
     return lhs;
 }
-} // namespace atlas_detail
+}
 
-template <
+template<
     typename L,
     typename R,
     typename std::enable_if<
         std::is_base_of<atlas::strong_type_tag, L>::value,
         bool>::type = true>
-inline auto
-operator <<= (L & lhs, R const & rhs)
--> decltype(atlas_detail::compound_assign_impl_lshift(
-    lhs,
-    rhs,
+inline auto operator<<=(L & lhs, R const & rhs)
+-> decltype(atlas_detail::compound_assign_impl_lshift(lhs, rhs,
     atlas_detail::has_compound_op_lshift<L, R>{}))
 {
-    return atlas_detail::compound_assign_impl_lshift(
-        lhs,
-        rhs,
+    return atlas_detail::compound_assign_impl_lshift(lhs, rhs,
         atlas_detail::has_compound_op_lshift<L, R>{});
 }
 
 namespace atlas_detail {
-template <typename L, typename R, typename = void>
-struct has_compound_op_rshift
-: std::false_type
-{ };
+template<typename L, typename R, typename = void>
+struct has_compound_op_rshift : std::false_type {};
 
-template <typename L, typename R>
-struct has_compound_op_rshift<
-    L,
-    R,
-    decltype((void)(atlas::value(std::declval<L &>()) >>= atlas::value(
-                        std::declval<R const &>())))>
-: std::true_type
-{ };
+template<typename L, typename R>
+struct has_compound_op_rshift<L, R,
+    decltype((void)(atlas::value(std::declval<L&>()) >>=
+        atlas::value(std::declval<R const&>())))>
+: std::true_type {};
 
-template <typename L, typename R>
+template<typename L, typename R>
 constexpr L &
 compound_assign_impl_rshift(L & lhs, R const & rhs, std::true_type)
 {
@@ -690,50 +600,40 @@ compound_assign_impl_rshift(L & lhs, R const & rhs, std::true_type)
     return lhs;
 }
 
-template <typename L, typename R>
+template<typename L, typename R>
 constexpr L &
 compound_assign_impl_rshift(L & lhs, R const & rhs, std::false_type)
 {
     atlas::value(lhs) = atlas::value(lhs >> rhs);
     return lhs;
 }
-} // namespace atlas_detail
+}
 
-template <
+template<
     typename L,
     typename R,
     typename std::enable_if<
         std::is_base_of<atlas::strong_type_tag, L>::value,
         bool>::type = true>
-inline auto
-operator >>= (L & lhs, R const & rhs)
--> decltype(atlas_detail::compound_assign_impl_rshift(
-    lhs,
-    rhs,
+inline auto operator>>=(L & lhs, R const & rhs)
+-> decltype(atlas_detail::compound_assign_impl_rshift(lhs, rhs,
     atlas_detail::has_compound_op_rshift<L, R>{}))
 {
-    return atlas_detail::compound_assign_impl_rshift(
-        lhs,
-        rhs,
+    return atlas_detail::compound_assign_impl_rshift(lhs, rhs,
         atlas_detail::has_compound_op_rshift<L, R>{});
 }
 
 namespace atlas_detail {
-template <typename L, typename R, typename = void>
-struct has_compound_op_bitxor
-: std::false_type
-{ };
+template<typename L, typename R, typename = void>
+struct has_compound_op_bitxor : std::false_type {};
 
-template <typename L, typename R>
-struct has_compound_op_bitxor<
-    L,
-    R,
-    decltype((void)(atlas::value(std::declval<L &>()) ^= atlas::value(
-                        std::declval<R const &>())))>
-: std::true_type
-{ };
+template<typename L, typename R>
+struct has_compound_op_bitxor<L, R,
+    decltype((void)(atlas::value(std::declval<L&>()) ^=
+        atlas::value(std::declval<R const&>())))>
+: std::true_type {};
 
-template <typename L, typename R>
+template<typename L, typename R>
 constexpr L &
 compound_assign_impl_bitxor(L & lhs, R const & rhs, std::true_type)
 {
@@ -741,50 +641,40 @@ compound_assign_impl_bitxor(L & lhs, R const & rhs, std::true_type)
     return lhs;
 }
 
-template <typename L, typename R>
+template<typename L, typename R>
 constexpr L &
 compound_assign_impl_bitxor(L & lhs, R const & rhs, std::false_type)
 {
     atlas::value(lhs) = atlas::value(lhs ^ rhs);
     return lhs;
 }
-} // namespace atlas_detail
+}
 
-template <
+template<
     typename L,
     typename R,
     typename std::enable_if<
         std::is_base_of<atlas::strong_type_tag, L>::value,
         bool>::type = true>
-inline auto
-operator ^= (L & lhs, R const & rhs)
--> decltype(atlas_detail::compound_assign_impl_bitxor(
-    lhs,
-    rhs,
+inline auto operator^=(L & lhs, R const & rhs)
+-> decltype(atlas_detail::compound_assign_impl_bitxor(lhs, rhs,
     atlas_detail::has_compound_op_bitxor<L, R>{}))
 {
-    return atlas_detail::compound_assign_impl_bitxor(
-        lhs,
-        rhs,
+    return atlas_detail::compound_assign_impl_bitxor(lhs, rhs,
         atlas_detail::has_compound_op_bitxor<L, R>{});
 }
 
 namespace atlas_detail {
-template <typename L, typename R, typename = void>
-struct has_compound_op_bitor
-: std::false_type
-{ };
+template<typename L, typename R, typename = void>
+struct has_compound_op_bitor : std::false_type {};
 
-template <typename L, typename R>
-struct has_compound_op_bitor<
-    L,
-    R,
-    decltype((void)(atlas::value(std::declval<L &>()) |= atlas::value(
-                        std::declval<R const &>())))>
-: std::true_type
-{ };
+template<typename L, typename R>
+struct has_compound_op_bitor<L, R,
+    decltype((void)(atlas::value(std::declval<L&>()) |=
+        atlas::value(std::declval<R const&>())))>
+: std::true_type {};
 
-template <typename L, typename R>
+template<typename L, typename R>
 constexpr L &
 compound_assign_impl_bitor(L & lhs, R const & rhs, std::true_type)
 {
@@ -792,35 +682,31 @@ compound_assign_impl_bitor(L & lhs, R const & rhs, std::true_type)
     return lhs;
 }
 
-template <typename L, typename R>
+template<typename L, typename R>
 constexpr L &
 compound_assign_impl_bitor(L & lhs, R const & rhs, std::false_type)
 {
     atlas::value(lhs) = atlas::value(lhs | rhs);
     return lhs;
 }
-} // namespace atlas_detail
+}
 
-template <
+template<
     typename L,
     typename R,
     typename std::enable_if<
         std::is_base_of<atlas::strong_type_tag, L>::value,
         bool>::type = true>
-inline auto
-operator |= (L & lhs, R const & rhs)
--> decltype(atlas_detail::compound_assign_impl_bitor(
-    lhs,
-    rhs,
+inline auto operator|=(L & lhs, R const & rhs)
+-> decltype(atlas_detail::compound_assign_impl_bitor(lhs, rhs,
     atlas_detail::has_compound_op_bitor<L, R>{}))
 {
-    return atlas_detail::compound_assign_impl_bitor(
-        lhs,
-        rhs,
+    return atlas_detail::compound_assign_impl_bitor(lhs, rhs,
         atlas_detail::has_compound_op_bitor<L, R>{});
 }
 
 } // namespace atlas
+
 
 //////////////////////////////////////////////////////////////////////
 ///
@@ -828,7 +714,7 @@ operator |= (L & lhs, R const & rhs)
 ///
 //////////////////////////////////////////////////////////////////////
 inline constexpr finance::core::Money
-operator * (physics::units::Meters lhs, finance::core::Money rhs)
+operator*(physics::units::Meters lhs, finance::core::Money rhs)
 {
     return finance::core::Money{lhs.value * rhs.value};
 }
@@ -836,13 +722,13 @@ operator * (physics::units::Meters lhs, finance::core::Money rhs)
 namespace app::config {
 
 inline constexpr ConfigKey
-operator + (ConfigKey lhs, std::string rhs)
+operator+(ConfigKey lhs, std::string rhs)
 {
     return ConfigKey{lhs.value + atlas::value(rhs)};
 }
 
 inline constexpr ConfigKey
-operator + (std::string lhs, ConfigKey rhs)
+operator+(std::string lhs, ConfigKey rhs)
 {
     return ConfigKey{lhs.value + atlas::value(rhs)};
 }
@@ -852,7 +738,7 @@ operator + (std::string lhs, ConfigKey rhs)
 namespace concurrency {
 
 inline ThreadId
-operator + (ThreadId lhs, ThreadId rhs)
+operator+(ThreadId lhs, ThreadId rhs)
 {
     return ThreadId{lhs.value + rhs.value};
 }
@@ -862,31 +748,31 @@ operator + (ThreadId lhs, ThreadId rhs)
 namespace data {
 
 inline constexpr ByteCount
-operator + (ByteCount lhs, ByteCount rhs)
+operator+(ByteCount lhs, ByteCount rhs)
 {
     return ByteCount{lhs.value + rhs.value};
 }
 
 inline constexpr ByteCount
-operator - (ByteCount lhs, ByteCount rhs)
+operator-(ByteCount lhs, ByteCount rhs)
 {
     return ByteCount{lhs.value - rhs.value};
 }
 
 inline constexpr ByteCount
-operator * (ByteCount lhs, size_t rhs)
+operator*(ByteCount lhs, size_t rhs)
 {
     return ByteCount{lhs.value * rhs.value};
 }
 
 inline constexpr ByteCount
-operator / (ByteCount lhs, size_t rhs)
+operator/(ByteCount lhs, size_t rhs)
 {
     return ByteCount{lhs.value / rhs.value};
 }
 
 inline constexpr ByteCount
-operator % (ByteCount lhs, ByteCount rhs)
+operator%(ByteCount lhs, ByteCount rhs)
 {
     return ByteCount{lhs.value % rhs.value};
 }
@@ -896,31 +782,31 @@ operator % (ByteCount lhs, ByteCount rhs)
 namespace finance::core {
 
 inline constexpr Money
-operator + (Money lhs, Money rhs)
+operator+(Money lhs, Money rhs)
 {
     return Money{lhs.value + rhs.value};
 }
 
 inline constexpr Money
-operator - (Money lhs, Money rhs)
+operator-(Money lhs, Money rhs)
 {
     return Money{lhs.value - rhs.value};
 }
 
 inline constexpr Money
-operator * (Money lhs, double rhs)
+operator*(Money lhs, double rhs)
 {
     return Money{lhs.value * rhs.value};
 }
 
 inline constexpr Money
-operator / (Money lhs, double rhs)
+operator/(Money lhs, double rhs)
 {
     return Money{lhs.value / rhs.value};
 }
 
 inline constexpr double
-operator / (Money lhs, Money rhs)
+operator/(Money lhs, Money rhs)
 {
     return double{lhs.value / rhs.value};
 }
@@ -930,25 +816,25 @@ operator / (Money lhs, Money rhs)
 namespace geo {
 
 inline constexpr Latitude
-operator + (Latitude lhs, double rhs)
+operator+(Latitude lhs, double rhs)
 {
     return Latitude{lhs.value + rhs.value};
 }
 
 inline constexpr Longitude
-operator + (Longitude lhs, double rhs)
+operator+(Longitude lhs, double rhs)
 {
     return Longitude{lhs.value + rhs.value};
 }
 
 inline constexpr double
-operator - (Latitude lhs, Latitude rhs)
+operator-(Latitude lhs, Latitude rhs)
 {
     return double{lhs.value - rhs.value};
 }
 
 inline constexpr double
-operator - (Longitude lhs, Longitude rhs)
+operator-(Longitude lhs, Longitude rhs)
 {
     return double{lhs.value - rhs.value};
 }
@@ -958,25 +844,25 @@ operator - (Longitude lhs, Longitude rhs)
 namespace graphics::color {
 
 inline constexpr RedChannel
-operator + (RedChannel lhs, RedChannel rhs)
+operator+(RedChannel lhs, RedChannel rhs)
 {
     return RedChannel{lhs.value + rhs.value};
 }
 
 inline constexpr RedChannel
-operator | (RedChannel lhs, RedChannel rhs)
+operator|(RedChannel lhs, RedChannel rhs)
 {
     return RedChannel{lhs.value | rhs.value};
 }
 
 inline constexpr RedChannel
-operator & (RedChannel lhs, RedChannel rhs)
+operator&(RedChannel lhs, RedChannel rhs)
 {
     return RedChannel{lhs.value & rhs.value};
 }
 
 inline constexpr RedChannel
-operator ^ (RedChannel lhs, RedChannel rhs)
+operator^(RedChannel lhs, RedChannel rhs)
 {
     return RedChannel{lhs.value ^ rhs.value};
 }
@@ -986,19 +872,19 @@ operator ^ (RedChannel lhs, RedChannel rhs)
 namespace math {
 
 inline constexpr T
-operator + (T lhs, T rhs)
+operator+(T lhs, T rhs)
 {
     return T{lhs.value + atlas::value(rhs)};
 }
 
 inline constexpr U
-operator * (U lhs, U rhs)
+operator*(U lhs, U rhs)
 {
     return U{lhs.value * atlas::value(rhs)};
 }
 
 inline constexpr V
-operator - (V lhs, V rhs)
+operator-(V lhs, V rhs)
 {
     return V{lhs.value - atlas::value(rhs)};
 }
@@ -1008,31 +894,31 @@ operator - (V lhs, V rhs)
 namespace math::rational {
 
 inline constexpr Numerator
-operator + (Numerator lhs, Numerator rhs)
+operator+(Numerator lhs, Numerator rhs)
 {
     return Numerator{lhs.value + rhs.value};
 }
 
 inline constexpr Numerator
-operator - (Numerator lhs, Numerator rhs)
+operator-(Numerator lhs, Numerator rhs)
 {
     return Numerator{lhs.value - rhs.value};
 }
 
 inline constexpr Numerator
-operator * (Numerator lhs, Numerator rhs)
+operator*(Numerator lhs, Numerator rhs)
 {
     return Numerator{lhs.value * rhs.value};
 }
 
 inline constexpr Numerator
-operator * (Numerator lhs, Denominator rhs)
+operator*(Numerator lhs, Denominator rhs)
 {
     return Numerator{lhs.value * rhs.value};
 }
 
 inline constexpr Denominator
-operator * (Denominator lhs, Denominator rhs)
+operator*(Denominator lhs, Denominator rhs)
 {
     return Denominator{lhs.value * rhs.value};
 }
@@ -1042,31 +928,31 @@ operator * (Denominator lhs, Denominator rhs)
 namespace net::ipv4 {
 
 inline constexpr Octet
-operator & (Octet lhs, Octet rhs)
+operator&(Octet lhs, Octet rhs)
 {
     return Octet{lhs.value & rhs.value};
 }
 
 inline constexpr Octet
-operator | (Octet lhs, Octet rhs)
+operator|(Octet lhs, Octet rhs)
 {
     return Octet{lhs.value | rhs.value};
 }
 
 inline constexpr Octet
-operator ^ (Octet lhs, Octet rhs)
+operator^(Octet lhs, Octet rhs)
 {
     return Octet{lhs.value ^ rhs.value};
 }
 
 inline constexpr Octet
-operator << (Octet lhs, int rhs)
+operator<<(Octet lhs, int rhs)
 {
     return Octet{lhs.value << rhs.value};
 }
 
 inline constexpr Octet
-operator >> (Octet lhs, int rhs)
+operator>>(Octet lhs, int rhs)
 {
     return Octet{lhs.value >> rhs.value};
 }
@@ -1076,91 +962,91 @@ operator >> (Octet lhs, int rhs)
 namespace physics::units {
 
 inline constexpr Meters
-operator + (Meters lhs, Meters rhs)
+operator+(Meters lhs, Meters rhs)
 {
     return Meters{lhs.value + rhs.value};
 }
 
 inline constexpr Meters
-operator - (Meters lhs, Meters rhs)
+operator-(Meters lhs, Meters rhs)
 {
     return Meters{lhs.value - rhs.value};
 }
 
 inline constexpr Meters
-operator * (Meters lhs, double rhs)
+operator*(Meters lhs, double rhs)
 {
     return Meters{lhs.value * rhs.value};
 }
 
 inline constexpr Meters
-operator * (double lhs, Meters rhs)
+operator*(double lhs, Meters rhs)
 {
     return Meters{lhs.value * rhs.value};
 }
 
 inline constexpr Meters
-operator / (Meters lhs, double rhs)
+operator/(Meters lhs, double rhs)
 {
     return Meters{lhs.value / rhs.value};
 }
 
 inline constexpr double
-operator / (Meters lhs, Meters rhs)
+operator/(Meters lhs, Meters rhs)
 {
     return double{lhs.value / rhs.value};
 }
 
 inline constexpr Seconds
-operator + (Seconds lhs, Seconds rhs)
+operator+(Seconds lhs, Seconds rhs)
 {
     return Seconds{lhs.value + rhs.value};
 }
 
 inline constexpr Seconds
-operator - (Seconds lhs, Seconds rhs)
+operator-(Seconds lhs, Seconds rhs)
 {
     return Seconds{lhs.value - rhs.value};
 }
 
 inline constexpr Seconds
-operator * (Seconds lhs, double rhs)
+operator*(Seconds lhs, double rhs)
 {
     return Seconds{lhs.value * rhs.value};
 }
 
 inline constexpr Seconds
-operator * (double lhs, Seconds rhs)
+operator*(double lhs, Seconds rhs)
 {
     return Seconds{lhs.value * rhs.value};
 }
 
 inline constexpr Seconds
-operator / (Seconds lhs, double rhs)
+operator/(Seconds lhs, double rhs)
 {
     return Seconds{lhs.value / rhs.value};
 }
 
 inline constexpr double
-operator / (Seconds lhs, Seconds rhs)
+operator/(Seconds lhs, Seconds rhs)
 {
     return double{lhs.value / rhs.value};
 }
 
 inline constexpr MetersPerSecond
-operator / (Meters lhs, Seconds rhs)
+operator/(Meters lhs, Seconds rhs)
 {
     return MetersPerSecond{lhs.value / rhs.value};
 }
 
 inline constexpr Meters
-operator * (MetersPerSecond lhs, Seconds rhs)
+operator*(MetersPerSecond lhs, Seconds rhs)
 {
     return Meters{lhs.value * rhs.value};
 }
 
 inline constexpr Seconds
-operator / (Meters lhs, MetersPerSecond rhs)
+operator/(Meters lhs, MetersPerSecond rhs)
 {
     return Seconds{lhs.value / rhs.value};
 }
@@ -1170,11 +1056,11 @@ operator / (Meters lhs, MetersPerSecond rhs)
 namespace security {
 
 inline constexpr EncryptedData
-operator + (EncryptedData lhs, EncryptedData rhs)
+operator+(EncryptedData lhs, EncryptedData rhs)
 {
     return EncryptedData{lhs.value + rhs.value};
 }
 
 } // namespace security
 
-#endif // EXAMPLE_INTERACTIONS_807B7A3C604622DAD627C1B9AA59CC09B8AF8BB9
+#endif // EXAMPLE_INTERACTIONS_596AF7B0094C2CEDD612C8738813EEE3F924CFEA

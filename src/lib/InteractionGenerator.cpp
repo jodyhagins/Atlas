@@ -485,9 +485,9 @@ namespace atlas {
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
 // ======================================================================
 )";
-    output << banner + 1;
     output << "#ifndef " << guard << "\n";
     output << "#define " << guard << "\n\n";
+    output << banner + 1;
     output << content;
     output << "#endif // " << guard << "\n";
 

@@ -488,6 +488,29 @@ TEST_SUITE("InteractionGenerator")
 
         // Check custom guard prefix and separator
         CHECK(contains(code, "MY_PROJECT_INTERACTIONS__"));
+
+        // Header guard should be on first line (before NOTICE banner)
+        auto first_line_end = code.find('\n');
+        REQUIRE(first_line_end != std::string::npos);
+        std::string first_line = code.substr(0, first_line_end);
+
+        // First line must start with #ifndef
+        CHECK(first_line.find("#ifndef") == 0);
+
+        // Find second line
+        auto second_line_start = first_line_end + 1;
+        auto second_line_end = code.find('\n', second_line_start);
+        REQUIRE(second_line_end != std::string::npos);
+        std::string second_line =
+            code.substr(second_line_start, second_line_end - second_line_start);
+
+        // Second line must start with #define
+        CHECK(second_line.find("#define") == 0);
+
+        // NOTICE banner should come after header guard
+        auto notice_pos = code.find("NOTICE");
+        REQUIRE(notice_pos != std::string::npos);
+        CHECK(notice_pos > second_line_end);
     }
 
     TEST_CASE("Include handling")
