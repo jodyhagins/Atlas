@@ -166,35 +166,44 @@ install(TARGETS atlas
 install(EXPORT AtlasTargets
     FILE AtlasTargets.cmake
     NAMESPACE Atlas::
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Atlas
-)
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Atlas)
 
 # Create config file
 configure_package_config_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/cmake/AtlasConfig.cmake.in
     ${CMAKE_CURRENT_BINARY_DIR}/AtlasConfig.cmake
-    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Atlas
-)
+    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Atlas)
 
 # Create version file
 write_basic_package_version_file(
     ${CMAKE_CURRENT_BINARY_DIR}/AtlasConfigVersion.cmake
     VERSION ${PROJECT_VERSION}
-    COMPATIBILITY SameMajorVersion
-)
+    COMPATIBILITY SameMajorVersion)
 
 # Install config files
 install(FILES
     ${CMAKE_CURRENT_BINARY_DIR}/AtlasConfig.cmake
     ${CMAKE_CURRENT_BINARY_DIR}/AtlasConfigVersion.cmake
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Atlas
-)
+    ${CMAKE_CURRENT_SOURCE_DIR}/cmake/AtlasHelpers.cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Atlas)
 
 # Export targets for use in build tree (for FetchContent users)
 export(EXPORT AtlasTargets
     FILE ${CMAKE_CURRENT_BINARY_DIR}/AtlasTargets.cmake
-    NAMESPACE Atlas::
-)
+    NAMESPACE Atlas::)
+
+# Copy helper functions to build tree for FetchContent users
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/cmake/AtlasHelpers.cmake
+    ${CMAKE_CURRENT_BINARY_DIR}/AtlasHelpers.cmake
+    COPYONLY)
+
+# Include helpers directly for FetchContent users (they don't use the config file)
+# When Atlas is used via add_subdirectory or FetchContent, include helpers automatically
+if(NOT CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
+    # Atlas is being included as a subdirectory/FetchContent - make helpers available
+    include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/AtlasHelpers.cmake)
+endif()
 
 # Add custom coverage target
 if(ATLAS_BUILD_TESTS)
@@ -250,17 +259,15 @@ if(ATLAS_BUILD_TESTS)
             COMMAND ${CMAKE_COMMAND} -E echo "Or run: scripts/show_coverage.sh"
             COMMAND ${CMAKE_COMMAND} -E echo "========================================"
             WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-            COMMENT "Generating coverage report"
-        )
+            COMMENT "Generating coverage report")
     else()
         add_custom_target(coverage
             COMMAND ${CMAKE_COMMAND} -E echo "Running tests..."
             COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
             COMMAND ${CMAKE_COMMAND} -E echo "Generating basic coverage report..."
-            COMMAND ${CMAKE_COMMAND} -E echo "Install lcov for HTML reports: brew install lcov (macOS) or apt-get install lcov (Linux)"
+            COMMAND ${CMAKE_COMMAND} -E echo
+                "Install lcov for HTML reports: brew install lcov (macOS) or apt-get install lcov (Linux)"
             WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-            COMMENT "Running tests (lcov not found for detailed coverage)"
-        )
+            COMMENT "Running tests (lcov not found for detailed coverage)")
     endif()
 endif()
-

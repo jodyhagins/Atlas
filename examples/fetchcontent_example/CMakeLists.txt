@@ -13,47 +13,34 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 include(FetchContent)
 
 # Fetch Atlas from the parent directory (in real usage, this would be a git URL)
-FetchContent_Declare(
-    Atlas
-    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../..
-)
+fetchcontent_declare(Atlas SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../..)
 
 # Let Atlas use FetchContent for Boost (default behavior)
 # This ensures the example works even when Boost is not installed on the system
-FetchContent_MakeAvailable(Atlas)
+fetchcontent_makeavailable(Atlas)
 
-# Directory for generated headers
-set(GENERATED_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated")
-file(MAKE_DIRECTORY ${GENERATED_DIR})
+# Note: This example now uses Atlas CMake helper functions!
+# The helpers are automatically available after FetchContent_MakeAvailable(Atlas)
 
-# Generate a UserId strong type
-set(USERID_HEADER "${GENERATED_DIR}/UserId.hpp")
-set(USERID_DESC "strong int\\; ==, !=, <=>")
-add_custom_command(
-    OUTPUT ${USERID_HEADER}
-    COMMAND ${Atlas_EXECUTABLE} --kind=struct --namespace=example --name=UserId --description=${USERID_DESC} > ${USERID_HEADER}
-    DEPENDS Atlas::atlas
-    COMMENT "Generating UserId strong type"
-    VERBATIM
-)
+# Create a library for generated types
+add_library(example_types INTERFACE)
 
-# Generate a Price strong type
-set(PRICE_HEADER "${GENERATED_DIR}/Price.hpp")
-set(PRICE_DESC "strong double\\; +, -, ==, !=, <=>, out")
-add_custom_command(
-    OUTPUT ${PRICE_HEADER}
-    COMMAND ${Atlas_EXECUTABLE} --kind=struct --namespace=example --name=Price --description=${PRICE_DESC} > ${PRICE_HEADER}
-    DEPENDS Atlas::atlas
-    COMMENT "Generating Price strong type"
-    VERBATIM
-)
+# Generate strong types using the helper functions
+# Much simpler than manual add_custom_command!
 
-# Custom target that depends on generated files
-add_custom_target(generate_types
-    DEPENDS ${USERID_HEADER} ${PRICE_HEADER}
-)
+# Method 1: Using the simplified atlas_add_type function
+atlas_add_type(UserId int "==, !=, <=>" TARGET example_types OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/UserId.hpp)
+
+# Method 2: Using the full add_atlas_strong_type function
+add_atlas_strong_type(
+    NAME Price
+    TYPE double
+    DESCRIPTION "+, -, ==, !=, <=>, out"
+    NAMESPACE example
+    TARGET example_types
+    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/Price.hpp)
 
 # Main executable
 add_executable(example_app main.cpp)
-add_dependencies(example_app generate_types)
-target_include_directories(example_app PRIVATE ${GENERATED_DIR})
+target_link_libraries(example_app PRIVATE example_types)
+target_include_directories(example_app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})

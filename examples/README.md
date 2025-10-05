@@ -2,7 +2,42 @@
 
 Examples that demonstrate what this thing can actually do.
 
-## Files
+## CMake Integration Examples
+
+New! Complete working examples showing how to integrate Atlas into CMake projects:
+
+### **`fetchcontent_example/`** - Basic FetchContent integration
+- Shows how to use Atlas with CMake's FetchContent
+- Demonstrates the helper functions automatically available after `FetchContent_MakeAvailable()`
+- Simple project setup with generated types
+
+### **`helpers_basic_example/`** - CMake helper functions
+- `atlas_add_type()` - Simplified single-type generation
+- `add_atlas_strong_type()` - Full-featured type generation
+- Target integration vs. manual file management
+- Namespace auto-deduction
+
+### **`helpers_inline_example/`** - Inline type definitions
+- `add_atlas_strong_types_inline()` - Define types directly in CMakeLists.txt
+- Multiple types in a single declaration
+- No separate config files needed
+
+### **`helpers_file_example/`** - File-based type definitions
+- `add_atlas_strong_types_from_file()` - Generate from config file
+- Best for projects with many types
+- Domain-specific type organization
+
+**Build any example:**
+```bash
+cd <example_directory>
+cmake -B build -S .
+cmake --build build
+./build/<example_name>
+```
+
+**See also:** [cmake/AtlasHelpers.md](../cmake/AtlasHelpers.md) for complete CMake function reference
+
+## Showcase Files
 
 **`strong_types_showcase.txt`** - The greatest hits
 - Multiple namespaces and base types (because one is never enough)
@@ -16,7 +51,7 @@ Examples that demonstrate what this thing can actually do.
 - Symmetric operations (`Price * int <-> Price`)
 - Custom value accessors for the truly adventurous
 
-## Generate Examples
+## Generate Showcase Examples
 
 Easy mode:
 ```bash

@@ -1,0 +1,39 @@
+# Domain-specific strong types for our application
+# This file demonstrates using a separate configuration file for type definitions
+guard_prefix=DOMAIN_TYPES
+guard_separator=_
+upcase_guard=true
+
+[type]
+kind=struct
+namespace=domain
+name=CustomerId
+description=strong int; ==, !=, <=>
+default_value=0
+
+[type]
+kind=struct
+namespace=domain
+name=OrderId
+description=strong int; ==, !=, <=>
+default_value=0
+
+[type]
+kind=struct
+namespace=domain
+name=Money
+description=strong double; +, -, *, /, ==, !=, <, <=, >, >=, <=>, out
+default_value=0.0
+
+[type]
+kind=struct
+namespace=domain
+name=Quantity
+description=strong int; +, -, ++, --, ==, !=, <, <=, >, >=, <=>, out
+default_value=0
+
+[type]
+kind=struct
+namespace=domain
+name=EmailAddress
+description=strong std::string; ==, !=, <=>
