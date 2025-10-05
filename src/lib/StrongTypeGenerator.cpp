@@ -918,124 +918,17 @@ generate_strong_types_file(
     std::set<std::string> all_includes;
     std::ostringstream combined_code;
 
-    // Generate each type and collect includes
+    // Generate each type WITHOUT preamble, and collect includes
     for (auto const & desc : descriptions) {
-        std::string type_code = generate_strong_type(desc);
+        auto const info = parse(desc);
 
-        // Find header guards (now at the beginning, before NOTICE banner)
-        auto ifndef_pos = type_code.find("#ifndef");
-        auto define_pos = type_code.find("#define", ifndef_pos + 1);
-
-        if (define_pos != std::string::npos) {
-            auto content_start = type_code.find('\n', define_pos);
-            if (content_start != std::string::npos) {
-                ++content_start;
-
-                // Skip the NOTICE banner (now between header guard and includes)
-                // Banner has TWO separator lines, need to skip past the second one
-                auto notice_start = type_code.find("// ======================================================================", content_start);
-                if (notice_start != std::string::npos) {
-                    // Find the second separator line (closing banner)
-                    auto notice_end = type_code.find("// ======================================================================", notice_start + 1);
-                    if (notice_end != std::string::npos) {
-                        // Skip to end of that line
-                        notice_end = type_code.find('\n', notice_end);
-                        if (notice_end != std::string::npos) {
-                            content_start = notice_end + 1;
-                        }
-                    }
-                }
-
-                // Find where includes end (first line that doesn't start with
-                // #include)
-                auto includes_end = content_start;
-                auto pos = content_start;
-                while (pos < type_code.size()) {
-                    // Skip whitespace
-                    while (pos < type_code.size() &&
-                           std::isspace(type_code[pos]))
-                    {
-                        ++pos;
-                    }
-                    if (type_code.substr(pos, 8) == "#include") {
-                        // Extract this include
-                        auto line_end = type_code.find('\n', pos);
-                        if (line_end != std::string::npos) {
-                            all_includes.insert(
-                                type_code.substr(pos, line_end - pos));
-                            pos = line_end + 1;
-                            includes_end = pos;
-                        } else {
-                            break;
-                        }
-                    } else {
-                        break;
-                    }
-                }
-
-                // Skip the strong_type_tag definition block if present
-                // It starts with the conditional #include <compare> and then
-                // the tag definition
-                auto content_pos = includes_end;
-                while (content_pos < type_code.size() &&
-                       std::isspace(type_code[content_pos]))
-                {
-                    ++content_pos;
-                }
-
-                // Check for conditional include <compare> before
-                // strong_type_tag
-                if (type_code.substr(content_pos, 5) == "#if d") {
-                    // Look for the #endif of this conditional include
-                    auto endif_pos = type_code.find("#endif\n", content_pos);
-                    if (endif_pos != std::string::npos) {
-                        content_pos = endif_pos + 7; // Skip "#endif\n"
-
-                        // Skip whitespace
-                        while (content_pos < type_code.size() &&
-                               std::isspace(type_code[content_pos]))
-                        {
-                            ++content_pos;
-                        }
-                    }
-                }
-
-                // Now check for strong_type_tag block
-                if (type_code.substr(content_pos, 7) == "#ifndef") {
-                    auto tag_ifndef_end = type_code.find('\n', content_pos);
-                    if (tag_ifndef_end != std::string::npos &&
-                        type_code
-                                .substr(
-                                    content_pos,
-                                    tag_ifndef_end - content_pos)
-                                .find("WJH_ATLAS_"
-                                      "34E45276DD204E33A734018DE4B04C40") !=
-                            std::string::npos)
-                    {
-                        // This is the strong_type_tag block, skip it
-                        auto tag_endif = type_code.find(
-                            "#endif // "
-                            "WJH_ATLAS_34E45276DD204E33A734018DE4B04C40",
-                            content_pos);
-                        if (tag_endif != std::string::npos) {
-                            content_pos = type_code.find('\n', tag_endif);
-                            if (content_pos != std::string::npos) {
-                                ++content_pos;
-                            }
-                        }
-                    }
-                }
-
-                auto endif_pos = type_code.rfind("#endif");
-                if (endif_pos != std::string::npos) {
-                    // Extract content after includes and strong_type_tag
-                    std::string content = type_code.substr(
-                        content_pos,
-                        endif_pos - content_pos);
-                    combined_code << content;
-                }
-            }
+        // Collect includes from this type
+        for (auto const & include : info.includes) {
+            all_includes.insert("#include " + include);
         }
+
+        // Generate just the type code (no preamble, no header guards)
+        combined_code << render_code(info);
     }
 
     // Generate header guard with SHA of combined content
