@@ -931,6 +931,16 @@ generate_strong_types_file(
             if (content_start != std::string::npos) {
                 ++content_start;
 
+                // Skip the NOTICE banner (now between header guard and includes)
+                auto notice_end = type_code.find("// ======================================================================", content_start);
+                if (notice_end != std::string::npos) {
+                    // Find end of closing banner line
+                    notice_end = type_code.find('\n', notice_end);
+                    if (notice_end != std::string::npos) {
+                        content_start = notice_end + 1;
+                    }
+                }
+
                 // Find where includes end (first line that doesn't start with
                 // #include)
                 auto includes_end = content_start;
