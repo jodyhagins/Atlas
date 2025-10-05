@@ -974,6 +974,73 @@ TEST_SUITE("StrongTypeGenerator")
         }
     }
 
+    TEST_CASE("Multi-Type File Generation")
+    {
+        SUBCASE("preamble appears exactly once") {
+            // Create multiple type descriptions
+            std::vector<StrongTypeDescription> descriptions = {
+                make_description("struct", "test", "Type1", "strong int; +, -"),
+                make_description("struct", "test", "Type2", "strong double; *, /"),
+                make_description("struct", "test", "Type3", "strong std::string; ==, !=")
+            };
+
+            auto code = generate_strong_types_file(descriptions, "EXAMPLE", "_", true);
+
+            // The preamble guard should appear exactly 3 times: #ifndef, #define, and #endif
+            std::string preamble_guard = "WJH_ATLAS_50E620B544874CB8BE4412EE6773BF90";
+
+            size_t count = 0;
+            size_t pos = 0;
+            while ((pos = code.find(preamble_guard, pos)) != std::string::npos) {
+                ++count;
+                pos += preamble_guard.length();
+            }
+
+            // Should appear exactly 3 times: #ifndef, #define at start, and #endif at end
+            CHECK(count == 3);
+
+            // Verify the preamble marker appears exactly once
+            std::string preamble_marker = "These are the droids you are looking for!";
+            count = 0;
+            pos = 0;
+            while ((pos = code.find(preamble_marker, pos)) != std::string::npos) {
+                ++count;
+                pos += preamble_marker.length();
+            }
+            CHECK(count == 1);
+
+            // Verify strong_type_tag is defined exactly once
+            std::string strong_type_tag = "struct strong_type_tag";
+            count = 0;
+            pos = 0;
+            while ((pos = code.find(strong_type_tag, pos)) != std::string::npos) {
+                ++count;
+                pos += strong_type_tag.length();
+            }
+            CHECK(count == 1);
+        }
+
+        SUBCASE("all types are present in generated file") {
+            std::vector<StrongTypeDescription> descriptions = {
+                make_description("struct", "ns1", "TypeA", "strong int"),
+                make_description("struct", "ns2", "TypeB", "strong double"),
+                make_description("struct", "ns3", "TypeC", "strong float")
+            };
+
+            auto code = generate_strong_types_file(descriptions, "", "_", true);
+
+            // Verify all three types are present
+            CHECK(code.find("struct TypeA") != std::string::npos);
+            CHECK(code.find("struct TypeB") != std::string::npos);
+            CHECK(code.find("struct TypeC") != std::string::npos);
+
+            // Verify all three namespaces are present
+            CHECK(code.find("namespace ns1") != std::string::npos);
+            CHECK(code.find("namespace ns2") != std::string::npos);
+            CHECK(code.find("namespace ns3") != std::string::npos);
+        }
+    }
+
     TEST_CASE("Property-Based Tests")
     {
         SUBCASE("all generated guards are unique") {
