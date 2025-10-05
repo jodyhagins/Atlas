@@ -1,3 +1,6 @@
+#ifndef EXAMPLE_9B80EE0BECAB362040C0C12BC0963267CD2F10BD
+#define EXAMPLE_9B80EE0BECAB362040C0C12BC0963267CD2F10BD
+
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
 // ----------------------------------------------------------------------
@@ -13,28 +16,320 @@
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
 // ======================================================================
 
-#ifndef EXAMPLE_FE7076E0DD0859DA04DE38D296FE0B045F61DB3A
-#define EXAMPLE_FE7076E0DD0859DA04DE38D296FE0B045F61DB3A
+#ifndef WJH_ATLAS_50E620B544874CB8BE4412EE6773BF90
+#define WJH_ATLAS_50E620B544874CB8BE4412EE6773BF90
 
-#ifndef WJH_ATLAS_34E45276DD204E33A734018DE4B04C40
-    #define WJH_ATLAS_34E45276DD204E33A734018DE4B04C40
-    #if defined(__cpp_impl_three_way_comparison) && \
-        __cpp_impl_three_way_comparison >= 201907L
-        #include <compare>
-    #endif
+// This is boilerplate that is part of every Atlas interaction file.
+// Nothing to see here, move along.
+
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
+#include <compare>
+#endif
+#include <type_traits>
+#include <utility>
+
 namespace atlas {
+
 struct strong_type_tag
 {
-    #if defined(__cpp_impl_three_way_comparison) && \
-        __cpp_impl_three_way_comparison >= 201907L
-    friend auto operator <=> (
-        strong_type_tag const &,
-        strong_type_tag const &) = default;
-    #endif
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
+    friend auto
+    operator<=>(strong_type_tag const &, strong_type_tag const &) = default;
+#endif
 };
-} // namespace atlas
-#endif // WJH_ATLAS_34E45276DD204E33A734018DE4B04C40
 
+struct value_tag {};
+
+namespace atlas_detail {
+
+template <typename... Ts>
+struct make_void
+{
+    using type = void;
+};
+
+template <typename... Ts>
+using void_t = typename make_void<Ts...>::type;
+
+template <typename T, typename = void>
+struct IsAtlasType
+: std::false_type
+{ };
+
+template <typename T>
+struct IsAtlasType<T, void_t<typename T::atlas_value_type>>
+: std::true_type
+{ };
+
+template <std::size_t N>
+struct PriorityTag
+: PriorityTag<N - 1>
+{ };
+
+template <>
+struct PriorityTag<0u>
+{ };
+
+using value_tag = PriorityTag<3>;
+
+template <bool B>
+using bool_c = std::integral_constant<bool, B>;
+template <typename T>
+using bool_ = bool_c<T::value>;
+template <typename T>
+using not_ = bool_c<not T::value>;
+template <typename T, typename U>
+using and_ = bool_c<T::value && U::value>;
+template <typename T>
+using is_lref = std::is_lvalue_reference<T>;
+template <typename T, typename U = void>
+using enable_if = typename std::enable_if<T::value, U>::type;
+
+template <typename T>
+using _t = typename T::type;
+
+void atlas_value();
+
+template <typename T>
+constexpr T &
+value(T & val, PriorityTag<0>)
+{
+    return val;
+}
+
+template <typename T, typename U = typename T::atlas_value_type>
+using val_t = _t<std::conditional<
+    std::is_const<T>::value,
+    U const &,
+    U &>>;
+
+template <typename T, typename U = val_t<T>>
+constexpr auto
+value(T & val, PriorityTag<1>)
+-> decltype(atlas::atlas_detail::value(static_cast<U>(val), value_tag{}))
+{
+    return atlas::atlas_detail::value(static_cast<U>(val), value_tag{});
+}
+
+template <typename T>
+constexpr auto
+value(T const & t, PriorityTag<2>)
+-> decltype(atlas_value(t, atlas::value_tag{}))
+{
+    return atlas_value(t, atlas::value_tag{});
+}
+
+template <typename T>
+constexpr auto
+value(T const & t, PriorityTag<3>)
+-> decltype(atlas_value(t))
+{
+    return atlas_value(t);
+}
+
+class Value
+{
+    template <
+        typename U,
+        typename T,
+        typename V = _t<std::conditional<is_lref<U &&>::value, T &, T>>>
+    static constexpr V rval(T && t)
+    {
+        return t;
+    }
+
+public:
+    template <typename T>
+    constexpr auto
+    operator()(T && t) const
+    -> decltype(rval<T>(atlas_detail::value(t, atlas_detail::value_tag{})))
+    {
+        return rval<T>(atlas_detail::value(t, atlas_detail::value_tag{}));
+    }
+};
+
+} // namespace atlas_detail
+
+#if defined(__cpp_inline_variables) && __cpp_inline_variables >= 9201606L
+inline constexpr auto value = atlas_detail::Value{};
+#else
+template <typename T>
+constexpr auto
+value(T && t)
+-> decltype(atlas_detail::Value{}(std::forward<T>(t)))
+{
+    return atlas_detail::Value{}(std::forward<T>(t));
+}
+#endif
+
+} // namespace atlas
+
+#endif // WJH_ATLAS_50E620B544874CB8BE4412EE6773BF90
+
+
+//////////////////////////////////////////////////////////////////////
+///
+/// These are the droids you are looking for!
+///
+//////////////////////////////////////////////////////////////////////
+
+// This is boilerplate that is part of every Atlas interaction file.
+// Nothing to see here, move along.
+
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
+#include <compare>
+#endif
+#include <type_traits>
+#include <utility>
+
+namespace atlas {
+
+struct strong_type_tag
+{
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
+    friend auto
+    operator<=>(strong_type_tag const &, strong_type_tag const &) = default;
+#endif
+};
+
+struct value_tag {};
+
+namespace atlas_detail {
+
+template <typename... Ts>
+struct make_void
+{
+    using type = void;
+};
+
+template <typename... Ts>
+using void_t = typename make_void<Ts...>::type;
+
+template <typename T, typename = void>
+struct IsAtlasType
+: std::false_type
+{ };
+
+template <typename T>
+struct IsAtlasType<T, void_t<typename T::atlas_value_type>>
+: std::true_type
+{ };
+
+template <std::size_t N>
+struct PriorityTag
+: PriorityTag<N - 1>
+{ };
+
+template <>
+struct PriorityTag<0u>
+{ };
+
+using value_tag = PriorityTag<3>;
+
+template <bool B>
+using bool_c = std::integral_constant<bool, B>;
+template <typename T>
+using bool_ = bool_c<T::value>;
+template <typename T>
+using not_ = bool_c<not T::value>;
+template <typename T, typename U>
+using and_ = bool_c<T::value && U::value>;
+template <typename T>
+using is_lref = std::is_lvalue_reference<T>;
+template <typename T, typename U = void>
+using enable_if = typename std::enable_if<T::value, U>::type;
+
+template <typename T>
+using _t = typename T::type;
+
+void atlas_value();
+
+template <typename T>
+constexpr T &
+value(T & val, PriorityTag<0>)
+{
+    return val;
+}
+
+template <typename T, typename U = typename T::atlas_value_type>
+using val_t = _t<std::conditional<
+    std::is_const<T>::value,
+    U const &,
+    U &>>;
+
+template <typename T, typename U = val_t<T>>
+constexpr auto
+value(T & val, PriorityTag<1>)
+-> decltype(atlas::atlas_detail::value(static_cast<U>(val), value_tag{}))
+{
+    return atlas::atlas_detail::value(static_cast<U>(val), value_tag{});
+}
+
+template <typename T>
+constexpr auto
+value(T const & t, PriorityTag<2>)
+-> decltype(atlas_value(t, atlas::value_tag{}))
+{
+    return atlas_value(t, atlas::value_tag{});
+}
+
+template <typename T>
+constexpr auto
+value(T const & t, PriorityTag<3>)
+-> decltype(atlas_value(t))
+{
+    return atlas_value(t);
+}
+
+class Value
+{
+    template <
+        typename U,
+        typename T,
+        typename V = _t<std::conditional<is_lref<U &&>::value, T &, T>>>
+    static constexpr V rval(T && t)
+    {
+        return t;
+    }
+
+public:
+    template <typename T>
+    constexpr auto
+    operator()(T && t) const
+    -> decltype(rval<T>(atlas_detail::value(t, atlas_detail::value_tag{})))
+    {
+        return rval<T>(atlas_detail::value(t, atlas_detail::value_tag{}));
+    }
+};
+
+} // namespace atlas_detail
+
+#if defined(__cpp_inline_variables) && __cpp_inline_variables >= 9201606L
+inline constexpr auto value = atlas_detail::Value{};
+#else
+template <typename T>
+constexpr auto
+value(T && t)
+-> decltype(atlas_detail::Value{}(std::forward<T>(t)))
+{
+    return atlas_detail::Value{}(std::forward<T>(t));
+}
+#endif
+
+} // namespace atlas
+
+#endif // WJH_ATLAS_50E620B544874CB8BE4412EE6773BF90
+
+
+//////////////////////////////////////////////////////////////////////
+///
+/// These are the droids you are looking for!
+///
+//////////////////////////////////////////////////////////////////////
 
 #include <functional>
 #include <type_traits>
@@ -69,9 +364,10 @@ struct Money
 
     template <
         typename... ArgTs,
-        std::enable_if_t<std::is_constructible_v<double, ArgTs...>, bool> =
-            true>
-    constexpr explicit Money(ArgTs &&... args)
+        std::enable_if_t<
+            std::is_constructible_v<double, ArgTs...>,
+            bool> = true>
+    constexpr explicit Money(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     { }
 
@@ -79,22 +375,24 @@ struct Money
      * The explicit cast operator provides a reference to the wrapped object.
      */
     constexpr explicit operator double const & () const { return value; }
-
     constexpr explicit operator double & () { return value; }
 
     /**
      * Apply * assignment to the wrapped objects.
      */
-    friend constexpr Money & operator *= (Money & lhs, Money const & rhs)
+    friend constexpr Money & operator *= (
+        Money & lhs,
+        Money const & rhs)
     {
         lhs.value *= rhs.value;
         return lhs;
     }
-
     /**
      * Apply the binary operator * to the wrapped object.
      */
-    friend constexpr Money operator * (Money lhs, Money const & rhs)
+    friend constexpr Money operator * (
+        Money lhs,
+        Money const & rhs)
     {
         lhs *= rhs;
         return lhs;
@@ -103,16 +401,19 @@ struct Money
     /**
      * Apply + assignment to the wrapped objects.
      */
-    friend constexpr Money & operator += (Money & lhs, Money const & rhs)
+    friend constexpr Money & operator += (
+        Money & lhs,
+        Money const & rhs)
     {
         lhs.value += rhs.value;
         return lhs;
     }
-
     /**
      * Apply the binary operator + to the wrapped object.
      */
-    friend constexpr Money operator + (Money lhs, Money const & rhs)
+    friend constexpr Money operator + (
+        Money lhs,
+        Money const & rhs)
     {
         lhs += rhs;
         return lhs;
@@ -121,16 +422,19 @@ struct Money
     /**
      * Apply - assignment to the wrapped objects.
      */
-    friend constexpr Money & operator -= (Money & lhs, Money const & rhs)
+    friend constexpr Money & operator -= (
+        Money & lhs,
+        Money const & rhs)
     {
         lhs.value -= rhs.value;
         return lhs;
     }
-
     /**
      * Apply the binary operator - to the wrapped object.
      */
-    friend constexpr Money operator - (Money lhs, Money const & rhs)
+    friend constexpr Money operator - (
+        Money lhs,
+        Money const & rhs)
     {
         lhs -= rhs;
         return lhs;
@@ -139,16 +443,19 @@ struct Money
     /**
      * Apply / assignment to the wrapped objects.
      */
-    friend constexpr Money & operator /= (Money & lhs, Money const & rhs)
+    friend constexpr Money & operator /= (
+        Money & lhs,
+        Money const & rhs)
     {
         lhs.value /= rhs.value;
         return lhs;
     }
-
     /**
      * Apply the binary operator / to the wrapped object.
      */
-    friend constexpr Money operator / (Money lhs, Money const & rhs)
+    friend constexpr Money operator / (
+        Money lhs,
+        Money const & rhs)
     {
         lhs /= rhs;
         return lhs;
@@ -157,16 +464,19 @@ struct Money
     /**
      * Apply << assignment to the wrapped objects.
      */
-    friend constexpr Money & operator <<= (Money & lhs, Money const & rhs)
+    friend constexpr Money & operator <<= (
+        Money & lhs,
+        Money const & rhs)
     {
         lhs.value <<= rhs.value;
         return lhs;
     }
-
     /**
      * Apply the binary operator << to the wrapped object.
      */
-    friend constexpr Money operator << (Money lhs, Money const & rhs)
+    friend constexpr Money operator << (
+        Money lhs,
+        Money const & rhs)
     {
         lhs <<= rhs;
         return lhs;
@@ -175,7 +485,9 @@ struct Money
     /**
      * Is @p lhs.value != @p rhs.value?
      */
-    friend constexpr bool operator != (Money const & lhs, Money const & rhs)
+    friend constexpr bool operator != (
+        Money const & lhs,
+        Money const & rhs)
     {
         return lhs.value != rhs.value;
     }
@@ -183,7 +495,9 @@ struct Money
     /**
      * Is @p lhs.value < @p rhs.value?
      */
-    friend constexpr bool operator < (Money const & lhs, Money const & rhs)
+    friend constexpr bool operator < (
+        Money const & lhs,
+        Money const & rhs)
     {
         return lhs.value < rhs.value;
     }
@@ -191,7 +505,9 @@ struct Money
     /**
      * Is @p lhs.value <= @p rhs.value?
      */
-    friend constexpr bool operator <= (Money const & lhs, Money const & rhs)
+    friend constexpr bool operator <= (
+        Money const & lhs,
+        Money const & rhs)
     {
         return lhs.value <= rhs.value;
     }
@@ -199,7 +515,9 @@ struct Money
     /**
      * Is @p lhs.value == @p rhs.value?
      */
-    friend constexpr bool operator == (Money const & lhs, Money const & rhs)
+    friend constexpr bool operator == (
+        Money const & lhs,
+        Money const & rhs)
     {
         return lhs.value == rhs.value;
     }
@@ -207,7 +525,9 @@ struct Money
     /**
      * Is @p lhs.value > @p rhs.value?
      */
-    friend constexpr bool operator > (Money const & lhs, Money const & rhs)
+    friend constexpr bool operator > (
+        Money const & lhs,
+        Money const & rhs)
     {
         return lhs.value > rhs.value;
     }
@@ -215,7 +535,9 @@ struct Money
     /**
      * Is @p lhs.value >= @p rhs.value?
      */
-    friend constexpr bool operator >= (Money const & lhs, Money const & rhs)
+    friend constexpr bool operator >= (
+        Money const & lhs,
+        Money const & rhs)
     {
         return lhs.value >= rhs.value;
     }
@@ -232,11 +554,169 @@ template <>
 struct std::hash<finance::core::Money>
 {
     constexpr std::size_t operator () (finance::core::Money const & t) const
-        noexcept(noexcept(std::hash<double>{}(std::declval<double const &>())))
+    noexcept(
+        noexcept(std::hash<double>{}(
+            std::declval<double const &>())))
     {
-        return std::hash<double>{}(static_cast<double const &>(t));
+        return std::hash<double>{}(
+            static_cast<double const &>(t));
     }
 };
+// This is boilerplate that is part of every Atlas interaction file.
+// Nothing to see here, move along.
+
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
+#include <compare>
+#endif
+#include <type_traits>
+#include <utility>
+
+namespace atlas {
+
+struct strong_type_tag
+{
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
+    friend auto
+    operator<=>(strong_type_tag const &, strong_type_tag const &) = default;
+#endif
+};
+
+struct value_tag {};
+
+namespace atlas_detail {
+
+template <typename... Ts>
+struct make_void
+{
+    using type = void;
+};
+
+template <typename... Ts>
+using void_t = typename make_void<Ts...>::type;
+
+template <typename T, typename = void>
+struct IsAtlasType
+: std::false_type
+{ };
+
+template <typename T>
+struct IsAtlasType<T, void_t<typename T::atlas_value_type>>
+: std::true_type
+{ };
+
+template <std::size_t N>
+struct PriorityTag
+: PriorityTag<N - 1>
+{ };
+
+template <>
+struct PriorityTag<0u>
+{ };
+
+using value_tag = PriorityTag<3>;
+
+template <bool B>
+using bool_c = std::integral_constant<bool, B>;
+template <typename T>
+using bool_ = bool_c<T::value>;
+template <typename T>
+using not_ = bool_c<not T::value>;
+template <typename T, typename U>
+using and_ = bool_c<T::value && U::value>;
+template <typename T>
+using is_lref = std::is_lvalue_reference<T>;
+template <typename T, typename U = void>
+using enable_if = typename std::enable_if<T::value, U>::type;
+
+template <typename T>
+using _t = typename T::type;
+
+void atlas_value();
+
+template <typename T>
+constexpr T &
+value(T & val, PriorityTag<0>)
+{
+    return val;
+}
+
+template <typename T, typename U = typename T::atlas_value_type>
+using val_t = _t<std::conditional<
+    std::is_const<T>::value,
+    U const &,
+    U &>>;
+
+template <typename T, typename U = val_t<T>>
+constexpr auto
+value(T & val, PriorityTag<1>)
+-> decltype(atlas::atlas_detail::value(static_cast<U>(val), value_tag{}))
+{
+    return atlas::atlas_detail::value(static_cast<U>(val), value_tag{});
+}
+
+template <typename T>
+constexpr auto
+value(T const & t, PriorityTag<2>)
+-> decltype(atlas_value(t, atlas::value_tag{}))
+{
+    return atlas_value(t, atlas::value_tag{});
+}
+
+template <typename T>
+constexpr auto
+value(T const & t, PriorityTag<3>)
+-> decltype(atlas_value(t))
+{
+    return atlas_value(t);
+}
+
+class Value
+{
+    template <
+        typename U,
+        typename T,
+        typename V = _t<std::conditional<is_lref<U &&>::value, T &, T>>>
+    static constexpr V rval(T && t)
+    {
+        return t;
+    }
+
+public:
+    template <typename T>
+    constexpr auto
+    operator()(T && t) const
+    -> decltype(rval<T>(atlas_detail::value(t, atlas_detail::value_tag{})))
+    {
+        return rval<T>(atlas_detail::value(t, atlas_detail::value_tag{}));
+    }
+};
+
+} // namespace atlas_detail
+
+#if defined(__cpp_inline_variables) && __cpp_inline_variables >= 9201606L
+inline constexpr auto value = atlas_detail::Value{};
+#else
+template <typename T>
+constexpr auto
+value(T && t)
+-> decltype(atlas_detail::Value{}(std::forward<T>(t)))
+{
+    return atlas_detail::Value{}(std::forward<T>(t));
+}
+#endif
+
+} // namespace atlas
+
+#endif // WJH_ATLAS_50E620B544874CB8BE4412EE6773BF90
+
+
+//////////////////////////////////////////////////////////////////////
+///
+/// These are the droids you are looking for!
+///
+//////////////////////////////////////////////////////////////////////
 
 #include <compare>
 #include <functional>
@@ -276,7 +756,7 @@ public:
         std::enable_if_t<
             std::is_constructible_v<unsigned long, ArgTs...>,
             bool> = true>
-    constexpr explicit UserId(ArgTs &&... args)
+    constexpr explicit UserId(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     { }
 
@@ -284,19 +764,21 @@ public:
      * The explicit cast operator provides a reference to the wrapped object.
      */
     constexpr explicit operator unsigned long const & () const { return value; }
-
     constexpr explicit operator unsigned long & () { return value; }
 
     /**
      * The default three-way comparison (spaceship) operator.
      */
-    friend constexpr auto operator <=> (UserId const &, UserId const &) =
-        default;
+    friend constexpr auto operator <=> (
+        UserId const &,
+        UserId const &) = default;
 
     /**
      * Is @p lhs.value != @p rhs.value?
      */
-    friend constexpr bool operator != (UserId const & lhs, UserId const & rhs)
+    friend constexpr bool operator != (
+        UserId const & lhs,
+        UserId const & rhs)
     {
         return lhs.value != rhs.value;
     }
@@ -304,7 +786,9 @@ public:
     /**
      * Is @p lhs.value == @p rhs.value?
      */
-    friend constexpr bool operator == (UserId const & lhs, UserId const & rhs)
+    friend constexpr bool operator == (
+        UserId const & lhs,
+        UserId const & rhs)
     {
         return lhs.value == rhs.value;
     }
@@ -320,13 +804,170 @@ public:
 template <>
 struct std::hash<ids::v1::UserId>
 {
-    std::size_t operator () (ids::v1::UserId const & t) const noexcept(noexcept(
-        std::hash<unsigned long>{}(std::declval<unsigned long const &>())))
+    std::size_t operator () (ids::v1::UserId const & t) const
+    noexcept(
+        noexcept(std::hash<unsigned long>{}(
+            std::declval<unsigned long const &>())))
     {
         return std::hash<unsigned long>{}(
             static_cast<unsigned long const &>(t));
     }
 };
+// This is boilerplate that is part of every Atlas interaction file.
+// Nothing to see here, move along.
+
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
+#include <compare>
+#endif
+#include <type_traits>
+#include <utility>
+
+namespace atlas {
+
+struct strong_type_tag
+{
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
+    friend auto
+    operator<=>(strong_type_tag const &, strong_type_tag const &) = default;
+#endif
+};
+
+struct value_tag {};
+
+namespace atlas_detail {
+
+template <typename... Ts>
+struct make_void
+{
+    using type = void;
+};
+
+template <typename... Ts>
+using void_t = typename make_void<Ts...>::type;
+
+template <typename T, typename = void>
+struct IsAtlasType
+: std::false_type
+{ };
+
+template <typename T>
+struct IsAtlasType<T, void_t<typename T::atlas_value_type>>
+: std::true_type
+{ };
+
+template <std::size_t N>
+struct PriorityTag
+: PriorityTag<N - 1>
+{ };
+
+template <>
+struct PriorityTag<0u>
+{ };
+
+using value_tag = PriorityTag<3>;
+
+template <bool B>
+using bool_c = std::integral_constant<bool, B>;
+template <typename T>
+using bool_ = bool_c<T::value>;
+template <typename T>
+using not_ = bool_c<not T::value>;
+template <typename T, typename U>
+using and_ = bool_c<T::value && U::value>;
+template <typename T>
+using is_lref = std::is_lvalue_reference<T>;
+template <typename T, typename U = void>
+using enable_if = typename std::enable_if<T::value, U>::type;
+
+template <typename T>
+using _t = typename T::type;
+
+void atlas_value();
+
+template <typename T>
+constexpr T &
+value(T & val, PriorityTag<0>)
+{
+    return val;
+}
+
+template <typename T, typename U = typename T::atlas_value_type>
+using val_t = _t<std::conditional<
+    std::is_const<T>::value,
+    U const &,
+    U &>>;
+
+template <typename T, typename U = val_t<T>>
+constexpr auto
+value(T & val, PriorityTag<1>)
+-> decltype(atlas::atlas_detail::value(static_cast<U>(val), value_tag{}))
+{
+    return atlas::atlas_detail::value(static_cast<U>(val), value_tag{});
+}
+
+template <typename T>
+constexpr auto
+value(T const & t, PriorityTag<2>)
+-> decltype(atlas_value(t, atlas::value_tag{}))
+{
+    return atlas_value(t, atlas::value_tag{});
+}
+
+template <typename T>
+constexpr auto
+value(T const & t, PriorityTag<3>)
+-> decltype(atlas_value(t))
+{
+    return atlas_value(t);
+}
+
+class Value
+{
+    template <
+        typename U,
+        typename T,
+        typename V = _t<std::conditional<is_lref<U &&>::value, T &, T>>>
+    static constexpr V rval(T && t)
+    {
+        return t;
+    }
+
+public:
+    template <typename T>
+    constexpr auto
+    operator()(T && t) const
+    -> decltype(rval<T>(atlas_detail::value(t, atlas_detail::value_tag{})))
+    {
+        return rval<T>(atlas_detail::value(t, atlas_detail::value_tag{}));
+    }
+};
+
+} // namespace atlas_detail
+
+#if defined(__cpp_inline_variables) && __cpp_inline_variables >= 9201606L
+inline constexpr auto value = atlas_detail::Value{};
+#else
+template <typename T>
+constexpr auto
+value(T && t)
+-> decltype(atlas_detail::Value{}(std::forward<T>(t)))
+{
+    return atlas_detail::Value{}(std::forward<T>(t));
+}
+#endif
+
+} // namespace atlas
+
+#endif // WJH_ATLAS_50E620B544874CB8BE4412EE6773BF90
+
+
+//////////////////////////////////////////////////////////////////////
+///
+/// These are the droids you are looking for!
+///
+//////////////////////////////////////////////////////////////////////
 
 #include <compare>
 #include <type_traits>
@@ -361,9 +1002,10 @@ struct Meters
 
     template <
         typename... ArgTs,
-        std::enable_if_t<std::is_constructible_v<double, ArgTs...>, bool> =
-            true>
-    constexpr explicit Meters(ArgTs &&... args)
+        std::enable_if_t<
+            std::is_constructible_v<double, ArgTs...>,
+            bool> = true>
+    constexpr explicit Meters(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     { }
 
@@ -371,7 +1013,6 @@ struct Meters
      * The explicit cast operator provides a reference to the wrapped object.
      */
     constexpr explicit operator double const & () const { return value; }
-
     constexpr explicit operator double & () { return value; }
 
     /**
@@ -380,23 +1021,26 @@ struct Meters
     friend constexpr Meters operator - (Meters const & t)
     {
         auto result = t;
-        result.value = -t.value;
+        result.value = - t.value;
         return result;
     }
 
     /**
      * Apply * assignment to the wrapped objects.
      */
-    friend constexpr Meters & operator *= (Meters & lhs, Meters const & rhs)
+    friend constexpr Meters & operator *= (
+        Meters & lhs,
+        Meters const & rhs)
     {
         lhs.value *= rhs.value;
         return lhs;
     }
-
     /**
      * Apply the binary operator * to the wrapped object.
      */
-    friend constexpr Meters operator * (Meters lhs, Meters const & rhs)
+    friend constexpr Meters operator * (
+        Meters lhs,
+        Meters const & rhs)
     {
         lhs *= rhs;
         return lhs;
@@ -405,16 +1049,19 @@ struct Meters
     /**
      * Apply + assignment to the wrapped objects.
      */
-    friend constexpr Meters & operator += (Meters & lhs, Meters const & rhs)
+    friend constexpr Meters & operator += (
+        Meters & lhs,
+        Meters const & rhs)
     {
         lhs.value += rhs.value;
         return lhs;
     }
-
     /**
      * Apply the binary operator + to the wrapped object.
      */
-    friend constexpr Meters operator + (Meters lhs, Meters const & rhs)
+    friend constexpr Meters operator + (
+        Meters lhs,
+        Meters const & rhs)
     {
         lhs += rhs;
         return lhs;
@@ -423,16 +1070,19 @@ struct Meters
     /**
      * Apply - assignment to the wrapped objects.
      */
-    friend constexpr Meters & operator -= (Meters & lhs, Meters const & rhs)
+    friend constexpr Meters & operator -= (
+        Meters & lhs,
+        Meters const & rhs)
     {
         lhs.value -= rhs.value;
         return lhs;
     }
-
     /**
      * Apply the binary operator - to the wrapped object.
      */
-    friend constexpr Meters operator - (Meters lhs, Meters const & rhs)
+    friend constexpr Meters operator - (
+        Meters lhs,
+        Meters const & rhs)
     {
         lhs -= rhs;
         return lhs;
@@ -441,16 +1091,19 @@ struct Meters
     /**
      * Apply / assignment to the wrapped objects.
      */
-    friend constexpr Meters & operator /= (Meters & lhs, Meters const & rhs)
+    friend constexpr Meters & operator /= (
+        Meters & lhs,
+        Meters const & rhs)
     {
         lhs.value /= rhs.value;
         return lhs;
     }
-
     /**
      * Apply the binary operator / to the wrapped object.
      */
-    friend constexpr Meters operator / (Meters lhs, Meters const & rhs)
+    friend constexpr Meters operator / (
+        Meters lhs,
+        Meters const & rhs)
     {
         lhs /= rhs;
         return lhs;
@@ -459,13 +1112,16 @@ struct Meters
     /**
      * The default three-way comparison (spaceship) operator.
      */
-    friend constexpr auto operator <=> (Meters const &, Meters const &) =
-        default;
+    friend constexpr auto operator <=> (
+        Meters const &,
+        Meters const &) = default;
 
     /**
      * Is @p lhs.value != @p rhs.value?
      */
-    friend constexpr bool operator != (Meters const & lhs, Meters const & rhs)
+    friend constexpr bool operator != (
+        Meters const & lhs,
+        Meters const & rhs)
     {
         return lhs.value != rhs.value;
     }
@@ -473,13 +1129,170 @@ struct Meters
     /**
      * Is @p lhs.value == @p rhs.value?
      */
-    friend constexpr bool operator == (Meters const & lhs, Meters const & rhs)
+    friend constexpr bool operator == (
+        Meters const & lhs,
+        Meters const & rhs)
     {
         return lhs.value == rhs.value;
     }
 };
 
 } // namespace physics::units
+// This is boilerplate that is part of every Atlas interaction file.
+// Nothing to see here, move along.
+
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
+#include <compare>
+#endif
+#include <type_traits>
+#include <utility>
+
+namespace atlas {
+
+struct strong_type_tag
+{
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
+    friend auto
+    operator<=>(strong_type_tag const &, strong_type_tag const &) = default;
+#endif
+};
+
+struct value_tag {};
+
+namespace atlas_detail {
+
+template <typename... Ts>
+struct make_void
+{
+    using type = void;
+};
+
+template <typename... Ts>
+using void_t = typename make_void<Ts...>::type;
+
+template <typename T, typename = void>
+struct IsAtlasType
+: std::false_type
+{ };
+
+template <typename T>
+struct IsAtlasType<T, void_t<typename T::atlas_value_type>>
+: std::true_type
+{ };
+
+template <std::size_t N>
+struct PriorityTag
+: PriorityTag<N - 1>
+{ };
+
+template <>
+struct PriorityTag<0u>
+{ };
+
+using value_tag = PriorityTag<3>;
+
+template <bool B>
+using bool_c = std::integral_constant<bool, B>;
+template <typename T>
+using bool_ = bool_c<T::value>;
+template <typename T>
+using not_ = bool_c<not T::value>;
+template <typename T, typename U>
+using and_ = bool_c<T::value && U::value>;
+template <typename T>
+using is_lref = std::is_lvalue_reference<T>;
+template <typename T, typename U = void>
+using enable_if = typename std::enable_if<T::value, U>::type;
+
+template <typename T>
+using _t = typename T::type;
+
+void atlas_value();
+
+template <typename T>
+constexpr T &
+value(T & val, PriorityTag<0>)
+{
+    return val;
+}
+
+template <typename T, typename U = typename T::atlas_value_type>
+using val_t = _t<std::conditional<
+    std::is_const<T>::value,
+    U const &,
+    U &>>;
+
+template <typename T, typename U = val_t<T>>
+constexpr auto
+value(T & val, PriorityTag<1>)
+-> decltype(atlas::atlas_detail::value(static_cast<U>(val), value_tag{}))
+{
+    return atlas::atlas_detail::value(static_cast<U>(val), value_tag{});
+}
+
+template <typename T>
+constexpr auto
+value(T const & t, PriorityTag<2>)
+-> decltype(atlas_value(t, atlas::value_tag{}))
+{
+    return atlas_value(t, atlas::value_tag{});
+}
+
+template <typename T>
+constexpr auto
+value(T const & t, PriorityTag<3>)
+-> decltype(atlas_value(t))
+{
+    return atlas_value(t);
+}
+
+class Value
+{
+    template <
+        typename U,
+        typename T,
+        typename V = _t<std::conditional<is_lref<U &&>::value, T &, T>>>
+    static constexpr V rval(T && t)
+    {
+        return t;
+    }
+
+public:
+    template <typename T>
+    constexpr auto
+    operator()(T && t) const
+    -> decltype(rval<T>(atlas_detail::value(t, atlas_detail::value_tag{})))
+    {
+        return rval<T>(atlas_detail::value(t, atlas_detail::value_tag{}));
+    }
+};
+
+} // namespace atlas_detail
+
+#if defined(__cpp_inline_variables) && __cpp_inline_variables >= 9201606L
+inline constexpr auto value = atlas_detail::Value{};
+#else
+template <typename T>
+constexpr auto
+value(T && t)
+-> decltype(atlas_detail::Value{}(std::forward<T>(t)))
+{
+    return atlas_detail::Value{}(std::forward<T>(t));
+}
+#endif
+
+} // namespace atlas
+
+#endif // WJH_ATLAS_50E620B544874CB8BE4412EE6773BF90
+
+
+//////////////////////////////////////////////////////////////////////
+///
+/// These are the droids you are looking for!
+///
+//////////////////////////////////////////////////////////////////////
 
 #include <compare>
 #include <type_traits>
@@ -514,9 +1327,10 @@ struct Seconds
 
     template <
         typename... ArgTs,
-        std::enable_if_t<std::is_constructible_v<double, ArgTs...>, bool> =
-            true>
-    constexpr explicit Seconds(ArgTs &&... args)
+        std::enable_if_t<
+            std::is_constructible_v<double, ArgTs...>,
+            bool> = true>
+    constexpr explicit Seconds(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     { }
 
@@ -524,7 +1338,6 @@ struct Seconds
      * The explicit cast operator provides a reference to the wrapped object.
      */
     constexpr explicit operator double const & () const { return value; }
-
     constexpr explicit operator double & () { return value; }
 
     /**
@@ -533,23 +1346,26 @@ struct Seconds
     friend constexpr Seconds operator - (Seconds const & t)
     {
         auto result = t;
-        result.value = -t.value;
+        result.value = - t.value;
         return result;
     }
 
     /**
      * Apply * assignment to the wrapped objects.
      */
-    friend constexpr Seconds & operator *= (Seconds & lhs, Seconds const & rhs)
+    friend constexpr Seconds & operator *= (
+        Seconds & lhs,
+        Seconds const & rhs)
     {
         lhs.value *= rhs.value;
         return lhs;
     }
-
     /**
      * Apply the binary operator * to the wrapped object.
      */
-    friend constexpr Seconds operator * (Seconds lhs, Seconds const & rhs)
+    friend constexpr Seconds operator * (
+        Seconds lhs,
+        Seconds const & rhs)
     {
         lhs *= rhs;
         return lhs;
@@ -558,16 +1374,19 @@ struct Seconds
     /**
      * Apply + assignment to the wrapped objects.
      */
-    friend constexpr Seconds & operator += (Seconds & lhs, Seconds const & rhs)
+    friend constexpr Seconds & operator += (
+        Seconds & lhs,
+        Seconds const & rhs)
     {
         lhs.value += rhs.value;
         return lhs;
     }
-
     /**
      * Apply the binary operator + to the wrapped object.
      */
-    friend constexpr Seconds operator + (Seconds lhs, Seconds const & rhs)
+    friend constexpr Seconds operator + (
+        Seconds lhs,
+        Seconds const & rhs)
     {
         lhs += rhs;
         return lhs;
@@ -576,16 +1395,19 @@ struct Seconds
     /**
      * Apply - assignment to the wrapped objects.
      */
-    friend constexpr Seconds & operator -= (Seconds & lhs, Seconds const & rhs)
+    friend constexpr Seconds & operator -= (
+        Seconds & lhs,
+        Seconds const & rhs)
     {
         lhs.value -= rhs.value;
         return lhs;
     }
-
     /**
      * Apply the binary operator - to the wrapped object.
      */
-    friend constexpr Seconds operator - (Seconds lhs, Seconds const & rhs)
+    friend constexpr Seconds operator - (
+        Seconds lhs,
+        Seconds const & rhs)
     {
         lhs -= rhs;
         return lhs;
@@ -594,16 +1416,19 @@ struct Seconds
     /**
      * Apply / assignment to the wrapped objects.
      */
-    friend constexpr Seconds & operator /= (Seconds & lhs, Seconds const & rhs)
+    friend constexpr Seconds & operator /= (
+        Seconds & lhs,
+        Seconds const & rhs)
     {
         lhs.value /= rhs.value;
         return lhs;
     }
-
     /**
      * Apply the binary operator / to the wrapped object.
      */
-    friend constexpr Seconds operator / (Seconds lhs, Seconds const & rhs)
+    friend constexpr Seconds operator / (
+        Seconds lhs,
+        Seconds const & rhs)
     {
         lhs /= rhs;
         return lhs;
@@ -612,13 +1437,16 @@ struct Seconds
     /**
      * The default three-way comparison (spaceship) operator.
      */
-    friend constexpr auto operator <=> (Seconds const &, Seconds const &) =
-        default;
+    friend constexpr auto operator <=> (
+        Seconds const &,
+        Seconds const &) = default;
 
     /**
      * Is @p lhs.value != @p rhs.value?
      */
-    friend constexpr bool operator != (Seconds const & lhs, Seconds const & rhs)
+    friend constexpr bool operator != (
+        Seconds const & lhs,
+        Seconds const & rhs)
     {
         return lhs.value != rhs.value;
     }
@@ -626,13 +1454,170 @@ struct Seconds
     /**
      * Is @p lhs.value == @p rhs.value?
      */
-    friend constexpr bool operator == (Seconds const & lhs, Seconds const & rhs)
+    friend constexpr bool operator == (
+        Seconds const & lhs,
+        Seconds const & rhs)
     {
         return lhs.value == rhs.value;
     }
 };
 
 } // namespace physics::units
+// This is boilerplate that is part of every Atlas interaction file.
+// Nothing to see here, move along.
+
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
+#include <compare>
+#endif
+#include <type_traits>
+#include <utility>
+
+namespace atlas {
+
+struct strong_type_tag
+{
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
+    friend auto
+    operator<=>(strong_type_tag const &, strong_type_tag const &) = default;
+#endif
+};
+
+struct value_tag {};
+
+namespace atlas_detail {
+
+template <typename... Ts>
+struct make_void
+{
+    using type = void;
+};
+
+template <typename... Ts>
+using void_t = typename make_void<Ts...>::type;
+
+template <typename T, typename = void>
+struct IsAtlasType
+: std::false_type
+{ };
+
+template <typename T>
+struct IsAtlasType<T, void_t<typename T::atlas_value_type>>
+: std::true_type
+{ };
+
+template <std::size_t N>
+struct PriorityTag
+: PriorityTag<N - 1>
+{ };
+
+template <>
+struct PriorityTag<0u>
+{ };
+
+using value_tag = PriorityTag<3>;
+
+template <bool B>
+using bool_c = std::integral_constant<bool, B>;
+template <typename T>
+using bool_ = bool_c<T::value>;
+template <typename T>
+using not_ = bool_c<not T::value>;
+template <typename T, typename U>
+using and_ = bool_c<T::value && U::value>;
+template <typename T>
+using is_lref = std::is_lvalue_reference<T>;
+template <typename T, typename U = void>
+using enable_if = typename std::enable_if<T::value, U>::type;
+
+template <typename T>
+using _t = typename T::type;
+
+void atlas_value();
+
+template <typename T>
+constexpr T &
+value(T & val, PriorityTag<0>)
+{
+    return val;
+}
+
+template <typename T, typename U = typename T::atlas_value_type>
+using val_t = _t<std::conditional<
+    std::is_const<T>::value,
+    U const &,
+    U &>>;
+
+template <typename T, typename U = val_t<T>>
+constexpr auto
+value(T & val, PriorityTag<1>)
+-> decltype(atlas::atlas_detail::value(static_cast<U>(val), value_tag{}))
+{
+    return atlas::atlas_detail::value(static_cast<U>(val), value_tag{});
+}
+
+template <typename T>
+constexpr auto
+value(T const & t, PriorityTag<2>)
+-> decltype(atlas_value(t, atlas::value_tag{}))
+{
+    return atlas_value(t, atlas::value_tag{});
+}
+
+template <typename T>
+constexpr auto
+value(T const & t, PriorityTag<3>)
+-> decltype(atlas_value(t))
+{
+    return atlas_value(t);
+}
+
+class Value
+{
+    template <
+        typename U,
+        typename T,
+        typename V = _t<std::conditional<is_lref<U &&>::value, T &, T>>>
+    static constexpr V rval(T && t)
+    {
+        return t;
+    }
+
+public:
+    template <typename T>
+    constexpr auto
+    operator()(T && t) const
+    -> decltype(rval<T>(atlas_detail::value(t, atlas_detail::value_tag{})))
+    {
+        return rval<T>(atlas_detail::value(t, atlas_detail::value_tag{}));
+    }
+};
+
+} // namespace atlas_detail
+
+#if defined(__cpp_inline_variables) && __cpp_inline_variables >= 9201606L
+inline constexpr auto value = atlas_detail::Value{};
+#else
+template <typename T>
+constexpr auto
+value(T && t)
+-> decltype(atlas_detail::Value{}(std::forward<T>(t)))
+{
+    return atlas_detail::Value{}(std::forward<T>(t));
+}
+#endif
+
+} // namespace atlas
+
+#endif // WJH_ATLAS_50E620B544874CB8BE4412EE6773BF90
+
+
+//////////////////////////////////////////////////////////////////////
+///
+/// These are the droids you are looking for!
+///
+//////////////////////////////////////////////////////////////////////
 
 #include <compare>
 #include <type_traits>
@@ -667,9 +1652,10 @@ struct MetersPerSecond
 
     template <
         typename... ArgTs,
-        std::enable_if_t<std::is_constructible_v<double, ArgTs...>, bool> =
-            true>
-    constexpr explicit MetersPerSecond(ArgTs &&... args)
+        std::enable_if_t<
+            std::is_constructible_v<double, ArgTs...>,
+            bool> = true>
+    constexpr explicit MetersPerSecond(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     { }
 
@@ -677,7 +1663,6 @@ struct MetersPerSecond
      * The explicit cast operator provides a reference to the wrapped object.
      */
     constexpr explicit operator double const & () const { return value; }
-
     constexpr explicit operator double & () { return value; }
 
     /**
@@ -686,7 +1671,7 @@ struct MetersPerSecond
     friend constexpr MetersPerSecond operator - (MetersPerSecond const & t)
     {
         auto result = t;
-        result.value = -t.value;
+        result.value = - t.value;
         return result;
     }
 
@@ -700,7 +1685,6 @@ struct MetersPerSecond
         lhs.value *= rhs.value;
         return lhs;
     }
-
     /**
      * Apply the binary operator * to the wrapped object.
      */
@@ -722,7 +1706,6 @@ struct MetersPerSecond
         lhs.value += rhs.value;
         return lhs;
     }
-
     /**
      * Apply the binary operator + to the wrapped object.
      */
@@ -744,7 +1727,6 @@ struct MetersPerSecond
         lhs.value -= rhs.value;
         return lhs;
     }
-
     /**
      * Apply the binary operator - to the wrapped object.
      */
@@ -766,7 +1748,6 @@ struct MetersPerSecond
         lhs.value /= rhs.value;
         return lhs;
     }
-
     /**
      * Apply the binary operator / to the wrapped object.
      */
@@ -807,6 +1788,161 @@ struct MetersPerSecond
 };
 
 } // namespace physics::units
+// This is boilerplate that is part of every Atlas interaction file.
+// Nothing to see here, move along.
+
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
+#include <compare>
+#endif
+#include <type_traits>
+#include <utility>
+
+namespace atlas {
+
+struct strong_type_tag
+{
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
+    friend auto
+    operator<=>(strong_type_tag const &, strong_type_tag const &) = default;
+#endif
+};
+
+struct value_tag {};
+
+namespace atlas_detail {
+
+template <typename... Ts>
+struct make_void
+{
+    using type = void;
+};
+
+template <typename... Ts>
+using void_t = typename make_void<Ts...>::type;
+
+template <typename T, typename = void>
+struct IsAtlasType
+: std::false_type
+{ };
+
+template <typename T>
+struct IsAtlasType<T, void_t<typename T::atlas_value_type>>
+: std::true_type
+{ };
+
+template <std::size_t N>
+struct PriorityTag
+: PriorityTag<N - 1>
+{ };
+
+template <>
+struct PriorityTag<0u>
+{ };
+
+using value_tag = PriorityTag<3>;
+
+template <bool B>
+using bool_c = std::integral_constant<bool, B>;
+template <typename T>
+using bool_ = bool_c<T::value>;
+template <typename T>
+using not_ = bool_c<not T::value>;
+template <typename T, typename U>
+using and_ = bool_c<T::value && U::value>;
+template <typename T>
+using is_lref = std::is_lvalue_reference<T>;
+template <typename T, typename U = void>
+using enable_if = typename std::enable_if<T::value, U>::type;
+
+template <typename T>
+using _t = typename T::type;
+
+void atlas_value();
+
+template <typename T>
+constexpr T &
+value(T & val, PriorityTag<0>)
+{
+    return val;
+}
+
+template <typename T, typename U = typename T::atlas_value_type>
+using val_t = _t<std::conditional<
+    std::is_const<T>::value,
+    U const &,
+    U &>>;
+
+template <typename T, typename U = val_t<T>>
+constexpr auto
+value(T & val, PriorityTag<1>)
+-> decltype(atlas::atlas_detail::value(static_cast<U>(val), value_tag{}))
+{
+    return atlas::atlas_detail::value(static_cast<U>(val), value_tag{});
+}
+
+template <typename T>
+constexpr auto
+value(T const & t, PriorityTag<2>)
+-> decltype(atlas_value(t, atlas::value_tag{}))
+{
+    return atlas_value(t, atlas::value_tag{});
+}
+
+template <typename T>
+constexpr auto
+value(T const & t, PriorityTag<3>)
+-> decltype(atlas_value(t))
+{
+    return atlas_value(t);
+}
+
+class Value
+{
+    template <
+        typename U,
+        typename T,
+        typename V = _t<std::conditional<is_lref<U &&>::value, T &, T>>>
+    static constexpr V rval(T && t)
+    {
+        return t;
+    }
+
+public:
+    template <typename T>
+    constexpr auto
+    operator()(T && t) const
+    -> decltype(rval<T>(atlas_detail::value(t, atlas_detail::value_tag{})))
+    {
+        return rval<T>(atlas_detail::value(t, atlas_detail::value_tag{}));
+    }
+};
+
+} // namespace atlas_detail
+
+#if defined(__cpp_inline_variables) && __cpp_inline_variables >= 9201606L
+inline constexpr auto value = atlas_detail::Value{};
+#else
+template <typename T>
+constexpr auto
+value(T && t)
+-> decltype(atlas_detail::Value{}(std::forward<T>(t)))
+{
+    return atlas_detail::Value{}(std::forward<T>(t));
+}
+#endif
+
+} // namespace atlas
+
+#endif // WJH_ATLAS_50E620B544874CB8BE4412EE6773BF90
+
+
+//////////////////////////////////////////////////////////////////////
+///
+/// These are the droids you are looking for!
+///
+//////////////////////////////////////////////////////////////////////
 
 #include <type_traits>
 #include <utility>
@@ -840,9 +1976,10 @@ struct ByteCount
 
     template <
         typename... ArgTs,
-        std::enable_if_t<std::is_constructible_v<size_t, ArgTs...>, bool> =
-            true>
-    constexpr explicit ByteCount(ArgTs &&... args)
+        std::enable_if_t<
+            std::is_constructible_v<size_t, ArgTs...>,
+            bool> = true>
+    constexpr explicit ByteCount(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     { }
 
@@ -850,7 +1987,6 @@ struct ByteCount
      * The explicit cast operator provides a reference to the wrapped object.
      */
     constexpr explicit operator size_t const & () const { return value; }
-
     constexpr explicit operator size_t & () { return value; }
 
     /**
@@ -861,7 +1997,6 @@ struct ByteCount
         ++t.value;
         return t;
     }
-
     /**
      * Apply the postfix ++ operator to the wrapped object.
      */
@@ -880,7 +2015,6 @@ struct ByteCount
         --t.value;
         return t;
     }
-
     /**
      * Apply the postfix -- operator to the wrapped object.
      */
@@ -901,11 +2035,12 @@ struct ByteCount
         lhs.value %= rhs.value;
         return lhs;
     }
-
     /**
      * Apply the binary operator % to the wrapped object.
      */
-    friend constexpr ByteCount operator % (ByteCount lhs, ByteCount const & rhs)
+    friend constexpr ByteCount operator % (
+        ByteCount lhs,
+        ByteCount const & rhs)
     {
         lhs %= rhs;
         return lhs;
@@ -921,11 +2056,12 @@ struct ByteCount
         lhs.value *= rhs.value;
         return lhs;
     }
-
     /**
      * Apply the binary operator * to the wrapped object.
      */
-    friend constexpr ByteCount operator * (ByteCount lhs, ByteCount const & rhs)
+    friend constexpr ByteCount operator * (
+        ByteCount lhs,
+        ByteCount const & rhs)
     {
         lhs *= rhs;
         return lhs;
@@ -941,11 +2077,12 @@ struct ByteCount
         lhs.value += rhs.value;
         return lhs;
     }
-
     /**
      * Apply the binary operator + to the wrapped object.
      */
-    friend constexpr ByteCount operator + (ByteCount lhs, ByteCount const & rhs)
+    friend constexpr ByteCount operator + (
+        ByteCount lhs,
+        ByteCount const & rhs)
     {
         lhs += rhs;
         return lhs;
@@ -961,11 +2098,12 @@ struct ByteCount
         lhs.value -= rhs.value;
         return lhs;
     }
-
     /**
      * Apply the binary operator - to the wrapped object.
      */
-    friend constexpr ByteCount operator - (ByteCount lhs, ByteCount const & rhs)
+    friend constexpr ByteCount operator - (
+        ByteCount lhs,
+        ByteCount const & rhs)
     {
         lhs -= rhs;
         return lhs;
@@ -981,11 +2119,12 @@ struct ByteCount
         lhs.value /= rhs.value;
         return lhs;
     }
-
     /**
      * Apply the binary operator / to the wrapped object.
      */
-    friend constexpr ByteCount operator / (ByteCount lhs, ByteCount const & rhs)
+    friend constexpr ByteCount operator / (
+        ByteCount lhs,
+        ByteCount const & rhs)
     {
         lhs /= rhs;
         return lhs;
@@ -1001,7 +2140,6 @@ struct ByteCount
         lhs.value <<= rhs.value;
         return lhs;
     }
-
     /**
      * Apply the binary operator << to the wrapped object.
      */
@@ -1075,6 +2213,161 @@ struct ByteCount
 };
 
 } // namespace data
+// This is boilerplate that is part of every Atlas interaction file.
+// Nothing to see here, move along.
+
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
+#include <compare>
+#endif
+#include <type_traits>
+#include <utility>
+
+namespace atlas {
+
+struct strong_type_tag
+{
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
+    friend auto
+    operator<=>(strong_type_tag const &, strong_type_tag const &) = default;
+#endif
+};
+
+struct value_tag {};
+
+namespace atlas_detail {
+
+template <typename... Ts>
+struct make_void
+{
+    using type = void;
+};
+
+template <typename... Ts>
+using void_t = typename make_void<Ts...>::type;
+
+template <typename T, typename = void>
+struct IsAtlasType
+: std::false_type
+{ };
+
+template <typename T>
+struct IsAtlasType<T, void_t<typename T::atlas_value_type>>
+: std::true_type
+{ };
+
+template <std::size_t N>
+struct PriorityTag
+: PriorityTag<N - 1>
+{ };
+
+template <>
+struct PriorityTag<0u>
+{ };
+
+using value_tag = PriorityTag<3>;
+
+template <bool B>
+using bool_c = std::integral_constant<bool, B>;
+template <typename T>
+using bool_ = bool_c<T::value>;
+template <typename T>
+using not_ = bool_c<not T::value>;
+template <typename T, typename U>
+using and_ = bool_c<T::value && U::value>;
+template <typename T>
+using is_lref = std::is_lvalue_reference<T>;
+template <typename T, typename U = void>
+using enable_if = typename std::enable_if<T::value, U>::type;
+
+template <typename T>
+using _t = typename T::type;
+
+void atlas_value();
+
+template <typename T>
+constexpr T &
+value(T & val, PriorityTag<0>)
+{
+    return val;
+}
+
+template <typename T, typename U = typename T::atlas_value_type>
+using val_t = _t<std::conditional<
+    std::is_const<T>::value,
+    U const &,
+    U &>>;
+
+template <typename T, typename U = val_t<T>>
+constexpr auto
+value(T & val, PriorityTag<1>)
+-> decltype(atlas::atlas_detail::value(static_cast<U>(val), value_tag{}))
+{
+    return atlas::atlas_detail::value(static_cast<U>(val), value_tag{});
+}
+
+template <typename T>
+constexpr auto
+value(T const & t, PriorityTag<2>)
+-> decltype(atlas_value(t, atlas::value_tag{}))
+{
+    return atlas_value(t, atlas::value_tag{});
+}
+
+template <typename T>
+constexpr auto
+value(T const & t, PriorityTag<3>)
+-> decltype(atlas_value(t))
+{
+    return atlas_value(t);
+}
+
+class Value
+{
+    template <
+        typename U,
+        typename T,
+        typename V = _t<std::conditional<is_lref<U &&>::value, T &, T>>>
+    static constexpr V rval(T && t)
+    {
+        return t;
+    }
+
+public:
+    template <typename T>
+    constexpr auto
+    operator()(T && t) const
+    -> decltype(rval<T>(atlas_detail::value(t, atlas_detail::value_tag{})))
+    {
+        return rval<T>(atlas_detail::value(t, atlas_detail::value_tag{}));
+    }
+};
+
+} // namespace atlas_detail
+
+#if defined(__cpp_inline_variables) && __cpp_inline_variables >= 9201606L
+inline constexpr auto value = atlas_detail::Value{};
+#else
+template <typename T>
+constexpr auto
+value(T && t)
+-> decltype(atlas_detail::Value{}(std::forward<T>(t)))
+{
+    return atlas_detail::Value{}(std::forward<T>(t));
+}
+#endif
+
+} // namespace atlas
+
+#endif // WJH_ATLAS_50E620B544874CB8BE4412EE6773BF90
+
+
+//////////////////////////////////////////////////////////////////////
+///
+/// These are the droids you are looking for!
+///
+//////////////////////////////////////////////////////////////////////
 
 #include <compare>
 #include <type_traits>
@@ -1109,9 +2402,10 @@ struct RedChannel
 
     template <
         typename... ArgTs,
-        std::enable_if_t<std::is_constructible_v<uint8_t, ArgTs...>, bool> =
-            true>
-    constexpr explicit RedChannel(ArgTs &&... args)
+        std::enable_if_t<
+            std::is_constructible_v<uint8_t, ArgTs...>,
+            bool> = true>
+    constexpr explicit RedChannel(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     { }
 
@@ -1119,16 +2413,15 @@ struct RedChannel
      * The explicit cast operator provides a reference to the wrapped object.
      */
     constexpr explicit operator uint8_t const & () const { return value; }
-
     constexpr explicit operator uint8_t & () { return value; }
 
     /**
      * Apply the unary ~ operator to the wrapped object.
      */
-    friend constexpr RedChannel operator ~(RedChannel const & t)
+    friend constexpr RedChannel operator ~ (RedChannel const & t)
     {
         auto result = t;
-        result.value = ~t.value;
+        result.value = ~ t.value;
         return result;
     }
 
@@ -1142,7 +2435,6 @@ struct RedChannel
         lhs.value &= rhs.value;
         return lhs;
     }
-
     /**
      * Apply the binary operator & to the wrapped object.
      */
@@ -1164,7 +2456,6 @@ struct RedChannel
         lhs.value *= rhs.value;
         return lhs;
     }
-
     /**
      * Apply the binary operator * to the wrapped object.
      */
@@ -1186,7 +2477,6 @@ struct RedChannel
         lhs.value += rhs.value;
         return lhs;
     }
-
     /**
      * Apply the binary operator + to the wrapped object.
      */
@@ -1208,7 +2498,6 @@ struct RedChannel
         lhs.value -= rhs.value;
         return lhs;
     }
-
     /**
      * Apply the binary operator - to the wrapped object.
      */
@@ -1230,7 +2519,6 @@ struct RedChannel
         lhs.value /= rhs.value;
         return lhs;
     }
-
     /**
      * Apply the binary operator / to the wrapped object.
      */
@@ -1252,7 +2540,6 @@ struct RedChannel
         lhs.value ^= rhs.value;
         return lhs;
     }
-
     /**
      * Apply the binary operator ^ to the wrapped object.
      */
@@ -1274,7 +2561,6 @@ struct RedChannel
         lhs.value |= rhs.value;
         return lhs;
     }
-
     /**
      * Apply the binary operator | to the wrapped object.
      */
@@ -1315,6 +2601,161 @@ struct RedChannel
 };
 
 } // namespace graphics::color
+// This is boilerplate that is part of every Atlas interaction file.
+// Nothing to see here, move along.
+
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
+#include <compare>
+#endif
+#include <type_traits>
+#include <utility>
+
+namespace atlas {
+
+struct strong_type_tag
+{
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
+    friend auto
+    operator<=>(strong_type_tag const &, strong_type_tag const &) = default;
+#endif
+};
+
+struct value_tag {};
+
+namespace atlas_detail {
+
+template <typename... Ts>
+struct make_void
+{
+    using type = void;
+};
+
+template <typename... Ts>
+using void_t = typename make_void<Ts...>::type;
+
+template <typename T, typename = void>
+struct IsAtlasType
+: std::false_type
+{ };
+
+template <typename T>
+struct IsAtlasType<T, void_t<typename T::atlas_value_type>>
+: std::true_type
+{ };
+
+template <std::size_t N>
+struct PriorityTag
+: PriorityTag<N - 1>
+{ };
+
+template <>
+struct PriorityTag<0u>
+{ };
+
+using value_tag = PriorityTag<3>;
+
+template <bool B>
+using bool_c = std::integral_constant<bool, B>;
+template <typename T>
+using bool_ = bool_c<T::value>;
+template <typename T>
+using not_ = bool_c<not T::value>;
+template <typename T, typename U>
+using and_ = bool_c<T::value && U::value>;
+template <typename T>
+using is_lref = std::is_lvalue_reference<T>;
+template <typename T, typename U = void>
+using enable_if = typename std::enable_if<T::value, U>::type;
+
+template <typename T>
+using _t = typename T::type;
+
+void atlas_value();
+
+template <typename T>
+constexpr T &
+value(T & val, PriorityTag<0>)
+{
+    return val;
+}
+
+template <typename T, typename U = typename T::atlas_value_type>
+using val_t = _t<std::conditional<
+    std::is_const<T>::value,
+    U const &,
+    U &>>;
+
+template <typename T, typename U = val_t<T>>
+constexpr auto
+value(T & val, PriorityTag<1>)
+-> decltype(atlas::atlas_detail::value(static_cast<U>(val), value_tag{}))
+{
+    return atlas::atlas_detail::value(static_cast<U>(val), value_tag{});
+}
+
+template <typename T>
+constexpr auto
+value(T const & t, PriorityTag<2>)
+-> decltype(atlas_value(t, atlas::value_tag{}))
+{
+    return atlas_value(t, atlas::value_tag{});
+}
+
+template <typename T>
+constexpr auto
+value(T const & t, PriorityTag<3>)
+-> decltype(atlas_value(t))
+{
+    return atlas_value(t);
+}
+
+class Value
+{
+    template <
+        typename U,
+        typename T,
+        typename V = _t<std::conditional<is_lref<U &&>::value, T &, T>>>
+    static constexpr V rval(T && t)
+    {
+        return t;
+    }
+
+public:
+    template <typename T>
+    constexpr auto
+    operator()(T && t) const
+    -> decltype(rval<T>(atlas_detail::value(t, atlas_detail::value_tag{})))
+    {
+        return rval<T>(atlas_detail::value(t, atlas_detail::value_tag{}));
+    }
+};
+
+} // namespace atlas_detail
+
+#if defined(__cpp_inline_variables) && __cpp_inline_variables >= 9201606L
+inline constexpr auto value = atlas_detail::Value{};
+#else
+template <typename T>
+constexpr auto
+value(T && t)
+-> decltype(atlas_detail::Value{}(std::forward<T>(t)))
+{
+    return atlas_detail::Value{}(std::forward<T>(t));
+}
+#endif
+
+} // namespace atlas
+
+#endif // WJH_ATLAS_50E620B544874CB8BE4412EE6773BF90
+
+
+//////////////////////////////////////////////////////////////////////
+///
+/// These are the droids you are looking for!
+///
+//////////////////////////////////////////////////////////////////////
 
 #include <functional>
 #include <string>
@@ -1351,9 +2792,10 @@ public:
 
     template <
         typename... ArgTs,
-        std::enable_if_t<std::is_constructible_v<std::string, ArgTs...>, bool> =
-            true>
-    constexpr explicit EncryptedData(ArgTs &&... args)
+        std::enable_if_t<
+            std::is_constructible_v<std::string, ArgTs...>,
+            bool> = true>
+    constexpr explicit EncryptedData(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     { }
 
@@ -1361,7 +2803,6 @@ public:
      * The explicit cast operator provides a reference to the wrapped object.
      */
     constexpr explicit operator std::string const & () const { return value; }
-
     constexpr explicit operator std::string & () { return value; }
 
     /**
@@ -1374,7 +2815,6 @@ public:
         lhs.value <<= rhs.value;
         return lhs;
     }
-
     /**
      * Apply the binary operator << to the wrapped object.
      */
@@ -1418,12 +2858,169 @@ template <>
 struct std::hash<security::EncryptedData>
 {
     constexpr std::size_t operator () (security::EncryptedData const & t) const
-        noexcept(noexcept(
-            std::hash<std::string>{}(std::declval<std::string const &>())))
+    noexcept(
+        noexcept(std::hash<std::string>{}(
+            std::declval<std::string const &>())))
     {
-        return std::hash<std::string>{}(static_cast<std::string const &>(t));
+        return std::hash<std::string>{}(
+            static_cast<std::string const &>(t));
     }
 };
+// This is boilerplate that is part of every Atlas interaction file.
+// Nothing to see here, move along.
+
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
+#include <compare>
+#endif
+#include <type_traits>
+#include <utility>
+
+namespace atlas {
+
+struct strong_type_tag
+{
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
+    friend auto
+    operator<=>(strong_type_tag const &, strong_type_tag const &) = default;
+#endif
+};
+
+struct value_tag {};
+
+namespace atlas_detail {
+
+template <typename... Ts>
+struct make_void
+{
+    using type = void;
+};
+
+template <typename... Ts>
+using void_t = typename make_void<Ts...>::type;
+
+template <typename T, typename = void>
+struct IsAtlasType
+: std::false_type
+{ };
+
+template <typename T>
+struct IsAtlasType<T, void_t<typename T::atlas_value_type>>
+: std::true_type
+{ };
+
+template <std::size_t N>
+struct PriorityTag
+: PriorityTag<N - 1>
+{ };
+
+template <>
+struct PriorityTag<0u>
+{ };
+
+using value_tag = PriorityTag<3>;
+
+template <bool B>
+using bool_c = std::integral_constant<bool, B>;
+template <typename T>
+using bool_ = bool_c<T::value>;
+template <typename T>
+using not_ = bool_c<not T::value>;
+template <typename T, typename U>
+using and_ = bool_c<T::value && U::value>;
+template <typename T>
+using is_lref = std::is_lvalue_reference<T>;
+template <typename T, typename U = void>
+using enable_if = typename std::enable_if<T::value, U>::type;
+
+template <typename T>
+using _t = typename T::type;
+
+void atlas_value();
+
+template <typename T>
+constexpr T &
+value(T & val, PriorityTag<0>)
+{
+    return val;
+}
+
+template <typename T, typename U = typename T::atlas_value_type>
+using val_t = _t<std::conditional<
+    std::is_const<T>::value,
+    U const &,
+    U &>>;
+
+template <typename T, typename U = val_t<T>>
+constexpr auto
+value(T & val, PriorityTag<1>)
+-> decltype(atlas::atlas_detail::value(static_cast<U>(val), value_tag{}))
+{
+    return atlas::atlas_detail::value(static_cast<U>(val), value_tag{});
+}
+
+template <typename T>
+constexpr auto
+value(T const & t, PriorityTag<2>)
+-> decltype(atlas_value(t, atlas::value_tag{}))
+{
+    return atlas_value(t, atlas::value_tag{});
+}
+
+template <typename T>
+constexpr auto
+value(T const & t, PriorityTag<3>)
+-> decltype(atlas_value(t))
+{
+    return atlas_value(t);
+}
+
+class Value
+{
+    template <
+        typename U,
+        typename T,
+        typename V = _t<std::conditional<is_lref<U &&>::value, T &, T>>>
+    static constexpr V rval(T && t)
+    {
+        return t;
+    }
+
+public:
+    template <typename T>
+    constexpr auto
+    operator()(T && t) const
+    -> decltype(rval<T>(atlas_detail::value(t, atlas_detail::value_tag{})))
+    {
+        return rval<T>(atlas_detail::value(t, atlas_detail::value_tag{}));
+    }
+};
+
+} // namespace atlas_detail
+
+#if defined(__cpp_inline_variables) && __cpp_inline_variables >= 9201606L
+inline constexpr auto value = atlas_detail::Value{};
+#else
+template <typename T>
+constexpr auto
+value(T && t)
+-> decltype(atlas_detail::Value{}(std::forward<T>(t)))
+{
+    return atlas_detail::Value{}(std::forward<T>(t));
+}
+#endif
+
+} // namespace atlas
+
+#endif // WJH_ATLAS_50E620B544874CB8BE4412EE6773BF90
+
+
+//////////////////////////////////////////////////////////////////////
+///
+/// These are the droids you are looking for!
+///
+//////////////////////////////////////////////////////////////////////
 
 #include <type_traits>
 #include <utility>
@@ -1457,9 +3054,10 @@ struct Latitude
 
     template <
         typename... ArgTs,
-        std::enable_if_t<std::is_constructible_v<double, ArgTs...>, bool> =
-            true>
-    constexpr explicit Latitude(ArgTs &&... args)
+        std::enable_if_t<
+            std::is_constructible_v<double, ArgTs...>,
+            bool> = true>
+    constexpr explicit Latitude(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     { }
 
@@ -1467,7 +3065,6 @@ struct Latitude
      * The explicit cast operator provides a reference to the wrapped object.
      */
     constexpr explicit operator double const & () const { return value; }
-
     constexpr explicit operator double & () { return value; }
 
     /**
@@ -1476,7 +3073,7 @@ struct Latitude
     friend constexpr Latitude operator - (Latitude const & t)
     {
         auto result = t;
-        result.value = -t.value;
+        result.value = - t.value;
         return result;
     }
 
@@ -1490,11 +3087,12 @@ struct Latitude
         lhs.value <<= rhs.value;
         return lhs;
     }
-
     /**
      * Apply the binary operator << to the wrapped object.
      */
-    friend constexpr Latitude operator << (Latitude lhs, Latitude const & rhs)
+    friend constexpr Latitude operator << (
+        Latitude lhs,
+        Latitude const & rhs)
     {
         lhs <<= rhs;
         return lhs;
@@ -1562,6 +3160,161 @@ struct Latitude
 };
 
 } // namespace geo
+// This is boilerplate that is part of every Atlas interaction file.
+// Nothing to see here, move along.
+
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
+#include <compare>
+#endif
+#include <type_traits>
+#include <utility>
+
+namespace atlas {
+
+struct strong_type_tag
+{
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
+    friend auto
+    operator<=>(strong_type_tag const &, strong_type_tag const &) = default;
+#endif
+};
+
+struct value_tag {};
+
+namespace atlas_detail {
+
+template <typename... Ts>
+struct make_void
+{
+    using type = void;
+};
+
+template <typename... Ts>
+using void_t = typename make_void<Ts...>::type;
+
+template <typename T, typename = void>
+struct IsAtlasType
+: std::false_type
+{ };
+
+template <typename T>
+struct IsAtlasType<T, void_t<typename T::atlas_value_type>>
+: std::true_type
+{ };
+
+template <std::size_t N>
+struct PriorityTag
+: PriorityTag<N - 1>
+{ };
+
+template <>
+struct PriorityTag<0u>
+{ };
+
+using value_tag = PriorityTag<3>;
+
+template <bool B>
+using bool_c = std::integral_constant<bool, B>;
+template <typename T>
+using bool_ = bool_c<T::value>;
+template <typename T>
+using not_ = bool_c<not T::value>;
+template <typename T, typename U>
+using and_ = bool_c<T::value && U::value>;
+template <typename T>
+using is_lref = std::is_lvalue_reference<T>;
+template <typename T, typename U = void>
+using enable_if = typename std::enable_if<T::value, U>::type;
+
+template <typename T>
+using _t = typename T::type;
+
+void atlas_value();
+
+template <typename T>
+constexpr T &
+value(T & val, PriorityTag<0>)
+{
+    return val;
+}
+
+template <typename T, typename U = typename T::atlas_value_type>
+using val_t = _t<std::conditional<
+    std::is_const<T>::value,
+    U const &,
+    U &>>;
+
+template <typename T, typename U = val_t<T>>
+constexpr auto
+value(T & val, PriorityTag<1>)
+-> decltype(atlas::atlas_detail::value(static_cast<U>(val), value_tag{}))
+{
+    return atlas::atlas_detail::value(static_cast<U>(val), value_tag{});
+}
+
+template <typename T>
+constexpr auto
+value(T const & t, PriorityTag<2>)
+-> decltype(atlas_value(t, atlas::value_tag{}))
+{
+    return atlas_value(t, atlas::value_tag{});
+}
+
+template <typename T>
+constexpr auto
+value(T const & t, PriorityTag<3>)
+-> decltype(atlas_value(t))
+{
+    return atlas_value(t);
+}
+
+class Value
+{
+    template <
+        typename U,
+        typename T,
+        typename V = _t<std::conditional<is_lref<U &&>::value, T &, T>>>
+    static constexpr V rval(T && t)
+    {
+        return t;
+    }
+
+public:
+    template <typename T>
+    constexpr auto
+    operator()(T && t) const
+    -> decltype(rval<T>(atlas_detail::value(t, atlas_detail::value_tag{})))
+    {
+        return rval<T>(atlas_detail::value(t, atlas_detail::value_tag{}));
+    }
+};
+
+} // namespace atlas_detail
+
+#if defined(__cpp_inline_variables) && __cpp_inline_variables >= 9201606L
+inline constexpr auto value = atlas_detail::Value{};
+#else
+template <typename T>
+constexpr auto
+value(T && t)
+-> decltype(atlas_detail::Value{}(std::forward<T>(t)))
+{
+    return atlas_detail::Value{}(std::forward<T>(t));
+}
+#endif
+
+} // namespace atlas
+
+#endif // WJH_ATLAS_50E620B544874CB8BE4412EE6773BF90
+
+
+//////////////////////////////////////////////////////////////////////
+///
+/// These are the droids you are looking for!
+///
+//////////////////////////////////////////////////////////////////////
 
 #include <type_traits>
 #include <utility>
@@ -1595,9 +3348,10 @@ struct Longitude
 
     template <
         typename... ArgTs,
-        std::enable_if_t<std::is_constructible_v<double, ArgTs...>, bool> =
-            true>
-    constexpr explicit Longitude(ArgTs &&... args)
+        std::enable_if_t<
+            std::is_constructible_v<double, ArgTs...>,
+            bool> = true>
+    constexpr explicit Longitude(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     { }
 
@@ -1605,7 +3359,6 @@ struct Longitude
      * The explicit cast operator provides a reference to the wrapped object.
      */
     constexpr explicit operator double const & () const { return value; }
-
     constexpr explicit operator double & () { return value; }
 
     /**
@@ -1614,7 +3367,7 @@ struct Longitude
     friend constexpr Longitude operator - (Longitude const & t)
     {
         auto result = t;
-        result.value = -t.value;
+        result.value = - t.value;
         return result;
     }
 
@@ -1628,7 +3381,6 @@ struct Longitude
         lhs.value <<= rhs.value;
         return lhs;
     }
-
     /**
      * Apply the binary operator << to the wrapped object.
      */
@@ -1702,6 +3454,161 @@ struct Longitude
 };
 
 } // namespace geo
+// This is boilerplate that is part of every Atlas interaction file.
+// Nothing to see here, move along.
+
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
+#include <compare>
+#endif
+#include <type_traits>
+#include <utility>
+
+namespace atlas {
+
+struct strong_type_tag
+{
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
+    friend auto
+    operator<=>(strong_type_tag const &, strong_type_tag const &) = default;
+#endif
+};
+
+struct value_tag {};
+
+namespace atlas_detail {
+
+template <typename... Ts>
+struct make_void
+{
+    using type = void;
+};
+
+template <typename... Ts>
+using void_t = typename make_void<Ts...>::type;
+
+template <typename T, typename = void>
+struct IsAtlasType
+: std::false_type
+{ };
+
+template <typename T>
+struct IsAtlasType<T, void_t<typename T::atlas_value_type>>
+: std::true_type
+{ };
+
+template <std::size_t N>
+struct PriorityTag
+: PriorityTag<N - 1>
+{ };
+
+template <>
+struct PriorityTag<0u>
+{ };
+
+using value_tag = PriorityTag<3>;
+
+template <bool B>
+using bool_c = std::integral_constant<bool, B>;
+template <typename T>
+using bool_ = bool_c<T::value>;
+template <typename T>
+using not_ = bool_c<not T::value>;
+template <typename T, typename U>
+using and_ = bool_c<T::value && U::value>;
+template <typename T>
+using is_lref = std::is_lvalue_reference<T>;
+template <typename T, typename U = void>
+using enable_if = typename std::enable_if<T::value, U>::type;
+
+template <typename T>
+using _t = typename T::type;
+
+void atlas_value();
+
+template <typename T>
+constexpr T &
+value(T & val, PriorityTag<0>)
+{
+    return val;
+}
+
+template <typename T, typename U = typename T::atlas_value_type>
+using val_t = _t<std::conditional<
+    std::is_const<T>::value,
+    U const &,
+    U &>>;
+
+template <typename T, typename U = val_t<T>>
+constexpr auto
+value(T & val, PriorityTag<1>)
+-> decltype(atlas::atlas_detail::value(static_cast<U>(val), value_tag{}))
+{
+    return atlas::atlas_detail::value(static_cast<U>(val), value_tag{});
+}
+
+template <typename T>
+constexpr auto
+value(T const & t, PriorityTag<2>)
+-> decltype(atlas_value(t, atlas::value_tag{}))
+{
+    return atlas_value(t, atlas::value_tag{});
+}
+
+template <typename T>
+constexpr auto
+value(T const & t, PriorityTag<3>)
+-> decltype(atlas_value(t))
+{
+    return atlas_value(t);
+}
+
+class Value
+{
+    template <
+        typename U,
+        typename T,
+        typename V = _t<std::conditional<is_lref<U &&>::value, T &, T>>>
+    static constexpr V rval(T && t)
+    {
+        return t;
+    }
+
+public:
+    template <typename T>
+    constexpr auto
+    operator()(T && t) const
+    -> decltype(rval<T>(atlas_detail::value(t, atlas_detail::value_tag{})))
+    {
+        return rval<T>(atlas_detail::value(t, atlas_detail::value_tag{}));
+    }
+};
+
+} // namespace atlas_detail
+
+#if defined(__cpp_inline_variables) && __cpp_inline_variables >= 9201606L
+inline constexpr auto value = atlas_detail::Value{};
+#else
+template <typename T>
+constexpr auto
+value(T && t)
+-> decltype(atlas_detail::Value{}(std::forward<T>(t)))
+{
+    return atlas_detail::Value{}(std::forward<T>(t));
+}
+#endif
+
+} // namespace atlas
+
+#endif // WJH_ATLAS_50E620B544874CB8BE4412EE6773BF90
+
+
+//////////////////////////////////////////////////////////////////////
+///
+/// These are the droids you are looking for!
+///
+//////////////////////////////////////////////////////////////////////
 
 #include <functional>
 #include <type_traits>
@@ -1736,8 +3643,10 @@ struct ThreadId
 
     template <
         typename... ArgTs,
-        std::enable_if_t<std::is_constructible_v<int, ArgTs...>, bool> = true>
-    explicit ThreadId(ArgTs &&... args)
+        std::enable_if_t<
+            std::is_constructible_v<int, ArgTs...>,
+            bool> = true>
+    explicit ThreadId(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     { }
 
@@ -1745,22 +3654,24 @@ struct ThreadId
      * The explicit cast operator provides a reference to the wrapped object.
      */
     explicit operator int const & () const { return value; }
-
     explicit operator int & () { return value; }
 
     /**
      * Apply << assignment to the wrapped objects.
      */
-    friend ThreadId & operator <<= (ThreadId & lhs, ThreadId const & rhs)
+    friend ThreadId & operator <<= (
+        ThreadId & lhs,
+        ThreadId const & rhs)
     {
         lhs.value <<= rhs.value;
         return lhs;
     }
-
     /**
      * Apply the binary operator << to the wrapped object.
      */
-    friend ThreadId operator << (ThreadId lhs, ThreadId const & rhs)
+    friend ThreadId operator << (
+        ThreadId lhs,
+        ThreadId const & rhs)
     {
         lhs <<= rhs;
         return lhs;
@@ -1769,7 +3680,9 @@ struct ThreadId
     /**
      * Is @p lhs.value != @p rhs.value?
      */
-    friend bool operator != (ThreadId const & lhs, ThreadId const & rhs)
+    friend bool operator != (
+        ThreadId const & lhs,
+        ThreadId const & rhs)
     {
         return lhs.value != rhs.value;
     }
@@ -1777,7 +3690,9 @@ struct ThreadId
     /**
      * Is @p lhs.value == @p rhs.value?
      */
-    friend bool operator == (ThreadId const & lhs, ThreadId const & rhs)
+    friend bool operator == (
+        ThreadId const & lhs,
+        ThreadId const & rhs)
     {
         return lhs.value == rhs.value;
     }
@@ -1794,11 +3709,169 @@ template <>
 struct std::hash<concurrency::ThreadId>
 {
     std::size_t operator () (concurrency::ThreadId const & t) const
-        noexcept(noexcept(std::hash<int>{}(std::declval<int const &>())))
+    noexcept(
+        noexcept(std::hash<int>{}(
+            std::declval<int const &>())))
     {
-        return std::hash<int>{}(static_cast<int const &>(t));
+        return std::hash<int>{}(
+            static_cast<int const &>(t));
     }
 };
+// This is boilerplate that is part of every Atlas interaction file.
+// Nothing to see here, move along.
+
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
+#include <compare>
+#endif
+#include <type_traits>
+#include <utility>
+
+namespace atlas {
+
+struct strong_type_tag
+{
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
+    friend auto
+    operator<=>(strong_type_tag const &, strong_type_tag const &) = default;
+#endif
+};
+
+struct value_tag {};
+
+namespace atlas_detail {
+
+template <typename... Ts>
+struct make_void
+{
+    using type = void;
+};
+
+template <typename... Ts>
+using void_t = typename make_void<Ts...>::type;
+
+template <typename T, typename = void>
+struct IsAtlasType
+: std::false_type
+{ };
+
+template <typename T>
+struct IsAtlasType<T, void_t<typename T::atlas_value_type>>
+: std::true_type
+{ };
+
+template <std::size_t N>
+struct PriorityTag
+: PriorityTag<N - 1>
+{ };
+
+template <>
+struct PriorityTag<0u>
+{ };
+
+using value_tag = PriorityTag<3>;
+
+template <bool B>
+using bool_c = std::integral_constant<bool, B>;
+template <typename T>
+using bool_ = bool_c<T::value>;
+template <typename T>
+using not_ = bool_c<not T::value>;
+template <typename T, typename U>
+using and_ = bool_c<T::value && U::value>;
+template <typename T>
+using is_lref = std::is_lvalue_reference<T>;
+template <typename T, typename U = void>
+using enable_if = typename std::enable_if<T::value, U>::type;
+
+template <typename T>
+using _t = typename T::type;
+
+void atlas_value();
+
+template <typename T>
+constexpr T &
+value(T & val, PriorityTag<0>)
+{
+    return val;
+}
+
+template <typename T, typename U = typename T::atlas_value_type>
+using val_t = _t<std::conditional<
+    std::is_const<T>::value,
+    U const &,
+    U &>>;
+
+template <typename T, typename U = val_t<T>>
+constexpr auto
+value(T & val, PriorityTag<1>)
+-> decltype(atlas::atlas_detail::value(static_cast<U>(val), value_tag{}))
+{
+    return atlas::atlas_detail::value(static_cast<U>(val), value_tag{});
+}
+
+template <typename T>
+constexpr auto
+value(T const & t, PriorityTag<2>)
+-> decltype(atlas_value(t, atlas::value_tag{}))
+{
+    return atlas_value(t, atlas::value_tag{});
+}
+
+template <typename T>
+constexpr auto
+value(T const & t, PriorityTag<3>)
+-> decltype(atlas_value(t))
+{
+    return atlas_value(t);
+}
+
+class Value
+{
+    template <
+        typename U,
+        typename T,
+        typename V = _t<std::conditional<is_lref<U &&>::value, T &, T>>>
+    static constexpr V rval(T && t)
+    {
+        return t;
+    }
+
+public:
+    template <typename T>
+    constexpr auto
+    operator()(T && t) const
+    -> decltype(rval<T>(atlas_detail::value(t, atlas_detail::value_tag{})))
+    {
+        return rval<T>(atlas_detail::value(t, atlas_detail::value_tag{}));
+    }
+};
+
+} // namespace atlas_detail
+
+#if defined(__cpp_inline_variables) && __cpp_inline_variables >= 9201606L
+inline constexpr auto value = atlas_detail::Value{};
+#else
+template <typename T>
+constexpr auto
+value(T && t)
+-> decltype(atlas_detail::Value{}(std::forward<T>(t)))
+{
+    return atlas_detail::Value{}(std::forward<T>(t));
+}
+#endif
+
+} // namespace atlas
+
+#endif // WJH_ATLAS_50E620B544874CB8BE4412EE6773BF90
+
+
+//////////////////////////////////////////////////////////////////////
+///
+/// These are the droids you are looking for!
+///
+//////////////////////////////////////////////////////////////////////
 
 #include <compare>
 #include <type_traits>
@@ -1833,8 +3906,10 @@ struct Numerator
 
     template <
         typename... ArgTs,
-        std::enable_if_t<std::is_constructible_v<long, ArgTs...>, bool> = true>
-    constexpr explicit Numerator(ArgTs &&... args)
+        std::enable_if_t<
+            std::is_constructible_v<long, ArgTs...>,
+            bool> = true>
+    constexpr explicit Numerator(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     { }
 
@@ -1842,7 +3917,6 @@ struct Numerator
      * The explicit cast operator provides a reference to the wrapped object.
      */
     constexpr explicit operator long const & () const { return value; }
-
     constexpr explicit operator long & () { return value; }
 
     /**
@@ -1855,11 +3929,12 @@ struct Numerator
         lhs.value *= rhs.value;
         return lhs;
     }
-
     /**
      * Apply the binary operator * to the wrapped object.
      */
-    friend constexpr Numerator operator * (Numerator lhs, Numerator const & rhs)
+    friend constexpr Numerator operator * (
+        Numerator lhs,
+        Numerator const & rhs)
     {
         lhs *= rhs;
         return lhs;
@@ -1875,11 +3950,12 @@ struct Numerator
         lhs.value += rhs.value;
         return lhs;
     }
-
     /**
      * Apply the binary operator + to the wrapped object.
      */
-    friend constexpr Numerator operator + (Numerator lhs, Numerator const & rhs)
+    friend constexpr Numerator operator + (
+        Numerator lhs,
+        Numerator const & rhs)
     {
         lhs += rhs;
         return lhs;
@@ -1895,11 +3971,12 @@ struct Numerator
         lhs.value -= rhs.value;
         return lhs;
     }
-
     /**
      * Apply the binary operator - to the wrapped object.
      */
-    friend constexpr Numerator operator - (Numerator lhs, Numerator const & rhs)
+    friend constexpr Numerator operator - (
+        Numerator lhs,
+        Numerator const & rhs)
     {
         lhs -= rhs;
         return lhs;
@@ -1908,8 +3985,9 @@ struct Numerator
     /**
      * The default three-way comparison (spaceship) operator.
      */
-    friend constexpr auto operator <=> (Numerator const &, Numerator const &) =
-        default;
+    friend constexpr auto operator <=> (
+        Numerator const &,
+        Numerator const &) = default;
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -1933,6 +4011,161 @@ struct Numerator
 };
 
 } // namespace math::rational
+// This is boilerplate that is part of every Atlas interaction file.
+// Nothing to see here, move along.
+
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
+#include <compare>
+#endif
+#include <type_traits>
+#include <utility>
+
+namespace atlas {
+
+struct strong_type_tag
+{
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
+    friend auto
+    operator<=>(strong_type_tag const &, strong_type_tag const &) = default;
+#endif
+};
+
+struct value_tag {};
+
+namespace atlas_detail {
+
+template <typename... Ts>
+struct make_void
+{
+    using type = void;
+};
+
+template <typename... Ts>
+using void_t = typename make_void<Ts...>::type;
+
+template <typename T, typename = void>
+struct IsAtlasType
+: std::false_type
+{ };
+
+template <typename T>
+struct IsAtlasType<T, void_t<typename T::atlas_value_type>>
+: std::true_type
+{ };
+
+template <std::size_t N>
+struct PriorityTag
+: PriorityTag<N - 1>
+{ };
+
+template <>
+struct PriorityTag<0u>
+{ };
+
+using value_tag = PriorityTag<3>;
+
+template <bool B>
+using bool_c = std::integral_constant<bool, B>;
+template <typename T>
+using bool_ = bool_c<T::value>;
+template <typename T>
+using not_ = bool_c<not T::value>;
+template <typename T, typename U>
+using and_ = bool_c<T::value && U::value>;
+template <typename T>
+using is_lref = std::is_lvalue_reference<T>;
+template <typename T, typename U = void>
+using enable_if = typename std::enable_if<T::value, U>::type;
+
+template <typename T>
+using _t = typename T::type;
+
+void atlas_value();
+
+template <typename T>
+constexpr T &
+value(T & val, PriorityTag<0>)
+{
+    return val;
+}
+
+template <typename T, typename U = typename T::atlas_value_type>
+using val_t = _t<std::conditional<
+    std::is_const<T>::value,
+    U const &,
+    U &>>;
+
+template <typename T, typename U = val_t<T>>
+constexpr auto
+value(T & val, PriorityTag<1>)
+-> decltype(atlas::atlas_detail::value(static_cast<U>(val), value_tag{}))
+{
+    return atlas::atlas_detail::value(static_cast<U>(val), value_tag{});
+}
+
+template <typename T>
+constexpr auto
+value(T const & t, PriorityTag<2>)
+-> decltype(atlas_value(t, atlas::value_tag{}))
+{
+    return atlas_value(t, atlas::value_tag{});
+}
+
+template <typename T>
+constexpr auto
+value(T const & t, PriorityTag<3>)
+-> decltype(atlas_value(t))
+{
+    return atlas_value(t);
+}
+
+class Value
+{
+    template <
+        typename U,
+        typename T,
+        typename V = _t<std::conditional<is_lref<U &&>::value, T &, T>>>
+    static constexpr V rval(T && t)
+    {
+        return t;
+    }
+
+public:
+    template <typename T>
+    constexpr auto
+    operator()(T && t) const
+    -> decltype(rval<T>(atlas_detail::value(t, atlas_detail::value_tag{})))
+    {
+        return rval<T>(atlas_detail::value(t, atlas_detail::value_tag{}));
+    }
+};
+
+} // namespace atlas_detail
+
+#if defined(__cpp_inline_variables) && __cpp_inline_variables >= 9201606L
+inline constexpr auto value = atlas_detail::Value{};
+#else
+template <typename T>
+constexpr auto
+value(T && t)
+-> decltype(atlas_detail::Value{}(std::forward<T>(t)))
+{
+    return atlas_detail::Value{}(std::forward<T>(t));
+}
+#endif
+
+} // namespace atlas
+
+#endif // WJH_ATLAS_50E620B544874CB8BE4412EE6773BF90
+
+
+//////////////////////////////////////////////////////////////////////
+///
+/// These are the droids you are looking for!
+///
+//////////////////////////////////////////////////////////////////////
 
 #include <compare>
 #include <type_traits>
@@ -1967,8 +4200,10 @@ struct Denominator
 
     template <
         typename... ArgTs,
-        std::enable_if_t<std::is_constructible_v<long, ArgTs...>, bool> = true>
-    constexpr explicit Denominator(ArgTs &&... args)
+        std::enable_if_t<
+            std::is_constructible_v<long, ArgTs...>,
+            bool> = true>
+    constexpr explicit Denominator(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     { }
 
@@ -1976,7 +4211,6 @@ struct Denominator
      * The explicit cast operator provides a reference to the wrapped object.
      */
     constexpr explicit operator long const & () const { return value; }
-
     constexpr explicit operator long & () { return value; }
 
     /**
@@ -1989,7 +4223,6 @@ struct Denominator
         lhs.value *= rhs.value;
         return lhs;
     }
-
     /**
      * Apply the binary operator * to the wrapped object.
      */
@@ -2011,7 +4244,6 @@ struct Denominator
         lhs.value /= rhs.value;
         return lhs;
     }
-
     /**
      * Apply the binary operator / to the wrapped object.
      */
@@ -2052,6 +4284,161 @@ struct Denominator
 };
 
 } // namespace math::rational
+// This is boilerplate that is part of every Atlas interaction file.
+// Nothing to see here, move along.
+
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
+#include <compare>
+#endif
+#include <type_traits>
+#include <utility>
+
+namespace atlas {
+
+struct strong_type_tag
+{
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
+    friend auto
+    operator<=>(strong_type_tag const &, strong_type_tag const &) = default;
+#endif
+};
+
+struct value_tag {};
+
+namespace atlas_detail {
+
+template <typename... Ts>
+struct make_void
+{
+    using type = void;
+};
+
+template <typename... Ts>
+using void_t = typename make_void<Ts...>::type;
+
+template <typename T, typename = void>
+struct IsAtlasType
+: std::false_type
+{ };
+
+template <typename T>
+struct IsAtlasType<T, void_t<typename T::atlas_value_type>>
+: std::true_type
+{ };
+
+template <std::size_t N>
+struct PriorityTag
+: PriorityTag<N - 1>
+{ };
+
+template <>
+struct PriorityTag<0u>
+{ };
+
+using value_tag = PriorityTag<3>;
+
+template <bool B>
+using bool_c = std::integral_constant<bool, B>;
+template <typename T>
+using bool_ = bool_c<T::value>;
+template <typename T>
+using not_ = bool_c<not T::value>;
+template <typename T, typename U>
+using and_ = bool_c<T::value && U::value>;
+template <typename T>
+using is_lref = std::is_lvalue_reference<T>;
+template <typename T, typename U = void>
+using enable_if = typename std::enable_if<T::value, U>::type;
+
+template <typename T>
+using _t = typename T::type;
+
+void atlas_value();
+
+template <typename T>
+constexpr T &
+value(T & val, PriorityTag<0>)
+{
+    return val;
+}
+
+template <typename T, typename U = typename T::atlas_value_type>
+using val_t = _t<std::conditional<
+    std::is_const<T>::value,
+    U const &,
+    U &>>;
+
+template <typename T, typename U = val_t<T>>
+constexpr auto
+value(T & val, PriorityTag<1>)
+-> decltype(atlas::atlas_detail::value(static_cast<U>(val), value_tag{}))
+{
+    return atlas::atlas_detail::value(static_cast<U>(val), value_tag{});
+}
+
+template <typename T>
+constexpr auto
+value(T const & t, PriorityTag<2>)
+-> decltype(atlas_value(t, atlas::value_tag{}))
+{
+    return atlas_value(t, atlas::value_tag{});
+}
+
+template <typename T>
+constexpr auto
+value(T const & t, PriorityTag<3>)
+-> decltype(atlas_value(t))
+{
+    return atlas_value(t);
+}
+
+class Value
+{
+    template <
+        typename U,
+        typename T,
+        typename V = _t<std::conditional<is_lref<U &&>::value, T &, T>>>
+    static constexpr V rval(T && t)
+    {
+        return t;
+    }
+
+public:
+    template <typename T>
+    constexpr auto
+    operator()(T && t) const
+    -> decltype(rval<T>(atlas_detail::value(t, atlas_detail::value_tag{})))
+    {
+        return rval<T>(atlas_detail::value(t, atlas_detail::value_tag{}));
+    }
+};
+
+} // namespace atlas_detail
+
+#if defined(__cpp_inline_variables) && __cpp_inline_variables >= 9201606L
+inline constexpr auto value = atlas_detail::Value{};
+#else
+template <typename T>
+constexpr auto
+value(T && t)
+-> decltype(atlas_detail::Value{}(std::forward<T>(t)))
+{
+    return atlas_detail::Value{}(std::forward<T>(t));
+}
+#endif
+
+} // namespace atlas
+
+#endif // WJH_ATLAS_50E620B544874CB8BE4412EE6773BF90
+
+
+//////////////////////////////////////////////////////////////////////
+///
+/// These are the droids you are looking for!
+///
+//////////////////////////////////////////////////////////////////////
 
 #include <type_traits>
 #include <utility>
@@ -2085,9 +4472,10 @@ struct Octet
 
     template <
         typename... ArgTs,
-        std::enable_if_t<std::is_constructible_v<uint8_t, ArgTs...>, bool> =
-            true>
-    constexpr explicit Octet(ArgTs &&... args)
+        std::enable_if_t<
+            std::is_constructible_v<uint8_t, ArgTs...>,
+            bool> = true>
+    constexpr explicit Octet(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     { }
 
@@ -2095,32 +4483,34 @@ struct Octet
      * The explicit cast operator provides a reference to the wrapped object.
      */
     constexpr explicit operator uint8_t const & () const { return value; }
-
     constexpr explicit operator uint8_t & () { return value; }
 
     /**
      * Apply the unary ~ operator to the wrapped object.
      */
-    friend constexpr Octet operator ~(Octet const & t)
+    friend constexpr Octet operator ~ (Octet const & t)
     {
         auto result = t;
-        result.value = ~t.value;
+        result.value = ~ t.value;
         return result;
     }
 
     /**
      * Apply & assignment to the wrapped objects.
      */
-    friend constexpr Octet & operator &= (Octet & lhs, Octet const & rhs)
+    friend constexpr Octet & operator &= (
+        Octet & lhs,
+        Octet const & rhs)
     {
         lhs.value &= rhs.value;
         return lhs;
     }
-
     /**
      * Apply the binary operator & to the wrapped object.
      */
-    friend constexpr Octet operator & (Octet lhs, Octet const & rhs)
+    friend constexpr Octet operator & (
+        Octet lhs,
+        Octet const & rhs)
     {
         lhs &= rhs;
         return lhs;
@@ -2129,16 +4519,19 @@ struct Octet
     /**
      * Apply << assignment to the wrapped objects.
      */
-    friend constexpr Octet & operator <<= (Octet & lhs, Octet const & rhs)
+    friend constexpr Octet & operator <<= (
+        Octet & lhs,
+        Octet const & rhs)
     {
         lhs.value <<= rhs.value;
         return lhs;
     }
-
     /**
      * Apply the binary operator << to the wrapped object.
      */
-    friend constexpr Octet operator << (Octet lhs, Octet const & rhs)
+    friend constexpr Octet operator << (
+        Octet lhs,
+        Octet const & rhs)
     {
         lhs <<= rhs;
         return lhs;
@@ -2147,16 +4540,19 @@ struct Octet
     /**
      * Apply >> assignment to the wrapped objects.
      */
-    friend constexpr Octet & operator >>= (Octet & lhs, Octet const & rhs)
+    friend constexpr Octet & operator >>= (
+        Octet & lhs,
+        Octet const & rhs)
     {
         lhs.value >>= rhs.value;
         return lhs;
     }
-
     /**
      * Apply the binary operator >> to the wrapped object.
      */
-    friend constexpr Octet operator >> (Octet lhs, Octet const & rhs)
+    friend constexpr Octet operator >> (
+        Octet lhs,
+        Octet const & rhs)
     {
         lhs >>= rhs;
         return lhs;
@@ -2165,16 +4561,19 @@ struct Octet
     /**
      * Apply ^ assignment to the wrapped objects.
      */
-    friend constexpr Octet & operator ^= (Octet & lhs, Octet const & rhs)
+    friend constexpr Octet & operator ^= (
+        Octet & lhs,
+        Octet const & rhs)
     {
         lhs.value ^= rhs.value;
         return lhs;
     }
-
     /**
      * Apply the binary operator ^ to the wrapped object.
      */
-    friend constexpr Octet operator ^ (Octet lhs, Octet const & rhs)
+    friend constexpr Octet operator ^ (
+        Octet lhs,
+        Octet const & rhs)
     {
         lhs ^= rhs;
         return lhs;
@@ -2183,16 +4582,19 @@ struct Octet
     /**
      * Apply | assignment to the wrapped objects.
      */
-    friend constexpr Octet & operator |= (Octet & lhs, Octet const & rhs)
+    friend constexpr Octet & operator |= (
+        Octet & lhs,
+        Octet const & rhs)
     {
         lhs.value |= rhs.value;
         return lhs;
     }
-
     /**
      * Apply the binary operator | to the wrapped object.
      */
-    friend constexpr Octet operator | (Octet lhs, Octet const & rhs)
+    friend constexpr Octet operator | (
+        Octet lhs,
+        Octet const & rhs)
     {
         lhs |= rhs;
         return lhs;
@@ -2201,7 +4603,9 @@ struct Octet
     /**
      * Is @p lhs.value != @p rhs.value?
      */
-    friend constexpr bool operator != (Octet const & lhs, Octet const & rhs)
+    friend constexpr bool operator != (
+        Octet const & lhs,
+        Octet const & rhs)
     {
         return lhs.value != rhs.value;
     }
@@ -2209,13 +4613,170 @@ struct Octet
     /**
      * Is @p lhs.value == @p rhs.value?
      */
-    friend constexpr bool operator == (Octet const & lhs, Octet const & rhs)
+    friend constexpr bool operator == (
+        Octet const & lhs,
+        Octet const & rhs)
     {
         return lhs.value == rhs.value;
     }
 };
 
 } // namespace net::ipv4
+// This is boilerplate that is part of every Atlas interaction file.
+// Nothing to see here, move along.
+
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
+#include <compare>
+#endif
+#include <type_traits>
+#include <utility>
+
+namespace atlas {
+
+struct strong_type_tag
+{
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
+    friend auto
+    operator<=>(strong_type_tag const &, strong_type_tag const &) = default;
+#endif
+};
+
+struct value_tag {};
+
+namespace atlas_detail {
+
+template <typename... Ts>
+struct make_void
+{
+    using type = void;
+};
+
+template <typename... Ts>
+using void_t = typename make_void<Ts...>::type;
+
+template <typename T, typename = void>
+struct IsAtlasType
+: std::false_type
+{ };
+
+template <typename T>
+struct IsAtlasType<T, void_t<typename T::atlas_value_type>>
+: std::true_type
+{ };
+
+template <std::size_t N>
+struct PriorityTag
+: PriorityTag<N - 1>
+{ };
+
+template <>
+struct PriorityTag<0u>
+{ };
+
+using value_tag = PriorityTag<3>;
+
+template <bool B>
+using bool_c = std::integral_constant<bool, B>;
+template <typename T>
+using bool_ = bool_c<T::value>;
+template <typename T>
+using not_ = bool_c<not T::value>;
+template <typename T, typename U>
+using and_ = bool_c<T::value && U::value>;
+template <typename T>
+using is_lref = std::is_lvalue_reference<T>;
+template <typename T, typename U = void>
+using enable_if = typename std::enable_if<T::value, U>::type;
+
+template <typename T>
+using _t = typename T::type;
+
+void atlas_value();
+
+template <typename T>
+constexpr T &
+value(T & val, PriorityTag<0>)
+{
+    return val;
+}
+
+template <typename T, typename U = typename T::atlas_value_type>
+using val_t = _t<std::conditional<
+    std::is_const<T>::value,
+    U const &,
+    U &>>;
+
+template <typename T, typename U = val_t<T>>
+constexpr auto
+value(T & val, PriorityTag<1>)
+-> decltype(atlas::atlas_detail::value(static_cast<U>(val), value_tag{}))
+{
+    return atlas::atlas_detail::value(static_cast<U>(val), value_tag{});
+}
+
+template <typename T>
+constexpr auto
+value(T const & t, PriorityTag<2>)
+-> decltype(atlas_value(t, atlas::value_tag{}))
+{
+    return atlas_value(t, atlas::value_tag{});
+}
+
+template <typename T>
+constexpr auto
+value(T const & t, PriorityTag<3>)
+-> decltype(atlas_value(t))
+{
+    return atlas_value(t);
+}
+
+class Value
+{
+    template <
+        typename U,
+        typename T,
+        typename V = _t<std::conditional<is_lref<U &&>::value, T &, T>>>
+    static constexpr V rval(T && t)
+    {
+        return t;
+    }
+
+public:
+    template <typename T>
+    constexpr auto
+    operator()(T && t) const
+    -> decltype(rval<T>(atlas_detail::value(t, atlas_detail::value_tag{})))
+    {
+        return rval<T>(atlas_detail::value(t, atlas_detail::value_tag{}));
+    }
+};
+
+} // namespace atlas_detail
+
+#if defined(__cpp_inline_variables) && __cpp_inline_variables >= 9201606L
+inline constexpr auto value = atlas_detail::Value{};
+#else
+template <typename T>
+constexpr auto
+value(T && t)
+-> decltype(atlas_detail::Value{}(std::forward<T>(t)))
+{
+    return atlas_detail::Value{}(std::forward<T>(t));
+}
+#endif
+
+} // namespace atlas
+
+#endif // WJH_ATLAS_50E620B544874CB8BE4412EE6773BF90
+
+
+//////////////////////////////////////////////////////////////////////
+///
+/// These are the droids you are looking for!
+///
+//////////////////////////////////////////////////////////////////////
 
 #include <functional>
 #include <string>
@@ -2252,9 +4813,10 @@ public:
 
     template <
         typename... ArgTs,
-        std::enable_if_t<std::is_constructible_v<std::string, ArgTs...>, bool> =
-            true>
-    constexpr explicit ConfigKey(ArgTs &&... args)
+        std::enable_if_t<
+            std::is_constructible_v<std::string, ArgTs...>,
+            bool> = true>
+    constexpr explicit ConfigKey(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     { }
 
@@ -2262,7 +4824,6 @@ public:
      * The explicit cast operator provides a reference to the wrapped object.
      */
     constexpr explicit operator std::string const & () const { return value; }
-
     constexpr explicit operator std::string & () { return value; }
 
     /**
@@ -2270,25 +4831,23 @@ public:
      */
 #if __cpp_multidimensional_subscript >= 202110L
     template <typename ArgT, typename... ArgTs>
-    constexpr decltype(auto) operator[] (ArgT && arg, ArgTs &&... args)
+    constexpr decltype(auto) operator [] (ArgT && arg, ArgTs && ... args)
     {
         return value[std::forward<ArgT>(arg), std::forward<ArgTs>(args)...];
     }
-
     template <typename ArgT, typename... ArgTs>
-    constexpr decltype(auto) operator[] (ArgT && arg, ArgTs &&... args) const
+    constexpr decltype(auto) operator [] (ArgT && arg, ArgTs && ... args) const
     {
         return value[std::forward<ArgT>(arg), std::forward<ArgTs>(args)...];
     }
 #else
     template <typename ArgT>
-    constexpr decltype(auto) operator[] (ArgT && arg)
+    constexpr decltype(auto) operator [] (ArgT && arg)
     {
         return value[std::forward<ArgT>(arg)];
     }
-
     template <typename ArgT>
-    constexpr decltype(auto) operator[] (ArgT && arg) const
+    constexpr decltype(auto) operator [] (ArgT && arg) const
     {
         return value[std::forward<ArgT>(arg)];
     }
@@ -2304,11 +4863,12 @@ public:
         lhs.value += rhs.value;
         return lhs;
     }
-
     /**
      * Apply the binary operator + to the wrapped object.
      */
-    friend constexpr ConfigKey operator + (ConfigKey lhs, ConfigKey const & rhs)
+    friend constexpr ConfigKey operator + (
+        ConfigKey lhs,
+        ConfigKey const & rhs)
     {
         lhs += rhs;
         return lhs;
@@ -2324,7 +4884,6 @@ public:
         lhs.value <<= rhs.value;
         return lhs;
     }
-
     /**
      * Apply the binary operator << to the wrapped object.
      */
@@ -2378,10 +4937,12 @@ template <>
 struct std::hash<app::config::ConfigKey>
 {
     constexpr std::size_t operator () (app::config::ConfigKey const & t) const
-        noexcept(noexcept(
-            std::hash<std::string>{}(std::declval<std::string const &>())))
+    noexcept(
+        noexcept(std::hash<std::string>{}(
+            std::declval<std::string const &>())))
     {
-        return std::hash<std::string>{}(static_cast<std::string const &>(t));
+        return std::hash<std::string>{}(
+            static_cast<std::string const &>(t));
     }
 };
-#endif // EXAMPLE_FE7076E0DD0859DA04DE38D296FE0B045F61DB3A
+#endif // EXAMPLE_9B80EE0BECAB362040C0C12BC0963267CD2F10BD

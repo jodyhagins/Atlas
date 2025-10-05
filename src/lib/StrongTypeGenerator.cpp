@@ -901,9 +901,9 @@ operator () (StrongTypeDescription const & desc) const
     auto const code = render_code(info);
     auto const guard = make_guard(desc, code);
     std::stringstream strm;
-    strm << (notice_banner + 1) << '\n'
-        << "#ifndef " << guard << '\n'
+    strm << "#ifndef " << guard << '\n'
         << "#define " << guard << "\n\n"
+        << (notice_banner + 1) << '\n'
         << preamble() << code << "#endif // " << guard << '\n';
     return strm.str();
 }
@@ -922,18 +922,29 @@ generate_strong_types_file(
     for (auto const & desc : descriptions) {
         std::string type_code = generate_strong_type(desc);
 
-        // Find and extract includes, then strip them along with banner/guards
-        auto notice_pos = type_code.find(
-            "// "
-            "=========================================================="
-            "============\n// NOTICE");
-        auto ifndef_pos = type_code.find("#ifndef", notice_pos);
+        // Find header guards (now at the beginning, before NOTICE banner)
+        auto ifndef_pos = type_code.find("#ifndef");
         auto define_pos = type_code.find("#define", ifndef_pos + 1);
 
         if (define_pos != std::string::npos) {
             auto content_start = type_code.find('\n', define_pos);
             if (content_start != std::string::npos) {
                 ++content_start;
+
+                // Skip the NOTICE banner (now between header guard and includes)
+                // Banner has TWO separator lines, need to skip past the second one
+                auto notice_start = type_code.find("// ======================================================================", content_start);
+                if (notice_start != std::string::npos) {
+                    // Find the second separator line (closing banner)
+                    auto notice_end = type_code.find("// ======================================================================", notice_start + 1);
+                    if (notice_end != std::string::npos) {
+                        // Skip to end of that line
+                        notice_end = type_code.find('\n', notice_end);
+                        if (notice_end != std::string::npos) {
+                            content_start = notice_end + 1;
+                        }
+                    }
+                }
 
                 // Find where includes end (first line that doesn't start with
                 // #include)
@@ -1044,10 +1055,10 @@ generate_strong_types_file(
     // Build final output
     std::ostringstream output;
 
-    // Add NOTICE banner once at the top, before header guard
-    output << (notice_banner + 1) << '\n'
-        << "#ifndef " << guard << '\n'
-        << "#define " << guard << "\n\n";
+    // Add header guard first, then NOTICE banner
+    output << "#ifndef " << guard << '\n'
+        << "#define " << guard << "\n\n"
+        << (notice_banner + 1) << '\n';
 
     // Add all unique includes (already sorted by std::set)
     for (auto const & include : all_includes) {
