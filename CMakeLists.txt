@@ -5,12 +5,18 @@
 # https://opensource.org/licenses/MIT
 # ----------------------------------------------------------------------
 cmake_minimum_required(VERSION 3.20)
-project(Atlas VERSION 1.0.0 LANGUAGES CXX)
+
+project(Atlas
+    VERSION 1.0.0
+    LANGUAGES CXX)
 
 # Set default build type to Release if not specified
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
-    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build." FORCE)
-    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
+    set(CMAKE_BUILD_TYPE "Release"
+        CACHE STRING "Choose the type of build."
+        FORCE)
+    set_property(CACHE CMAKE_BUILD_TYPE
+        PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif()
 
 # Set C++20 standard
@@ -46,34 +52,33 @@ if(ENABLE_COVERAGE)
 endif()
 
 if(USE_SYSTEM_BOOST)
-    find_package(Boost REQUIRED COMPONENTS json)
+    find_package(Boost
+        REQUIRED
+        COMPONENTS json)
 else()
     # Fetch Boost from release tarball (much faster than git clone)
-    FetchContent_Declare(
-        Boost
+    fetchcontent_declare(Boost
         URL https://github.com/boostorg/boost/releases/download/boost-1.85.0/boost-1.85.0-cmake.tar.gz
         URL_HASH SHA256=ab9c9c4797384b0949dd676cf86b4f99553f8c148d767485aaac412af25183e6
         SYSTEM
-        DOWNLOAD_EXTRACT_TIMESTAMP ON
-    )
+        DOWNLOAD_EXTRACT_TIMESTAMP ON)
 
     # Configure Boost to only build what we need
     set(BOOST_INCLUDE_LIBRARIES json describe uuid headers)
     set(BOOST_ENABLE_CMAKE ON)
 
-    FetchContent_MakeAvailable(Boost)
+    fetchcontent_makeavailable(Boost)
 endif()
 
 # Fetch boost.mustache
-FetchContent_Declare(
-    boost_mustache
+fetchcontent_declare(boost_mustache
     GIT_REPOSITORY https://github.com/pdimov/mustache.git
     GIT_TAG develop
     GIT_SHALLOW ON
     GIT_PROGRESS ON
-    SYSTEM
-)
-FetchContent_MakeAvailable(boost_mustache)
+    SYSTEM)
+
+fetchcontent_makeavailable(boost_mustache)
 
 add_library(atlas_lib
     src/lib/StrongTypeGenerator.cpp
@@ -83,21 +88,18 @@ add_library(atlas_lib
     src/lib/AtlasUtilities.cpp
     src/lib/AtlasUtilities.hpp
     src/lib/AtlasCommandLine.cpp
-    src/lib/AtlasCommandLine.hpp
-)
+    src/lib/AtlasCommandLine.hpp)
 
 target_include_directories(atlas_lib
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/lib>
-        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/atlas>
-)
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/atlas>)
 
 target_link_libraries(atlas_lib
     PRIVATE
         Boost::describe
         Boost::json
-        Boost::uuid
-)
+        Boost::uuid)
 
 # Apply compiler warnings to library
 target_apply_atlas_warnings(atlas_lib)
@@ -106,42 +108,35 @@ target_apply_atlas_warnings(atlas_lib)
 target_include_directories(atlas_lib
     SYSTEM PRIVATE
         ${boost_mustache_SOURCE_DIR}/include
-        ${boost_SOURCE_DIR}
-)
+        ${boost_SOURCE_DIR})
 
 # Add mustache source file to the library
 target_sources(atlas_lib
     PRIVATE
-        ${boost_mustache_SOURCE_DIR}/src/renderer.cpp
-)
+        ${boost_mustache_SOURCE_DIR}/src/renderer.cpp)
 
 # Disable all warnings for third-party mustache source
-set_source_files_properties(
-    ${boost_mustache_SOURCE_DIR}/src/renderer.cpp
-    PROPERTIES
-        COMPILE_FLAGS "-w"
-)
+set_source_files_properties(${boost_mustache_SOURCE_DIR}/src/renderer.cpp
+    PROPERTIES COMPILE_FLAGS "-w")
 
-add_executable(atlas
-    src/tools/atlas.cpp
-)
+add_executable(atlas src/tools/atlas.cpp)
 
 # Create an alias target for consistent usage in both build and install trees
 add_executable(Atlas::atlas ALIAS atlas)
 
 target_link_libraries(atlas
     PRIVATE
-        atlas_lib
-)
+        atlas_lib)
 
 # Apply compiler warnings to executable
 target_apply_atlas_warnings(atlas)
 
 # Export the atlas executable location for downstream users
-set(Atlas_EXECUTABLE $<TARGET_FILE:atlas> CACHE INTERNAL "Path to atlas executable")
+set(Atlas_EXECUTABLE $<TARGET_FILE:atlas>
+    CACHE INTERNAL "Path to atlas executable")
 
 # Tests
-if (ATLAS_BUILD_TESTS AND CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
+if(ATLAS_BUILD_TESTS AND CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
     enable_testing()
     add_subdirectory(tests)
 endif()
@@ -152,8 +147,7 @@ include(CMakePackageConfigHelpers)
 # Install the executable (atlas_lib is an internal implementation detail and not exported)
 install(TARGETS atlas
     EXPORT AtlasTargets
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-)
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 # Note: atlas_lib is NOT exported or installed
 # The library uses Boost internally which cannot be reliably exported from FetchContent
@@ -225,30 +219,16 @@ if(ATLAS_BUILD_TESTS)
             COMMAND ${CMAKE_COMMAND} -E echo "Running tests for coverage..."
             COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
             COMMAND ${CMAKE_COMMAND} -E echo "Collecting coverage data..."
-            COMMAND ${LCOV_PATH} --capture
-                --directory ${CMAKE_BINARY_DIR}
-                --output-file coverage_raw.info
-                --rc branch_coverage=1
-                --rc derive_function_end_line=0
-                --ignore-errors mismatch,source
-                --gcov-tool ${GCOV_TOOL}
+            COMMAND ${LCOV_PATH} --capture --directory ${CMAKE_BINARY_DIR} --output-file coverage_raw.info
+                --rc branch_coverage=1 --rc derive_function_end_line=0
+                --ignore-errors mismatch,source --gcov-tool ${GCOV_TOOL}
             COMMAND ${CMAKE_COMMAND} -E echo "Filtering to project sources only..."
-            COMMAND ${LCOV_PATH} --remove coverage_raw.info
-                '/usr/*'
-                '*/tests/*'
-                '*/_deps/*'
-                '*/doctest.hpp'
-                --output-file coverage.info
-                --rc branch_coverage=1
-                --rc derive_function_end_line=0
+            COMMAND ${LCOV_PATH} --remove coverage_raw.info '/usr/*' '*/tests/*' '*/_deps/*' '*/doctest.hpp'
+                --output-file coverage.info --rc branch_coverage=1 --rc derive_function_end_line=0
                 --ignore-errors unused
             COMMAND ${CMAKE_COMMAND} -E echo "Generating HTML report..."
-            COMMAND ${GENHTML_PATH} coverage.info
-                --output-directory coverage_html
-                --rc branch_coverage=1
-                --ignore-errors source,inconsistent
-                --title "Atlas Coverage Report"
-                --legend
+            COMMAND ${GENHTML_PATH} coverage.info --output-directory coverage_html --rc branch_coverage=1
+                --ignore-errors source,inconsistent --title "Atlas Coverage Report" --legend
             COMMAND ${CMAKE_COMMAND} -E echo ""
             COMMAND ${CMAKE_COMMAND} -E echo "========================================"
             COMMAND ${CMAKE_COMMAND} -E echo "Coverage report generated successfully!"
