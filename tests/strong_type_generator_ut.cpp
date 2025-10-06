@@ -980,30 +980,44 @@ TEST_SUITE("StrongTypeGenerator")
             // Create multiple type descriptions
             std::vector<StrongTypeDescription> descriptions = {
                 make_description("struct", "test", "Type1", "strong int; +, -"),
-                make_description("struct", "test", "Type2", "strong double; *, /"),
-                make_description("struct", "test", "Type3", "strong std::string; ==, !=")
-            };
+                make_description(
+                    "struct",
+                    "test",
+                    "Type2",
+                    "strong double; *, /"),
+                make_description(
+                    "struct",
+                    "test",
+                    "Type3",
+                    "strong std::string; ==, !=")};
 
-            auto code = generate_strong_types_file(descriptions, "EXAMPLE", "_", true);
+            auto code =
+                generate_strong_types_file(descriptions, "EXAMPLE", "_", true);
 
-            // The preamble guard should appear exactly 3 times: #ifndef, #define, and #endif
-            std::string preamble_guard = "WJH_ATLAS_50E620B544874CB8BE4412EE6773BF90";
+            // The preamble guard should appear exactly 3 times: #ifndef,
+            // #define, and #endif
+            std::string preamble_guard =
+                "WJH_ATLAS_50E620B544874CB8BE4412EE6773BF90";
 
             size_t count = 0;
             size_t pos = 0;
-            while ((pos = code.find(preamble_guard, pos)) != std::string::npos) {
+            while ((pos = code.find(preamble_guard, pos)) != std::string::npos)
+            {
                 ++count;
                 pos += preamble_guard.length();
             }
 
-            // Should appear exactly 3 times: #ifndef, #define at start, and #endif at end
+            // Should appear exactly 3 times: #ifndef, #define at start, and
+            // #endif at end
             CHECK(count == 3);
 
             // Verify the preamble marker appears exactly once
-            std::string preamble_marker = "These are the droids you are looking for!";
+            std::string preamble_marker =
+                "These are the droids you are looking for!";
             count = 0;
             pos = 0;
-            while ((pos = code.find(preamble_marker, pos)) != std::string::npos) {
+            while ((pos = code.find(preamble_marker, pos)) != std::string::npos)
+            {
                 ++count;
                 pos += preamble_marker.length();
             }
@@ -1013,7 +1027,8 @@ TEST_SUITE("StrongTypeGenerator")
             std::string strong_type_tag = "struct strong_type_tag";
             count = 0;
             pos = 0;
-            while ((pos = code.find(strong_type_tag, pos)) != std::string::npos) {
+            while ((pos = code.find(strong_type_tag, pos)) != std::string::npos)
+            {
                 ++count;
                 pos += strong_type_tag.length();
             }
@@ -1024,8 +1039,7 @@ TEST_SUITE("StrongTypeGenerator")
             std::vector<StrongTypeDescription> descriptions = {
                 make_description("struct", "ns1", "TypeA", "strong int"),
                 make_description("struct", "ns2", "TypeB", "strong double"),
-                make_description("struct", "ns3", "TypeC", "strong float")
-            };
+                make_description("struct", "ns3", "TypeC", "strong float")};
 
             auto code = generate_strong_types_file(descriptions, "", "_", true);
 
@@ -1110,6 +1124,156 @@ TEST_SUITE("StrongTypeGenerator")
                     }
                 }
             });
+        }
+    }
+
+    TEST_CASE("C++11 Compatibility")
+    {
+        CodeStructureParser parser;
+
+        SUBCASE("type traits use C++11 syntax") {
+            auto desc = make_description(
+                "struct",
+                "test",
+                "TypeTraitsTest",
+                "strong int");
+            auto code = generate_strong_type(desc);
+
+            // Should use std::enable_if<...>::type not std::enable_if_t<...>
+            CHECK(code.find("std::enable_if_t") == std::string::npos);
+            CHECK(code.find("typename std::enable_if<") != std::string::npos);
+            CHECK(code.find(">::type") != std::string::npos);
+
+            // Should use std::is_constructible<...>::value not
+            // std::is_constructible_v<...>
+            CHECK(code.find("std::is_constructible_v") == std::string::npos);
+            CHECK(code.find("std::is_constructible<") != std::string::npos);
+            CHECK(code.find(">::value") != std::string::npos);
+        }
+
+        SUBCASE("subscript operator uses C++11 trailing return type") {
+            auto desc = make_description(
+                "struct",
+                "test",
+                "SubscriptTest",
+                "strong std::vector<int>; []");
+            auto code = generate_strong_type(desc);
+
+            // Should NOT use decltype(auto) which is C++14
+            // Look in the #else branch (non-C++23) for the single-argument
+            // version
+            auto subscript_if = code.find("__cpp_multidimensional_subscript");
+            REQUIRE(subscript_if != std::string::npos);
+            auto else_pos = code.find("#else", subscript_if);
+            REQUIRE(else_pos != std::string::npos);
+            auto endif_pos = code.find("#endif", else_pos);
+            REQUIRE(endif_pos != std::string::npos);
+            std::string cpp11_section = code.substr(
+                else_pos,
+                endif_pos - else_pos);
+
+            // Should not have decltype(auto) in C++11 section
+            CHECK(cpp11_section.find("decltype(auto)") == std::string::npos);
+
+            // Should have trailing return type: auto ... -> decltype(...)
+            CHECK(cpp11_section.find("auto operator []") != std::string::npos);
+            CHECK(
+                cpp11_section.find("-> decltype(value[") != std::string::npos);
+        }
+
+        SUBCASE("callable operator has C++11 fallback") {
+            auto desc = make_description(
+                "struct",
+                "test",
+                "CallableTest",
+                "strong int; (&)");
+            auto code = generate_strong_type(desc);
+
+            // Should have feature detection for std::invoke
+            CHECK(code.find("__cpp_lib_invoke") != std::string::npos);
+            CHECK(
+                code.find("#if defined(__cpp_lib_invoke)") !=
+                std::string::npos);
+
+            // Should have C++17 path with std::invoke
+            CHECK(code.find("std::invoke") != std::string::npos);
+
+            // Should have C++11 fallback with direct call
+            auto else_pos = code.find("#else", code.find("__cpp_lib_invoke"));
+            REQUIRE(else_pos != std::string::npos);
+            auto endif_pos = code.find("#endif", else_pos);
+            REQUIRE(endif_pos != std::string::npos);
+            std::string cpp11_section = code.substr(
+                else_pos,
+                endif_pos - else_pos);
+
+            // C++11 section should have direct call inv(value)
+            CHECK(cpp11_section.find("inv)(value)") != std::string::npos);
+            // And should NOT have std::invoke in the fallback
+            CHECK(cpp11_section.find("std::invoke") == std::string::npos);
+        }
+
+        SUBCASE("nested namespaces use C++11 syntax") {
+            auto desc = make_description(
+                "struct",
+                "foo::bar::baz",
+                "NestedTest",
+                "strong int");
+            auto code = generate_strong_type(desc);
+            auto structure = parser.parse(code);
+
+            // Parser should extract full nested namespace
+            CHECK(structure.namespace_name == "foo::bar::baz");
+            CHECK(structure.full_qualified_name == "foo::bar::baz::NestedTest");
+
+            // Should use C++11 nested syntax, not C++17 inline syntax
+            CHECK(code.find("namespace foo::bar::baz {") == std::string::npos);
+
+            // Should have properly nested C++11 declarations
+            CHECK(code.find("namespace foo {") != std::string::npos);
+            CHECK(code.find("namespace bar {") != std::string::npos);
+            CHECK(code.find("namespace baz {") != std::string::npos);
+
+            // Should have properly nested C++11 closings in reverse order
+            auto baz_close = code.find("} // namespace baz");
+            auto bar_close = code.find("} // namespace bar");
+            auto foo_close = code.find("} // namespace foo");
+            REQUIRE(baz_close != std::string::npos);
+            REQUIRE(bar_close != std::string::npos);
+            REQUIRE(foo_close != std::string::npos);
+            CHECK(baz_close < bar_close);
+            CHECK(bar_close < foo_close);
+        }
+
+        SUBCASE("single namespace works correctly") {
+            auto desc = make_description(
+                "struct",
+                "single",
+                "SingleTest",
+                "strong int");
+            auto code = generate_strong_type(desc);
+            auto structure = parser.parse(code);
+
+            CHECK(structure.namespace_name == "single");
+            CHECK(structure.full_qualified_name == "single::SingleTest");
+            CHECK(code.find("namespace single {") != std::string::npos);
+            CHECK(code.find("} // namespace single") != std::string::npos);
+        }
+
+        SUBCASE("no namespace works correctly") {
+            auto desc =
+                make_description("struct", "", "NoNamespaceTest", "strong int");
+            auto code = generate_strong_type(desc);
+            auto structure = parser.parse(code);
+
+            CHECK(structure.namespace_name.empty());
+            CHECK(structure.full_qualified_name == "NoNamespaceTest");
+            // Should not have any namespace declarations
+            auto droids = code.find("/// These are the droids");
+            auto first_ns = code.find("namespace ", droids);
+            auto first_struct = code.find("struct NoNamespaceTest", droids);
+            // Either no namespace, or struct comes before any namespace
+            CHECK((first_ns == std::string::npos || first_struct < first_ns));
         }
     }
 }

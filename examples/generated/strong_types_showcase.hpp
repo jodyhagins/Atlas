@@ -1,5 +1,5 @@
-#ifndef EXAMPLE_3DE9EBA0EB3063A3083FBD1081D4E1708DE7F549
-#define EXAMPLE_3DE9EBA0EB3063A3083FBD1081D4E1708DE7F549
+#ifndef EXAMPLE_E1FDB3E2656702E949EB29E24DF2AC7BB25F1DF0
+#define EXAMPLE_E1FDB3E2656702E949EB29E24DF2AC7BB25F1DF0
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -155,7 +155,7 @@ public:
 
 } // namespace atlas_detail
 
-#if defined(__cpp_inline_variables) && __cpp_inline_variables >= 9201606L
+#if defined(__cpp_inline_variables) && __cpp_inline_variables >= 201606L
 inline constexpr auto value = atlas_detail::Value{};
 #else
 template <typename T>
@@ -178,8 +178,8 @@ value(T && t)
 ///
 //////////////////////////////////////////////////////////////////////
 
-
-namespace finance::core {
+namespace finance {
+namespace core {
 
 /**
  * @brief Strong type wrapper for double
@@ -208,9 +208,9 @@ struct Money
 
     template <
         typename... ArgTs,
-        std::enable_if_t<
-            std::is_constructible_v<double, ArgTs...>,
-            bool> = true>
+        typename std::enable_if<
+            std::is_constructible<double, ArgTs...>::value,
+            bool>::type = true>
     constexpr explicit Money(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     { }
@@ -386,8 +386,9 @@ struct Money
         return lhs.value >= rhs.value;
     }
 };
+} // namespace core
+} // namespace finance
 
-} // namespace finance::core
 
 /**
  * @brief std::hash specialization for finance::core::Money
@@ -406,8 +407,8 @@ struct std::hash<finance::core::Money>
             static_cast<double const &>(t));
     }
 };
-
-namespace ids::v1 {
+namespace ids {
+namespace v1 {
 
 /**
  * @brief Strong type wrapper for unsigned long
@@ -437,9 +438,9 @@ public:
 
     template <
         typename... ArgTs,
-        std::enable_if_t<
-            std::is_constructible_v<unsigned long, ArgTs...>,
-            bool> = true>
+        typename std::enable_if<
+            std::is_constructible<unsigned long, ArgTs...>::value,
+            bool>::type = true>
     constexpr explicit UserId(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     { }
@@ -477,8 +478,9 @@ public:
         return lhs.value == rhs.value;
     }
 };
+} // namespace v1
+} // namespace ids
 
-} // namespace ids::v1
 
 /**
  * @brief std::hash specialization for ids::v1::UserId
@@ -497,8 +499,8 @@ struct std::hash<ids::v1::UserId>
             static_cast<unsigned long const &>(t));
     }
 };
-
-namespace physics::units {
+namespace physics {
+namespace units {
 
 /**
  * @brief Strong type wrapper for double
@@ -527,9 +529,9 @@ struct Meters
 
     template <
         typename... ArgTs,
-        std::enable_if_t<
-            std::is_constructible_v<double, ArgTs...>,
-            bool> = true>
+        typename std::enable_if<
+            std::is_constructible<double, ArgTs...>::value,
+            bool>::type = true>
     constexpr explicit Meters(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     { }
@@ -661,10 +663,11 @@ struct Meters
         return lhs.value == rhs.value;
     }
 };
+} // namespace units
+} // namespace physics
 
-} // namespace physics::units
-
-namespace physics::units {
+namespace physics {
+namespace units {
 
 /**
  * @brief Strong type wrapper for double
@@ -693,9 +696,9 @@ struct Seconds
 
     template <
         typename... ArgTs,
-        std::enable_if_t<
-            std::is_constructible_v<double, ArgTs...>,
-            bool> = true>
+        typename std::enable_if<
+            std::is_constructible<double, ArgTs...>::value,
+            bool>::type = true>
     constexpr explicit Seconds(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     { }
@@ -827,10 +830,11 @@ struct Seconds
         return lhs.value == rhs.value;
     }
 };
+} // namespace units
+} // namespace physics
 
-} // namespace physics::units
-
-namespace physics::units {
+namespace physics {
+namespace units {
 
 /**
  * @brief Strong type wrapper for double
@@ -859,9 +863,9 @@ struct MetersPerSecond
 
     template <
         typename... ArgTs,
-        std::enable_if_t<
-            std::is_constructible_v<double, ArgTs...>,
-            bool> = true>
+        typename std::enable_if<
+            std::is_constructible<double, ArgTs...>::value,
+            bool>::type = true>
     constexpr explicit MetersPerSecond(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     { }
@@ -993,8 +997,8 @@ struct MetersPerSecond
         return lhs.value == rhs.value;
     }
 };
-
-} // namespace physics::units
+} // namespace units
+} // namespace physics
 
 namespace data {
 
@@ -1025,9 +1029,9 @@ struct ByteCount
 
     template <
         typename... ArgTs,
-        std::enable_if_t<
-            std::is_constructible_v<size_t, ArgTs...>,
-            bool> = true>
+        typename std::enable_if<
+            std::is_constructible<size_t, ArgTs...>::value,
+            bool>::type = true>
     constexpr explicit ByteCount(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     { }
@@ -1260,10 +1264,10 @@ struct ByteCount
         return lhs.value >= rhs.value;
     }
 };
-
 } // namespace data
 
-namespace graphics::color {
+namespace graphics {
+namespace color {
 
 /**
  * @brief Strong type wrapper for uint8_t
@@ -1292,9 +1296,9 @@ struct RedChannel
 
     template <
         typename... ArgTs,
-        std::enable_if_t<
-            std::is_constructible_v<uint8_t, ArgTs...>,
-            bool> = true>
+        typename std::enable_if<
+            std::is_constructible<uint8_t, ArgTs...>::value,
+            bool>::type = true>
     constexpr explicit RedChannel(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     { }
@@ -1489,8 +1493,8 @@ struct RedChannel
         return lhs.value == rhs.value;
     }
 };
-
-} // namespace graphics::color
+} // namespace color
+} // namespace graphics
 
 namespace security {
 
@@ -1522,9 +1526,9 @@ public:
 
     template <
         typename... ArgTs,
-        std::enable_if_t<
-            std::is_constructible_v<std::string, ArgTs...>,
-            bool> = true>
+        typename std::enable_if<
+            std::is_constructible<std::string, ArgTs...>::value,
+            bool>::type = true>
     constexpr explicit EncryptedData(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     { }
@@ -1576,8 +1580,8 @@ public:
         return lhs.value == rhs.value;
     }
 };
-
 } // namespace security
+
 
 /**
  * @brief std::hash specialization for security::EncryptedData
@@ -1596,7 +1600,6 @@ struct std::hash<security::EncryptedData>
             static_cast<std::string const &>(t));
     }
 };
-
 namespace geo {
 
 /**
@@ -1626,9 +1629,9 @@ struct Latitude
 
     template <
         typename... ArgTs,
-        std::enable_if_t<
-            std::is_constructible_v<double, ArgTs...>,
-            bool> = true>
+        typename std::enable_if<
+            std::is_constructible<double, ArgTs...>::value,
+            bool>::type = true>
     constexpr explicit Latitude(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     { }
@@ -1730,7 +1733,6 @@ struct Latitude
         return lhs.value >= rhs.value;
     }
 };
-
 } // namespace geo
 
 namespace geo {
@@ -1762,9 +1764,9 @@ struct Longitude
 
     template <
         typename... ArgTs,
-        std::enable_if_t<
-            std::is_constructible_v<double, ArgTs...>,
-            bool> = true>
+        typename std::enable_if<
+            std::is_constructible<double, ArgTs...>::value,
+            bool>::type = true>
     constexpr explicit Longitude(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     { }
@@ -1866,7 +1868,6 @@ struct Longitude
         return lhs.value >= rhs.value;
     }
 };
-
 } // namespace geo
 
 namespace concurrency {
@@ -1898,9 +1899,9 @@ struct ThreadId
 
     template <
         typename... ArgTs,
-        std::enable_if_t<
-            std::is_constructible_v<int, ArgTs...>,
-            bool> = true>
+        typename std::enable_if<
+            std::is_constructible<int, ArgTs...>::value,
+            bool>::type = true>
     explicit ThreadId(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     { }
@@ -1952,8 +1953,8 @@ struct ThreadId
         return lhs.value == rhs.value;
     }
 };
-
 } // namespace concurrency
+
 
 /**
  * @brief std::hash specialization for concurrency::ThreadId
@@ -1972,8 +1973,8 @@ struct std::hash<concurrency::ThreadId>
             static_cast<int const &>(t));
     }
 };
-
-namespace math::rational {
+namespace math {
+namespace rational {
 
 /**
  * @brief Strong type wrapper for long
@@ -2002,9 +2003,9 @@ struct Numerator
 
     template <
         typename... ArgTs,
-        std::enable_if_t<
-            std::is_constructible_v<long, ArgTs...>,
-            bool> = true>
+        typename std::enable_if<
+            std::is_constructible<long, ArgTs...>::value,
+            bool>::type = true>
     constexpr explicit Numerator(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     { }
@@ -2105,10 +2106,11 @@ struct Numerator
         return lhs.value == rhs.value;
     }
 };
+} // namespace rational
+} // namespace math
 
-} // namespace math::rational
-
-namespace math::rational {
+namespace math {
+namespace rational {
 
 /**
  * @brief Strong type wrapper for long
@@ -2137,9 +2139,9 @@ struct Denominator
 
     template <
         typename... ArgTs,
-        std::enable_if_t<
-            std::is_constructible_v<long, ArgTs...>,
-            bool> = true>
+        typename std::enable_if<
+            std::is_constructible<long, ArgTs...>::value,
+            bool>::type = true>
     constexpr explicit Denominator(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     { }
@@ -2219,10 +2221,11 @@ struct Denominator
         return lhs.value == rhs.value;
     }
 };
+} // namespace rational
+} // namespace math
 
-} // namespace math::rational
-
-namespace net::ipv4 {
+namespace net {
+namespace ipv4 {
 
 /**
  * @brief Strong type wrapper for uint8_t
@@ -2251,9 +2254,9 @@ struct Octet
 
     template <
         typename... ArgTs,
-        std::enable_if_t<
-            std::is_constructible_v<uint8_t, ArgTs...>,
-            bool> = true>
+        typename std::enable_if<
+            std::is_constructible<uint8_t, ArgTs...>::value,
+            bool>::type = true>
     constexpr explicit Octet(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     { }
@@ -2399,10 +2402,11 @@ struct Octet
         return lhs.value == rhs.value;
     }
 };
+} // namespace ipv4
+} // namespace net
 
-} // namespace net::ipv4
-
-namespace app::config {
+namespace app {
+namespace config {
 
 /**
  * @brief Strong type wrapper for std::string
@@ -2432,9 +2436,9 @@ public:
 
     template <
         typename... ArgTs,
-        std::enable_if_t<
-            std::is_constructible_v<std::string, ArgTs...>,
-            bool> = true>
+        typename std::enable_if<
+            std::is_constructible<std::string, ArgTs...>::value,
+            bool>::type = true>
     constexpr explicit ConfigKey(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     { }
@@ -2461,12 +2465,14 @@ public:
     }
 #else
     template <typename ArgT>
-    constexpr decltype(auto) operator [] (ArgT && arg)
+    constexpr auto operator [] (ArgT && arg)
+    -> decltype(value[std::forward<ArgT>(arg)])
     {
         return value[std::forward<ArgT>(arg)];
     }
     template <typename ArgT>
-    constexpr decltype(auto) operator [] (ArgT && arg) const
+    constexpr auto operator [] (ArgT && arg) const
+    -> decltype(value[std::forward<ArgT>(arg)])
     {
         return value[std::forward<ArgT>(arg)];
     }
@@ -2544,8 +2550,9 @@ public:
         return lhs.value == rhs.value;
     }
 };
+} // namespace config
+} // namespace app
 
-} // namespace app::config
 
 /**
  * @brief std::hash specialization for app::config::ConfigKey
@@ -2564,4 +2571,4 @@ struct std::hash<app::config::ConfigKey>
             static_cast<std::string const &>(t));
     }
 };
-#endif // EXAMPLE_3DE9EBA0EB3063A3083FBD1081D4E1708DE7F549
+#endif // EXAMPLE_E1FDB3E2656702E949EB29E24DF2AC7BB25F1DF0

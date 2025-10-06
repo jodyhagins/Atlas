@@ -200,7 +200,7 @@ public:
 
 } // namespace atlas_detail
 
-#if defined(__cpp_inline_variables) && __cpp_inline_variables >= 9201606L
+#if defined(__cpp_inline_variables) && __cpp_inline_variables >= 201606L
 inline constexpr auto value = atlas_detail::Value{};
 #else
 template <typename T>
