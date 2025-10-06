@@ -47,6 +47,14 @@ make_description(
         .upcase_guard = upcase_guard};
 }
 
+// Helper function for simple code generation without warnings
+std::string
+generate_strong_type(StrongTypeDescription const & desc)
+{
+    StrongTypeGenerator gen;
+    return gen(desc);
+}
+
 struct SplitCode
 {
     std::string full_code;
@@ -1442,6 +1450,170 @@ TEST_SUITE("StrongTypeGenerator")
             CHECK(
                 code.find(wjh::atlas::codegen::version_string) !=
                 std::string::npos);
+        }
+    }
+
+    TEST_CASE("Warning System")
+    {
+        SUBCASE("no warnings for spaceship alone") {
+            StrongTypeGenerator gen;
+            auto desc = make_description(
+                "struct",
+                "test",
+                "TestType",
+                "strong int; <=>");
+            gen(desc);
+            auto warnings = gen.get_warnings();
+
+            CHECK(warnings.empty());
+        }
+
+        SUBCASE("warning for spaceship with equality operators") {
+            StrongTypeGenerator gen;
+            auto desc = make_description(
+                "struct",
+                "test",
+                "TestType",
+                "strong int; ==, !=, <=>");
+            gen(desc);
+            auto warnings = gen.get_warnings();
+
+            REQUIRE(warnings.size() >= 1);
+            bool found_equality_warning = false;
+            for (auto const & w : warnings) {
+                if (w.message.find("'==' and '!='") != std::string::npos &&
+                    w.message.find("redundant") != std::string::npos)
+                {
+                    found_equality_warning = true;
+                    CHECK(w.type_name == "test::TestType");
+                }
+            }
+            CHECK(found_equality_warning);
+        }
+
+        SUBCASE("warning for spaceship with relational operators") {
+            StrongTypeGenerator gen;
+            auto desc = make_description(
+                "struct",
+                "test",
+                "TestType",
+                "strong int; <, <=, >, >=, <=>");
+            gen(desc);
+            auto warnings = gen.get_warnings();
+
+            REQUIRE(warnings.size() >= 1);
+            bool found_relational_warning = false;
+            for (auto const & w : warnings) {
+                if (w.message.find("'<', '<=', '>', '>='") !=
+                        std::string::npos &&
+                    w.message.find("redundant") != std::string::npos)
+                {
+                    found_relational_warning = true;
+                    CHECK(w.type_name == "test::TestType");
+                }
+            }
+            CHECK(found_relational_warning);
+        }
+
+        SUBCASE("both warnings for spaceship with all comparison operators") {
+            StrongTypeGenerator gen;
+            auto desc = make_description(
+                "struct",
+                "test",
+                "TestType",
+                "strong int; ==, !=, <, <=, >, >=, <=>");
+            gen(desc);
+            auto warnings = gen.get_warnings();
+
+            REQUIRE(warnings.size() == 2);
+        }
+
+        SUBCASE("no warning when only == != specified without spaceship") {
+            StrongTypeGenerator gen;
+            auto desc = make_description(
+                "struct",
+                "test",
+                "TestType",
+                "strong int; ==, !=");
+            gen(desc);
+            auto warnings = gen.get_warnings();
+
+            CHECK(warnings.empty());
+        }
+
+        SUBCASE("no warning when only relational operators without spaceship") {
+            StrongTypeGenerator gen;
+            auto desc = make_description(
+                "struct",
+                "test",
+                "TestType",
+                "strong int; <, <=, >, >=");
+            gen(desc);
+            auto warnings = gen.get_warnings();
+
+            CHECK(warnings.empty());
+        }
+
+        SUBCASE("warning includes correct type name with namespace") {
+            StrongTypeGenerator gen;
+            auto desc = make_description(
+                "struct",
+                "my::nested::namespace",
+                "MyType",
+                "strong double; ==, <=>");
+            gen(desc);
+            auto warnings = gen.get_warnings();
+
+            REQUIRE_FALSE(warnings.empty());
+            CHECK(warnings[0].type_name == "my::nested::namespace::MyType");
+        }
+
+        SUBCASE("warning includes correct type name without namespace") {
+            StrongTypeGenerator gen;
+            auto desc = make_description(
+                "struct",
+                "",
+                "GlobalType",
+                "strong int; <, <=>");
+            gen(desc);
+            auto warnings = gen.get_warnings();
+
+            REQUIRE_FALSE(warnings.empty());
+            CHECK(warnings[0].type_name == "GlobalType");
+        }
+
+        SUBCASE("clear_warnings() clears collected warnings") {
+            StrongTypeGenerator gen;
+            auto desc = make_description(
+                "struct",
+                "test",
+                "TestType",
+                "strong int; ==, <=>");
+            gen(desc);
+            CHECK_FALSE(gen.get_warnings().empty());
+
+            gen.clear_warnings();
+            CHECK(gen.get_warnings().empty());
+        }
+
+        SUBCASE("warnings accumulate across multiple generations") {
+            StrongTypeGenerator gen;
+
+            auto desc1 = make_description(
+                "struct",
+                "test",
+                "Type1",
+                "strong int; ==, <=>");
+            gen(desc1);
+            CHECK(gen.get_warnings().size() == 1);
+
+            auto desc2 = make_description(
+                "struct",
+                "test",
+                "Type2",
+                "strong int; <, <=>");
+            gen(desc2);
+            CHECK(gen.get_warnings().size() == 2);
         }
     }
 }

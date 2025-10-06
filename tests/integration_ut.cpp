@@ -17,6 +17,14 @@ using namespace wjh::atlas;
 
 namespace {
 
+// Helper function for simple code generation without warnings
+std::string
+generate_strong_type(StrongTypeDescription const & desc)
+{
+    StrongTypeGenerator gen;
+    return gen(desc);
+}
+
 // Helper to write generated code to a file, compile it, and check if it
 // compiles
 bool

@@ -41,6 +41,32 @@ BOOST_DESCRIBE_STRUCT(
 
 namespace {
 
+// Print warnings to stderr with optional color
+void
+print_warnings(std::vector<StrongTypeGenerator::Warning> const & warnings)
+{
+    if (warnings.empty()) {
+        return;
+    }
+
+    bool use_color = supports_color(fileno(stderr));
+
+    std::cerr << "\n";
+    if (use_color) {
+        std::cerr << color::red << "Warnings:" << color::reset << "\n";
+        for (auto const & w : warnings) {
+            std::cerr << "  " << color::yellow << w.type_name << ": "
+                << w.message << color::reset << "\n";
+        }
+    } else {
+        std::cerr << "Warnings:\n";
+        for (auto const & w : warnings) {
+            std::cerr << "  " << w.type_name << ": " << w.message << "\n";
+        }
+    }
+    std::cerr << std::endl;
+}
+
 std::string
 get_sha1(std::string const & s)
 {
@@ -575,6 +601,39 @@ struct IsSpacePred
     }
 };
 
+// Check for redundant operators when spaceship is present
+void
+check_for_redundant_operators(
+    bool has_spaceship,
+    bool has_equality_ops,
+    bool has_relational_ops,
+    ClassInfo const & info,
+    std::vector<StrongTypeGenerator::Warning> * warnings)
+{
+    if (not has_spaceship || not warnings) {
+        return;
+    }
+
+    auto type_name = info.class_namespace.empty()
+        ? info.full_class_name
+        : info.class_namespace + "::" + info.full_class_name;
+
+    if (has_equality_ops) {
+        warnings->push_back(
+            {.message = "Operator '<=>' makes '==' and '!=' redundant. "
+                        "Consider removing '==' and '!=' from the description.",
+             .type_name = type_name});
+    }
+
+    if (has_relational_ops) {
+        warnings->push_back(
+            {.message =
+                 "Operator '<=>' makes '<', '<=', '>', '>=' redundant. "
+                 "Consider removing these operators from the description.",
+             .type_name = type_name});
+    }
+}
+
 template <typename PredT = IsSpacePred>
 std::string_view
 strip(std::string_view sv, PredT pred = PredT{})
@@ -657,7 +716,9 @@ expand_namespace(std::string const & ns)
 }
 
 ClassInfo
-parse(StrongTypeDescription const & desc)
+parse(
+    StrongTypeDescription const & desc,
+    std::vector<StrongTypeGenerator::Warning> * warnings)
 {
     ClassInfo info;
     info.desc = desc;
@@ -682,6 +743,11 @@ parse(StrongTypeDescription const & desc)
     } else if (desc.kind != "struct") {
         throw std::invalid_argument("kind must be either class or struct");
     }
+
+    // Track which operators are specified for redundancy detection
+    bool has_spaceship = false;
+    bool has_equality_ops = false;
+    bool has_relational_ops = false;
 
     for (auto s : split(desc.description, ';')) {
         if (s.starts_with("strong ")) {
@@ -736,10 +802,16 @@ parse(StrongTypeDescription const & desc)
                     info.includes.push_back("<memory>");
                 } else if (sv == "<=>") {
                     recognized = true;
+                    has_spaceship = true;
                     info.spaceship_operator = true;
                     info.includes.push_back("<compare>");
                 } else if (is_relational_operator(sv)) {
                     recognized = true;
+                    if (sv == "==" || sv == "!=") {
+                        has_equality_ops = true;
+                    } else {
+                        has_relational_ops = true;
+                    }
                     info.relational_operators.emplace_back(sv);
                 } else if (sv == "out") {
                     recognized = true;
@@ -795,6 +867,14 @@ parse(StrongTypeDescription const & desc)
             }
         }
     }
+
+    // Check for redundant operators with spaceship
+    check_for_redundant_operators(
+        has_spaceship,
+        has_equality_ops,
+        has_relational_ops,
+        info,
+        warnings);
 
     // Handle default_value from the StrongTypeDescription
     if (not desc.default_value.empty()) {
@@ -969,9 +1049,9 @@ make_guard(StrongTypeDescription const & desc, std::string const & code)
 
 std::string
 StrongTypeGenerator::
-operator () (StrongTypeDescription const & desc) const
+operator () (StrongTypeDescription const & desc)
 {
-    auto const info = parse(desc);
+    auto const info = parse(desc, &warnings_);
     auto const code = render_code(info);
     auto const guard = make_guard(desc, code);
     std::stringstream strm;
@@ -991,10 +1071,11 @@ generate_strong_types_file(
 {
     std::set<std::string> all_includes;
     std::ostringstream combined_code;
+    std::vector<StrongTypeGenerator::Warning> warnings;
 
     // Generate each type WITHOUT preamble, and collect includes
     for (auto const & desc : descriptions) {
-        auto info = parse(desc);
+        auto info = parse(desc, &warnings);
 
         // Collect includes from this type
         for (auto const & include : info.includes) {
@@ -1008,6 +1089,9 @@ generate_strong_types_file(
         // includes)
         combined_code << render_code(info);
     }
+
+    // Output warnings to stderr
+    print_warnings(warnings);
 
     // Generate header guard with SHA of combined content
     std::string content = combined_code.str();

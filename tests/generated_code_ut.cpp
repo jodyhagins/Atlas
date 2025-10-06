@@ -23,6 +23,14 @@ namespace {
 
 using namespace wjh::atlas;
 
+// Helper function for simple code generation without warnings
+std::string
+generate_strong_type(StrongTypeDescription const & desc)
+{
+    StrongTypeGenerator gen;
+    return gen(desc);
+}
+
 // Helper to compile and test generated code
 class CodeTester
 {

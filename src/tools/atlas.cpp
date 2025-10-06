@@ -5,6 +5,7 @@
 // https://opensource.org/licenses/MIT
 // ----------------------------------------------------------------------
 #include "AtlasCommandLine.hpp"
+#include "AtlasUtilities.hpp"
 #include "InteractionGenerator.hpp"
 #include "StrongTypeGenerator.hpp"
 #include "version.hpp"
@@ -14,6 +15,13 @@
 #include <sstream>
 
 #include <iostream>
+
+#ifdef _WIN32
+    #include <io.h>
+    #define fileno _fileno
+#else
+    #include <unistd.h>
+#endif
 
 int
 main(int argc, char ** argv)
@@ -54,7 +62,31 @@ main(int argc, char ** argv)
             }
         } else { // Command-line mode - single type with individual guard
             auto description = atlas::AtlasCommandLine::to_description(args);
-            output = atlas::generate_strong_type(description);
+            atlas::StrongTypeGenerator generator;
+            output = generator(description);
+
+            // Output warnings to stderr
+            auto const & warnings = generator.get_warnings();
+            if (not warnings.empty()) {
+                bool use_color = atlas::supports_color(fileno(stderr));
+
+                std::cerr << "\n";
+                if (use_color) {
+                    std::cerr << atlas::color::red
+                        << "Warnings:" << atlas::color::reset << "\n";
+                    for (auto const & w : warnings) {
+                        std::cerr << "  " << atlas::color::yellow << w.type_name
+                            << ": " << w.message << atlas::color::reset << "\n";
+                    }
+                } else {
+                    std::cerr << "Warnings:\n";
+                    for (auto const & w : warnings) {
+                        std::cerr << "  " << w.type_name << ": " << w.message
+                            << "\n";
+                    }
+                }
+                std::cerr << std::endl;
+            }
         }
 
         // Write output

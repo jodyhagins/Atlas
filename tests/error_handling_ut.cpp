@@ -12,6 +12,14 @@ using namespace wjh::atlas;
 
 namespace {
 
+// Helper function for simple code generation without warnings
+std::string
+generate_strong_type(StrongTypeDescription const & desc)
+{
+    StrongTypeGenerator gen;
+    return gen(desc);
+}
+
 TEST_SUITE("Error Handling")
 {
     TEST_CASE("Unrecognized Operators")

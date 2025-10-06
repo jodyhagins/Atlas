@@ -10,6 +10,15 @@
 
 #include <algorithm>
 #include <cctype>
+#include <cstdlib>
+#include <string>
+
+#ifdef _WIN32
+    #include <io.h>
+    #define isatty _isatty
+#else
+    #include <unistd.h>
+#endif
 
 namespace wjh::atlas { inline namespace v1 {
 
@@ -225,6 +234,25 @@ value(T && t)
 
 )";
     return result + 1;
+}
+
+bool
+supports_color(int fd)
+{
+    // Check if output is a TTY
+    if (not isatty(fd)) {
+        return false;
+    }
+
+    // Check TERM environment variable
+    auto term = std::getenv("TERM");
+    if (not term) {
+        return false;
+    }
+
+    std::string term_str(term);
+    // Most modern terminals support color
+    return term_str != "dumb";
 }
 
 }} // namespace wjh::atlas::v1

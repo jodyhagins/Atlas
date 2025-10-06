@@ -47,6 +47,23 @@ std::string trim(std::string const & str);
  */
 std::string preamble();
 
+/**
+ * @brief Check if a file descriptor supports ANSI color codes
+ *
+ * @param fd File descriptor to check (e.g., fileno(stderr))
+ * @return true if the file descriptor is a color-capable TTY
+ */
+bool supports_color(int fd);
+
+/**
+ * @brief ANSI color codes for terminal output
+ */
+namespace color {
+constexpr char const * red = "\033[31m";
+constexpr char const * yellow = "\033[33m";
+constexpr char const * reset = "\033[0m";
+} // namespace color
+
 }} // namespace wjh::atlas::v1
 
 #endif // WJH_ATLAS_8651ABC1F7E740D3960747B1195C51A7
