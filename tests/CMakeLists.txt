@@ -203,6 +203,6 @@ doctest_discover_tests(generated_code_ut TEST_PREFIX "Generated Code : ")
 doctest_discover_tests(atlas_tool_ut TEST_PREFIX "Atlas Tool : "
     PROPERTIES ENVIRONMENT "BUILD_DIR=${CMAKE_BINARY_DIR}"
 )
-doctest_discover_tests(interaction_generator_ut TEST_PREFIX "Interaction Generator : ")
-doctest_discover_tests(interaction_compilation_ut TEST_PREFIX "Interaction Compilation : ")
-doctest_discover_tests(structural_validation_demo_ut TEST_PREFIX "Structural Demo : ")
+doctest_discover_tests(interaction_generator_ut TEST_PREFIX "Interaction Generator : ")
+doctest_discover_tests(interaction_compilation_ut TEST_PREFIX "Interaction Compilation : ")
+doctest_discover_tests(structural_validation_demo_ut TEST_PREFIX "Structural Demo : ")

@@ -85,7 +85,7 @@ struct strong_type_tag
 {
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
-    friend auto operator<=>(
+    friend auto operator <=> (
         strong_type_tag const &,
         strong_type_tag const &) = default;
 #endif
@@ -191,7 +191,7 @@ class Value
 
 public:
     template <typename T>
-    constexpr auto operator ()(T && t) const
+    constexpr auto operator () (T && t) const
     -> decltype(rval<T>(atlas_detail::value(t, atlas_detail::value_tag{})))
     {
         return rval<T>(atlas_detail::value(t, atlas_detail::value_tag{}));

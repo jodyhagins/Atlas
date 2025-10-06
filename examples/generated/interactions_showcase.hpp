@@ -1,5 +1,5 @@
-#ifndef EXAMPLE_INTERACTIONS_7E8A8E301643676EDDA5E809ED56ECDCCD56F780
-#define EXAMPLE_INTERACTIONS_7E8A8E301643676EDDA5E809ED56ECDCCD56F780
+#ifndef EXAMPLE_INTERACTIONS_8CAF909640A5375E7AF68E95192B125DAE92EE7E
+#define EXAMPLE_INTERACTIONS_8CAF909640A5375E7AF68E95192B125DAE92EE7E
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -34,7 +34,7 @@ struct strong_type_tag
 {
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
-    friend auto operator<=>(
+    friend auto operator <=> (
         strong_type_tag const &,
         strong_type_tag const &) = default;
 #endif
@@ -140,7 +140,7 @@ class Value
 
 public:
     template <typename T>
-    constexpr auto operator ()(T && t) const
+    constexpr auto operator () (T && t) const
     -> decltype(rval<T>(atlas_detail::value(t, atlas_detail::value_tag{})))
     {
         return rval<T>(atlas_detail::value(t, atlas_detail::value_tag{}));
@@ -1179,4 +1179,4 @@ operator+(EncryptedData lhs, EncryptedData rhs)
 
 } // namespace security
 
-#endif // EXAMPLE_INTERACTIONS_7E8A8E301643676EDDA5E809ED56ECDCCD56F780
+#endif // EXAMPLE_INTERACTIONS_8CAF909640A5375E7AF68E95192B125DAE92EE7E
