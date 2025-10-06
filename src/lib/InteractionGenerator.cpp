@@ -298,7 +298,7 @@ generate_operator_function(
 
     // Generate template headers if needed
     if (lhs_is_template && rhs_is_template) {
-        // Both are templates - generate two template parameters
+        // Both are templates
         if (not constraints.contains(lhs_type)) {
             throw std::runtime_error(
                 "Template type '" + lhs_type +
@@ -309,10 +309,27 @@ generate_operator_function(
                 "Template type '" + rhs_type +
                 "' used but no constraint defined");
         }
-        auto lhs_constraint = constraints.at(lhs_type);
-        auto rhs_constraint = constraints.at(rhs_type);
-        oss << generate_template_header(lhs_constraint, "TL");
-        oss << generate_template_header(rhs_constraint, "TR");
+
+        // Check if both sides use the same template parameter
+        if (lhs_type == rhs_type) {
+            // Same type - use single template parameter with original name
+            auto constraint = constraints.at(lhs_type);
+            oss << generate_template_header(constraint, lhs_type);
+        } else {
+            // Different types - need two template parameters
+            // Generate a combined template declaration
+            auto lhs_constraint = constraints.at(lhs_type);
+            auto rhs_constraint = constraints.at(rhs_type);
+
+            // TODO: Handle combined template with both concept and enable_if
+            // For now, generate simple templates
+            if (lhs_constraint.has_concept() && rhs_constraint.has_concept()) {
+                oss << "template <" << lhs_constraint.concept_expr << " TL, "
+                    << rhs_constraint.concept_expr << " TR>\n";
+            } else {
+                oss << "template <typename TL, typename TR>\n";
+            }
+        }
     } else if (lhs_is_template) {
         if (not constraints.contains(lhs_type)) {
             throw std::runtime_error(
@@ -342,14 +359,30 @@ generate_operator_function(
         << "(";
 
     // Determine actual parameter types
-    std::string lhs_param_type = get_signature_type(
-        lhs_type,
-        lhs_is_template,
-        lhs_is_template && rhs_is_template ? "TL" : "T");
-    std::string rhs_param_type = get_signature_type(
-        rhs_type,
-        rhs_is_template,
-        lhs_is_template && rhs_is_template ? "TR" : "T");
+    std::string lhs_param_name;
+    std::string rhs_param_name;
+
+    if (lhs_is_template && rhs_is_template) {
+        // Both are templates
+        if (lhs_type == rhs_type) {
+            // Same type - use original name
+            lhs_param_name = lhs_type;
+            rhs_param_name = rhs_type;
+        } else {
+            // Different types - use TL/TR
+            lhs_param_name = "TL";
+            rhs_param_name = "TR";
+        }
+    } else {
+        // Only one (or neither) is a template - use T
+        lhs_param_name = lhs_is_template ? "T" : "";
+        rhs_param_name = rhs_is_template ? "T" : "";
+    }
+
+    std::string lhs_param_type =
+        get_signature_type(lhs_type, lhs_is_template, lhs_param_name);
+    std::string rhs_param_type =
+        get_signature_type(rhs_type, rhs_is_template, rhs_param_name);
 
     oss << lhs_param_type << " lhs, " << rhs_param_type << " rhs";
     oss << ")\n{\n";

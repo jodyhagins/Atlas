@@ -36,6 +36,48 @@ parse_bool(std::string value, std::string const & option_name)
         "'. Expected true/false, 1/0, or yes/no.");
 }
 
+// Extract template parameter name from enable_if expression
+// e.g., "std::is_floating_point<U>::value" -> "U"
+std::string
+extract_template_param_from_enable_if(
+    std::string const & expr,
+    int line_number,
+    std::string const & filename)
+{
+    auto open_angle = expr.find('<');
+    auto close_angle = expr.find('>');
+
+    if (open_angle == std::string::npos ||
+        close_angle == std::string::npos ||
+        close_angle <= open_angle)
+    {
+        throw AtlasCommandLineError(
+            "Cannot extract template parameter name from enable_if at line " +
+            std::to_string(line_number) + " in " + filename +
+            ". Expected pattern like: enable_if=std::is_floating_point<U>::value");
+    }
+
+    std::string param_name = trim(expr.substr(
+        open_angle + 1,
+        close_angle - open_angle - 1));
+
+    // Handle nested templates by taking first identifier before comma
+    // For "std::is_same<T, int>::value", extract "T"
+    auto comma_pos = param_name.find(',');
+    if (comma_pos != std::string::npos) {
+        param_name = trim(param_name.substr(0, comma_pos));
+    }
+
+    if (param_name.empty()) {
+        throw AtlasCommandLineError(
+            "Cannot extract template parameter name from enable_if at line " +
+            std::to_string(line_number) + " in " + filename +
+            ". Expected pattern like: enable_if=std::is_floating_point<U>::value");
+    }
+
+    return param_name;
+}
+
 } // anonymous namespace
 
 AtlasCommandLine::Arguments
@@ -519,21 +561,27 @@ parse_interaction_file(std::string const & filename)
                 throw AtlasCommandLineError(
                     "Empty concept definition at line " +
                     std::to_string(line_number) + " in " + filename +
-                    ". Expected: concept=TypeName or concept=TypeName : "
-                    "expression");
+                    ". Expected: concept=<concept_expr> <param_name>");
             }
-            // Parse: name : concept_expr
-            auto colon_pos = value.find(':');
-            std::string name = trim(
-                colon_pos == std::string::npos ? value
-                                               : value.substr(0, colon_pos));
-            std::string concept_expr = colon_pos == std::string::npos
-                ? name
-                : trim(value.substr(colon_pos + 1));
+
+            // Space-separated syntax: "std::integral T"
+            // The template parameter name is the last whitespace-separated token
+            auto last_space = value.rfind(' ');
+            std::string name;
+            std::string concept_expr;
+
+            if (last_space != std::string::npos) {
+                concept_expr = trim(value.substr(0, last_space));
+                name = trim(value.substr(last_space + 1));
+            } else {
+                // No space - assume parameter name is "T"
+                concept_expr = trim(value);
+                name = "T";
+            }
 
             if (name.empty()) {
                 throw AtlasCommandLineError(
-                    "Empty concept name at line " +
+                    "Empty template parameter name at line " +
                     std::to_string(line_number) + " in " + filename);
             }
 
@@ -544,14 +592,27 @@ parse_interaction_file(std::string const & filename)
             pending_concept_name = name;
         } else if (starts_with(line, "enable_if=")) {
             std::string expr = extract_after_equals(line);
+            if (expr.empty()) {
+                throw AtlasCommandLineError(
+                    "Empty enable_if expression at line " +
+                    std::to_string(line_number) + " in " + filename +
+                    ". Expected: enable_if=<expression>");
+            }
+
             if (not pending_concept_name.empty()) {
+                // This enable_if belongs to the most recent concept
                 result.constraints[pending_concept_name].enable_if_expr = expr;
                 pending_concept_name.clear();
-            }
-            // If no pending concept, this enable_if applies to the last concept
-            else if (not result.constraints.empty())
-            {
-                result.constraints.rbegin()->second.enable_if_expr = expr;
+            } else {
+                // No pending concept - extract parameter name from enable_if
+                std::string param_name = extract_template_param_from_enable_if(
+                    expr, line_number, filename);
+
+                if (not result.constraints.contains(param_name)) {
+                    result.constraints[param_name] = TypeConstraint{
+                        .name = param_name};
+                }
+                result.constraints[param_name].enable_if_expr = expr;
             }
         } else if (starts_with(line, "namespace=")) {
             current_namespace = extract_after_equals(line);
@@ -653,6 +714,9 @@ parse_interaction_file(std::string const & filename)
                 .value_access = current_value_access};
 
             result.interactions.push_back(interaction);
+
+            // Clear pending concept name after interaction is parsed
+            pending_concept_name.clear();
         } else {
             throw AtlasCommandLineError(
                 "Unknown directive at line " + std::to_string(line_number) +
