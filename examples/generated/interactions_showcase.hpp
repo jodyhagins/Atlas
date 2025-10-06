@@ -1,5 +1,5 @@
-#ifndef EXAMPLE_INTERACTIONS_55468202C265B8705E260179EAF8490B47EA8217
-#define EXAMPLE_INTERACTIONS_55468202C265B8705E260179EAF8490B47EA8217
+#ifndef EXAMPLE_INTERACTIONS_08408F508DFF3C80E32683163FD44BEB26B4AF29
+#define EXAMPLE_INTERACTIONS_08408F508DFF3C80E32683163FD44BEB26B4AF29
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -263,27 +263,6 @@ atlas_value(::physics::units::Seconds const& v, value_tag)
 
 inline constexpr auto
 atlas_value(::security::EncryptedData const& v, value_tag)
--> decltype(v.value)
-{
-    return v.value;
-}
-
-inline constexpr auto
-atlas_value(double const& v, value_tag)
--> decltype(v.value)
-{
-    return v.value;
-}
-
-inline constexpr auto
-atlas_value(int const& v, value_tag)
--> decltype(v.value)
-{
-    return v.value;
-}
-
-inline constexpr auto
-atlas_value(size_t const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
@@ -826,13 +805,13 @@ namespace app::config {
 inline constexpr ConfigKey
 operator+(ConfigKey lhs, std::string rhs)
 {
-    return ConfigKey{lhs.value + atlas::value(rhs)};
+    return ConfigKey{lhs.value + rhs};
 }
 
 inline constexpr ConfigKey
 operator+(std::string lhs, ConfigKey rhs)
 {
-    return ConfigKey{lhs.value + atlas::value(rhs)};
+    return ConfigKey{lhs + atlas::value(rhs)};
 }
 
 } // namespace app::config
@@ -864,13 +843,13 @@ operator-(ByteCount lhs, ByteCount rhs)
 inline constexpr ByteCount
 operator*(ByteCount lhs, size_t rhs)
 {
-    return ByteCount{lhs.value * rhs.value};
+    return ByteCount{lhs.value * rhs};
 }
 
 inline constexpr ByteCount
 operator/(ByteCount lhs, size_t rhs)
 {
-    return ByteCount{lhs.value / rhs.value};
+    return ByteCount{lhs.value / rhs};
 }
 
 inline constexpr ByteCount
@@ -898,13 +877,13 @@ operator-(Money lhs, Money rhs)
 inline constexpr Money
 operator*(Money lhs, double rhs)
 {
-    return Money{lhs.value * rhs.value};
+    return Money{lhs.value * rhs};
 }
 
 inline constexpr Money
 operator/(Money lhs, double rhs)
 {
-    return Money{lhs.value / rhs.value};
+    return Money{lhs.value / rhs};
 }
 
 inline constexpr double
@@ -920,13 +899,13 @@ namespace geo {
 inline constexpr Latitude
 operator+(Latitude lhs, double rhs)
 {
-    return Latitude{lhs.value + rhs.value};
+    return Latitude{lhs.value + rhs};
 }
 
 inline constexpr Longitude
 operator+(Longitude lhs, double rhs)
 {
-    return Longitude{lhs.value + rhs.value};
+    return Longitude{lhs.value + rhs};
 }
 
 inline constexpr double
@@ -1057,13 +1036,13 @@ operator^(Octet lhs, Octet rhs)
 inline constexpr Octet
 operator<<(Octet lhs, int rhs)
 {
-    return Octet{lhs.value << rhs.value};
+    return Octet{lhs.value << rhs};
 }
 
 inline constexpr Octet
 operator>>(Octet lhs, int rhs)
 {
-    return Octet{lhs.value >> rhs.value};
+    return Octet{lhs.value >> rhs};
 }
 
 } // namespace net::ipv4
@@ -1085,19 +1064,19 @@ operator-(Meters lhs, Meters rhs)
 inline constexpr Meters
 operator*(Meters lhs, double rhs)
 {
-    return Meters{lhs.value * rhs.value};
+    return Meters{lhs.value * rhs};
 }
 
 inline constexpr Meters
 operator*(double lhs, Meters rhs)
 {
-    return Meters{lhs.value * rhs.value};
+    return Meters{lhs * rhs.value};
 }
 
 inline constexpr Meters
 operator/(Meters lhs, double rhs)
 {
-    return Meters{lhs.value / rhs.value};
+    return Meters{lhs.value / rhs};
 }
 
 inline constexpr double
@@ -1121,19 +1100,19 @@ operator-(Seconds lhs, Seconds rhs)
 inline constexpr Seconds
 operator*(Seconds lhs, double rhs)
 {
-    return Seconds{lhs.value * rhs.value};
+    return Seconds{lhs.value * rhs};
 }
 
 inline constexpr Seconds
 operator*(double lhs, Seconds rhs)
 {
-    return Seconds{lhs.value * rhs.value};
+    return Seconds{lhs * rhs.value};
 }
 
 inline constexpr Seconds
 operator/(Seconds lhs, double rhs)
 {
-    return Seconds{lhs.value / rhs.value};
+    return Seconds{lhs.value / rhs};
 }
 
 inline constexpr double
@@ -1172,4 +1151,4 @@ operator+(EncryptedData lhs, EncryptedData rhs)
 
 } // namespace security
 
-#endif // EXAMPLE_INTERACTIONS_55468202C265B8705E260179EAF8490B47EA8217
+#endif // EXAMPLE_INTERACTIONS_08408F508DFF3C80E32683163FD44BEB26B4AF29
