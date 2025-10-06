@@ -1,5 +1,5 @@
-#ifndef EXAMPLE_INTERACTIONS_B04B9A5C285D5BA79602F1B5C5BE9CD08FE18409
-#define EXAMPLE_INTERACTIONS_B04B9A5C285D5BA79602F1B5C5BE9CD08FE18409
+#ifndef EXAMPLE_INTERACTIONS_2BE4FB95E1480887C38474541431D346057268C4
+#define EXAMPLE_INTERACTIONS_2BE4FB95E1480887C38474541431D346057268C4
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -856,7 +856,9 @@ noexcept(noexcept(atlas_detail::compound_assign_impl_bitor(
 //////////////////////////////////////////////////////////////////////
 inline constexpr finance::core::Money
 operator*(physics::units::Meters lhs, finance::core::Money rhs)
-noexcept(noexcept(lhs.value * rhs.value))
+noexcept(
+    noexcept(lhs.value * rhs.value) &&
+    std::is_nothrow_constructible<finance::core::Money, decltype(lhs.value * rhs.value)>::value)
 {
     return finance::core::Money{lhs.value * rhs.value};
 }
@@ -865,14 +867,18 @@ namespace app::config {
 
 inline constexpr ConfigKey
 operator+(ConfigKey lhs, std::string rhs)
-noexcept(noexcept(lhs.value + rhs))
+noexcept(
+    noexcept(lhs.value + rhs) &&
+    std::is_nothrow_constructible<ConfigKey, decltype(lhs.value + rhs)>::value)
 {
     return ConfigKey{lhs.value + rhs};
 }
 
 inline constexpr ConfigKey
 operator+(std::string lhs, ConfigKey rhs)
-noexcept(noexcept(lhs + atlas::value(rhs)))
+noexcept(
+    noexcept(lhs + atlas::value(rhs)) &&
+    std::is_nothrow_constructible<ConfigKey, decltype(lhs + atlas::value(rhs))>::value)
 {
     return ConfigKey{lhs + atlas::value(rhs)};
 }
@@ -883,7 +889,9 @@ namespace concurrency {
 
 inline ThreadId
 operator+(ThreadId lhs, ThreadId rhs)
-noexcept(noexcept(lhs.value + rhs.value))
+noexcept(
+    noexcept(lhs.value + rhs.value) &&
+    std::is_nothrow_constructible<ThreadId, decltype(lhs.value + rhs.value)>::value)
 {
     return ThreadId{lhs.value + rhs.value};
 }
@@ -894,35 +902,45 @@ namespace data {
 
 inline constexpr ByteCount
 operator+(ByteCount lhs, ByteCount rhs)
-noexcept(noexcept(lhs.value + rhs.value))
+noexcept(
+    noexcept(lhs.value + rhs.value) &&
+    std::is_nothrow_constructible<ByteCount, decltype(lhs.value + rhs.value)>::value)
 {
     return ByteCount{lhs.value + rhs.value};
 }
 
 inline constexpr ByteCount
 operator-(ByteCount lhs, ByteCount rhs)
-noexcept(noexcept(lhs.value - rhs.value))
+noexcept(
+    noexcept(lhs.value - rhs.value) &&
+    std::is_nothrow_constructible<ByteCount, decltype(lhs.value - rhs.value)>::value)
 {
     return ByteCount{lhs.value - rhs.value};
 }
 
 inline constexpr ByteCount
 operator*(ByteCount lhs, size_t rhs)
-noexcept(noexcept(lhs.value * rhs))
+noexcept(
+    noexcept(lhs.value * rhs) &&
+    std::is_nothrow_constructible<ByteCount, decltype(lhs.value * rhs)>::value)
 {
     return ByteCount{lhs.value * rhs};
 }
 
 inline constexpr ByteCount
 operator/(ByteCount lhs, size_t rhs)
-noexcept(noexcept(lhs.value / rhs))
+noexcept(
+    noexcept(lhs.value / rhs) &&
+    std::is_nothrow_constructible<ByteCount, decltype(lhs.value / rhs)>::value)
 {
     return ByteCount{lhs.value / rhs};
 }
 
 inline constexpr ByteCount
 operator%(ByteCount lhs, ByteCount rhs)
-noexcept(noexcept(lhs.value % rhs.value))
+noexcept(
+    noexcept(lhs.value % rhs.value) &&
+    std::is_nothrow_constructible<ByteCount, decltype(lhs.value % rhs.value)>::value)
 {
     return ByteCount{lhs.value % rhs.value};
 }
@@ -933,35 +951,45 @@ namespace finance::core {
 
 inline constexpr Money
 operator+(Money lhs, Money rhs)
-noexcept(noexcept(lhs.value + rhs.value))
+noexcept(
+    noexcept(lhs.value + rhs.value) &&
+    std::is_nothrow_constructible<Money, decltype(lhs.value + rhs.value)>::value)
 {
     return Money{lhs.value + rhs.value};
 }
 
 inline constexpr Money
 operator-(Money lhs, Money rhs)
-noexcept(noexcept(lhs.value - rhs.value))
+noexcept(
+    noexcept(lhs.value - rhs.value) &&
+    std::is_nothrow_constructible<Money, decltype(lhs.value - rhs.value)>::value)
 {
     return Money{lhs.value - rhs.value};
 }
 
 inline constexpr Money
 operator*(Money lhs, double rhs)
-noexcept(noexcept(lhs.value * rhs))
+noexcept(
+    noexcept(lhs.value * rhs) &&
+    std::is_nothrow_constructible<Money, decltype(lhs.value * rhs)>::value)
 {
     return Money{lhs.value * rhs};
 }
 
 inline constexpr Money
 operator/(Money lhs, double rhs)
-noexcept(noexcept(lhs.value / rhs))
+noexcept(
+    noexcept(lhs.value / rhs) &&
+    std::is_nothrow_constructible<Money, decltype(lhs.value / rhs)>::value)
 {
     return Money{lhs.value / rhs};
 }
 
 inline constexpr double
 operator/(Money lhs, Money rhs)
-noexcept(noexcept(lhs.value / rhs.value))
+noexcept(
+    noexcept(lhs.value / rhs.value) &&
+    std::is_nothrow_constructible<double, decltype(lhs.value / rhs.value)>::value)
 {
     return double{lhs.value / rhs.value};
 }
@@ -972,28 +1000,36 @@ namespace geo {
 
 inline constexpr Latitude
 operator+(Latitude lhs, double rhs)
-noexcept(noexcept(lhs.value + rhs))
+noexcept(
+    noexcept(lhs.value + rhs) &&
+    std::is_nothrow_constructible<Latitude, decltype(lhs.value + rhs)>::value)
 {
     return Latitude{lhs.value + rhs};
 }
 
 inline constexpr Longitude
 operator+(Longitude lhs, double rhs)
-noexcept(noexcept(lhs.value + rhs))
+noexcept(
+    noexcept(lhs.value + rhs) &&
+    std::is_nothrow_constructible<Longitude, decltype(lhs.value + rhs)>::value)
 {
     return Longitude{lhs.value + rhs};
 }
 
 inline constexpr double
 operator-(Latitude lhs, Latitude rhs)
-noexcept(noexcept(lhs.value - rhs.value))
+noexcept(
+    noexcept(lhs.value - rhs.value) &&
+    std::is_nothrow_constructible<double, decltype(lhs.value - rhs.value)>::value)
 {
     return double{lhs.value - rhs.value};
 }
 
 inline constexpr double
 operator-(Longitude lhs, Longitude rhs)
-noexcept(noexcept(lhs.value - rhs.value))
+noexcept(
+    noexcept(lhs.value - rhs.value) &&
+    std::is_nothrow_constructible<double, decltype(lhs.value - rhs.value)>::value)
 {
     return double{lhs.value - rhs.value};
 }
@@ -1004,28 +1040,36 @@ namespace graphics::color {
 
 inline constexpr RedChannel
 operator+(RedChannel lhs, RedChannel rhs)
-noexcept(noexcept(lhs.value + rhs.value))
+noexcept(
+    noexcept(lhs.value + rhs.value) &&
+    std::is_nothrow_constructible<RedChannel, decltype(lhs.value + rhs.value)>::value)
 {
     return RedChannel{lhs.value + rhs.value};
 }
 
 inline constexpr RedChannel
 operator|(RedChannel lhs, RedChannel rhs)
-noexcept(noexcept(lhs.value | rhs.value))
+noexcept(
+    noexcept(lhs.value | rhs.value) &&
+    std::is_nothrow_constructible<RedChannel, decltype(lhs.value | rhs.value)>::value)
 {
     return RedChannel{lhs.value | rhs.value};
 }
 
 inline constexpr RedChannel
 operator&(RedChannel lhs, RedChannel rhs)
-noexcept(noexcept(lhs.value & rhs.value))
+noexcept(
+    noexcept(lhs.value & rhs.value) &&
+    std::is_nothrow_constructible<RedChannel, decltype(lhs.value & rhs.value)>::value)
 {
     return RedChannel{lhs.value & rhs.value};
 }
 
 inline constexpr RedChannel
 operator^(RedChannel lhs, RedChannel rhs)
-noexcept(noexcept(lhs.value ^ rhs.value))
+noexcept(
+    noexcept(lhs.value ^ rhs.value) &&
+    std::is_nothrow_constructible<RedChannel, decltype(lhs.value ^ rhs.value)>::value)
 {
     return RedChannel{lhs.value ^ rhs.value};
 }
@@ -1037,7 +1081,9 @@ namespace math {
 template <std::integral T>
 constexpr T
 operator+(T lhs, T rhs)
-noexcept(noexcept(lhs.value + atlas::value(rhs)))
+noexcept(
+    noexcept(lhs.value + atlas::value(rhs)) &&
+    std::is_nothrow_constructible<T, decltype(lhs.value + atlas::value(rhs))>::value)
 {
     return T{lhs.value + atlas::value(rhs)};
 }
@@ -1045,7 +1091,9 @@ noexcept(noexcept(lhs.value + atlas::value(rhs)))
 template <typename U, typename std::enable_if<std::is_floating_point<U>::value, bool>::type = true>
 constexpr U
 operator*(U lhs, U rhs)
-noexcept(noexcept(lhs.value * atlas::value(rhs)))
+noexcept(
+    noexcept(lhs.value * atlas::value(rhs)) &&
+    std::is_nothrow_constructible<U, decltype(lhs.value * atlas::value(rhs))>::value)
 {
     return U{lhs.value * atlas::value(rhs)};
 }
@@ -1057,7 +1105,9 @@ template <typename V, typename std::enable_if<sizeof(V) <= 8, bool>::type = true
 #endif
 constexpr V
 operator-(V lhs, V rhs)
-noexcept(noexcept(lhs.value - atlas::value(rhs)))
+noexcept(
+    noexcept(lhs.value - atlas::value(rhs)) &&
+    std::is_nothrow_constructible<V, decltype(lhs.value - atlas::value(rhs))>::value)
 {
     return V{lhs.value - atlas::value(rhs)};
 }
@@ -1068,35 +1118,45 @@ namespace math::rational {
 
 inline constexpr Numerator
 operator+(Numerator lhs, Numerator rhs)
-noexcept(noexcept(lhs.value + rhs.value))
+noexcept(
+    noexcept(lhs.value + rhs.value) &&
+    std::is_nothrow_constructible<Numerator, decltype(lhs.value + rhs.value)>::value)
 {
     return Numerator{lhs.value + rhs.value};
 }
 
 inline constexpr Numerator
 operator-(Numerator lhs, Numerator rhs)
-noexcept(noexcept(lhs.value - rhs.value))
+noexcept(
+    noexcept(lhs.value - rhs.value) &&
+    std::is_nothrow_constructible<Numerator, decltype(lhs.value - rhs.value)>::value)
 {
     return Numerator{lhs.value - rhs.value};
 }
 
 inline constexpr Numerator
 operator*(Numerator lhs, Numerator rhs)
-noexcept(noexcept(lhs.value * rhs.value))
+noexcept(
+    noexcept(lhs.value * rhs.value) &&
+    std::is_nothrow_constructible<Numerator, decltype(lhs.value * rhs.value)>::value)
 {
     return Numerator{lhs.value * rhs.value};
 }
 
 inline constexpr Numerator
 operator*(Numerator lhs, Denominator rhs)
-noexcept(noexcept(lhs.value * rhs.value))
+noexcept(
+    noexcept(lhs.value * rhs.value) &&
+    std::is_nothrow_constructible<Numerator, decltype(lhs.value * rhs.value)>::value)
 {
     return Numerator{lhs.value * rhs.value};
 }
 
 inline constexpr Denominator
 operator*(Denominator lhs, Denominator rhs)
-noexcept(noexcept(lhs.value * rhs.value))
+noexcept(
+    noexcept(lhs.value * rhs.value) &&
+    std::is_nothrow_constructible<Denominator, decltype(lhs.value * rhs.value)>::value)
 {
     return Denominator{lhs.value * rhs.value};
 }
@@ -1107,35 +1167,45 @@ namespace net::ipv4 {
 
 inline constexpr Octet
 operator&(Octet lhs, Octet rhs)
-noexcept(noexcept(lhs.value & rhs.value))
+noexcept(
+    noexcept(lhs.value & rhs.value) &&
+    std::is_nothrow_constructible<Octet, decltype(lhs.value & rhs.value)>::value)
 {
     return Octet{lhs.value & rhs.value};
 }
 
 inline constexpr Octet
 operator|(Octet lhs, Octet rhs)
-noexcept(noexcept(lhs.value | rhs.value))
+noexcept(
+    noexcept(lhs.value | rhs.value) &&
+    std::is_nothrow_constructible<Octet, decltype(lhs.value | rhs.value)>::value)
 {
     return Octet{lhs.value | rhs.value};
 }
 
 inline constexpr Octet
 operator^(Octet lhs, Octet rhs)
-noexcept(noexcept(lhs.value ^ rhs.value))
+noexcept(
+    noexcept(lhs.value ^ rhs.value) &&
+    std::is_nothrow_constructible<Octet, decltype(lhs.value ^ rhs.value)>::value)
 {
     return Octet{lhs.value ^ rhs.value};
 }
 
 inline constexpr Octet
 operator<<(Octet lhs, int rhs)
-noexcept(noexcept(lhs.value << rhs))
+noexcept(
+    noexcept(lhs.value << rhs) &&
+    std::is_nothrow_constructible<Octet, decltype(lhs.value << rhs)>::value)
 {
     return Octet{lhs.value << rhs};
 }
 
 inline constexpr Octet
 operator>>(Octet lhs, int rhs)
-noexcept(noexcept(lhs.value >> rhs))
+noexcept(
+    noexcept(lhs.value >> rhs) &&
+    std::is_nothrow_constructible<Octet, decltype(lhs.value >> rhs)>::value)
 {
     return Octet{lhs.value >> rhs};
 }
@@ -1146,105 +1216,135 @@ namespace physics::units {
 
 inline constexpr Meters
 operator+(Meters lhs, Meters rhs)
-noexcept(noexcept(lhs.value + rhs.value))
+noexcept(
+    noexcept(lhs.value + rhs.value) &&
+    std::is_nothrow_constructible<Meters, decltype(lhs.value + rhs.value)>::value)
 {
     return Meters{lhs.value + rhs.value};
 }
 
 inline constexpr Meters
 operator-(Meters lhs, Meters rhs)
-noexcept(noexcept(lhs.value - rhs.value))
+noexcept(
+    noexcept(lhs.value - rhs.value) &&
+    std::is_nothrow_constructible<Meters, decltype(lhs.value - rhs.value)>::value)
 {
     return Meters{lhs.value - rhs.value};
 }
 
 inline constexpr Meters
 operator*(Meters lhs, double rhs)
-noexcept(noexcept(lhs.value * rhs))
+noexcept(
+    noexcept(lhs.value * rhs) &&
+    std::is_nothrow_constructible<Meters, decltype(lhs.value * rhs)>::value)
 {
     return Meters{lhs.value * rhs};
 }
 
 inline constexpr Meters
 operator*(double lhs, Meters rhs)
-noexcept(noexcept(lhs * rhs.value))
+noexcept(
+    noexcept(lhs * rhs.value) &&
+    std::is_nothrow_constructible<Meters, decltype(lhs * rhs.value)>::value)
 {
     return Meters{lhs * rhs.value};
 }
 
 inline constexpr Meters
 operator/(Meters lhs, double rhs)
-noexcept(noexcept(lhs.value / rhs))
+noexcept(
+    noexcept(lhs.value / rhs) &&
+    std::is_nothrow_constructible<Meters, decltype(lhs.value / rhs)>::value)
 {
     return Meters{lhs.value / rhs};
 }
 
 inline constexpr double
 operator/(Meters lhs, Meters rhs)
-noexcept(noexcept(lhs.value / rhs.value))
+noexcept(
+    noexcept(lhs.value / rhs.value) &&
+    std::is_nothrow_constructible<double, decltype(lhs.value / rhs.value)>::value)
 {
     return double{lhs.value / rhs.value};
 }
 
 inline constexpr Seconds
 operator+(Seconds lhs, Seconds rhs)
-noexcept(noexcept(lhs.value + rhs.value))
+noexcept(
+    noexcept(lhs.value + rhs.value) &&
+    std::is_nothrow_constructible<Seconds, decltype(lhs.value + rhs.value)>::value)
 {
     return Seconds{lhs.value + rhs.value};
 }
 
 inline constexpr Seconds
 operator-(Seconds lhs, Seconds rhs)
-noexcept(noexcept(lhs.value - rhs.value))
+noexcept(
+    noexcept(lhs.value - rhs.value) &&
+    std::is_nothrow_constructible<Seconds, decltype(lhs.value - rhs.value)>::value)
 {
     return Seconds{lhs.value - rhs.value};
 }
 
 inline constexpr Seconds
 operator*(Seconds lhs, double rhs)
-noexcept(noexcept(lhs.value * rhs))
+noexcept(
+    noexcept(lhs.value * rhs) &&
+    std::is_nothrow_constructible<Seconds, decltype(lhs.value * rhs)>::value)
 {
     return Seconds{lhs.value * rhs};
 }
 
 inline constexpr Seconds
 operator*(double lhs, Seconds rhs)
-noexcept(noexcept(lhs * rhs.value))
+noexcept(
+    noexcept(lhs * rhs.value) &&
+    std::is_nothrow_constructible<Seconds, decltype(lhs * rhs.value)>::value)
 {
     return Seconds{lhs * rhs.value};
 }
 
 inline constexpr Seconds
 operator/(Seconds lhs, double rhs)
-noexcept(noexcept(lhs.value / rhs))
+noexcept(
+    noexcept(lhs.value / rhs) &&
+    std::is_nothrow_constructible<Seconds, decltype(lhs.value / rhs)>::value)
 {
     return Seconds{lhs.value / rhs};
 }
 
 inline constexpr double
 operator/(Seconds lhs, Seconds rhs)
-noexcept(noexcept(lhs.value / rhs.value))
+noexcept(
+    noexcept(lhs.value / rhs.value) &&
+    std::is_nothrow_constructible<double, decltype(lhs.value / rhs.value)>::value)
 {
     return double{lhs.value / rhs.value};
 }
 
 inline constexpr MetersPerSecond
 operator/(Meters lhs, Seconds rhs)
-noexcept(noexcept(lhs.value / rhs.value))
+noexcept(
+    noexcept(lhs.value / rhs.value) &&
+    std::is_nothrow_constructible<MetersPerSecond, decltype(lhs.value / rhs.value)>::value)
 {
     return MetersPerSecond{lhs.value / rhs.value};
 }
 
 inline constexpr Meters
 operator*(MetersPerSecond lhs, Seconds rhs)
-noexcept(noexcept(lhs.value * rhs.value))
+noexcept(
+    noexcept(lhs.value * rhs.value) &&
+    std::is_nothrow_constructible<Meters, decltype(lhs.value * rhs.value)>::value)
 {
     return Meters{lhs.value * rhs.value};
 }
 
 inline constexpr Seconds
 operator/(Meters lhs, MetersPerSecond rhs)
-noexcept(noexcept(lhs.value / rhs.value))
+noexcept(
+    noexcept(lhs.value / rhs.value) &&
+    std::is_nothrow_constructible<Seconds, decltype(lhs.value / rhs.value)>::value)
 {
     return Seconds{lhs.value / rhs.value};
 }
@@ -1255,11 +1355,13 @@ namespace security {
 
 inline constexpr EncryptedData
 operator+(EncryptedData lhs, EncryptedData rhs)
-noexcept(noexcept(lhs.value + rhs.value))
+noexcept(
+    noexcept(lhs.value + rhs.value) &&
+    std::is_nothrow_constructible<EncryptedData, decltype(lhs.value + rhs.value)>::value)
 {
     return EncryptedData{lhs.value + rhs.value};
 }
 
 } // namespace security
 
-#endif // EXAMPLE_INTERACTIONS_B04B9A5C285D5BA79602F1B5C5BE9CD08FE18409
+#endif // EXAMPLE_INTERACTIONS_2BE4FB95E1480887C38474541431D346057268C4

@@ -208,7 +208,7 @@ constexpr char relational_operator[] = R"(
     friend {{{const_expr}}}bool operator {{{op}}} (
         {{{class_name}}} const & lhs,
         {{{class_name}}} const & rhs)
-    noexcept(noexcept(lhs.value {{{op}}} rhs.value))
+    noexcept(noexcept(std::declval<{{{underlying_type}}} const&>() {{{op}}} std::declval<{{{underlying_type}}} const&>()))
     {
         return lhs.value {{{op}}} rhs.value;
     }
@@ -221,7 +221,7 @@ constexpr char arithmetic_binary_operators[] = R"(
     friend {{{const_expr}}}{{{class_name}}} & operator {{{op}}}= (
         {{{class_name}}} & lhs,
         {{{class_name}}} const & rhs)
-    noexcept(noexcept(lhs.value {{{op}}}= rhs.value))
+    noexcept(noexcept(std::declval<{{{underlying_type}}}&>() {{{op}}}= std::declval<{{{underlying_type}}} const&>()))
     {
         lhs.value {{{op}}}= rhs.value;
         return lhs;
@@ -250,7 +250,7 @@ constexpr char logical_operator[] = R"(
     friend {{{const_expr}}}bool operator {{{op}}} (
         {{{class_name}}} const & lhs,
         {{{class_name}}} const & rhs)
-    noexcept(noexcept(lhs.value {{{op}}} rhs.value))
+    noexcept(noexcept(std::declval<{{{underlying_type}}} const&>() {{{op}}} std::declval<{{{underlying_type}}} const&>()))
     {
         return lhs.value {{{op}}} rhs.value;
     }
@@ -261,7 +261,12 @@ constexpr char unary_operators[] = R"(
      * Apply the unary {{{op}}} operator to the wrapped object.
      */
     friend {{{const_expr}}}{{{class_name}}} operator {{{op}}} ({{{class_name}}} const & t)
-    noexcept(noexcept({{{op}}} t.value))
+    noexcept(
+        std::is_nothrow_copy_constructible<{{{class_name}}}>::value &&
+        noexcept({{{op}}} std::declval<{{{underlying_type}}} const&>()) &&
+        std::is_nothrow_assignable<
+            {{{underlying_type}}}&,
+            decltype({{{op}}} std::declval<{{{underlying_type}}} const&>())>::value)
     {
         auto result = t;
         result.value = {{{op}}} t.value;
@@ -274,7 +279,7 @@ constexpr char increment_operator[] = R"(
      * Apply the prefix {{{op}}} operator to the wrapped object.
      */
     friend {{{const_expr}}}{{{class_name}}} & operator {{{op}}} ({{{class_name}}} & t)
-    noexcept(noexcept({{{op}}}t.value))
+    noexcept(noexcept({{{op}}}std::declval<{{{underlying_type}}}&>()))
     {
         {{{op}}}t.value;
         return t;
@@ -283,7 +288,9 @@ constexpr char increment_operator[] = R"(
      * Apply the postfix {{{op}}} operator to the wrapped object.
      */
     friend {{{const_expr}}}{{{class_name}}} operator {{{op}}} ({{{class_name}}} & t, int)
-    noexcept(noexcept({{{op}}}t.value))
+    noexcept(
+        std::is_nothrow_copy_constructible<{{{class_name}}}>::value &&
+        noexcept({{{op}}}std::declval<{{{underlying_type}}}&>()))
     {
         auto result = t;
         {{{op}}}t.value;
@@ -296,7 +303,7 @@ constexpr char bool_operator_template[] = R"(
      * Return the result of casting the wrapped object to bool.
      */
     {{{const_expr}}}explicit operator bool () const
-    noexcept(noexcept(static_cast<bool>(value)))
+    noexcept(noexcept(static_cast<bool>(std::declval<{{{underlying_type}}} const&>())))
     {
         return static_cast<bool>(value);
     }
@@ -377,7 +384,7 @@ constexpr char logical_not_template[] = R"(
      * Apply the unary logical not operator to the wrapped object.
      */
     friend {{{const_expr}}}bool operator not ({{{class_name}}} const & t)
-    noexcept(noexcept(not t.value))
+    noexcept(noexcept(not std::declval<{{{underlying_type}}} const&>()))
     {
         return not t.value;
     }
