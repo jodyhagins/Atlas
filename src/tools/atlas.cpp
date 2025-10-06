@@ -7,6 +7,7 @@
 #include "AtlasCommandLine.hpp"
 #include "InteractionGenerator.hpp"
 #include "StrongTypeGenerator.hpp"
+#include "version.hpp"
 
 #include <cstdlib>
 #include <fstream>
@@ -22,6 +23,12 @@ main(int argc, char ** argv)
         auto args = atlas::AtlasCommandLine::parse(argc, argv);
         if (args.help) {
             std::cout << atlas::AtlasCommandLine::get_help_text() << std::endl;
+            return EXIT_SUCCESS;
+        }
+
+        if (args.version) {
+            std::cout << "Atlas Strong Type Generator v"
+                << atlas::codegen::version_string << std::endl;
             return EXIT_SUCCESS;
         }
 

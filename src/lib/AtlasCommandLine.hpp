@@ -39,6 +39,7 @@ public:
         std::string guard_separator = "_";
         bool upcase_guard = true;
         bool help = false;
+        bool version = false;
         std::string input_file;
         std::string output_file;
         bool interactions_mode = false;

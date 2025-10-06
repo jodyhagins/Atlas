@@ -6,6 +6,7 @@
 // ----------------------------------------------------------------------
 #include "CodeStructureParser.hpp"
 #include "StrongTypeGenerator.hpp"
+#include "version.hpp"
 
 #include <algorithm>
 #include <regex>
@@ -1383,6 +1384,64 @@ TEST_SUITE("StrongTypeGenerator")
             auto first_struct = code.find("struct NoNamespaceTest", droids);
             // Either no namespace, or struct comes before any namespace
             CHECK((first_ns == std::string::npos || first_struct < first_ns));
+        }
+    }
+
+    TEST_CASE("Version Information")
+    {
+        SUBCASE("version constants are defined") {
+            CHECK(wjh::atlas::codegen::version_major >= 0);
+            CHECK(wjh::atlas::codegen::version_minor >= 0);
+            CHECK(wjh::atlas::codegen::version_patch >= 0);
+        }
+
+        SUBCASE("version string format is correct") {
+            std::string version = wjh::atlas::codegen::version_string;
+
+            // Should be in format "MAJOR.MINOR.PATCH"
+            auto first_dot = version.find('.');
+            auto last_dot = version.rfind('.');
+
+            CHECK(first_dot != std::string::npos);
+            CHECK(last_dot != std::string::npos);
+            CHECK(first_dot != last_dot);
+        }
+
+        SUBCASE("generated code includes version") {
+            auto desc =
+                make_description("struct", "test", "TestType", "strong int");
+            auto code = generate_strong_type(desc);
+
+            // Should contain version information in header comment
+            CHECK(
+                code.find("Atlas Strong Type Generator v") !=
+                std::string::npos);
+            CHECK(
+                code.find(wjh::atlas::codegen::version_string) !=
+                std::string::npos);
+        }
+
+        SUBCASE("generated code includes DO NOT EDIT warning") {
+            auto desc =
+                make_description("struct", "test", "TestType", "strong int");
+            auto code = generate_strong_type(desc);
+
+            CHECK(code.find("DO NOT EDIT") != std::string::npos);
+        }
+
+        SUBCASE("multi-file generation includes version") {
+            std::vector<StrongTypeDescription> descriptions = {
+                make_description("struct", "test", "Type1", "strong int"),
+                make_description("struct", "test", "Type2", "strong double")};
+            auto code = generate_strong_types_file(descriptions);
+
+            // Should contain version in the banner
+            CHECK(
+                code.find("Atlas Strong Type Generator v") !=
+                std::string::npos);
+            CHECK(
+                code.find(wjh::atlas::codegen::version_string) !=
+                std::string::npos);
         }
     }
 }
