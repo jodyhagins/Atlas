@@ -1,5 +1,5 @@
-#ifndef EXAMPLE_INTERACTIONS_0416387924EC60DC869827A561CD6788523D3E09
-#define EXAMPLE_INTERACTIONS_0416387924EC60DC869827A561CD6788523D3E09
+#ifndef EXAMPLE_INTERACTIONS_B04B9A5C285D5BA79602F1B5C5BE9CD08FE18409
+#define EXAMPLE_INTERACTIONS_B04B9A5C285D5BA79602F1B5C5BE9CD08FE18409
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -294,6 +294,7 @@ struct has_compound_op_modulo<
 template <typename L, typename R>
 constexpr L &
 compound_assign_impl_modulo(L & lhs, R const & rhs, std::true_type)
+noexcept(noexcept(atlas::value(lhs) %= atlas::value(rhs)))
 {
     atlas::value(lhs) %= atlas::value(rhs);
     return lhs;
@@ -302,6 +303,7 @@ compound_assign_impl_modulo(L & lhs, R const & rhs, std::true_type)
 template <typename L, typename R>
 constexpr L &
 compound_assign_impl_modulo(L & lhs, R const & rhs, std::false_type)
+noexcept(noexcept(atlas::value(lhs) = atlas::value(lhs % rhs)))
 {
     atlas::value(lhs) = atlas::value(lhs % rhs);
     return lhs;
@@ -316,6 +318,10 @@ template <
         bool>::type = true>
 inline auto
 operator%=(L & lhs, R const & rhs)
+noexcept(noexcept(atlas_detail::compound_assign_impl_modulo(
+    lhs,
+    rhs,
+    atlas_detail::has_compound_op_modulo<L, R>{})))
 -> decltype(atlas_detail::compound_assign_impl_modulo(
     lhs,
     rhs,
@@ -345,6 +351,7 @@ struct has_compound_op_bitand<
 template <typename L, typename R>
 constexpr L &
 compound_assign_impl_bitand(L & lhs, R const & rhs, std::true_type)
+noexcept(noexcept(atlas::value(lhs) &= atlas::value(rhs)))
 {
     atlas::value(lhs) &= atlas::value(rhs);
     return lhs;
@@ -353,6 +360,7 @@ compound_assign_impl_bitand(L & lhs, R const & rhs, std::true_type)
 template <typename L, typename R>
 constexpr L &
 compound_assign_impl_bitand(L & lhs, R const & rhs, std::false_type)
+noexcept(noexcept(atlas::value(lhs) = atlas::value(lhs & rhs)))
 {
     atlas::value(lhs) = atlas::value(lhs & rhs);
     return lhs;
@@ -367,6 +375,10 @@ template <
         bool>::type = true>
 inline auto
 operator&=(L & lhs, R const & rhs)
+noexcept(noexcept(atlas_detail::compound_assign_impl_bitand(
+    lhs,
+    rhs,
+    atlas_detail::has_compound_op_bitand<L, R>{})))
 -> decltype(atlas_detail::compound_assign_impl_bitand(
     lhs,
     rhs,
@@ -396,6 +408,7 @@ struct has_compound_op_times<
 template <typename L, typename R>
 constexpr L &
 compound_assign_impl_times(L & lhs, R const & rhs, std::true_type)
+noexcept(noexcept(atlas::value(lhs) *= atlas::value(rhs)))
 {
     atlas::value(lhs) *= atlas::value(rhs);
     return lhs;
@@ -404,6 +417,7 @@ compound_assign_impl_times(L & lhs, R const & rhs, std::true_type)
 template <typename L, typename R>
 constexpr L &
 compound_assign_impl_times(L & lhs, R const & rhs, std::false_type)
+noexcept(noexcept(atlas::value(lhs) = atlas::value(lhs * rhs)))
 {
     atlas::value(lhs) = atlas::value(lhs * rhs);
     return lhs;
@@ -418,6 +432,10 @@ template <
         bool>::type = true>
 inline auto
 operator*=(L & lhs, R const & rhs)
+noexcept(noexcept(atlas_detail::compound_assign_impl_times(
+    lhs,
+    rhs,
+    atlas_detail::has_compound_op_times<L, R>{})))
 -> decltype(atlas_detail::compound_assign_impl_times(
     lhs,
     rhs,
@@ -447,6 +465,7 @@ struct has_compound_op_plus<
 template <typename L, typename R>
 constexpr L &
 compound_assign_impl_plus(L & lhs, R const & rhs, std::true_type)
+noexcept(noexcept(atlas::value(lhs) += atlas::value(rhs)))
 {
     atlas::value(lhs) += atlas::value(rhs);
     return lhs;
@@ -455,6 +474,7 @@ compound_assign_impl_plus(L & lhs, R const & rhs, std::true_type)
 template <typename L, typename R>
 constexpr L &
 compound_assign_impl_plus(L & lhs, R const & rhs, std::false_type)
+noexcept(noexcept(atlas::value(lhs) = atlas::value(lhs + rhs)))
 {
     atlas::value(lhs) = atlas::value(lhs + rhs);
     return lhs;
@@ -469,6 +489,10 @@ template <
         bool>::type = true>
 inline auto
 operator+=(L & lhs, R const & rhs)
+noexcept(noexcept(atlas_detail::compound_assign_impl_plus(
+    lhs,
+    rhs,
+    atlas_detail::has_compound_op_plus<L, R>{})))
 -> decltype(atlas_detail::compound_assign_impl_plus(
     lhs,
     rhs,
@@ -498,6 +522,7 @@ struct has_compound_op_minus<
 template <typename L, typename R>
 constexpr L &
 compound_assign_impl_minus(L & lhs, R const & rhs, std::true_type)
+noexcept(noexcept(atlas::value(lhs) -= atlas::value(rhs)))
 {
     atlas::value(lhs) -= atlas::value(rhs);
     return lhs;
@@ -506,6 +531,7 @@ compound_assign_impl_minus(L & lhs, R const & rhs, std::true_type)
 template <typename L, typename R>
 constexpr L &
 compound_assign_impl_minus(L & lhs, R const & rhs, std::false_type)
+noexcept(noexcept(atlas::value(lhs) = atlas::value(lhs - rhs)))
 {
     atlas::value(lhs) = atlas::value(lhs - rhs);
     return lhs;
@@ -520,6 +546,10 @@ template <
         bool>::type = true>
 inline auto
 operator-=(L & lhs, R const & rhs)
+noexcept(noexcept(atlas_detail::compound_assign_impl_minus(
+    lhs,
+    rhs,
+    atlas_detail::has_compound_op_minus<L, R>{})))
 -> decltype(atlas_detail::compound_assign_impl_minus(
     lhs,
     rhs,
@@ -549,6 +579,7 @@ struct has_compound_op_divide<
 template <typename L, typename R>
 constexpr L &
 compound_assign_impl_divide(L & lhs, R const & rhs, std::true_type)
+noexcept(noexcept(atlas::value(lhs) /= atlas::value(rhs)))
 {
     atlas::value(lhs) /= atlas::value(rhs);
     return lhs;
@@ -557,6 +588,7 @@ compound_assign_impl_divide(L & lhs, R const & rhs, std::true_type)
 template <typename L, typename R>
 constexpr L &
 compound_assign_impl_divide(L & lhs, R const & rhs, std::false_type)
+noexcept(noexcept(atlas::value(lhs) = atlas::value(lhs / rhs)))
 {
     atlas::value(lhs) = atlas::value(lhs / rhs);
     return lhs;
@@ -571,6 +603,10 @@ template <
         bool>::type = true>
 inline auto
 operator/=(L & lhs, R const & rhs)
+noexcept(noexcept(atlas_detail::compound_assign_impl_divide(
+    lhs,
+    rhs,
+    atlas_detail::has_compound_op_divide<L, R>{})))
 -> decltype(atlas_detail::compound_assign_impl_divide(
     lhs,
     rhs,
@@ -600,6 +636,7 @@ struct has_compound_op_lshift<
 template <typename L, typename R>
 constexpr L &
 compound_assign_impl_lshift(L & lhs, R const & rhs, std::true_type)
+noexcept(noexcept(atlas::value(lhs) <<= atlas::value(rhs)))
 {
     atlas::value(lhs) <<= atlas::value(rhs);
     return lhs;
@@ -608,6 +645,7 @@ compound_assign_impl_lshift(L & lhs, R const & rhs, std::true_type)
 template <typename L, typename R>
 constexpr L &
 compound_assign_impl_lshift(L & lhs, R const & rhs, std::false_type)
+noexcept(noexcept(atlas::value(lhs) = atlas::value(lhs << rhs)))
 {
     atlas::value(lhs) = atlas::value(lhs << rhs);
     return lhs;
@@ -622,6 +660,10 @@ template <
         bool>::type = true>
 inline auto
 operator<<=(L & lhs, R const & rhs)
+noexcept(noexcept(atlas_detail::compound_assign_impl_lshift(
+    lhs,
+    rhs,
+    atlas_detail::has_compound_op_lshift<L, R>{})))
 -> decltype(atlas_detail::compound_assign_impl_lshift(
     lhs,
     rhs,
@@ -651,6 +693,7 @@ struct has_compound_op_rshift<
 template <typename L, typename R>
 constexpr L &
 compound_assign_impl_rshift(L & lhs, R const & rhs, std::true_type)
+noexcept(noexcept(atlas::value(lhs) >>= atlas::value(rhs)))
 {
     atlas::value(lhs) >>= atlas::value(rhs);
     return lhs;
@@ -659,6 +702,7 @@ compound_assign_impl_rshift(L & lhs, R const & rhs, std::true_type)
 template <typename L, typename R>
 constexpr L &
 compound_assign_impl_rshift(L & lhs, R const & rhs, std::false_type)
+noexcept(noexcept(atlas::value(lhs) = atlas::value(lhs >> rhs)))
 {
     atlas::value(lhs) = atlas::value(lhs >> rhs);
     return lhs;
@@ -673,6 +717,10 @@ template <
         bool>::type = true>
 inline auto
 operator>>=(L & lhs, R const & rhs)
+noexcept(noexcept(atlas_detail::compound_assign_impl_rshift(
+    lhs,
+    rhs,
+    atlas_detail::has_compound_op_rshift<L, R>{})))
 -> decltype(atlas_detail::compound_assign_impl_rshift(
     lhs,
     rhs,
@@ -702,6 +750,7 @@ struct has_compound_op_bitxor<
 template <typename L, typename R>
 constexpr L &
 compound_assign_impl_bitxor(L & lhs, R const & rhs, std::true_type)
+noexcept(noexcept(atlas::value(lhs) ^= atlas::value(rhs)))
 {
     atlas::value(lhs) ^= atlas::value(rhs);
     return lhs;
@@ -710,6 +759,7 @@ compound_assign_impl_bitxor(L & lhs, R const & rhs, std::true_type)
 template <typename L, typename R>
 constexpr L &
 compound_assign_impl_bitxor(L & lhs, R const & rhs, std::false_type)
+noexcept(noexcept(atlas::value(lhs) = atlas::value(lhs ^ rhs)))
 {
     atlas::value(lhs) = atlas::value(lhs ^ rhs);
     return lhs;
@@ -724,6 +774,10 @@ template <
         bool>::type = true>
 inline auto
 operator^=(L & lhs, R const & rhs)
+noexcept(noexcept(atlas_detail::compound_assign_impl_bitxor(
+    lhs,
+    rhs,
+    atlas_detail::has_compound_op_bitxor<L, R>{})))
 -> decltype(atlas_detail::compound_assign_impl_bitxor(
     lhs,
     rhs,
@@ -753,6 +807,7 @@ struct has_compound_op_bitor<
 template <typename L, typename R>
 constexpr L &
 compound_assign_impl_bitor(L & lhs, R const & rhs, std::true_type)
+noexcept(noexcept(atlas::value(lhs) |= atlas::value(rhs)))
 {
     atlas::value(lhs) |= atlas::value(rhs);
     return lhs;
@@ -761,6 +816,7 @@ compound_assign_impl_bitor(L & lhs, R const & rhs, std::true_type)
 template <typename L, typename R>
 constexpr L &
 compound_assign_impl_bitor(L & lhs, R const & rhs, std::false_type)
+noexcept(noexcept(atlas::value(lhs) = atlas::value(lhs | rhs)))
 {
     atlas::value(lhs) = atlas::value(lhs | rhs);
     return lhs;
@@ -775,6 +831,10 @@ template <
         bool>::type = true>
 inline auto
 operator|=(L & lhs, R const & rhs)
+noexcept(noexcept(atlas_detail::compound_assign_impl_bitor(
+    lhs,
+    rhs,
+    atlas_detail::has_compound_op_bitor<L, R>{})))
 -> decltype(atlas_detail::compound_assign_impl_bitor(
     lhs,
     rhs,
@@ -796,6 +856,7 @@ operator|=(L & lhs, R const & rhs)
 //////////////////////////////////////////////////////////////////////
 inline constexpr finance::core::Money
 operator*(physics::units::Meters lhs, finance::core::Money rhs)
+noexcept(noexcept(lhs.value * rhs.value))
 {
     return finance::core::Money{lhs.value * rhs.value};
 }
@@ -804,12 +865,14 @@ namespace app::config {
 
 inline constexpr ConfigKey
 operator+(ConfigKey lhs, std::string rhs)
+noexcept(noexcept(lhs.value + rhs))
 {
     return ConfigKey{lhs.value + rhs};
 }
 
 inline constexpr ConfigKey
 operator+(std::string lhs, ConfigKey rhs)
+noexcept(noexcept(lhs + atlas::value(rhs)))
 {
     return ConfigKey{lhs + atlas::value(rhs)};
 }
@@ -820,6 +883,7 @@ namespace concurrency {
 
 inline ThreadId
 operator+(ThreadId lhs, ThreadId rhs)
+noexcept(noexcept(lhs.value + rhs.value))
 {
     return ThreadId{lhs.value + rhs.value};
 }
@@ -830,30 +894,35 @@ namespace data {
 
 inline constexpr ByteCount
 operator+(ByteCount lhs, ByteCount rhs)
+noexcept(noexcept(lhs.value + rhs.value))
 {
     return ByteCount{lhs.value + rhs.value};
 }
 
 inline constexpr ByteCount
 operator-(ByteCount lhs, ByteCount rhs)
+noexcept(noexcept(lhs.value - rhs.value))
 {
     return ByteCount{lhs.value - rhs.value};
 }
 
 inline constexpr ByteCount
 operator*(ByteCount lhs, size_t rhs)
+noexcept(noexcept(lhs.value * rhs))
 {
     return ByteCount{lhs.value * rhs};
 }
 
 inline constexpr ByteCount
 operator/(ByteCount lhs, size_t rhs)
+noexcept(noexcept(lhs.value / rhs))
 {
     return ByteCount{lhs.value / rhs};
 }
 
 inline constexpr ByteCount
 operator%(ByteCount lhs, ByteCount rhs)
+noexcept(noexcept(lhs.value % rhs.value))
 {
     return ByteCount{lhs.value % rhs.value};
 }
@@ -864,30 +933,35 @@ namespace finance::core {
 
 inline constexpr Money
 operator+(Money lhs, Money rhs)
+noexcept(noexcept(lhs.value + rhs.value))
 {
     return Money{lhs.value + rhs.value};
 }
 
 inline constexpr Money
 operator-(Money lhs, Money rhs)
+noexcept(noexcept(lhs.value - rhs.value))
 {
     return Money{lhs.value - rhs.value};
 }
 
 inline constexpr Money
 operator*(Money lhs, double rhs)
+noexcept(noexcept(lhs.value * rhs))
 {
     return Money{lhs.value * rhs};
 }
 
 inline constexpr Money
 operator/(Money lhs, double rhs)
+noexcept(noexcept(lhs.value / rhs))
 {
     return Money{lhs.value / rhs};
 }
 
 inline constexpr double
 operator/(Money lhs, Money rhs)
+noexcept(noexcept(lhs.value / rhs.value))
 {
     return double{lhs.value / rhs.value};
 }
@@ -898,24 +972,28 @@ namespace geo {
 
 inline constexpr Latitude
 operator+(Latitude lhs, double rhs)
+noexcept(noexcept(lhs.value + rhs))
 {
     return Latitude{lhs.value + rhs};
 }
 
 inline constexpr Longitude
 operator+(Longitude lhs, double rhs)
+noexcept(noexcept(lhs.value + rhs))
 {
     return Longitude{lhs.value + rhs};
 }
 
 inline constexpr double
 operator-(Latitude lhs, Latitude rhs)
+noexcept(noexcept(lhs.value - rhs.value))
 {
     return double{lhs.value - rhs.value};
 }
 
 inline constexpr double
 operator-(Longitude lhs, Longitude rhs)
+noexcept(noexcept(lhs.value - rhs.value))
 {
     return double{lhs.value - rhs.value};
 }
@@ -926,24 +1004,28 @@ namespace graphics::color {
 
 inline constexpr RedChannel
 operator+(RedChannel lhs, RedChannel rhs)
+noexcept(noexcept(lhs.value + rhs.value))
 {
     return RedChannel{lhs.value + rhs.value};
 }
 
 inline constexpr RedChannel
 operator|(RedChannel lhs, RedChannel rhs)
+noexcept(noexcept(lhs.value | rhs.value))
 {
     return RedChannel{lhs.value | rhs.value};
 }
 
 inline constexpr RedChannel
 operator&(RedChannel lhs, RedChannel rhs)
+noexcept(noexcept(lhs.value & rhs.value))
 {
     return RedChannel{lhs.value & rhs.value};
 }
 
 inline constexpr RedChannel
 operator^(RedChannel lhs, RedChannel rhs)
+noexcept(noexcept(lhs.value ^ rhs.value))
 {
     return RedChannel{lhs.value ^ rhs.value};
 }
@@ -955,6 +1037,7 @@ namespace math {
 template <std::integral T>
 constexpr T
 operator+(T lhs, T rhs)
+noexcept(noexcept(lhs.value + atlas::value(rhs)))
 {
     return T{lhs.value + atlas::value(rhs)};
 }
@@ -962,6 +1045,7 @@ operator+(T lhs, T rhs)
 template <typename U, typename std::enable_if<std::is_floating_point<U>::value, bool>::type = true>
 constexpr U
 operator*(U lhs, U rhs)
+noexcept(noexcept(lhs.value * atlas::value(rhs)))
 {
     return U{lhs.value * atlas::value(rhs)};
 }
@@ -973,6 +1057,7 @@ template <typename V, typename std::enable_if<sizeof(V) <= 8, bool>::type = true
 #endif
 constexpr V
 operator-(V lhs, V rhs)
+noexcept(noexcept(lhs.value - atlas::value(rhs)))
 {
     return V{lhs.value - atlas::value(rhs)};
 }
@@ -983,30 +1068,35 @@ namespace math::rational {
 
 inline constexpr Numerator
 operator+(Numerator lhs, Numerator rhs)
+noexcept(noexcept(lhs.value + rhs.value))
 {
     return Numerator{lhs.value + rhs.value};
 }
 
 inline constexpr Numerator
 operator-(Numerator lhs, Numerator rhs)
+noexcept(noexcept(lhs.value - rhs.value))
 {
     return Numerator{lhs.value - rhs.value};
 }
 
 inline constexpr Numerator
 operator*(Numerator lhs, Numerator rhs)
+noexcept(noexcept(lhs.value * rhs.value))
 {
     return Numerator{lhs.value * rhs.value};
 }
 
 inline constexpr Numerator
 operator*(Numerator lhs, Denominator rhs)
+noexcept(noexcept(lhs.value * rhs.value))
 {
     return Numerator{lhs.value * rhs.value};
 }
 
 inline constexpr Denominator
 operator*(Denominator lhs, Denominator rhs)
+noexcept(noexcept(lhs.value * rhs.value))
 {
     return Denominator{lhs.value * rhs.value};
 }
@@ -1017,30 +1107,35 @@ namespace net::ipv4 {
 
 inline constexpr Octet
 operator&(Octet lhs, Octet rhs)
+noexcept(noexcept(lhs.value & rhs.value))
 {
     return Octet{lhs.value & rhs.value};
 }
 
 inline constexpr Octet
 operator|(Octet lhs, Octet rhs)
+noexcept(noexcept(lhs.value | rhs.value))
 {
     return Octet{lhs.value | rhs.value};
 }
 
 inline constexpr Octet
 operator^(Octet lhs, Octet rhs)
+noexcept(noexcept(lhs.value ^ rhs.value))
 {
     return Octet{lhs.value ^ rhs.value};
 }
 
 inline constexpr Octet
 operator<<(Octet lhs, int rhs)
+noexcept(noexcept(lhs.value << rhs))
 {
     return Octet{lhs.value << rhs};
 }
 
 inline constexpr Octet
 operator>>(Octet lhs, int rhs)
+noexcept(noexcept(lhs.value >> rhs))
 {
     return Octet{lhs.value >> rhs};
 }
@@ -1051,90 +1146,105 @@ namespace physics::units {
 
 inline constexpr Meters
 operator+(Meters lhs, Meters rhs)
+noexcept(noexcept(lhs.value + rhs.value))
 {
     return Meters{lhs.value + rhs.value};
 }
 
 inline constexpr Meters
 operator-(Meters lhs, Meters rhs)
+noexcept(noexcept(lhs.value - rhs.value))
 {
     return Meters{lhs.value - rhs.value};
 }
 
 inline constexpr Meters
 operator*(Meters lhs, double rhs)
+noexcept(noexcept(lhs.value * rhs))
 {
     return Meters{lhs.value * rhs};
 }
 
 inline constexpr Meters
 operator*(double lhs, Meters rhs)
+noexcept(noexcept(lhs * rhs.value))
 {
     return Meters{lhs * rhs.value};
 }
 
 inline constexpr Meters
 operator/(Meters lhs, double rhs)
+noexcept(noexcept(lhs.value / rhs))
 {
     return Meters{lhs.value / rhs};
 }
 
 inline constexpr double
 operator/(Meters lhs, Meters rhs)
+noexcept(noexcept(lhs.value / rhs.value))
 {
     return double{lhs.value / rhs.value};
 }
 
 inline constexpr Seconds
 operator+(Seconds lhs, Seconds rhs)
+noexcept(noexcept(lhs.value + rhs.value))
 {
     return Seconds{lhs.value + rhs.value};
 }
 
 inline constexpr Seconds
 operator-(Seconds lhs, Seconds rhs)
+noexcept(noexcept(lhs.value - rhs.value))
 {
     return Seconds{lhs.value - rhs.value};
 }
 
 inline constexpr Seconds
 operator*(Seconds lhs, double rhs)
+noexcept(noexcept(lhs.value * rhs))
 {
     return Seconds{lhs.value * rhs};
 }
 
 inline constexpr Seconds
 operator*(double lhs, Seconds rhs)
+noexcept(noexcept(lhs * rhs.value))
 {
     return Seconds{lhs * rhs.value};
 }
 
 inline constexpr Seconds
 operator/(Seconds lhs, double rhs)
+noexcept(noexcept(lhs.value / rhs))
 {
     return Seconds{lhs.value / rhs};
 }
 
 inline constexpr double
 operator/(Seconds lhs, Seconds rhs)
+noexcept(noexcept(lhs.value / rhs.value))
 {
     return double{lhs.value / rhs.value};
 }
 
 inline constexpr MetersPerSecond
 operator/(Meters lhs, Seconds rhs)
+noexcept(noexcept(lhs.value / rhs.value))
 {
     return MetersPerSecond{lhs.value / rhs.value};
 }
 
 inline constexpr Meters
 operator*(MetersPerSecond lhs, Seconds rhs)
+noexcept(noexcept(lhs.value * rhs.value))
 {
     return Meters{lhs.value * rhs.value};
 }
 
 inline constexpr Seconds
 operator/(Meters lhs, MetersPerSecond rhs)
+noexcept(noexcept(lhs.value / rhs.value))
 {
     return Seconds{lhs.value / rhs.value};
 }
@@ -1145,10 +1255,11 @@ namespace security {
 
 inline constexpr EncryptedData
 operator+(EncryptedData lhs, EncryptedData rhs)
+noexcept(noexcept(lhs.value + rhs.value))
 {
     return EncryptedData{lhs.value + rhs.value};
 }
 
 } // namespace security
 
-#endif // EXAMPLE_INTERACTIONS_0416387924EC60DC869827A561CD6788523D3E09
+#endif // EXAMPLE_INTERACTIONS_B04B9A5C285D5BA79602F1B5C5BE9CD08FE18409

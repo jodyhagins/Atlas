@@ -44,6 +44,7 @@ struct has_compound_op_{{{op_id}}}<
 template <typename L, typename R>
 constexpr L &
 compound_assign_impl_{{{op_id}}}(L & lhs, R const & rhs, std::true_type)
+noexcept(noexcept(atlas::value(lhs) {{{compound_op}}} atlas::value(rhs)))
 {
     atlas::value(lhs) {{{compound_op}}} atlas::value(rhs);
     return lhs;
@@ -52,6 +53,7 @@ compound_assign_impl_{{{op_id}}}(L & lhs, R const & rhs, std::true_type)
 template <typename L, typename R>
 constexpr L &
 compound_assign_impl_{{{op_id}}}(L & lhs, R const & rhs, std::false_type)
+noexcept(noexcept(atlas::value(lhs) = atlas::value(lhs {{{binary_op}}} rhs)))
 {
     atlas::value(lhs) = atlas::value(lhs {{{binary_op}}} rhs);
     return lhs;
@@ -66,6 +68,10 @@ template <
         bool>::type = true>
 inline auto
 operator{{{compound_op}}}(L & lhs, R const & rhs)
+noexcept(noexcept(atlas_detail::compound_assign_impl_{{{op_id}}}(
+    lhs,
+    rhs,
+    atlas_detail::has_compound_op_{{{op_id}}}<L, R>{})))
 -> decltype(atlas_detail::compound_assign_impl_{{{op_id}}}(
     lhs,
     rhs,
@@ -398,7 +404,6 @@ generate_operator_function(
         get_signature_type(rhs_type, rhs_is_template, rhs_param_name);
 
     oss << lhs_param_type << " lhs, " << rhs_param_type << " rhs";
-    oss << ")\n{\n";
 
     // Generate function body - use specific value access or fall back to
     // default
@@ -412,6 +417,10 @@ generate_operator_function(
         rhs_type,
         reverse ? interaction.lhs_value_access : interaction.rhs_value_access,
         interaction.value_access);
+
+    // Add conditional noexcept specification
+    oss << ")\nnoexcept(noexcept(" << lhs_value << " " << interaction.op_symbol
+        << " " << rhs_value << "))\n{\n";
 
     oss << "    return " << interaction.result_type << "{" << lhs_value << " "
         << interaction.op_symbol << " " << rhs_value << "};\n";

@@ -1,5 +1,5 @@
-#ifndef EXAMPLE_E1FDB3E2656702E949EB29E24DF2AC7BB25F1DF0
-#define EXAMPLE_E1FDB3E2656702E949EB29E24DF2AC7BB25F1DF0
+#ifndef EXAMPLE_B261BBEA2220733276FCC2E8460DB285D42FA507
+#define EXAMPLE_B261BBEA2220733276FCC2E8460DB285D42FA507
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -227,6 +227,7 @@ struct Money
     friend constexpr Money & operator *= (
         Money & lhs,
         Money const & rhs)
+    noexcept(noexcept(lhs.value *= rhs.value))
     {
         lhs.value *= rhs.value;
         return lhs;
@@ -237,6 +238,7 @@ struct Money
     friend constexpr Money operator * (
         Money lhs,
         Money const & rhs)
+    noexcept(noexcept(lhs *= rhs))
     {
         lhs *= rhs;
         return lhs;
@@ -248,6 +250,7 @@ struct Money
     friend constexpr Money & operator += (
         Money & lhs,
         Money const & rhs)
+    noexcept(noexcept(lhs.value += rhs.value))
     {
         lhs.value += rhs.value;
         return lhs;
@@ -258,6 +261,7 @@ struct Money
     friend constexpr Money operator + (
         Money lhs,
         Money const & rhs)
+    noexcept(noexcept(lhs += rhs))
     {
         lhs += rhs;
         return lhs;
@@ -269,6 +273,7 @@ struct Money
     friend constexpr Money & operator -= (
         Money & lhs,
         Money const & rhs)
+    noexcept(noexcept(lhs.value -= rhs.value))
     {
         lhs.value -= rhs.value;
         return lhs;
@@ -279,6 +284,7 @@ struct Money
     friend constexpr Money operator - (
         Money lhs,
         Money const & rhs)
+    noexcept(noexcept(lhs -= rhs))
     {
         lhs -= rhs;
         return lhs;
@@ -290,6 +296,7 @@ struct Money
     friend constexpr Money & operator /= (
         Money & lhs,
         Money const & rhs)
+    noexcept(noexcept(lhs.value /= rhs.value))
     {
         lhs.value /= rhs.value;
         return lhs;
@@ -300,6 +307,7 @@ struct Money
     friend constexpr Money operator / (
         Money lhs,
         Money const & rhs)
+    noexcept(noexcept(lhs /= rhs))
     {
         lhs /= rhs;
         return lhs;
@@ -311,6 +319,7 @@ struct Money
     friend constexpr Money & operator <<= (
         Money & lhs,
         Money const & rhs)
+    noexcept(noexcept(lhs.value <<= rhs.value))
     {
         lhs.value <<= rhs.value;
         return lhs;
@@ -321,6 +330,7 @@ struct Money
     friend constexpr Money operator << (
         Money lhs,
         Money const & rhs)
+    noexcept(noexcept(lhs <<= rhs))
     {
         lhs <<= rhs;
         return lhs;
@@ -332,6 +342,7 @@ struct Money
     friend constexpr bool operator != (
         Money const & lhs,
         Money const & rhs)
+    noexcept(noexcept(lhs.value != rhs.value))
     {
         return lhs.value != rhs.value;
     }
@@ -342,6 +353,7 @@ struct Money
     friend constexpr bool operator < (
         Money const & lhs,
         Money const & rhs)
+    noexcept(noexcept(lhs.value < rhs.value))
     {
         return lhs.value < rhs.value;
     }
@@ -352,6 +364,7 @@ struct Money
     friend constexpr bool operator <= (
         Money const & lhs,
         Money const & rhs)
+    noexcept(noexcept(lhs.value <= rhs.value))
     {
         return lhs.value <= rhs.value;
     }
@@ -362,6 +375,7 @@ struct Money
     friend constexpr bool operator == (
         Money const & lhs,
         Money const & rhs)
+    noexcept(noexcept(lhs.value == rhs.value))
     {
         return lhs.value == rhs.value;
     }
@@ -372,6 +386,7 @@ struct Money
     friend constexpr bool operator > (
         Money const & lhs,
         Money const & rhs)
+    noexcept(noexcept(lhs.value > rhs.value))
     {
         return lhs.value > rhs.value;
     }
@@ -382,6 +397,7 @@ struct Money
     friend constexpr bool operator >= (
         Money const & lhs,
         Money const & rhs)
+    noexcept(noexcept(lhs.value >= rhs.value))
     {
         return lhs.value >= rhs.value;
     }
@@ -464,6 +480,7 @@ public:
     friend constexpr bool operator != (
         UserId const & lhs,
         UserId const & rhs)
+    noexcept(noexcept(lhs.value != rhs.value))
     {
         return lhs.value != rhs.value;
     }
@@ -474,6 +491,7 @@ public:
     friend constexpr bool operator == (
         UserId const & lhs,
         UserId const & rhs)
+    noexcept(noexcept(lhs.value == rhs.value))
     {
         return lhs.value == rhs.value;
     }
@@ -546,6 +564,7 @@ struct Meters
      * Apply the unary - operator to the wrapped object.
      */
     friend constexpr Meters operator - (Meters const & t)
+    noexcept(noexcept(- t.value))
     {
         auto result = t;
         result.value = - t.value;
@@ -558,6 +577,7 @@ struct Meters
     friend constexpr Meters & operator *= (
         Meters & lhs,
         Meters const & rhs)
+    noexcept(noexcept(lhs.value *= rhs.value))
     {
         lhs.value *= rhs.value;
         return lhs;
@@ -568,6 +588,7 @@ struct Meters
     friend constexpr Meters operator * (
         Meters lhs,
         Meters const & rhs)
+    noexcept(noexcept(lhs *= rhs))
     {
         lhs *= rhs;
         return lhs;
@@ -579,6 +600,7 @@ struct Meters
     friend constexpr Meters & operator += (
         Meters & lhs,
         Meters const & rhs)
+    noexcept(noexcept(lhs.value += rhs.value))
     {
         lhs.value += rhs.value;
         return lhs;
@@ -589,6 +611,7 @@ struct Meters
     friend constexpr Meters operator + (
         Meters lhs,
         Meters const & rhs)
+    noexcept(noexcept(lhs += rhs))
     {
         lhs += rhs;
         return lhs;
@@ -600,6 +623,7 @@ struct Meters
     friend constexpr Meters & operator -= (
         Meters & lhs,
         Meters const & rhs)
+    noexcept(noexcept(lhs.value -= rhs.value))
     {
         lhs.value -= rhs.value;
         return lhs;
@@ -610,6 +634,7 @@ struct Meters
     friend constexpr Meters operator - (
         Meters lhs,
         Meters const & rhs)
+    noexcept(noexcept(lhs -= rhs))
     {
         lhs -= rhs;
         return lhs;
@@ -621,6 +646,7 @@ struct Meters
     friend constexpr Meters & operator /= (
         Meters & lhs,
         Meters const & rhs)
+    noexcept(noexcept(lhs.value /= rhs.value))
     {
         lhs.value /= rhs.value;
         return lhs;
@@ -631,6 +657,7 @@ struct Meters
     friend constexpr Meters operator / (
         Meters lhs,
         Meters const & rhs)
+    noexcept(noexcept(lhs /= rhs))
     {
         lhs /= rhs;
         return lhs;
@@ -649,6 +676,7 @@ struct Meters
     friend constexpr bool operator != (
         Meters const & lhs,
         Meters const & rhs)
+    noexcept(noexcept(lhs.value != rhs.value))
     {
         return lhs.value != rhs.value;
     }
@@ -659,6 +687,7 @@ struct Meters
     friend constexpr bool operator == (
         Meters const & lhs,
         Meters const & rhs)
+    noexcept(noexcept(lhs.value == rhs.value))
     {
         return lhs.value == rhs.value;
     }
@@ -713,6 +742,7 @@ struct Seconds
      * Apply the unary - operator to the wrapped object.
      */
     friend constexpr Seconds operator - (Seconds const & t)
+    noexcept(noexcept(- t.value))
     {
         auto result = t;
         result.value = - t.value;
@@ -725,6 +755,7 @@ struct Seconds
     friend constexpr Seconds & operator *= (
         Seconds & lhs,
         Seconds const & rhs)
+    noexcept(noexcept(lhs.value *= rhs.value))
     {
         lhs.value *= rhs.value;
         return lhs;
@@ -735,6 +766,7 @@ struct Seconds
     friend constexpr Seconds operator * (
         Seconds lhs,
         Seconds const & rhs)
+    noexcept(noexcept(lhs *= rhs))
     {
         lhs *= rhs;
         return lhs;
@@ -746,6 +778,7 @@ struct Seconds
     friend constexpr Seconds & operator += (
         Seconds & lhs,
         Seconds const & rhs)
+    noexcept(noexcept(lhs.value += rhs.value))
     {
         lhs.value += rhs.value;
         return lhs;
@@ -756,6 +789,7 @@ struct Seconds
     friend constexpr Seconds operator + (
         Seconds lhs,
         Seconds const & rhs)
+    noexcept(noexcept(lhs += rhs))
     {
         lhs += rhs;
         return lhs;
@@ -767,6 +801,7 @@ struct Seconds
     friend constexpr Seconds & operator -= (
         Seconds & lhs,
         Seconds const & rhs)
+    noexcept(noexcept(lhs.value -= rhs.value))
     {
         lhs.value -= rhs.value;
         return lhs;
@@ -777,6 +812,7 @@ struct Seconds
     friend constexpr Seconds operator - (
         Seconds lhs,
         Seconds const & rhs)
+    noexcept(noexcept(lhs -= rhs))
     {
         lhs -= rhs;
         return lhs;
@@ -788,6 +824,7 @@ struct Seconds
     friend constexpr Seconds & operator /= (
         Seconds & lhs,
         Seconds const & rhs)
+    noexcept(noexcept(lhs.value /= rhs.value))
     {
         lhs.value /= rhs.value;
         return lhs;
@@ -798,6 +835,7 @@ struct Seconds
     friend constexpr Seconds operator / (
         Seconds lhs,
         Seconds const & rhs)
+    noexcept(noexcept(lhs /= rhs))
     {
         lhs /= rhs;
         return lhs;
@@ -816,6 +854,7 @@ struct Seconds
     friend constexpr bool operator != (
         Seconds const & lhs,
         Seconds const & rhs)
+    noexcept(noexcept(lhs.value != rhs.value))
     {
         return lhs.value != rhs.value;
     }
@@ -826,6 +865,7 @@ struct Seconds
     friend constexpr bool operator == (
         Seconds const & lhs,
         Seconds const & rhs)
+    noexcept(noexcept(lhs.value == rhs.value))
     {
         return lhs.value == rhs.value;
     }
@@ -880,6 +920,7 @@ struct MetersPerSecond
      * Apply the unary - operator to the wrapped object.
      */
     friend constexpr MetersPerSecond operator - (MetersPerSecond const & t)
+    noexcept(noexcept(- t.value))
     {
         auto result = t;
         result.value = - t.value;
@@ -892,6 +933,7 @@ struct MetersPerSecond
     friend constexpr MetersPerSecond & operator *= (
         MetersPerSecond & lhs,
         MetersPerSecond const & rhs)
+    noexcept(noexcept(lhs.value *= rhs.value))
     {
         lhs.value *= rhs.value;
         return lhs;
@@ -902,6 +944,7 @@ struct MetersPerSecond
     friend constexpr MetersPerSecond operator * (
         MetersPerSecond lhs,
         MetersPerSecond const & rhs)
+    noexcept(noexcept(lhs *= rhs))
     {
         lhs *= rhs;
         return lhs;
@@ -913,6 +956,7 @@ struct MetersPerSecond
     friend constexpr MetersPerSecond & operator += (
         MetersPerSecond & lhs,
         MetersPerSecond const & rhs)
+    noexcept(noexcept(lhs.value += rhs.value))
     {
         lhs.value += rhs.value;
         return lhs;
@@ -923,6 +967,7 @@ struct MetersPerSecond
     friend constexpr MetersPerSecond operator + (
         MetersPerSecond lhs,
         MetersPerSecond const & rhs)
+    noexcept(noexcept(lhs += rhs))
     {
         lhs += rhs;
         return lhs;
@@ -934,6 +979,7 @@ struct MetersPerSecond
     friend constexpr MetersPerSecond & operator -= (
         MetersPerSecond & lhs,
         MetersPerSecond const & rhs)
+    noexcept(noexcept(lhs.value -= rhs.value))
     {
         lhs.value -= rhs.value;
         return lhs;
@@ -944,6 +990,7 @@ struct MetersPerSecond
     friend constexpr MetersPerSecond operator - (
         MetersPerSecond lhs,
         MetersPerSecond const & rhs)
+    noexcept(noexcept(lhs -= rhs))
     {
         lhs -= rhs;
         return lhs;
@@ -955,6 +1002,7 @@ struct MetersPerSecond
     friend constexpr MetersPerSecond & operator /= (
         MetersPerSecond & lhs,
         MetersPerSecond const & rhs)
+    noexcept(noexcept(lhs.value /= rhs.value))
     {
         lhs.value /= rhs.value;
         return lhs;
@@ -965,6 +1013,7 @@ struct MetersPerSecond
     friend constexpr MetersPerSecond operator / (
         MetersPerSecond lhs,
         MetersPerSecond const & rhs)
+    noexcept(noexcept(lhs /= rhs))
     {
         lhs /= rhs;
         return lhs;
@@ -983,6 +1032,7 @@ struct MetersPerSecond
     friend constexpr bool operator != (
         MetersPerSecond const & lhs,
         MetersPerSecond const & rhs)
+    noexcept(noexcept(lhs.value != rhs.value))
     {
         return lhs.value != rhs.value;
     }
@@ -993,6 +1043,7 @@ struct MetersPerSecond
     friend constexpr bool operator == (
         MetersPerSecond const & lhs,
         MetersPerSecond const & rhs)
+    noexcept(noexcept(lhs.value == rhs.value))
     {
         return lhs.value == rhs.value;
     }
@@ -1046,6 +1097,7 @@ struct ByteCount
      * Apply the prefix ++ operator to the wrapped object.
      */
     friend constexpr ByteCount & operator ++ (ByteCount & t)
+    noexcept(noexcept(++t.value))
     {
         ++t.value;
         return t;
@@ -1054,6 +1106,7 @@ struct ByteCount
      * Apply the postfix ++ operator to the wrapped object.
      */
     friend constexpr ByteCount operator ++ (ByteCount & t, int)
+    noexcept(noexcept(++t.value))
     {
         auto result = t;
         ++t.value;
@@ -1064,6 +1117,7 @@ struct ByteCount
      * Apply the prefix -- operator to the wrapped object.
      */
     friend constexpr ByteCount & operator -- (ByteCount & t)
+    noexcept(noexcept(--t.value))
     {
         --t.value;
         return t;
@@ -1072,6 +1126,7 @@ struct ByteCount
      * Apply the postfix -- operator to the wrapped object.
      */
     friend constexpr ByteCount operator -- (ByteCount & t, int)
+    noexcept(noexcept(--t.value))
     {
         auto result = t;
         --t.value;
@@ -1084,6 +1139,7 @@ struct ByteCount
     friend constexpr ByteCount & operator %= (
         ByteCount & lhs,
         ByteCount const & rhs)
+    noexcept(noexcept(lhs.value %= rhs.value))
     {
         lhs.value %= rhs.value;
         return lhs;
@@ -1094,6 +1150,7 @@ struct ByteCount
     friend constexpr ByteCount operator % (
         ByteCount lhs,
         ByteCount const & rhs)
+    noexcept(noexcept(lhs %= rhs))
     {
         lhs %= rhs;
         return lhs;
@@ -1105,6 +1162,7 @@ struct ByteCount
     friend constexpr ByteCount & operator *= (
         ByteCount & lhs,
         ByteCount const & rhs)
+    noexcept(noexcept(lhs.value *= rhs.value))
     {
         lhs.value *= rhs.value;
         return lhs;
@@ -1115,6 +1173,7 @@ struct ByteCount
     friend constexpr ByteCount operator * (
         ByteCount lhs,
         ByteCount const & rhs)
+    noexcept(noexcept(lhs *= rhs))
     {
         lhs *= rhs;
         return lhs;
@@ -1126,6 +1185,7 @@ struct ByteCount
     friend constexpr ByteCount & operator += (
         ByteCount & lhs,
         ByteCount const & rhs)
+    noexcept(noexcept(lhs.value += rhs.value))
     {
         lhs.value += rhs.value;
         return lhs;
@@ -1136,6 +1196,7 @@ struct ByteCount
     friend constexpr ByteCount operator + (
         ByteCount lhs,
         ByteCount const & rhs)
+    noexcept(noexcept(lhs += rhs))
     {
         lhs += rhs;
         return lhs;
@@ -1147,6 +1208,7 @@ struct ByteCount
     friend constexpr ByteCount & operator -= (
         ByteCount & lhs,
         ByteCount const & rhs)
+    noexcept(noexcept(lhs.value -= rhs.value))
     {
         lhs.value -= rhs.value;
         return lhs;
@@ -1157,6 +1219,7 @@ struct ByteCount
     friend constexpr ByteCount operator - (
         ByteCount lhs,
         ByteCount const & rhs)
+    noexcept(noexcept(lhs -= rhs))
     {
         lhs -= rhs;
         return lhs;
@@ -1168,6 +1231,7 @@ struct ByteCount
     friend constexpr ByteCount & operator /= (
         ByteCount & lhs,
         ByteCount const & rhs)
+    noexcept(noexcept(lhs.value /= rhs.value))
     {
         lhs.value /= rhs.value;
         return lhs;
@@ -1178,6 +1242,7 @@ struct ByteCount
     friend constexpr ByteCount operator / (
         ByteCount lhs,
         ByteCount const & rhs)
+    noexcept(noexcept(lhs /= rhs))
     {
         lhs /= rhs;
         return lhs;
@@ -1189,6 +1254,7 @@ struct ByteCount
     friend constexpr ByteCount & operator <<= (
         ByteCount & lhs,
         ByteCount const & rhs)
+    noexcept(noexcept(lhs.value <<= rhs.value))
     {
         lhs.value <<= rhs.value;
         return lhs;
@@ -1199,6 +1265,7 @@ struct ByteCount
     friend constexpr ByteCount operator << (
         ByteCount lhs,
         ByteCount const & rhs)
+    noexcept(noexcept(lhs <<= rhs))
     {
         lhs <<= rhs;
         return lhs;
@@ -1210,6 +1277,7 @@ struct ByteCount
     friend constexpr bool operator != (
         ByteCount const & lhs,
         ByteCount const & rhs)
+    noexcept(noexcept(lhs.value != rhs.value))
     {
         return lhs.value != rhs.value;
     }
@@ -1220,6 +1288,7 @@ struct ByteCount
     friend constexpr bool operator < (
         ByteCount const & lhs,
         ByteCount const & rhs)
+    noexcept(noexcept(lhs.value < rhs.value))
     {
         return lhs.value < rhs.value;
     }
@@ -1230,6 +1299,7 @@ struct ByteCount
     friend constexpr bool operator <= (
         ByteCount const & lhs,
         ByteCount const & rhs)
+    noexcept(noexcept(lhs.value <= rhs.value))
     {
         return lhs.value <= rhs.value;
     }
@@ -1240,6 +1310,7 @@ struct ByteCount
     friend constexpr bool operator == (
         ByteCount const & lhs,
         ByteCount const & rhs)
+    noexcept(noexcept(lhs.value == rhs.value))
     {
         return lhs.value == rhs.value;
     }
@@ -1250,6 +1321,7 @@ struct ByteCount
     friend constexpr bool operator > (
         ByteCount const & lhs,
         ByteCount const & rhs)
+    noexcept(noexcept(lhs.value > rhs.value))
     {
         return lhs.value > rhs.value;
     }
@@ -1260,6 +1332,7 @@ struct ByteCount
     friend constexpr bool operator >= (
         ByteCount const & lhs,
         ByteCount const & rhs)
+    noexcept(noexcept(lhs.value >= rhs.value))
     {
         return lhs.value >= rhs.value;
     }
@@ -1313,6 +1386,7 @@ struct RedChannel
      * Apply the unary ~ operator to the wrapped object.
      */
     friend constexpr RedChannel operator ~ (RedChannel const & t)
+    noexcept(noexcept(~ t.value))
     {
         auto result = t;
         result.value = ~ t.value;
@@ -1325,6 +1399,7 @@ struct RedChannel
     friend constexpr RedChannel & operator &= (
         RedChannel & lhs,
         RedChannel const & rhs)
+    noexcept(noexcept(lhs.value &= rhs.value))
     {
         lhs.value &= rhs.value;
         return lhs;
@@ -1335,6 +1410,7 @@ struct RedChannel
     friend constexpr RedChannel operator & (
         RedChannel lhs,
         RedChannel const & rhs)
+    noexcept(noexcept(lhs &= rhs))
     {
         lhs &= rhs;
         return lhs;
@@ -1346,6 +1422,7 @@ struct RedChannel
     friend constexpr RedChannel & operator *= (
         RedChannel & lhs,
         RedChannel const & rhs)
+    noexcept(noexcept(lhs.value *= rhs.value))
     {
         lhs.value *= rhs.value;
         return lhs;
@@ -1356,6 +1433,7 @@ struct RedChannel
     friend constexpr RedChannel operator * (
         RedChannel lhs,
         RedChannel const & rhs)
+    noexcept(noexcept(lhs *= rhs))
     {
         lhs *= rhs;
         return lhs;
@@ -1367,6 +1445,7 @@ struct RedChannel
     friend constexpr RedChannel & operator += (
         RedChannel & lhs,
         RedChannel const & rhs)
+    noexcept(noexcept(lhs.value += rhs.value))
     {
         lhs.value += rhs.value;
         return lhs;
@@ -1377,6 +1456,7 @@ struct RedChannel
     friend constexpr RedChannel operator + (
         RedChannel lhs,
         RedChannel const & rhs)
+    noexcept(noexcept(lhs += rhs))
     {
         lhs += rhs;
         return lhs;
@@ -1388,6 +1468,7 @@ struct RedChannel
     friend constexpr RedChannel & operator -= (
         RedChannel & lhs,
         RedChannel const & rhs)
+    noexcept(noexcept(lhs.value -= rhs.value))
     {
         lhs.value -= rhs.value;
         return lhs;
@@ -1398,6 +1479,7 @@ struct RedChannel
     friend constexpr RedChannel operator - (
         RedChannel lhs,
         RedChannel const & rhs)
+    noexcept(noexcept(lhs -= rhs))
     {
         lhs -= rhs;
         return lhs;
@@ -1409,6 +1491,7 @@ struct RedChannel
     friend constexpr RedChannel & operator /= (
         RedChannel & lhs,
         RedChannel const & rhs)
+    noexcept(noexcept(lhs.value /= rhs.value))
     {
         lhs.value /= rhs.value;
         return lhs;
@@ -1419,6 +1502,7 @@ struct RedChannel
     friend constexpr RedChannel operator / (
         RedChannel lhs,
         RedChannel const & rhs)
+    noexcept(noexcept(lhs /= rhs))
     {
         lhs /= rhs;
         return lhs;
@@ -1430,6 +1514,7 @@ struct RedChannel
     friend constexpr RedChannel & operator ^= (
         RedChannel & lhs,
         RedChannel const & rhs)
+    noexcept(noexcept(lhs.value ^= rhs.value))
     {
         lhs.value ^= rhs.value;
         return lhs;
@@ -1440,6 +1525,7 @@ struct RedChannel
     friend constexpr RedChannel operator ^ (
         RedChannel lhs,
         RedChannel const & rhs)
+    noexcept(noexcept(lhs ^= rhs))
     {
         lhs ^= rhs;
         return lhs;
@@ -1451,6 +1537,7 @@ struct RedChannel
     friend constexpr RedChannel & operator |= (
         RedChannel & lhs,
         RedChannel const & rhs)
+    noexcept(noexcept(lhs.value |= rhs.value))
     {
         lhs.value |= rhs.value;
         return lhs;
@@ -1461,6 +1548,7 @@ struct RedChannel
     friend constexpr RedChannel operator | (
         RedChannel lhs,
         RedChannel const & rhs)
+    noexcept(noexcept(lhs |= rhs))
     {
         lhs |= rhs;
         return lhs;
@@ -1479,6 +1567,7 @@ struct RedChannel
     friend constexpr bool operator != (
         RedChannel const & lhs,
         RedChannel const & rhs)
+    noexcept(noexcept(lhs.value != rhs.value))
     {
         return lhs.value != rhs.value;
     }
@@ -1489,6 +1578,7 @@ struct RedChannel
     friend constexpr bool operator == (
         RedChannel const & lhs,
         RedChannel const & rhs)
+    noexcept(noexcept(lhs.value == rhs.value))
     {
         return lhs.value == rhs.value;
     }
@@ -1545,6 +1635,7 @@ public:
     friend constexpr EncryptedData & operator <<= (
         EncryptedData & lhs,
         EncryptedData const & rhs)
+    noexcept(noexcept(lhs.value <<= rhs.value))
     {
         lhs.value <<= rhs.value;
         return lhs;
@@ -1555,6 +1646,7 @@ public:
     friend constexpr EncryptedData operator << (
         EncryptedData lhs,
         EncryptedData const & rhs)
+    noexcept(noexcept(lhs <<= rhs))
     {
         lhs <<= rhs;
         return lhs;
@@ -1566,6 +1658,7 @@ public:
     friend constexpr bool operator != (
         EncryptedData const & lhs,
         EncryptedData const & rhs)
+    noexcept(noexcept(lhs.value != rhs.value))
     {
         return lhs.value != rhs.value;
     }
@@ -1576,6 +1669,7 @@ public:
     friend constexpr bool operator == (
         EncryptedData const & lhs,
         EncryptedData const & rhs)
+    noexcept(noexcept(lhs.value == rhs.value))
     {
         return lhs.value == rhs.value;
     }
@@ -1646,6 +1740,7 @@ struct Latitude
      * Apply the unary - operator to the wrapped object.
      */
     friend constexpr Latitude operator - (Latitude const & t)
+    noexcept(noexcept(- t.value))
     {
         auto result = t;
         result.value = - t.value;
@@ -1658,6 +1753,7 @@ struct Latitude
     friend constexpr Latitude & operator <<= (
         Latitude & lhs,
         Latitude const & rhs)
+    noexcept(noexcept(lhs.value <<= rhs.value))
     {
         lhs.value <<= rhs.value;
         return lhs;
@@ -1668,6 +1764,7 @@ struct Latitude
     friend constexpr Latitude operator << (
         Latitude lhs,
         Latitude const & rhs)
+    noexcept(noexcept(lhs <<= rhs))
     {
         lhs <<= rhs;
         return lhs;
@@ -1679,6 +1776,7 @@ struct Latitude
     friend constexpr bool operator != (
         Latitude const & lhs,
         Latitude const & rhs)
+    noexcept(noexcept(lhs.value != rhs.value))
     {
         return lhs.value != rhs.value;
     }
@@ -1689,6 +1787,7 @@ struct Latitude
     friend constexpr bool operator < (
         Latitude const & lhs,
         Latitude const & rhs)
+    noexcept(noexcept(lhs.value < rhs.value))
     {
         return lhs.value < rhs.value;
     }
@@ -1699,6 +1798,7 @@ struct Latitude
     friend constexpr bool operator <= (
         Latitude const & lhs,
         Latitude const & rhs)
+    noexcept(noexcept(lhs.value <= rhs.value))
     {
         return lhs.value <= rhs.value;
     }
@@ -1709,6 +1809,7 @@ struct Latitude
     friend constexpr bool operator == (
         Latitude const & lhs,
         Latitude const & rhs)
+    noexcept(noexcept(lhs.value == rhs.value))
     {
         return lhs.value == rhs.value;
     }
@@ -1719,6 +1820,7 @@ struct Latitude
     friend constexpr bool operator > (
         Latitude const & lhs,
         Latitude const & rhs)
+    noexcept(noexcept(lhs.value > rhs.value))
     {
         return lhs.value > rhs.value;
     }
@@ -1729,6 +1831,7 @@ struct Latitude
     friend constexpr bool operator >= (
         Latitude const & lhs,
         Latitude const & rhs)
+    noexcept(noexcept(lhs.value >= rhs.value))
     {
         return lhs.value >= rhs.value;
     }
@@ -1781,6 +1884,7 @@ struct Longitude
      * Apply the unary - operator to the wrapped object.
      */
     friend constexpr Longitude operator - (Longitude const & t)
+    noexcept(noexcept(- t.value))
     {
         auto result = t;
         result.value = - t.value;
@@ -1793,6 +1897,7 @@ struct Longitude
     friend constexpr Longitude & operator <<= (
         Longitude & lhs,
         Longitude const & rhs)
+    noexcept(noexcept(lhs.value <<= rhs.value))
     {
         lhs.value <<= rhs.value;
         return lhs;
@@ -1803,6 +1908,7 @@ struct Longitude
     friend constexpr Longitude operator << (
         Longitude lhs,
         Longitude const & rhs)
+    noexcept(noexcept(lhs <<= rhs))
     {
         lhs <<= rhs;
         return lhs;
@@ -1814,6 +1920,7 @@ struct Longitude
     friend constexpr bool operator != (
         Longitude const & lhs,
         Longitude const & rhs)
+    noexcept(noexcept(lhs.value != rhs.value))
     {
         return lhs.value != rhs.value;
     }
@@ -1824,6 +1931,7 @@ struct Longitude
     friend constexpr bool operator < (
         Longitude const & lhs,
         Longitude const & rhs)
+    noexcept(noexcept(lhs.value < rhs.value))
     {
         return lhs.value < rhs.value;
     }
@@ -1834,6 +1942,7 @@ struct Longitude
     friend constexpr bool operator <= (
         Longitude const & lhs,
         Longitude const & rhs)
+    noexcept(noexcept(lhs.value <= rhs.value))
     {
         return lhs.value <= rhs.value;
     }
@@ -1844,6 +1953,7 @@ struct Longitude
     friend constexpr bool operator == (
         Longitude const & lhs,
         Longitude const & rhs)
+    noexcept(noexcept(lhs.value == rhs.value))
     {
         return lhs.value == rhs.value;
     }
@@ -1854,6 +1964,7 @@ struct Longitude
     friend constexpr bool operator > (
         Longitude const & lhs,
         Longitude const & rhs)
+    noexcept(noexcept(lhs.value > rhs.value))
     {
         return lhs.value > rhs.value;
     }
@@ -1864,6 +1975,7 @@ struct Longitude
     friend constexpr bool operator >= (
         Longitude const & lhs,
         Longitude const & rhs)
+    noexcept(noexcept(lhs.value >= rhs.value))
     {
         return lhs.value >= rhs.value;
     }
@@ -1918,6 +2030,7 @@ struct ThreadId
     friend ThreadId & operator <<= (
         ThreadId & lhs,
         ThreadId const & rhs)
+    noexcept(noexcept(lhs.value <<= rhs.value))
     {
         lhs.value <<= rhs.value;
         return lhs;
@@ -1928,6 +2041,7 @@ struct ThreadId
     friend ThreadId operator << (
         ThreadId lhs,
         ThreadId const & rhs)
+    noexcept(noexcept(lhs <<= rhs))
     {
         lhs <<= rhs;
         return lhs;
@@ -1939,6 +2053,7 @@ struct ThreadId
     friend bool operator != (
         ThreadId const & lhs,
         ThreadId const & rhs)
+    noexcept(noexcept(lhs.value != rhs.value))
     {
         return lhs.value != rhs.value;
     }
@@ -1949,6 +2064,7 @@ struct ThreadId
     friend bool operator == (
         ThreadId const & lhs,
         ThreadId const & rhs)
+    noexcept(noexcept(lhs.value == rhs.value))
     {
         return lhs.value == rhs.value;
     }
@@ -2022,6 +2138,7 @@ struct Numerator
     friend constexpr Numerator & operator *= (
         Numerator & lhs,
         Numerator const & rhs)
+    noexcept(noexcept(lhs.value *= rhs.value))
     {
         lhs.value *= rhs.value;
         return lhs;
@@ -2032,6 +2149,7 @@ struct Numerator
     friend constexpr Numerator operator * (
         Numerator lhs,
         Numerator const & rhs)
+    noexcept(noexcept(lhs *= rhs))
     {
         lhs *= rhs;
         return lhs;
@@ -2043,6 +2161,7 @@ struct Numerator
     friend constexpr Numerator & operator += (
         Numerator & lhs,
         Numerator const & rhs)
+    noexcept(noexcept(lhs.value += rhs.value))
     {
         lhs.value += rhs.value;
         return lhs;
@@ -2053,6 +2172,7 @@ struct Numerator
     friend constexpr Numerator operator + (
         Numerator lhs,
         Numerator const & rhs)
+    noexcept(noexcept(lhs += rhs))
     {
         lhs += rhs;
         return lhs;
@@ -2064,6 +2184,7 @@ struct Numerator
     friend constexpr Numerator & operator -= (
         Numerator & lhs,
         Numerator const & rhs)
+    noexcept(noexcept(lhs.value -= rhs.value))
     {
         lhs.value -= rhs.value;
         return lhs;
@@ -2074,6 +2195,7 @@ struct Numerator
     friend constexpr Numerator operator - (
         Numerator lhs,
         Numerator const & rhs)
+    noexcept(noexcept(lhs -= rhs))
     {
         lhs -= rhs;
         return lhs;
@@ -2092,6 +2214,7 @@ struct Numerator
     friend constexpr bool operator != (
         Numerator const & lhs,
         Numerator const & rhs)
+    noexcept(noexcept(lhs.value != rhs.value))
     {
         return lhs.value != rhs.value;
     }
@@ -2102,6 +2225,7 @@ struct Numerator
     friend constexpr bool operator == (
         Numerator const & lhs,
         Numerator const & rhs)
+    noexcept(noexcept(lhs.value == rhs.value))
     {
         return lhs.value == rhs.value;
     }
@@ -2158,6 +2282,7 @@ struct Denominator
     friend constexpr Denominator & operator *= (
         Denominator & lhs,
         Denominator const & rhs)
+    noexcept(noexcept(lhs.value *= rhs.value))
     {
         lhs.value *= rhs.value;
         return lhs;
@@ -2168,6 +2293,7 @@ struct Denominator
     friend constexpr Denominator operator * (
         Denominator lhs,
         Denominator const & rhs)
+    noexcept(noexcept(lhs *= rhs))
     {
         lhs *= rhs;
         return lhs;
@@ -2179,6 +2305,7 @@ struct Denominator
     friend constexpr Denominator & operator /= (
         Denominator & lhs,
         Denominator const & rhs)
+    noexcept(noexcept(lhs.value /= rhs.value))
     {
         lhs.value /= rhs.value;
         return lhs;
@@ -2189,6 +2316,7 @@ struct Denominator
     friend constexpr Denominator operator / (
         Denominator lhs,
         Denominator const & rhs)
+    noexcept(noexcept(lhs /= rhs))
     {
         lhs /= rhs;
         return lhs;
@@ -2207,6 +2335,7 @@ struct Denominator
     friend constexpr bool operator != (
         Denominator const & lhs,
         Denominator const & rhs)
+    noexcept(noexcept(lhs.value != rhs.value))
     {
         return lhs.value != rhs.value;
     }
@@ -2217,6 +2346,7 @@ struct Denominator
     friend constexpr bool operator == (
         Denominator const & lhs,
         Denominator const & rhs)
+    noexcept(noexcept(lhs.value == rhs.value))
     {
         return lhs.value == rhs.value;
     }
@@ -2271,6 +2401,7 @@ struct Octet
      * Apply the unary ~ operator to the wrapped object.
      */
     friend constexpr Octet operator ~ (Octet const & t)
+    noexcept(noexcept(~ t.value))
     {
         auto result = t;
         result.value = ~ t.value;
@@ -2283,6 +2414,7 @@ struct Octet
     friend constexpr Octet & operator &= (
         Octet & lhs,
         Octet const & rhs)
+    noexcept(noexcept(lhs.value &= rhs.value))
     {
         lhs.value &= rhs.value;
         return lhs;
@@ -2293,6 +2425,7 @@ struct Octet
     friend constexpr Octet operator & (
         Octet lhs,
         Octet const & rhs)
+    noexcept(noexcept(lhs &= rhs))
     {
         lhs &= rhs;
         return lhs;
@@ -2304,6 +2437,7 @@ struct Octet
     friend constexpr Octet & operator <<= (
         Octet & lhs,
         Octet const & rhs)
+    noexcept(noexcept(lhs.value <<= rhs.value))
     {
         lhs.value <<= rhs.value;
         return lhs;
@@ -2314,6 +2448,7 @@ struct Octet
     friend constexpr Octet operator << (
         Octet lhs,
         Octet const & rhs)
+    noexcept(noexcept(lhs <<= rhs))
     {
         lhs <<= rhs;
         return lhs;
@@ -2325,6 +2460,7 @@ struct Octet
     friend constexpr Octet & operator >>= (
         Octet & lhs,
         Octet const & rhs)
+    noexcept(noexcept(lhs.value >>= rhs.value))
     {
         lhs.value >>= rhs.value;
         return lhs;
@@ -2335,6 +2471,7 @@ struct Octet
     friend constexpr Octet operator >> (
         Octet lhs,
         Octet const & rhs)
+    noexcept(noexcept(lhs >>= rhs))
     {
         lhs >>= rhs;
         return lhs;
@@ -2346,6 +2483,7 @@ struct Octet
     friend constexpr Octet & operator ^= (
         Octet & lhs,
         Octet const & rhs)
+    noexcept(noexcept(lhs.value ^= rhs.value))
     {
         lhs.value ^= rhs.value;
         return lhs;
@@ -2356,6 +2494,7 @@ struct Octet
     friend constexpr Octet operator ^ (
         Octet lhs,
         Octet const & rhs)
+    noexcept(noexcept(lhs ^= rhs))
     {
         lhs ^= rhs;
         return lhs;
@@ -2367,6 +2506,7 @@ struct Octet
     friend constexpr Octet & operator |= (
         Octet & lhs,
         Octet const & rhs)
+    noexcept(noexcept(lhs.value |= rhs.value))
     {
         lhs.value |= rhs.value;
         return lhs;
@@ -2377,6 +2517,7 @@ struct Octet
     friend constexpr Octet operator | (
         Octet lhs,
         Octet const & rhs)
+    noexcept(noexcept(lhs |= rhs))
     {
         lhs |= rhs;
         return lhs;
@@ -2388,6 +2529,7 @@ struct Octet
     friend constexpr bool operator != (
         Octet const & lhs,
         Octet const & rhs)
+    noexcept(noexcept(lhs.value != rhs.value))
     {
         return lhs.value != rhs.value;
     }
@@ -2398,6 +2540,7 @@ struct Octet
     friend constexpr bool operator == (
         Octet const & lhs,
         Octet const & rhs)
+    noexcept(noexcept(lhs.value == rhs.value))
     {
         return lhs.value == rhs.value;
     }
@@ -2484,6 +2627,7 @@ public:
     friend constexpr ConfigKey & operator += (
         ConfigKey & lhs,
         ConfigKey const & rhs)
+    noexcept(noexcept(lhs.value += rhs.value))
     {
         lhs.value += rhs.value;
         return lhs;
@@ -2494,6 +2638,7 @@ public:
     friend constexpr ConfigKey operator + (
         ConfigKey lhs,
         ConfigKey const & rhs)
+    noexcept(noexcept(lhs += rhs))
     {
         lhs += rhs;
         return lhs;
@@ -2505,6 +2650,7 @@ public:
     friend constexpr ConfigKey & operator <<= (
         ConfigKey & lhs,
         ConfigKey const & rhs)
+    noexcept(noexcept(lhs.value <<= rhs.value))
     {
         lhs.value <<= rhs.value;
         return lhs;
@@ -2515,6 +2661,7 @@ public:
     friend constexpr ConfigKey operator << (
         ConfigKey lhs,
         ConfigKey const & rhs)
+    noexcept(noexcept(lhs <<= rhs))
     {
         lhs <<= rhs;
         return lhs;
@@ -2526,6 +2673,7 @@ public:
     friend constexpr bool operator != (
         ConfigKey const & lhs,
         ConfigKey const & rhs)
+    noexcept(noexcept(lhs.value != rhs.value))
     {
         return lhs.value != rhs.value;
     }
@@ -2536,6 +2684,7 @@ public:
     friend constexpr bool operator < (
         ConfigKey const & lhs,
         ConfigKey const & rhs)
+    noexcept(noexcept(lhs.value < rhs.value))
     {
         return lhs.value < rhs.value;
     }
@@ -2546,6 +2695,7 @@ public:
     friend constexpr bool operator == (
         ConfigKey const & lhs,
         ConfigKey const & rhs)
+    noexcept(noexcept(lhs.value == rhs.value))
     {
         return lhs.value == rhs.value;
     }
@@ -2571,4 +2721,4 @@ struct std::hash<app::config::ConfigKey>
             static_cast<std::string const &>(t));
     }
 };
-#endif // EXAMPLE_E1FDB3E2656702E949EB29E24DF2AC7BB25F1DF0
+#endif // EXAMPLE_B261BBEA2220733276FCC2E8460DB285D42FA507
