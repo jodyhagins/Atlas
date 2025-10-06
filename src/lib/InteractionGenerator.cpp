@@ -147,6 +147,137 @@ generate_value_access(
     }
 }
 
+// Type classification for proper name qualification
+enum class TypeCategory
+{
+    Primitive, // int, double, size_t, etc.
+    StdLibrary, // std::string, std::vector, etc.
+    UserDefined // User's strong types
+};
+
+TypeCategory
+classify_type(std::string const & type_name)
+{
+    std::string trimmed = trim(type_name);
+
+    // Check for std:: types
+    if (trimmed.find("std::") == 0 || trimmed.find("::std::") == 0) {
+        return TypeCategory::StdLibrary;
+    }
+
+    // List of primitive types (including from <cstddef>, <cstdint>)
+    static std::set<std::string> const primitives = {
+        "void",
+        "bool",
+        "char",
+        "signed char",
+        "unsigned char",
+        "char8_t",
+        "char16_t",
+        "char32_t",
+        "wchar_t",
+        "short",
+        "signed short",
+        "unsigned short",
+        "int",
+        "signed int",
+        "unsigned int",
+        "signed",
+        "unsigned",
+        "long",
+        "signed long",
+        "unsigned long",
+        "long long",
+        "signed long long",
+        "unsigned long long",
+        "float",
+        "double",
+        "long double",
+
+        // <cstddef> types
+        "size_t",
+        "ptrdiff_t",
+        "nullptr_t",
+
+        // <cstdint> types
+        "int8_t",
+        "uint8_t",
+        "int16_t",
+        "uint16_t",
+        "int32_t",
+        "uint32_t",
+        "int64_t",
+        "uint64_t",
+        "int_fast8_t",
+        "uint_fast8_t",
+        "int_fast16_t",
+        "uint_fast16_t",
+        "int_fast32_t",
+        "uint_fast32_t",
+        "int_fast64_t",
+        "uint_fast64_t",
+        "int_least8_t",
+        "uint_least8_t",
+        "int_least16_t",
+        "uint_least16_t",
+        "int_least32_t",
+        "uint_least32_t",
+        "int_least64_t",
+        "uint_least64_t",
+        "intmax_t",
+        "uintmax_t",
+        "intptr_t",
+        "uintptr_t"};
+
+    if (primitives.find(trimmed) != primitives.end()) {
+        return TypeCategory::Primitive;
+    }
+
+    return TypeCategory::UserDefined;
+}
+
+std::string
+qualify_type_name(
+    std::string const & type_name,
+    std::string const & current_namespace)
+{
+    TypeCategory category = classify_type(type_name);
+
+    switch (category) {
+    case TypeCategory::Primitive:
+        // Primitives: use as-is, no namespace qualification
+        return type_name;
+
+    case TypeCategory::StdLibrary:
+        // std:: types: ensure global qualification if not already present
+        if (type_name[0] == ':') {
+            return type_name; // Already globally qualified
+        }
+        if (type_name.find("std::") == 0) {
+            return "::" + type_name; // Add global qualifier
+        }
+        return type_name; // Already correct
+
+    case TypeCategory::UserDefined:
+        // User-defined types: qualify with namespace if not already qualified
+        if (type_name.find("::") != std::string::npos) {
+            // Already has namespace qualification
+            if (type_name[0] == ':') {
+                return type_name; // Already globally qualified
+            }
+            return "::" + type_name; // Add global qualifier
+        }
+
+        // No namespace in type name - use current namespace
+        if (current_namespace.empty()) {
+            return "::" + type_name;
+        }
+        return "::" + current_namespace + "::" + type_name;
+    }
+
+    return type_name; // Fallback
+}
+
 // Generate a single operator function
 std::string
 generate_operator_function(
@@ -273,18 +404,10 @@ operator () (InteractionFileDescription const & desc) const
     std::map<std::string, ValueAccessInfo> rhs_value_accessors;
 
     for (auto const & interaction : desc.interactions) {
-        // Build fully qualified RHS type name
-        std::string fully_qualified_rhs = interaction.rhs_type;
-        if (not interaction.interaction_namespace.empty() &&
-            fully_qualified_rhs.find("::") == std::string::npos)
-        {
-            // RHS is unqualified - prepend the interaction namespace
-            fully_qualified_rhs = interaction.interaction_namespace +
-                "::" + interaction.rhs_type;
-        }
-        if (not fully_qualified_rhs.starts_with("::")) {
-            fully_qualified_rhs = "::" + fully_qualified_rhs;
-        }
+        // Build fully qualified RHS type name using proper type qualification
+        std::string fully_qualified_rhs = qualify_type_name(
+            interaction.rhs_type,
+            interaction.interaction_namespace);
 
         // Only generate if RHS has a custom value access that's not
         // atlas::value
