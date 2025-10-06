@@ -920,14 +920,17 @@ generate_strong_types_file(
 
     // Generate each type WITHOUT preamble, and collect includes
     for (auto const & desc : descriptions) {
-        auto const info = parse(desc);
+        auto info = parse(desc);
 
         // Collect includes from this type
         for (auto const & include : info.includes) {
             all_includes.insert("#include " + include);
         }
 
-        // Generate just the type code (no preamble, no header guards)
+        // Clear includes from info since we're hoisting them to the top
+        info.includes.clear();
+
+        // Generate just the type code (no preamble, no header guards, no includes)
         combined_code << render_code(info);
     }
 
@@ -952,6 +955,10 @@ generate_strong_types_file(
     output << "#ifndef " << guard << '\n'
         << "#define " << guard << "\n\n"
         << (notice_banner + 1) << '\n';
+
+    // Remove <compare> from top-level includes since it's already
+    // conditionally included in the preamble
+    all_includes.erase("#include <compare>");
 
     // Add all unique includes (already sorted by std::set)
     for (auto const & include : all_includes) {
