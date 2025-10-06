@@ -705,6 +705,115 @@ TEST_SUITE("StrongTypeGenerator")
         }
     }
 
+    TEST_CASE("Default Initialization Code Generation")
+    {
+        CodeStructureParser parser;
+
+        SUBCASE("explicit non-zero default value") {
+            auto code = generate_strong_type(make_description(
+                "struct",
+                "test",
+                "WithDefault",
+                "strong int; ==",
+                "42"));
+
+            // Verify the generated code contains the correct initialization
+            CHECK(code.find("int value{42};") != std::string::npos);
+        }
+
+        SUBCASE("explicit zero default value") {
+            auto code = generate_strong_type(make_description(
+                "struct",
+                "test",
+                "WithZero",
+                "strong int; ==",
+                "0"));
+
+            // Verify zero is explicitly initialized
+            CHECK(code.find("int value{0};") != std::string::npos);
+        }
+
+        SUBCASE("missing default value has no initializer") {
+            auto code = generate_strong_type(make_description(
+                "struct",
+                "test",
+                "WithoutDefault",
+                "strong int; =="));
+
+            // Should have declaration without initializer
+            CHECK(code.find("int value;") != std::string::npos);
+            // Should NOT have brace initialization
+            CHECK(code.find("int value{") == std::string::npos);
+        }
+
+        SUBCASE("empty string default value has no initializer") {
+            auto code = generate_strong_type(make_description(
+                "struct",
+                "test",
+                "WithEmptyString",
+                "strong int; ==",
+                ""));
+
+            // Empty default_value should behave like missing
+            CHECK(code.find("int value;") != std::string::npos);
+            CHECK(code.find("int value{") == std::string::npos);
+        }
+
+        SUBCASE("string type with default value") {
+            auto code = generate_strong_type(make_description(
+                "struct",
+                "test",
+                "WithStringDefault",
+                "strong std::string; ==",
+                R"("hello")"));
+
+            // Verify string initialization
+            CHECK(
+                code.find(R"(std::string value{"hello"};)") !=
+                std::string::npos);
+        }
+
+        SUBCASE("complex initializer with braces") {
+            auto code = generate_strong_type(make_description(
+                "struct",
+                "test",
+                "WithComplexDefault",
+                "strong std::vector<int>; ==",
+                "{1, 2, 3}"));
+
+            // Verify complex initialization (note double braces in generated
+            // code)
+            CHECK(
+                code.find("std::vector<int> value{{1, 2, 3}};") !=
+                std::string::npos);
+        }
+
+        SUBCASE("double type with decimal default") {
+            auto code = generate_strong_type(make_description(
+                "struct",
+                "test",
+                "Money",
+                "strong double",
+                "0.0"));
+
+            CHECK(code.find("double value{0.0};") != std::string::npos);
+        }
+
+        SUBCASE("denominator with non-zero default") {
+            auto code = generate_strong_type(make_description(
+                "struct",
+                "test",
+                "Denominator",
+                "strong long",
+                "1"));
+
+            // Verify non-zero default is honored
+            CHECK(code.find("long value{1};") != std::string::npos);
+            // Should NOT default to zero
+            CHECK(code.find("long value{0}") == std::string::npos);
+        }
+    }
+
     TEST_CASE("Error Handling")
     {
         CodeStructureParser parser;
