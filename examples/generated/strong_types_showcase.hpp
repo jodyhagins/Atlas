@@ -1,5 +1,5 @@
-#ifndef EXAMPLE_714EA71F36DDFEAD94BBAEF0E27280AAE0D6D0B7
-#define EXAMPLE_714EA71F36DDFEAD94BBAEF0E27280AAE0D6D0B7
+#ifndef EXAMPLE_8A7EB72D946F03F9653364987570499381902227
+#define EXAMPLE_8A7EB72D946F03F9653364987570499381902227
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -26,6 +26,15 @@
 
 // This is boilerplate that is part of every Atlas interaction file.
 // Nothing to see here, move along.
+
+// Atlas feature detection macros
+#ifndef ATLAS_NODISCARD
+#if defined(__cpp_attributes) && __cpp_attributes >= 201603L
+#define ATLAS_NODISCARD [[nodiscard]]
+#else
+#define ATLAS_NODISCARD
+#endif
+#endif
 
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
@@ -414,6 +423,7 @@ struct Money
 template <>
 struct std::hash<finance::core::Money>
 {
+    ATLAS_NODISCARD
     constexpr std::size_t operator () (finance::core::Money const & t) const
     noexcept(
         noexcept(std::hash<double>{}(
@@ -508,6 +518,7 @@ public:
 template <>
 struct std::hash<ids::v1::UserId>
 {
+    ATLAS_NODISCARD
     std::size_t operator () (ids::v1::UserId const & t) const
     noexcept(
         noexcept(std::hash<unsigned long>{}(
@@ -1701,6 +1712,7 @@ public:
 template <>
 struct std::hash<security::EncryptedData>
 {
+    ATLAS_NODISCARD
     constexpr std::size_t operator () (security::EncryptedData const & t) const
     noexcept(
         noexcept(std::hash<std::string>{}(
@@ -2104,6 +2116,7 @@ struct ThreadId
 template <>
 struct std::hash<concurrency::ThreadId>
 {
+    ATLAS_NODISCARD
     std::size_t operator () (concurrency::ThreadId const & t) const
     noexcept(
         noexcept(std::hash<int>{}(
@@ -2740,6 +2753,7 @@ public:
 template <>
 struct std::hash<app::config::ConfigKey>
 {
+    ATLAS_NODISCARD
     constexpr std::size_t operator () (app::config::ConfigKey const & t) const
     noexcept(
         noexcept(std::hash<std::string>{}(
@@ -2749,4 +2763,4 @@ struct std::hash<app::config::ConfigKey>
             static_cast<std::string const &>(t));
     }
 };
-#endif // EXAMPLE_714EA71F36DDFEAD94BBAEF0E27280AAE0D6D0B7
+#endif // EXAMPLE_8A7EB72D946F03F9653364987570499381902227
