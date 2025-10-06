@@ -122,31 +122,6 @@ get_signature_type(
     return type_name;
 }
 
-// Generate value access expression
-std::string
-generate_value_access(
-    std::string const & var_name,
-    std::string const & specific_access,
-    std::string const & default_access)
-{
-    // Use specific access if provided, otherwise fall back to default
-    std::string value_access = specific_access.empty() ? default_access
-                                                       : specific_access;
-    if (value_access.empty()) {
-        value_access = "atlas::value";
-    }
-    if (value_access[0] == '.') {
-        // Member access: .value, .get(), etc.
-        return var_name + value_access;
-    } else if (value_access == "()") {
-        // Function call operator
-        return var_name + "()";
-    } else {
-        // Function call: get_value, extract, atlas::value, etc.
-        return value_access + "(" + var_name + ")";
-    }
-}
-
 // Type classification for proper name qualification
 enum class TypeCategory
 {
@@ -234,6 +209,43 @@ classify_type(std::string const & type_name)
     }
 
     return TypeCategory::UserDefined;
+}
+
+// Generate value access expression
+std::string
+generate_value_access(
+    std::string const & var_name,
+    std::string const & type_name,
+    std::string const & specific_access,
+    std::string const & default_access)
+{
+    // Classify the type to determine if it's a primitive or std library type
+    TypeCategory category = classify_type(type_name);
+
+    // Primitives and std library types don't have .value members
+    // Use them directly regardless of value_access settings
+    if (category == TypeCategory::Primitive ||
+        category == TypeCategory::StdLibrary)
+    {
+        return var_name;
+    }
+
+    // Use specific access if provided, otherwise fall back to default
+    std::string value_access = specific_access.empty() ? default_access
+                                                       : specific_access;
+    if (value_access.empty()) {
+        value_access = "atlas::value";
+    }
+    if (value_access[0] == '.') {
+        // Member access: .value, .get(), etc.
+        return var_name + value_access;
+    } else if (value_access == "()") {
+        // Function call operator
+        return var_name + "()";
+    } else {
+        // Function call: get_value, extract, atlas::value, etc.
+        return value_access + "(" + var_name + ")";
+    }
 }
 
 std::string
@@ -391,10 +403,12 @@ generate_operator_function(
     // default
     std::string lhs_value = generate_value_access(
         "lhs",
+        lhs_type,
         reverse ? interaction.rhs_value_access : interaction.lhs_value_access,
         interaction.value_access);
     std::string rhs_value = generate_value_access(
         "rhs",
+        rhs_type,
         reverse ? interaction.lhs_value_access : interaction.rhs_value_access,
         interaction.value_access);
 
@@ -459,17 +473,24 @@ operator () (InteractionFileDescription const & desc) const
         }
 
         if (not value_access_expr.empty()) {
-            auto it = rhs_value_accessors.find(fully_qualified_rhs);
-            if (it == rhs_value_accessors.end()) {
-                // First time seeing this type
-                rhs_value_accessors[fully_qualified_rhs] = ValueAccessInfo{
-                    value_access_expr,
-                    interaction.is_constexpr};
-            } else {
-                // Type already exists - if ANY interaction is non-constexpr,
-                // the atlas_value must be non-constexpr
-                if (not interaction.is_constexpr) {
-                    it->second.is_constexpr = false;
+            // Skip primitives and std library types - they don't need
+            // custom atlas_value overloads
+            TypeCategory rhs_category = classify_type(interaction.rhs_type);
+            if (rhs_category != TypeCategory::Primitive &&
+                rhs_category != TypeCategory::StdLibrary)
+            {
+                auto it = rhs_value_accessors.find(fully_qualified_rhs);
+                if (it == rhs_value_accessors.end()) {
+                    // First time seeing this type
+                    rhs_value_accessors[fully_qualified_rhs] = ValueAccessInfo{
+                        value_access_expr,
+                        interaction.is_constexpr};
+                } else {
+                    // Type already exists - if ANY interaction is
+                    // non-constexpr, the atlas_value must be non-constexpr
+                    if (not interaction.is_constexpr) {
+                        it->second.is_constexpr = false;
+                    }
                 }
             }
         }
@@ -492,10 +513,12 @@ namespace atlas {
             body << "auto\natlas_value(" << rhs_type
                 << " const& v, value_tag)\n";
             body << "-> decltype("
-                << generate_value_access("v", info.access_expr, "") << ")\n";
+                << generate_value_access("v", rhs_type, info.access_expr, "")
+                << ")\n";
             body << "{\n";
             body << "    return "
-                << generate_value_access("v", info.access_expr, "") << ";\n";
+                << generate_value_access("v", rhs_type, info.access_expr, "")
+                << ";\n";
             body << "}\n\n";
         }
 

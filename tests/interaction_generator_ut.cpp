@@ -1087,7 +1087,9 @@ TEST_SUITE("InteractionGenerator")
 
     TEST_CASE("Primitive type qualification")
     {
-        SUBCASE("size_t is not namespace-qualified in atlas_value") {
+        SUBCASE(
+            "size_t is not namespace-qualified and no atlas_value generated")
+        {
             InteractionFileDescription desc;
             desc.interactions.push_back(InteractionDescription{
                 .op_symbol = "*",
@@ -1108,11 +1110,16 @@ TEST_SUITE("InteractionGenerator")
             // Should NOT contain ::data::size_t (invalid)
             CHECK_FALSE(contains(code, "::data::size_t"));
 
-            // Should contain plain size_t in atlas_value
-            CHECK(contains(code, "atlas_value(size_t const& v, value_tag)"));
+            // Should NOT generate atlas_value for primitives
+            CHECK_FALSE(contains(code, "atlas_value(size_t const& v"));
+
+            // Should use size_t directly without .value in operator
+            CHECK(contains(code, "lhs.value * rhs"));
         }
 
-        SUBCASE("double is not namespace-qualified in atlas_value") {
+        SUBCASE(
+            "double is not namespace-qualified and no atlas_value generated")
+        {
             InteractionFileDescription desc;
             desc.interactions.push_back(InteractionDescription{
                 .op_symbol = "*",
@@ -1133,11 +1140,14 @@ TEST_SUITE("InteractionGenerator")
             // Should NOT contain ::finance::core::double (invalid)
             CHECK_FALSE(contains(code, "::finance::core::double"));
 
-            // Should contain plain double in atlas_value
-            CHECK(contains(code, "atlas_value(double const& v, value_tag)"));
+            // Should NOT generate atlas_value for primitives
+            CHECK_FALSE(contains(code, "atlas_value(double const& v"));
+
+            // Should use double directly without .value in operator
+            CHECK(contains(code, "lhs.value * rhs"));
         }
 
-        SUBCASE("int is not namespace-qualified in atlas_value") {
+        SUBCASE("int is not namespace-qualified and no atlas_value generated") {
             InteractionFileDescription desc;
             desc.interactions.push_back(InteractionDescription{
                 .op_symbol = "<<",
@@ -1158,8 +1168,11 @@ TEST_SUITE("InteractionGenerator")
             // Should NOT contain ::net::ipv4::int (invalid)
             CHECK_FALSE(contains(code, "::net::ipv4::int"));
 
-            // Should contain plain int in atlas_value
-            CHECK(contains(code, "atlas_value(int const& v, value_tag)"));
+            // Should NOT generate atlas_value for primitives
+            CHECK_FALSE(contains(code, "atlas_value(int const& v"));
+
+            // Should use int directly without .value in operator
+            CHECK(contains(code, "lhs.value << rhs"));
         }
 
         SUBCASE("Multiple primitive types") {
@@ -1201,15 +1214,21 @@ TEST_SUITE("InteractionGenerator")
             CHECK_FALSE(contains(code, "::data::size_t"));
             CHECK_FALSE(contains(code, "::finance::double"));
 
-            // Check correct plain primitive types
-            CHECK(contains(code, "atlas_value(size_t const& v, value_tag)"));
-            CHECK(contains(code, "atlas_value(double const& v, value_tag)"));
+            // Primitives should NOT generate atlas_value functions
+            CHECK_FALSE(contains(code, "atlas_value(size_t const& v"));
+            CHECK_FALSE(contains(code, "atlas_value(double const& v"));
+
+            // Should use primitives directly in operators
+            CHECK(contains(code, "ByteCount{lhs.value * rhs}"));
+            CHECK(contains(code, "Money{lhs.value * rhs}"));
         }
     }
 
     TEST_CASE("std:: type qualification")
     {
-        SUBCASE("std::string is globally qualified in atlas_value") {
+        SUBCASE("std::string is not namespace-qualified and no atlas_value "
+                "generated")
+        {
             InteractionFileDescription desc;
             desc.interactions.push_back(InteractionDescription{
                 .op_symbol = "+",
@@ -1230,13 +1249,15 @@ TEST_SUITE("InteractionGenerator")
             // Should NOT contain ::app::config::std::string (invalid)
             CHECK_FALSE(contains(code, "::app::config::std::string"));
 
-            // Should contain ::std::string (globally qualified)
-            CHECK(contains(
-                code,
-                "atlas_value(::std::string const& v, value_tag)"));
+            // std library types should NOT generate atlas_value functions
+            CHECK_FALSE(contains(code, "atlas_value(std::string const& v"));
+            CHECK_FALSE(contains(code, "atlas_value(::std::string const& v"));
+
+            // Should use std::string directly in operator
+            CHECK(contains(code, "lhs.value + rhs"));
         }
 
-        SUBCASE("Already globally qualified std::string stays as-is") {
+        SUBCASE("std::string used directly without .value") {
             InteractionFileDescription desc;
             desc.interactions.push_back(InteractionDescription{
                 .op_symbol = "+",
@@ -1254,10 +1275,12 @@ TEST_SUITE("InteractionGenerator")
 
             auto code = generate_interactions(desc);
 
-            // Should contain ::std::string exactly as provided
-            CHECK(contains(
-                code,
-                "atlas_value(::std::string const& v, value_tag)"));
+            // std library types should NOT generate atlas_value functions
+            CHECK_FALSE(contains(code, "atlas_value(std::string const& v"));
+            CHECK_FALSE(contains(code, "atlas_value(::std::string const& v"));
+
+            // Should use std::string directly in operator
+            CHECK(contains(code, "lhs.value + rhs"));
         }
     }
 
@@ -1379,9 +1402,12 @@ TEST_SUITE("InteractionGenerator")
 
             auto code = generate_interactions(desc);
 
-            // Primitive should NOT be qualified (this is the critical test)
-            CHECK(contains(code, "atlas_value(double const& v, value_tag)"));
+            // Primitives should NOT be qualified and NOT generate atlas_value
+            CHECK_FALSE(contains(code, "atlas_value(double const& v"));
             CHECK_FALSE(contains(code, "::physics::double"));
+
+            // Should use double directly in operator
+            CHECK(contains(code, " * rhs"));
         }
 
         SUBCASE("User type with std:: type") {
@@ -1402,12 +1428,14 @@ TEST_SUITE("InteractionGenerator")
 
             auto code = generate_interactions(desc);
 
-            // std:: type should be globally qualified (this is the critical
-            // test)
-            CHECK(contains(
-                code,
-                "atlas_value(::std::vector const& v, value_tag)"));
+            // std:: types should NOT be namespace-qualified and NOT generate
+            // atlas_value
+            CHECK_FALSE(contains(code, "atlas_value(std::vector const& v"));
+            CHECK_FALSE(contains(code, "atlas_value(::std::vector const& v"));
             CHECK_FALSE(contains(code, "::data::std::vector"));
+
+            // Should use std::vector directly in operator
+            CHECK(contains(code, " + rhs"));
         }
 
         SUBCASE("All primitive types are correctly handled") {
@@ -1447,14 +1475,210 @@ TEST_SUITE("InteractionGenerator")
             auto code = generate_interactions(desc);
 
             // None of the primitives should have namespace qualification
+            // and none should generate atlas_value functions
             for (auto const & prim : primitives) {
                 std::string invalid = "::test::namespace::" + prim;
                 CHECK_FALSE(contains(code, invalid));
 
-                std::string valid = "atlas_value(" + prim +
-                    " const& v, value_tag)";
-                CHECK(contains(code, valid));
+                // Primitives should NOT generate atlas_value functions
+                std::string atlas_val = "atlas_value(" + prim + " const& v";
+                CHECK_FALSE(contains(code, atlas_val));
             }
+        }
+    }
+
+    TEST_CASE("Primitive types don't get .value access")
+    {
+        SUBCASE("size_t RHS with value_access=.value") {
+            InteractionFileDescription desc;
+            InteractionDescription interaction{
+                .op_symbol = "*",
+                .lhs_type = "ByteCount",
+                .rhs_type = "size_t",
+                .result_type = "ByteCount",
+                .symmetric = false,
+                .lhs_is_template = false,
+                .rhs_is_template = false,
+                .is_constexpr = true,
+                .interaction_namespace = "data",
+                .value_access = ".value"};
+            desc.interactions.push_back(interaction);
+
+            auto code = generate_interactions(desc);
+
+            // Should NOT have rhs.value for size_t
+            CHECK_FALSE(contains(code, "rhs.value"));
+
+            // Should have lhs.value for ByteCount and direct rhs for size_t
+            CHECK(contains(code, "lhs.value * rhs"));
+        }
+
+        SUBCASE("double RHS with value_access=.value") {
+            InteractionFileDescription desc;
+            InteractionDescription interaction{
+                .op_symbol = "*",
+                .lhs_type = "Money",
+                .rhs_type = "double",
+                .result_type = "Money",
+                .symmetric = false,
+                .lhs_is_template = false,
+                .rhs_is_template = false,
+                .is_constexpr = true,
+                .interaction_namespace = "finance",
+                .value_access = ".value"};
+            desc.interactions.push_back(interaction);
+
+            auto code = generate_interactions(desc);
+
+            // Should NOT have rhs.value for double
+            CHECK_FALSE(contains(code, "rhs.value"));
+
+            // Should have lhs.value for Money and direct rhs for double
+            CHECK(contains(code, "lhs.value * rhs"));
+        }
+
+        SUBCASE("double LHS with primitive on left side") {
+            InteractionFileDescription desc;
+            InteractionDescription interaction{
+                .op_symbol = "*",
+                .lhs_type = "double",
+                .rhs_type = "Meters",
+                .result_type = "Meters",
+                .symmetric = false,
+                .lhs_is_template = false,
+                .rhs_is_template = false,
+                .is_constexpr = true,
+                .interaction_namespace = "physics",
+                .value_access = ".value"};
+            desc.interactions.push_back(interaction);
+
+            auto code = generate_interactions(desc);
+
+            // Should NOT have lhs.value for double
+            CHECK_FALSE(contains(code, "lhs.value"));
+
+            // Should have direct lhs for double and rhs.value for Meters
+            CHECK(contains(code, "lhs * rhs.value"));
+        }
+
+        SUBCASE("int primitive with custom value access") {
+            InteractionFileDescription desc;
+            InteractionDescription interaction{
+                .op_symbol = "+",
+                .lhs_type = "Counter",
+                .rhs_type = "int",
+                .result_type = "Counter",
+                .symmetric = false,
+                .lhs_is_template = false,
+                .rhs_is_template = false,
+                .is_constexpr = true,
+                .interaction_namespace = "util",
+                .value_access = ".value"};
+            desc.interactions.push_back(interaction);
+
+            auto code = generate_interactions(desc);
+
+            // Should NOT have rhs.value for int
+            CHECK_FALSE(contains(code, "rhs.value"));
+        }
+    }
+
+    TEST_CASE("std library types don't get .value access")
+    {
+        SUBCASE("std::string RHS with value_access=.value") {
+            InteractionFileDescription desc;
+            InteractionDescription interaction{
+                .op_symbol = "+",
+                .lhs_type = "ConfigKey",
+                .rhs_type = "std::string",
+                .result_type = "ConfigKey",
+                .symmetric = false,
+                .lhs_is_template = false,
+                .rhs_is_template = false,
+                .is_constexpr = true,
+                .interaction_namespace = "config",
+                .value_access = ".value"};
+            desc.interactions.push_back(interaction);
+
+            auto code = generate_interactions(desc);
+
+            // Should NOT have rhs.value for std::string
+            CHECK_FALSE(contains(code, "rhs.value"));
+
+            // Should have lhs.value for ConfigKey and direct rhs for
+            // std::string
+            CHECK(contains(code, "lhs.value + rhs"));
+        }
+    }
+
+    TEST_CASE("Atlas types still get .value access")
+    {
+        SUBCASE("Both sides are Atlas types") {
+            InteractionFileDescription desc;
+            InteractionDescription interaction{
+                .op_symbol = "+",
+                .lhs_type = "ByteCount",
+                .rhs_type = "ByteCount",
+                .result_type = "ByteCount",
+                .symmetric = false,
+                .lhs_is_template = false,
+                .rhs_is_template = false,
+                .is_constexpr = true,
+                .interaction_namespace = "data",
+                .value_access = ".value"};
+            desc.interactions.push_back(interaction);
+
+            auto code = generate_interactions(desc);
+
+            // Should have .value for both sides (both are Atlas types)
+            CHECK(contains(code, "lhs.value + rhs.value"));
+        }
+    }
+
+    TEST_CASE("Primitives don't generate atlas_value overloads")
+    {
+        SUBCASE("size_t with .value access should not generate atlas_value") {
+            InteractionFileDescription desc;
+            InteractionDescription interaction{
+                .op_symbol = "*",
+                .lhs_type = "ByteCount",
+                .rhs_type = "size_t",
+                .result_type = "ByteCount",
+                .symmetric = false,
+                .lhs_is_template = false,
+                .rhs_is_template = false,
+                .is_constexpr = true,
+                .interaction_namespace = "data",
+                .value_access = ".value"};
+            desc.interactions.push_back(interaction);
+
+            auto code = generate_interactions(desc);
+
+            // Should NOT generate atlas_value for size_t
+            CHECK_FALSE(contains(code, "atlas_value(size_t const& v"));
+            CHECK_FALSE(contains(code, "atlas_value(::size_t const& v"));
+        }
+
+        SUBCASE("double with .value access should not generate atlas_value") {
+            InteractionFileDescription desc;
+            InteractionDescription interaction{
+                .op_symbol = "*",
+                .lhs_type = "Money",
+                .rhs_type = "double",
+                .result_type = "Money",
+                .symmetric = false,
+                .lhs_is_template = false,
+                .rhs_is_template = false,
+                .is_constexpr = true,
+                .interaction_namespace = "finance",
+                .value_access = ".value"};
+            desc.interactions.push_back(interaction);
+
+            auto code = generate_interactions(desc);
+
+            // Should NOT generate atlas_value for double
+            CHECK_FALSE(contains(code, "atlas_value(double const& v"));
+            CHECK_FALSE(contains(code, "atlas_value(::double const& v"));
         }
     }
 }
