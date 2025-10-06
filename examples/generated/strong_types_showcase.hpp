@@ -1,5 +1,5 @@
-#ifndef EXAMPLE_A0D087AACFC198B38B2C7E04F0F1AB5C6927E1C6
-#define EXAMPLE_A0D087AACFC198B38B2C7E04F0F1AB5C6927E1C6
+#ifndef EXAMPLE_714EA71F36DDFEAD94BBAEF0E27280AAE0D6D0B7
+#define EXAMPLE_714EA71F36DDFEAD94BBAEF0E27280AAE0D6D0B7
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -565,7 +565,6 @@ struct Meters
      */
     friend constexpr Meters operator - (Meters const & t)
     noexcept(
-        std::is_nothrow_copy_constructible<Meters>::value &&
         noexcept(- std::declval<double const&>()) &&
         std::is_nothrow_assignable<
             double&,
@@ -748,7 +747,6 @@ struct Seconds
      */
     friend constexpr Seconds operator - (Seconds const & t)
     noexcept(
-        std::is_nothrow_copy_constructible<Seconds>::value &&
         noexcept(- std::declval<double const&>()) &&
         std::is_nothrow_assignable<
             double&,
@@ -931,7 +929,6 @@ struct MetersPerSecond
      */
     friend constexpr MetersPerSecond operator - (MetersPerSecond const & t)
     noexcept(
-        std::is_nothrow_copy_constructible<MetersPerSecond>::value &&
         noexcept(- std::declval<double const&>()) &&
         std::is_nothrow_assignable<
             double&,
@@ -1121,9 +1118,7 @@ struct ByteCount
      * Apply the postfix ++ operator to the wrapped object.
      */
     friend constexpr ByteCount operator ++ (ByteCount & t, int)
-    noexcept(
-        std::is_nothrow_copy_constructible<ByteCount>::value &&
-        noexcept(++std::declval<size_t&>()))
+    noexcept(noexcept(++std::declval<size_t&>()))
     {
         auto result = t;
         ++t.value;
@@ -1143,9 +1138,7 @@ struct ByteCount
      * Apply the postfix -- operator to the wrapped object.
      */
     friend constexpr ByteCount operator -- (ByteCount & t, int)
-    noexcept(
-        std::is_nothrow_copy_constructible<ByteCount>::value &&
-        noexcept(--std::declval<size_t&>()))
+    noexcept(noexcept(--std::declval<size_t&>()))
     {
         auto result = t;
         --t.value;
@@ -1406,7 +1399,6 @@ struct RedChannel
      */
     friend constexpr RedChannel operator ~ (RedChannel const & t)
     noexcept(
-        std::is_nothrow_copy_constructible<RedChannel>::value &&
         noexcept(~ std::declval<uint8_t const&>()) &&
         std::is_nothrow_assignable<
             uint8_t&,
@@ -1765,7 +1757,6 @@ struct Latitude
      */
     friend constexpr Latitude operator - (Latitude const & t)
     noexcept(
-        std::is_nothrow_copy_constructible<Latitude>::value &&
         noexcept(- std::declval<double const&>()) &&
         std::is_nothrow_assignable<
             double&,
@@ -1914,7 +1905,6 @@ struct Longitude
      */
     friend constexpr Longitude operator - (Longitude const & t)
     noexcept(
-        std::is_nothrow_copy_constructible<Longitude>::value &&
         noexcept(- std::declval<double const&>()) &&
         std::is_nothrow_assignable<
             double&,
@@ -2436,7 +2426,6 @@ struct Octet
      */
     friend constexpr Octet operator ~ (Octet const & t)
     noexcept(
-        std::is_nothrow_copy_constructible<Octet>::value &&
         noexcept(~ std::declval<uint8_t const&>()) &&
         std::is_nothrow_assignable<
             uint8_t&,
@@ -2760,4 +2749,4 @@ struct std::hash<app::config::ConfigKey>
             static_cast<std::string const &>(t));
     }
 };
-#endif // EXAMPLE_A0D087AACFC198B38B2C7E04F0F1AB5C6927E1C6
+#endif // EXAMPLE_714EA71F36DDFEAD94BBAEF0E27280AAE0D6D0B7

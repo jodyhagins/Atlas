@@ -262,7 +262,6 @@ constexpr char unary_operators[] = R"(
      */
     friend {{{const_expr}}}{{{class_name}}} operator {{{op}}} ({{{class_name}}} const & t)
     noexcept(
-        std::is_nothrow_copy_constructible<{{{class_name}}}>::value &&
         noexcept({{{op}}} std::declval<{{{underlying_type}}} const&>()) &&
         std::is_nothrow_assignable<
             {{{underlying_type}}}&,
@@ -288,9 +287,7 @@ constexpr char increment_operator[] = R"(
      * Apply the postfix {{{op}}} operator to the wrapped object.
      */
     friend {{{const_expr}}}{{{class_name}}} operator {{{op}}} ({{{class_name}}} & t, int)
-    noexcept(
-        std::is_nothrow_copy_constructible<{{{class_name}}}>::value &&
-        noexcept({{{op}}}std::declval<{{{underlying_type}}}&>()))
+    noexcept(noexcept({{{op}}}std::declval<{{{underlying_type}}}&>()))
     {
         auto result = t;
         {{{op}}}t.value;
