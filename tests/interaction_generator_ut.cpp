@@ -136,7 +136,7 @@ TEST_SUITE("InteractionGenerator")
         CHECK(contains(code, "#endif"));
 
         // Check C++20 concept version
-        CHECK(contains(code, "template<std::floating_point T>"));
+        CHECK(contains(code, "template <std::floating_point T>"));
 
         // Check C++11 SFINAE version
         CHECK(contains(
@@ -177,7 +177,7 @@ TEST_SUITE("InteractionGenerator")
         auto code = generate_interactions(desc);
 
         // Should have concept version only
-        CHECK(contains(code, "template<std::integral T>"));
+        CHECK(contains(code, "template <std::integral T>"));
 
         // Should not have feature detection
         CHECK_FALSE(contains(code, "#if __cpp_concepts"));
@@ -254,8 +254,8 @@ TEST_SUITE("InteractionGenerator")
         auto code = generate_interactions(desc);
 
         // Should have two template parameters TL and TR
-        CHECK(contains(code, "template<std::integral TL>"));
-        CHECK(contains(code, "template<std::floating_point TR>"));
+        CHECK(contains(code, "template <std::integral TL>"));
+        CHECK(contains(code, "template <std::floating_point TR>"));
         CHECK(contains(code, "operator*(TL lhs, TR rhs)"));
     }
 
@@ -794,12 +794,12 @@ TEST_SUITE("InteractionGenerator")
             // Should have non-constexpr atlas_value
             CHECK(contains(
                 code,
-                "inline auto atlas_value(::external::OtherType const& v, "
+                "inline auto\natlas_value(::external::OtherType const& v, "
                 "value_tag)"));
             // Should NOT have constexpr
             CHECK_FALSE(contains(
                 code,
-                "inline constexpr auto atlas_value(::external::OtherType "
+                "inline constexpr auto\natlas_value(::external::OtherType "
                 "const& v, value_tag)"));
         }
 
@@ -828,7 +828,7 @@ TEST_SUITE("InteractionGenerator")
             // Should have constexpr atlas_value
             CHECK(contains(
                 code,
-                "inline constexpr auto atlas_value(::external::OtherType "
+                "inline constexpr auto\natlas_value(::external::OtherType "
                 "const& v, value_tag)"));
         }
 
@@ -872,11 +872,11 @@ TEST_SUITE("InteractionGenerator")
             // non-constexpr
             CHECK(contains(
                 code,
-                "inline auto atlas_value(::external::Shared const& v, "
+                "inline auto\natlas_value(::external::Shared const& v, "
                 "value_tag)"));
             CHECK_FALSE(contains(
                 code,
-                "inline constexpr auto atlas_value(::external::Shared const& "
+                "inline constexpr auto\natlas_value(::external::Shared const& "
                 "v, value_tag)"));
         }
 
@@ -906,11 +906,11 @@ TEST_SUITE("InteractionGenerator")
             // fallback
             CHECK(contains(
                 code,
-                "inline auto atlas_value(::external::OtherType const& v, "
+                "inline auto\natlas_value(::external::OtherType const& v, "
                 "value_tag)"));
             CHECK_FALSE(contains(
                 code,
-                "inline constexpr auto atlas_value(::external::OtherType "
+                "inline constexpr auto\natlas_value(::external::OtherType "
                 "const& v, value_tag)"));
         }
     }

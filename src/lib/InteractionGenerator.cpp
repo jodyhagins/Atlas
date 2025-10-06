@@ -26,16 +26,21 @@ namespace {
 // 2. Otherwise fall back to binary operator + assignment (creates temporary)
 static constexpr char const compound_operator_template[] = R"(
 namespace atlas_detail {
-template<typename L, typename R, typename = void>
-struct has_compound_op_{{{op_id}}} : std::false_type {};
+template <typename L, typename R, typename = void>
+struct has_compound_op_{{{op_id}}}
+: std::false_type
+{ };
 
-template<typename L, typename R>
-struct has_compound_op_{{{op_id}}}<L, R,
+template <typename L, typename R>
+struct has_compound_op_{{{op_id}}}<
+    L,
+    R,
     decltype((void)(atlas::value(std::declval<L&>()) {{{compound_op}}}
         atlas::value(std::declval<R const&>())))>
-: std::true_type {};
+: std::true_type
+{ };
 
-template<typename L, typename R>
+template <typename L, typename R>
 constexpr L &
 compound_assign_impl_{{{op_id}}}(L & lhs, R const & rhs, std::true_type)
 {
@@ -43,7 +48,7 @@ compound_assign_impl_{{{op_id}}}(L & lhs, R const & rhs, std::true_type)
     return lhs;
 }
 
-template<typename L, typename R>
+template <typename L, typename R>
 constexpr L &
 compound_assign_impl_{{{op_id}}}(L & lhs, R const & rhs, std::false_type)
 {
@@ -52,17 +57,22 @@ compound_assign_impl_{{{op_id}}}(L & lhs, R const & rhs, std::false_type)
 }
 }
 
-template<
+template <
     typename L,
     typename R,
     typename std::enable_if<
         std::is_base_of<atlas::strong_type_tag, L>::value,
         bool>::type = true>
-inline auto operator{{{compound_op}}}(L & lhs, R const & rhs)
--> decltype(atlas_detail::compound_assign_impl_{{{op_id}}}(lhs, rhs,
+inline auto
+operator{{{compound_op}}}(L & lhs, R const & rhs)
+-> decltype(atlas_detail::compound_assign_impl_{{{op_id}}}(
+    lhs,
+    rhs,
     atlas_detail::has_compound_op_{{{op_id}}}<L, R>{}))
 {
-    return atlas_detail::compound_assign_impl_{{{op_id}}}(lhs, rhs,
+    return atlas_detail::compound_assign_impl_{{{op_id}}}(
+        lhs,
+        rhs,
         atlas_detail::has_compound_op_{{{op_id}}}<L, R>{});
 }
 )";
@@ -77,18 +87,18 @@ generate_template_header(
     if (constraint.has_concept() && constraint.has_enable_if()) {
         // Both available - use feature detection
         oss << "#if __cpp_concepts >= 201907L\n";
-        oss << "template<" << constraint.concept_expr << " "
+        oss << "template <" << constraint.concept_expr << " "
             << template_param_name << ">\n";
         oss << "#else\n";
-        oss << "template<typename " << template_param_name << ", "
+        oss << "template <typename " << template_param_name << ", "
             << "typename std::enable_if<" << constraint.enable_if_expr
             << ", bool>::type = true>\n";
         oss << "#endif\n";
     } else if (constraint.has_concept()) {
-        oss << "template<" << constraint.concept_expr << " "
+        oss << "template <" << constraint.concept_expr << " "
             << template_param_name << ">\n";
     } else if (constraint.has_enable_if()) {
-        oss << "template<typename " << template_param_name << ", "
+        oss << "template <typename " << template_param_name << ", "
             << "typename std::enable_if<" << constraint.enable_if_expr
             << ", bool>::type = true>\n";
     } else {
@@ -323,7 +333,7 @@ namespace atlas {
             if (info.is_constexpr) {
                 body << "constexpr ";
             }
-            body << "auto atlas_value(" << rhs_type
+            body << "auto\natlas_value(" << rhs_type
                 << " const& v, value_tag)\n";
             body << "-> decltype("
                 << generate_value_access("v", info.access_expr, "") << ")\n";

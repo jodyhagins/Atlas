@@ -30,6 +30,38 @@ function(add_example_test name source_dir exec_name)
     )
 endfunction()
 
+# Generate showcase examples automatically
+set(SHOWCASE_OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/generated)
+file(MAKE_DIRECTORY ${SHOWCASE_OUTPUT_DIR})
+
+add_custom_command(
+    OUTPUT ${SHOWCASE_OUTPUT_DIR}/strong_types_showcase.hpp
+    COMMAND atlas
+        --input=${CMAKE_CURRENT_SOURCE_DIR}/strong_types_showcase.txt
+        --output=${SHOWCASE_OUTPUT_DIR}/strong_types_showcase.hpp
+    DEPENDS atlas ${CMAKE_CURRENT_SOURCE_DIR}/strong_types_showcase.txt
+    COMMENT "Generating strong_types_showcase.hpp"
+    VERBATIM
+)
+
+add_custom_command(
+    OUTPUT ${SHOWCASE_OUTPUT_DIR}/interactions_showcase.hpp
+    COMMAND atlas
+        --interactions=true
+        --input=${CMAKE_CURRENT_SOURCE_DIR}/interactions_showcase.txt
+        --output=${SHOWCASE_OUTPUT_DIR}/interactions_showcase.hpp
+    DEPENDS atlas ${CMAKE_CURRENT_SOURCE_DIR}/interactions_showcase.txt
+    COMMENT "Generating interactions_showcase.hpp"
+    VERBATIM
+)
+
+add_custom_target(showcase_examples ALL
+    DEPENDS
+        ${SHOWCASE_OUTPUT_DIR}/strong_types_showcase.hpp
+        ${SHOWCASE_OUTPUT_DIR}/interactions_showcase.hpp
+    COMMENT "Building showcase examples"
+)
+
 # Add each example as a test
 add_example_test(fetchcontent fetchcontent_example example_app)
 add_example_test(basic helpers_basic_example basic_example)

@@ -85,12 +85,14 @@ struct strong_type_tag
 {
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
-    friend auto
-    operator<=>(strong_type_tag const &, strong_type_tag const &) = default;
+    friend auto operator<=>(
+        strong_type_tag const &,
+        strong_type_tag const &) = default;
 #endif
 };
 
-struct value_tag {};
+struct value_tag
+{ };
 
 namespace atlas_detail {
 
@@ -150,10 +152,7 @@ value(T & val, PriorityTag<0>)
 }
 
 template <typename T, typename U = typename T::atlas_value_type>
-using val_t = _t<std::conditional<
-    std::is_const<T>::value,
-    U const &,
-    U &>>;
+using val_t = _t<std::conditional<std::is_const<T>::value, U const &, U &>>;
 
 template <typename T, typename U = val_t<T>>
 constexpr auto
@@ -192,8 +191,7 @@ class Value
 
 public:
     template <typename T>
-    constexpr auto
-    operator()(T && t) const
+    constexpr auto operator ()(T && t) const
     -> decltype(rval<T>(atlas_detail::value(t, atlas_detail::value_tag{})))
     {
         return rval<T>(atlas_detail::value(t, atlas_detail::value_tag{}));
