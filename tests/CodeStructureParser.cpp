@@ -77,14 +77,15 @@ extract_type_info(std::string const & code, CodeStructure & result)
         result.type_name = match[2].str();
     }
 
-    // Extract namespace
-    std::regex ns_regex{R"(namespace\s+([A-Za-z_:][A-Za-z_0-9:]*)\s*\{)"};
-    if (std::regex_search(search_area, match, ns_regex)) {
-        result.namespace_name = match[1].str();
+    // Extract namespace - handle both C++11 nested and C++17 inline syntax
+    result.namespace_name = extract_namespace_name(search_area);
+
+    // Build fully qualified name
+    if (result.namespace_name.empty()) {
+        result.full_qualified_name = result.type_name;
+    } else {
         result.full_qualified_name = result.namespace_name +
             "::" + result.type_name;
-    } else {
-        result.full_qualified_name = result.type_name;
     }
 
     // Extract member variable - use simple string search for now
@@ -331,6 +332,78 @@ extract_hash_info(std::string const & code, CodeStructure & result)
             (hash_section.find("constexpr std::size_t operator ()") !=
              std::string::npos);
     }
+}
+
+std::string
+CodeStructureParser::
+extract_namespace_name(std::string const & search_area)
+{
+    // Handle both C++11 nested and C++17 inline syntax
+    // C++11: namespace foo {\nnamespace bar {
+    // C++17: namespace foo::bar {
+    std::regex ns_regex{R"(namespace\s+([A-Za-z_:][A-Za-z_0-9:]*)\s*\{)"};
+    std::smatch match;
+    std::vector<std::string> namespaces;
+
+    // Find all namespace declarations before the struct/class
+    auto ns_search = search_area;
+    while (std::regex_search(ns_search, match, ns_regex)) {
+        std::string ns_name = match[1].str();
+
+        // Check if this namespace contains :: (C++17 style)
+        if (ns_name.find("::") != std::string::npos) {
+            // Already qualified, use it directly
+            return ns_name;
+        }
+
+        // C++11 style - collect namespace names
+        namespaces.push_back(ns_name);
+
+        // Check if the next thing after the { is another namespace or the
+        // struct/class
+        auto next_pos = match.position() + match.length();
+        if (next_pos >= ns_search.size()) {
+            break;
+        }
+        ns_search = ns_search.substr(next_pos);
+
+        // If we find struct/class after this namespace, we're done
+        if (ns_search.find("struct ") != std::string::npos ||
+            ns_search.find("class ") != std::string::npos)
+        {
+            // Check if struct/class comes before another namespace
+            auto struct_pos = ns_search.find("struct ");
+            auto class_pos = ns_search.find("class ");
+            auto next_ns_pos = ns_search.find("namespace ");
+
+            auto type_pos = std::min(
+                struct_pos != std::string::npos ? struct_pos
+                                                : std::string::npos,
+                class_pos != std::string::npos ? class_pos : std::string::npos);
+
+            if (next_ns_pos != std::string::npos &&
+                (type_pos == std::string::npos || next_ns_pos < type_pos))
+            {
+                // Another namespace comes first, continue collecting
+                continue;
+            } else {
+                // Type declaration comes first, stop here
+                break;
+            }
+        }
+    }
+
+    // Reconstruct namespace from collected parts (C++11 nested style)
+    if (namespaces.empty()) {
+        return "";
+    }
+
+    // Build namespace_name from collected parts
+    std::string result = namespaces[0];
+    for (size_t i = 1; i < namespaces.size(); ++i) {
+        result += "::" + namespaces[i];
+    }
+    return result;
 }
 
 } // namespace wjh::atlas::testing

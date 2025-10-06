@@ -143,6 +143,7 @@ private:
     void extract_type_info(std::string const & code, CodeStructure & result);
     void extract_operators(std::string const & code, CodeStructure & result);
     void extract_hash_info(std::string const & code, CodeStructure & result);
+    std::string extract_namespace_name(std::string const & search_area);
 };
 
 } // namespace wjh::atlas::testing

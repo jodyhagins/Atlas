@@ -1,5 +1,5 @@
-#ifndef EXAMPLE_INTERACTIONS_08408F508DFF3C80E32683163FD44BEB26B4AF29
-#define EXAMPLE_INTERACTIONS_08408F508DFF3C80E32683163FD44BEB26B4AF29
+#ifndef EXAMPLE_INTERACTIONS_0416387924EC60DC869827A561CD6788523D3E09
+#define EXAMPLE_INTERACTIONS_0416387924EC60DC869827A561CD6788523D3E09
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -149,7 +149,7 @@ public:
 
 } // namespace atlas_detail
 
-#if defined(__cpp_inline_variables) && __cpp_inline_variables >= 9201606L
+#if defined(__cpp_inline_variables) && __cpp_inline_variables >= 201606L
 inline constexpr auto value = atlas_detail::Value{};
 #else
 template <typename T>
@@ -1151,4 +1151,4 @@ operator+(EncryptedData lhs, EncryptedData rhs)
 
 } // namespace security
 
-#endif // EXAMPLE_INTERACTIONS_08408F508DFF3C80E32683163FD44BEB26B4AF29
+#endif // EXAMPLE_INTERACTIONS_0416387924EC60DC869827A561CD6788523D3E09

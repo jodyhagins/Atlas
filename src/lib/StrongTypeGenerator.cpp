@@ -77,11 +77,8 @@ constexpr char notice_banner[] = R"(
 auto strong_template = R"({{#includes}}
 #include {{{.}}}
 {{/includes}}
-{{#class_namespace}}
-
-namespace {{{.}}} {
-{{/class_namespace}}
-
+{{#namespace_open}}
+{{{.}}}{{/namespace_open}}
 /**
  * @brief Strong type wrapper for {{{underlying_type}}}
  *
@@ -117,9 +114,9 @@ namespace {{{.}}} {
 
     template <
         typename... ArgTs,
-        std::enable_if_t<
-            std::is_constructible_v<{{{underlying_type}}}, ArgTs...>,
-            bool> = true>
+        typename std::enable_if<
+            std::is_constructible<{{{underlying_type}}}, ArgTs...>::value,
+            bool>::type = true>
     {{{const_expr}}}explicit {{{class_name}}}(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     { }
@@ -175,10 +172,8 @@ namespace {{{.}}} {
     {{>istream_operator}}
     {{/istream_operator}}
 };
-{{#class_namespace}}
-
-} // namespace {{{.}}}
-{{/class_namespace}}
+{{#namespace_close}}
+{{{.}}}{{/namespace_close}}
 {{#hash_specialization}}
 {{>hash_specialization}}
 {{/hash_specialization}}
@@ -324,6 +319,7 @@ constexpr char callable_template[] = R"(
      * A call operator that takes an invocable, which is then invoked with the
      * wrapped object.
      */
+#if defined(__cpp_lib_invoke) && __cpp_lib_invoke >= 201411L
     template <typename InvocableT>
     {{{const_expr}}}auto operator () (InvocableT && inv) const
     -> decltype(std::invoke(std::forward<InvocableT>(inv), value))
@@ -336,6 +332,20 @@ constexpr char callable_template[] = R"(
     {
         return std::invoke(std::forward<InvocableT>(inv), value);
     }
+#else
+    template <typename InvocableT>
+    {{{const_expr}}}auto operator () (InvocableT && inv) const
+    -> decltype(std::forward<InvocableT>(inv)(value))
+    {
+        return std::forward<InvocableT>(inv)(value);
+    }
+    template <typename InvocableT>
+    {{{const_expr}}}auto operator () (InvocableT && inv)
+    -> decltype(std::forward<InvocableT>(inv)(value))
+    {
+        return std::forward<InvocableT>(inv)(value);
+    }
+#endif
 )";
 
 constexpr char logical_not_template[] = R"(
@@ -418,12 +428,14 @@ constexpr char subscript_operator_template[] = R"(
     }
 #else
     template <typename ArgT>
-    {{{const_expr}}}decltype(auto) operator [] (ArgT && arg)
+    {{{const_expr}}}auto operator [] (ArgT && arg)
+    -> decltype(value[std::forward<ArgT>(arg)])
     {
         return value[std::forward<ArgT>(arg)];
     }
     template <typename ArgT>
-    {{{const_expr}}}decltype(auto) operator [] (ArgT && arg) const
+    {{{const_expr}}}auto operator [] (ArgT && arg) const
+    -> decltype(value[std::forward<ArgT>(arg)])
     {
         return value[std::forward<ArgT>(arg)];
     }
@@ -448,6 +460,8 @@ BOOST_DESCRIBE_STRUCT(Operator, (), (op))
 struct ClassInfo
 {
     std::string class_namespace;
+    std::string namespace_open;
+    std::string namespace_close;
     std::string full_class_name;
     std::string class_name;
     std::string underlying_type;
@@ -480,6 +494,8 @@ BOOST_DESCRIBE_STRUCT(
     ClassInfo,
     (),
     (class_namespace,
+     namespace_open,
+     namespace_close,
      full_class_name,
      class_name,
      underlying_type,
@@ -588,12 +604,62 @@ inline constexpr auto stripns = [](auto sv) {
     return strip(sv, [](unsigned char c) { return c == ':'; });
 };
 
+// Expand nested namespaces for C++11 compatibility
+// Input: "foo::bar::baz"
+// Returns: {opening: "namespace foo {\nnamespace bar {\nnamespace baz {",
+//           closing: "} // namespace baz\n} // namespace bar\n} // namespace
+//           foo"}
+std::pair<std::string, std::string>
+expand_namespace(std::string const & ns)
+{
+    if (ns.empty()) {
+        return {"", ""};
+    }
+
+    // Split namespace by "::"
+    std::vector<std::string> parts;
+    std::string_view sv = ns;
+    while (not sv.empty()) {
+        auto pos = sv.find("::");
+        if (pos == std::string_view::npos) {
+            parts.emplace_back(sv);
+            break;
+        }
+        parts.emplace_back(sv.substr(0, pos));
+        sv.remove_prefix(pos + 2);
+    }
+
+    // Build opening
+    std::string opening;
+    for (auto const & part : parts) {
+        opening += "namespace ";
+        opening += part;
+        opening += " {\n";
+    }
+
+    // Build closing (in reverse order)
+    std::string closing;
+    for (auto it = parts.rbegin(); it != parts.rend(); ++it) {
+        closing += "} // namespace ";
+        closing += *it;
+        closing += "\n";
+    }
+
+    return {opening, closing};
+}
+
 ClassInfo
 parse(StrongTypeDescription const & desc)
 {
     ClassInfo info;
     info.desc = desc;
     info.class_namespace = stripns(desc.type_namespace);
+
+    // Expand nested namespaces for C++11 compatibility
+    auto [ns_open, ns_close] = expand_namespace(info.class_namespace);
+    info.namespace_open = ns_open;
+    info.namespace_close = ns_close;
+
     info.full_class_name = stripns(desc.type_name);
     info.class_name = [&] {
         if (auto n = info.full_class_name.rfind(':');
@@ -930,7 +996,8 @@ generate_strong_types_file(
         // Clear includes from info since we're hoisting them to the top
         info.includes.clear();
 
-        // Generate just the type code (no preamble, no header guards, no includes)
+        // Generate just the type code (no preamble, no header guards, no
+        // includes)
         combined_code << render_code(info);
     }
 
