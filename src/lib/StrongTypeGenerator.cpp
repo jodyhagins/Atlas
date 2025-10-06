@@ -234,6 +234,7 @@ constexpr char relational_operator[] = R"(
     friend {{{const_expr}}}bool operator {{{op}}} (
         {{{class_name}}} const & lhs,
         {{{class_name}}} const & rhs)
+    noexcept(noexcept(std::declval<{{{underlying_type}}} const&>() {{{op}}} std::declval<{{{underlying_type}}} const&>()))
     {
         return lhs.value {{{op}}} rhs.value;
     }
@@ -246,6 +247,7 @@ constexpr char arithmetic_binary_operators[] = R"(
     friend {{{const_expr}}}{{{class_name}}} & operator {{{op}}}= (
         {{{class_name}}} & lhs,
         {{{class_name}}} const & rhs)
+    noexcept(noexcept(std::declval<{{{underlying_type}}}&>() {{{op}}}= std::declval<{{{underlying_type}}} const&>()))
     {
         lhs.value {{{op}}}= rhs.value;
         return lhs;
@@ -256,6 +258,7 @@ constexpr char arithmetic_binary_operators[] = R"(
     friend {{{const_expr}}}{{{class_name}}} operator {{{op}}} (
         {{{class_name}}} lhs,
         {{{class_name}}} const & rhs)
+    noexcept(noexcept(lhs {{{op}}}= rhs))
     {
         lhs {{{op}}}= rhs;
         return lhs;
@@ -273,6 +276,7 @@ constexpr char logical_operator[] = R"(
     friend {{{const_expr}}}bool operator {{{op}}} (
         {{{class_name}}} const & lhs,
         {{{class_name}}} const & rhs)
+    noexcept(noexcept(std::declval<{{{underlying_type}}} const&>() {{{op}}} std::declval<{{{underlying_type}}} const&>()))
     {
         return lhs.value {{{op}}} rhs.value;
     }
@@ -283,6 +287,11 @@ constexpr char unary_operators[] = R"(
      * Apply the unary {{{op}}} operator to the wrapped object.
      */
     friend {{{const_expr}}}{{{class_name}}} operator {{{op}}} ({{{class_name}}} const & t)
+    noexcept(
+        noexcept({{{op}}} std::declval<{{{underlying_type}}} const&>()) &&
+        std::is_nothrow_assignable<
+            {{{underlying_type}}}&,
+            decltype({{{op}}} std::declval<{{{underlying_type}}} const&>())>::value)
     {
         auto result = t;
         result.value = {{{op}}} t.value;
@@ -295,6 +304,7 @@ constexpr char increment_operator[] = R"(
      * Apply the prefix {{{op}}} operator to the wrapped object.
      */
     friend {{{const_expr}}}{{{class_name}}} & operator {{{op}}} ({{{class_name}}} & t)
+    noexcept(noexcept({{{op}}}std::declval<{{{underlying_type}}}&>()))
     {
         {{{op}}}t.value;
         return t;
@@ -303,6 +313,7 @@ constexpr char increment_operator[] = R"(
      * Apply the postfix {{{op}}} operator to the wrapped object.
      */
     friend {{{const_expr}}}{{{class_name}}} operator {{{op}}} ({{{class_name}}} & t, int)
+    noexcept(noexcept({{{op}}}std::declval<{{{underlying_type}}}&>()))
     {
         auto result = t;
         {{{op}}}t.value;
@@ -315,6 +326,7 @@ constexpr char bool_operator_template[] = R"(
      * Return the result of casting the wrapped object to bool.
      */
     {{{const_expr}}}explicit operator bool () const
+    noexcept(noexcept(static_cast<bool>(std::declval<{{{underlying_type}}} const&>())))
     {
         return static_cast<bool>(value);
     }
@@ -325,10 +337,12 @@ constexpr char indirection_operator_template[] = R"(
      * The indirection operator provides a reference to the wrapped object.
      */
     {{{const_expr}}}{{{underlying_type}}} const & operator * () const
+    noexcept
     {
         return value;
     }
     {{{const_expr}}}{{{underlying_type}}} & operator * ()
+    noexcept
     {
         return value;
     }
@@ -339,10 +353,12 @@ constexpr char nullary_template[] = R"(
      * A nullary call operator that returns access to the wrapped type.
      */
     {{{const_expr}}}{{{underlying_type}}} const & operator () () const
+    noexcept
     {
         return value;
     }
     {{{const_expr}}}{{{underlying_type}}} & operator () ()
+    noexcept
     {
         return value;
     }
@@ -356,12 +372,14 @@ constexpr char callable_template[] = R"(
 #if defined(__cpp_lib_invoke) && __cpp_lib_invoke >= 201411L
     template <typename InvocableT>
     {{{const_expr}}}auto operator () (InvocableT && inv) const
+    noexcept(noexcept(std::invoke(std::forward<InvocableT>(inv), value)))
     -> decltype(std::invoke(std::forward<InvocableT>(inv), value))
     {
         return std::invoke(std::forward<InvocableT>(inv), value);
     }
     template <typename InvocableT>
     {{{const_expr}}}auto operator () (InvocableT && inv)
+    noexcept(noexcept(std::invoke(std::forward<InvocableT>(inv), value)))
     -> decltype(std::invoke(std::forward<InvocableT>(inv), value))
     {
         return std::invoke(std::forward<InvocableT>(inv), value);
@@ -369,12 +387,14 @@ constexpr char callable_template[] = R"(
 #else
     template <typename InvocableT>
     {{{const_expr}}}auto operator () (InvocableT && inv) const
+    noexcept(noexcept(std::forward<InvocableT>(inv)(value)))
     -> decltype(std::forward<InvocableT>(inv)(value))
     {
         return std::forward<InvocableT>(inv)(value);
     }
     template <typename InvocableT>
     {{{const_expr}}}auto operator () (InvocableT && inv)
+    noexcept(noexcept(std::forward<InvocableT>(inv)(value)))
     -> decltype(std::forward<InvocableT>(inv)(value))
     {
         return std::forward<InvocableT>(inv)(value);
@@ -387,6 +407,7 @@ constexpr char logical_not_template[] = R"(
      * Apply the unary logical not operator to the wrapped object.
      */
     friend {{{const_expr}}}bool operator not ({{{class_name}}} const & t)
+    noexcept(noexcept(not std::declval<{{{underlying_type}}} const&>()))
     {
         return not t.value;
     }
