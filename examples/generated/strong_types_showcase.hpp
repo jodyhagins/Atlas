@@ -1,5 +1,5 @@
-#ifndef EXAMPLE_10144BCD7286BE2F22F4ECD844863AF792DA7D7C
-#define EXAMPLE_10144BCD7286BE2F22F4ECD844863AF792DA7D7C
+#ifndef EXAMPLE_3DE9EBA0EB3063A3083FBD1081D4E1708DE7F549
+#define EXAMPLE_3DE9EBA0EB3063A3083FBD1081D4E1708DE7F549
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -16,7 +16,6 @@
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
 // ======================================================================
 
-#include <compare>
 #include <functional>
 #include <string>
 #include <type_traits>
@@ -179,9 +178,6 @@ value(T && t)
 ///
 //////////////////////////////////////////////////////////////////////
 
-#include <functional>
-#include <type_traits>
-#include <utility>
 
 namespace finance::core {
 
@@ -410,10 +406,6 @@ struct std::hash<finance::core::Money>
             static_cast<double const &>(t));
     }
 };
-#include <compare>
-#include <functional>
-#include <type_traits>
-#include <utility>
 
 namespace ids::v1 {
 
@@ -505,9 +497,6 @@ struct std::hash<ids::v1::UserId>
             static_cast<unsigned long const &>(t));
     }
 };
-#include <compare>
-#include <type_traits>
-#include <utility>
 
 namespace physics::units {
 
@@ -674,9 +663,6 @@ struct Meters
 };
 
 } // namespace physics::units
-#include <compare>
-#include <type_traits>
-#include <utility>
 
 namespace physics::units {
 
@@ -843,9 +829,6 @@ struct Seconds
 };
 
 } // namespace physics::units
-#include <compare>
-#include <type_traits>
-#include <utility>
 
 namespace physics::units {
 
@@ -1012,8 +995,6 @@ struct MetersPerSecond
 };
 
 } // namespace physics::units
-#include <type_traits>
-#include <utility>
 
 namespace data {
 
@@ -1281,9 +1262,6 @@ struct ByteCount
 };
 
 } // namespace data
-#include <compare>
-#include <type_traits>
-#include <utility>
 
 namespace graphics::color {
 
@@ -1513,10 +1491,6 @@ struct RedChannel
 };
 
 } // namespace graphics::color
-#include <functional>
-#include <string>
-#include <type_traits>
-#include <utility>
 
 namespace security {
 
@@ -1622,8 +1596,6 @@ struct std::hash<security::EncryptedData>
             static_cast<std::string const &>(t));
     }
 };
-#include <type_traits>
-#include <utility>
 
 namespace geo {
 
@@ -1760,8 +1732,6 @@ struct Latitude
 };
 
 } // namespace geo
-#include <type_traits>
-#include <utility>
 
 namespace geo {
 
@@ -1898,9 +1868,6 @@ struct Longitude
 };
 
 } // namespace geo
-#include <functional>
-#include <type_traits>
-#include <utility>
 
 namespace concurrency {
 
@@ -2005,9 +1972,6 @@ struct std::hash<concurrency::ThreadId>
             static_cast<int const &>(t));
     }
 };
-#include <compare>
-#include <type_traits>
-#include <utility>
 
 namespace math::rational {
 
@@ -2143,9 +2107,6 @@ struct Numerator
 };
 
 } // namespace math::rational
-#include <compare>
-#include <type_traits>
-#include <utility>
 
 namespace math::rational {
 
@@ -2260,8 +2221,6 @@ struct Denominator
 };
 
 } // namespace math::rational
-#include <type_traits>
-#include <utility>
 
 namespace net::ipv4 {
 
@@ -2442,10 +2401,6 @@ struct Octet
 };
 
 } // namespace net::ipv4
-#include <functional>
-#include <string>
-#include <type_traits>
-#include <utility>
 
 namespace app::config {
 
@@ -2609,4 +2564,4 @@ struct std::hash<app::config::ConfigKey>
             static_cast<std::string const &>(t));
     }
 };
-#endif // EXAMPLE_10144BCD7286BE2F22F4ECD844863AF792DA7D7C
+#endif // EXAMPLE_3DE9EBA0EB3063A3083FBD1081D4E1708DE7F549
