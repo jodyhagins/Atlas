@@ -742,7 +742,7 @@ int main() {
             {
                 std::ofstream input(input_path);
                 input << "include <type_traits>\n\n";
-                input << "concept=Number : std::is_arithmetic_v<Number>\n\n";
+                input << "concept=std::is_arithmetic_v<Number> Number\n\n";
                 input << "namespace=math\n\n";
                 input << "template Number + template Number -> template Number\n";
             }

@@ -253,9 +253,10 @@ TEST_SUITE("InteractionGenerator")
 
         auto code = generate_interactions(desc);
 
-        // Should have two template parameters TL and TR
-        CHECK(contains(code, "template <std::integral TL>"));
-        CHECK(contains(code, "template <std::floating_point TR>"));
+        // Should have combined template with two parameters TL and TR
+        CHECK(contains(
+            code,
+            "template <std::integral TL, std::floating_point TR>"));
         CHECK(contains(code, "operator*(TL lhs, TR rhs)"));
     }
 
@@ -501,8 +502,9 @@ TEST_SUITE("InteractionGenerator")
         auto second_line_start = first_line_end + 1;
         auto second_line_end = code.find('\n', second_line_start);
         REQUIRE(second_line_end != std::string::npos);
-        std::string second_line =
-            code.substr(second_line_start, second_line_end - second_line_start);
+        std::string second_line = code.substr(
+            second_line_start,
+            second_line_end - second_line_start);
 
         // Second line must start with #define
         CHECK(second_line.find("#define") == 0);
@@ -994,8 +996,8 @@ TEST_SUITE("InteractionGenerator")
             rhs_constraint.concept_expr = "std::is_integral_v<U>";
             desc.constraints["U"] = rhs_constraint;
 
-            // Note: result_type "R" will be checked because it's a template type
-            // (matches constraint name pattern but constraint not defined)
+            // Note: result_type "R" will be checked because it's a template
+            // type (matches constraint name pattern but constraint not defined)
             desc.interactions.push_back(InteractionDescription{
                 .op_symbol = "+",
                 .lhs_type = "T",
@@ -1008,8 +1010,8 @@ TEST_SUITE("InteractionGenerator")
                 .interaction_namespace = "test",
                 .value_access = "atlas::value"});
 
-            // This may or may not throw depending on if R is detected as template
-            // Let's make sure we have all constraints properly defined
+            // This may or may not throw depending on if R is detected as
+            // template Let's make sure we have all constraints properly defined
             CHECK_NOTHROW(generate_interactions(desc));
         }
 
@@ -1229,7 +1231,9 @@ TEST_SUITE("InteractionGenerator")
             CHECK_FALSE(contains(code, "::app::config::std::string"));
 
             // Should contain ::std::string (globally qualified)
-            CHECK(contains(code, "atlas_value(::std::string const& v, value_tag)"));
+            CHECK(contains(
+                code,
+                "atlas_value(::std::string const& v, value_tag)"));
         }
 
         SUBCASE("Already globally qualified std::string stays as-is") {
@@ -1251,7 +1255,9 @@ TEST_SUITE("InteractionGenerator")
             auto code = generate_interactions(desc);
 
             // Should contain ::std::string exactly as provided
-            CHECK(contains(code, "atlas_value(::std::string const& v, value_tag)"));
+            CHECK(contains(
+                code,
+                "atlas_value(::std::string const& v, value_tag)"));
         }
     }
 
@@ -1277,7 +1283,9 @@ TEST_SUITE("InteractionGenerator")
 
             // Only RHS types with custom value access get atlas_value overloads
             // RHS (Seconds) should be namespace-qualified in atlas_value
-            CHECK(contains(code, "atlas_value(::physics::units::Seconds const& v, value_tag)"));
+            CHECK(contains(
+                code,
+                "atlas_value(::physics::units::Seconds const& v, value_tag)"));
         }
 
         SUBCASE("Already qualified user type gets global qualifier") {
@@ -1299,7 +1307,9 @@ TEST_SUITE("InteractionGenerator")
             auto code = generate_interactions(desc);
 
             // Should add global qualifier to already-qualified type
-            CHECK(contains(code, "atlas_value(::other::ns::OtherType const& v, value_tag)"));
+            CHECK(contains(
+                code,
+                "atlas_value(::other::ns::OtherType const& v, value_tag)"));
         }
 
         SUBCASE("Global namespace type (::Foo) stays as-is") {
@@ -1321,7 +1331,9 @@ TEST_SUITE("InteractionGenerator")
             auto code = generate_interactions(desc);
 
             // Global namespace type should remain unchanged
-            CHECK(contains(code, "atlas_value(::GlobalType const& v, value_tag)"));
+            CHECK(contains(
+                code,
+                "atlas_value(::GlobalType const& v, value_tag)"));
         }
 
         SUBCASE("Unqualified type in empty namespace gets global qualifier") {
@@ -1390,8 +1402,11 @@ TEST_SUITE("InteractionGenerator")
 
             auto code = generate_interactions(desc);
 
-            // std:: type should be globally qualified (this is the critical test)
-            CHECK(contains(code, "atlas_value(::std::vector const& v, value_tag)"));
+            // std:: type should be globally qualified (this is the critical
+            // test)
+            CHECK(contains(
+                code,
+                "atlas_value(::std::vector const& v, value_tag)"));
             CHECK_FALSE(contains(code, "::data::std::vector"));
         }
 
@@ -1436,7 +1451,8 @@ TEST_SUITE("InteractionGenerator")
                 std::string invalid = "::test::namespace::" + prim;
                 CHECK_FALSE(contains(code, invalid));
 
-                std::string valid = "atlas_value(" + prim + " const& v, value_tag)";
+                std::string valid = "atlas_value(" + prim +
+                    " const& v, value_tag)";
                 CHECK(contains(code, valid));
             }
         }

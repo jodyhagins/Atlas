@@ -125,7 +125,6 @@ TEST_SUITE("AtlasCommandLine")
                 AtlasCommandLine::parse(args),
                 AtlasCommandLineError);
         }
-
     }
 
     TEST_CASE("Help Argument")
@@ -1289,25 +1288,8 @@ TEST_SUITE("AtlasCommandLine")
             std::filesystem::remove(temp_file);
         }
 
-        SUBCASE("empty concept name with colon") {
-            auto temp_file = std::filesystem::temp_directory_path() /
-                ("test_interactions_" + std::to_string(::getpid()) + ".txt");
 
-            {
-                std::ofstream out(temp_file);
-                out << "namespace=test\n";
-                out << "concept= : std::integral<T>\n"; // Empty name before colon!
-                out << "A + B -> C\n";
-            }
-
-            CHECK_THROWS_AS(
-                AtlasCommandLine::parse_interaction_file(temp_file.string()),
-                AtlasCommandLineError);
-
-            std::filesystem::remove(temp_file);
-        }
-
-        SUBCASE("enable_if without pending concept applies to last constraint") {
+        SUBCASE("multiple enable_if for same constraint") {
             auto temp_file = std::filesystem::temp_directory_path() /
                 ("test_interactions_" + std::to_string(::getpid()) + ".txt");
 
@@ -1315,8 +1297,11 @@ TEST_SUITE("AtlasCommandLine")
                 std::ofstream out(temp_file);
                 out << "namespace=test\n";
                 out << "concept=T\n";
-                out << "enable_if=std::is_integral_v<T>\n"; // First enable_if clears pending
-                out << "enable_if=sizeof(T) > 0\n"; // Second should apply to last constraint
+                out << "enable_if=std::is_integral_v<T>\n"; // First enable_if
+                                                            // clears pending
+                out << "enable_if=std::is_integral_v<T>\n"; // Second should
+                                                            // apply to last
+                                                            // constraint (T)
                 out << "A + B -> C\n";
             }
 
@@ -1327,7 +1312,7 @@ TEST_SUITE("AtlasCommandLine")
             // Second enable_if should have overwritten the first
             CHECK(
                 result.constraints["T"].enable_if_expr ==
-                "sizeof(T) > 0");
+                "std::is_integral_v<T>");
 
             std::filesystem::remove(temp_file);
         }
@@ -1449,9 +1434,9 @@ TEST_SUITE("AtlasCommandLine")
                 out << "namespace=algebra\n";
                 out << "include <numeric>\n";
                 out << "include \"myheader.hpp\"\n";
-                out << "concept=T\n";
-                out << "concept=U : std::is_integral_v<U>\n";
+                out << "concept=std::integral T\n";
                 out << "enable_if=std::is_arithmetic_v<T>\n";
+                out << "concept=std::integral U\n";
                 out << "constexpr\n";
                 out << "lhs_value_access=getValue\n";
                 out << "rhs_value_access=getData\n";
@@ -1495,10 +1480,15 @@ TEST_SUITE("AtlasCommandLine")
         ::rc::check(
             "valid boolean strings parse without error",
             [](bool expected_value) {
-                std::vector<std::string> bool_strs =
-                    expected_value ?
-                    std::vector<std::string>{"true", "1", "yes", "True", "YES"} :
-                    std::vector<std::string>{"false", "0", "no", "False", "NO"};
+                std::vector<std::string> bool_strs = expected_value
+                    ? std::vector<
+                          std::string>{"true", "1", "yes", "True", "YES"}
+                    : std::vector<std::string>{
+                          "false",
+                          "0",
+                          "no",
+                          "False",
+                          "NO"};
 
                 for (auto const & bool_str : bool_strs) {
                     std::vector<std::string> args{
@@ -1516,11 +1506,12 @@ TEST_SUITE("AtlasCommandLine")
         ::rc::check(
             "invalid boolean strings throw error",
             [](std::string const & invalid_str) {
-                RC_PRE(invalid_str != "true" && invalid_str != "false" &&
-                       invalid_str != "1" && invalid_str != "0" &&
-                       invalid_str != "yes" && invalid_str != "no" &&
-                       invalid_str != "True" && invalid_str != "False" &&
-                       invalid_str != "YES" && invalid_str != "NO");
+                RC_PRE(
+                    invalid_str != "true" && invalid_str != "false" &&
+                    invalid_str != "1" && invalid_str != "0" &&
+                    invalid_str != "yes" && invalid_str != "no" &&
+                    invalid_str != "True" && invalid_str != "False" &&
+                    invalid_str != "YES" && invalid_str != "NO");
 
                 std::vector<std::string> args{
                     "--kind=struct",
@@ -1545,9 +1536,9 @@ TEST_SUITE("AtlasCommandLine")
                 RC_PRE(sep.find('\r') == std::string::npos);
                 RC_PRE(sep.find('=') == std::string::npos);
                 // Exclude whitespace-only strings since they get trimmed
-                RC_PRE(!sep.empty());
+                RC_PRE(not sep.empty());
                 RC_PRE(std::any_of(sep.begin(), sep.end(), [](char c) {
-                    return !std::isspace(static_cast<unsigned char>(c));
+                    return not std::isspace(static_cast<unsigned char>(c));
                 }));
 
                 auto temp_file = std::filesystem::temp_directory_path() /
@@ -1557,7 +1548,8 @@ TEST_SUITE("AtlasCommandLine")
                 {
                     std::ofstream out(temp_file);
                     out << "guard_separator=" << sep << "\n";
-                    out << "upcase_guard=" << (upcase ? "true" : "false") << "\n";
+                    out << "upcase_guard=" << (upcase ? "true" : "false")
+                        << "\n";
                     out << "[type]\n";
                     out << "kind=struct\n";
                     out << "namespace=test\n";
@@ -1582,16 +1574,18 @@ TEST_SUITE("AtlasCommandLine")
         ::rc::check(
             "all operators parse correctly",
             [](std::string const & op, bool symmetric) {
-                // Preconditions: operator must be non-empty, contain no whitespace,
-                // and be a known operator symbol (not just letters which would be parsed as types)
-                RC_PRE(!op.empty());
+                // Preconditions: operator must be non-empty, contain no
+                // whitespace, and be a known operator symbol (not just letters
+                // which would be parsed as types)
+                RC_PRE(not op.empty());
                 RC_PRE(op.find(' ') == std::string::npos);
                 RC_PRE(op.find('\t') == std::string::npos);
                 RC_PRE(op.find('\n') == std::string::npos);
                 RC_PRE(op.find('\r') == std::string::npos);
                 // Must contain at least one operator symbol character
                 RC_PRE(std::any_of(op.begin(), op.end(), [](char c) {
-                    return !std::isalnum(static_cast<unsigned char>(c)) && c != '_';
+                    return not std::isalnum(static_cast<unsigned char>(c)) &&
+                        c != '_';
                 }));
 
                 auto temp_file = std::filesystem::temp_directory_path() /
@@ -1627,7 +1621,7 @@ TEST_SUITE("AtlasCommandLine")
         ::rc::check(
             "missing operator in interaction errors",
             [](std::string const & lhs, std::string const & rhs) {
-                RC_PRE(!lhs.empty() && !rhs.empty());
+                RC_PRE(not lhs.empty() && not rhs.empty());
                 RC_PRE(lhs.find(' ') == std::string::npos);
                 RC_PRE(rhs.find(' ') == std::string::npos);
                 RC_PRE(lhs.find('\n') == std::string::npos);
@@ -1645,11 +1639,289 @@ TEST_SUITE("AtlasCommandLine")
                 }
 
                 RC_ASSERT_THROWS_AS(
-                    AtlasCommandLine::parse_interaction_file(temp_file.string()),
+                    AtlasCommandLine::parse_interaction_file(
+                        temp_file.string()),
                     AtlasCommandLineError);
 
                 std::filesystem::remove(temp_file);
             });
+    }
+
+    TEST_CASE("Template Constraint Parsing")
+    {
+        SUBCASE("concept with space-separated syntax: std::integral T") {
+            // USER EXPECTATION: Natural C++20 syntax should work
+            auto temp_file = std::filesystem::temp_directory_path() /
+                ("test_concept_" + std::to_string(::getpid()) + ".txt");
+
+            {
+                std::ofstream out(temp_file);
+                out << "namespace=math\n";
+                out << "concept=std::integral T\n";
+                out << "T + T -> T\n";
+            }
+
+            auto result = AtlasCommandLine::parse_interaction_file(
+                temp_file.string());
+
+            // User expects T to be recognized as template parameter
+            REQUIRE(result.constraints.contains("T"));
+            CHECK(result.constraints["T"].concept_expr == "std::integral");
+            CHECK(result.interactions[0].lhs_is_template == true);
+            CHECK(result.interactions[0].rhs_is_template == true);
+
+            std::filesystem::remove(temp_file);
+        }
+
+
+        SUBCASE("enable_if extracts template parameter from expression") {
+            // USER EXPECTATION: "std::is_floating_point<U>::value" should
+            // extract U
+            auto temp_file = std::filesystem::temp_directory_path() /
+                ("test_enable_if_" + std::to_string(::getpid()) + ".txt");
+
+            {
+                std::ofstream out(temp_file);
+                out << "namespace=math\n";
+                out << "enable_if=std::is_floating_point<U>::value\n";
+                out << "U * U -> U\n";
+            }
+
+            auto result = AtlasCommandLine::parse_interaction_file(
+                temp_file.string());
+
+            // User expects U to be extracted and recognized as template
+            REQUIRE(result.constraints.contains("U"));
+            CHECK(
+                result.constraints["U"].enable_if_expr ==
+                "std::is_floating_point<U>::value");
+            CHECK(result.interactions[0].lhs_is_template == true);
+            CHECK(result.interactions[0].rhs_is_template == true);
+
+            std::filesystem::remove(temp_file);
+        }
+
+        SUBCASE("both concept and enable_if for same parameter") {
+            // USER EXPECTATION: Can specify both concept and enable_if
+            // constraints
+            auto temp_file = std::filesystem::temp_directory_path() /
+                ("test_both_" + std::to_string(::getpid()) + ".txt");
+
+            {
+                std::ofstream out(temp_file);
+                out << "namespace=math\n";
+                out << "concept=std::integral V\n";
+                out << "enable_if=sizeof(V) <= 8\n";
+                out << "V - V -> V\n";
+            }
+
+            auto result = AtlasCommandLine::parse_interaction_file(
+                temp_file.string());
+
+            // User expects both constraints to be captured
+            REQUIRE(result.constraints.contains("V"));
+            CHECK(result.constraints["V"].concept_expr == "std::integral");
+            CHECK(result.constraints["V"].enable_if_expr == "sizeof(V) <= 8");
+            CHECK(result.interactions[0].lhs_is_template == true);
+
+            std::filesystem::remove(temp_file);
+        }
+
+        SUBCASE("multiple different template parameters") {
+            // USER EXPECTATION: Can define multiple template parameters
+            auto temp_file = std::filesystem::temp_directory_path() /
+                ("test_multi_" + std::to_string(::getpid()) + ".txt");
+
+            {
+                std::ofstream out(temp_file);
+                out << "namespace=math\n";
+                out << "concept=std::integral T\n";
+                out << "concept=std::floating_point U\n";
+                out << "T + T -> T\n";
+                out << "U * U -> U\n";
+            }
+
+            auto result = AtlasCommandLine::parse_interaction_file(
+                temp_file.string());
+
+            // User expects both T and U to be recognized
+            REQUIRE(result.constraints.contains("T"));
+            REQUIRE(result.constraints.contains("U"));
+            CHECK(result.constraints["T"].concept_expr == "std::integral");
+            CHECK(
+                result.constraints["U"].concept_expr == "std::floating_point");
+            CHECK(result.interactions.size() == 2);
+
+            std::filesystem::remove(temp_file);
+        }
+
+        SUBCASE("concept with complex expression") {
+            // USER EXPECTATION: Complex concepts should work
+            auto temp_file = std::filesystem::temp_directory_path() /
+                ("test_complex_" + std::to_string(::getpid()) + ".txt");
+
+            {
+                std::ofstream out(temp_file);
+                out << "namespace=test\n";
+                out << "concept=std::convertible_to<int> T\n";
+                out << "T + T -> T\n";
+            }
+
+            auto result = AtlasCommandLine::parse_interaction_file(
+                temp_file.string());
+
+            REQUIRE(result.constraints.contains("T"));
+            CHECK(
+                result.constraints["T"].concept_expr ==
+                "std::convertible_to<int>");
+
+            std::filesystem::remove(temp_file);
+        }
+
+        SUBCASE("template parameter used with non-template types") {
+            // USER EXPECTATION: Can mix template and concrete types
+            auto temp_file = std::filesystem::temp_directory_path() /
+                ("test_mixed_" + std::to_string(::getpid()) + ".txt");
+
+            {
+                std::ofstream out(temp_file);
+                out << "namespace=math\n";
+                out << "concept=std::integral T\n";
+                out << "T + int -> T\n";
+            }
+
+            auto result = AtlasCommandLine::parse_interaction_file(
+                temp_file.string());
+
+            REQUIRE(result.interactions.size() == 1);
+            CHECK(result.interactions[0].lhs_is_template == true);
+            CHECK(result.interactions[0].rhs_is_template == false);
+
+            std::filesystem::remove(temp_file);
+        }
+
+        SUBCASE("empty concept value throws error") {
+            // USER EXPECTATION: Must provide a concept expression
+            auto temp_file = std::filesystem::temp_directory_path() /
+                ("test_empty_concept_" + std::to_string(::getpid()) + ".txt");
+
+            {
+                std::ofstream out(temp_file);
+                out << "namespace=math\n";
+                out << "concept=\n";
+                out << "T + T -> T\n";
+            }
+
+            CHECK_THROWS_AS(
+                AtlasCommandLine::parse_interaction_file(temp_file.string()),
+                AtlasCommandLineError);
+
+            std::filesystem::remove(temp_file);
+        }
+
+        SUBCASE("empty enable_if value throws error") {
+            // USER EXPECTATION: Must provide an enable_if expression
+            auto temp_file = std::filesystem::temp_directory_path() /
+                ("test_empty_enable_" + std::to_string(::getpid()) + ".txt");
+
+            {
+                std::ofstream out(temp_file);
+                out << "namespace=math\n";
+                out << "enable_if=\n";
+                out << "T + T -> T\n";
+            }
+
+            CHECK_THROWS_AS(
+                AtlasCommandLine::parse_interaction_file(temp_file.string()),
+                AtlasCommandLineError);
+
+            std::filesystem::remove(temp_file);
+        }
+
+        SUBCASE("enable_if without template parameter in angle brackets throws "
+                "error")
+        {
+            // USER EXPECTATION: enable_if must have extractable parameter
+            auto temp_file = std::filesystem::temp_directory_path() /
+                ("test_bad_enable_" + std::to_string(::getpid()) + ".txt");
+
+            {
+                std::ofstream out(temp_file);
+                out << "namespace=math\n";
+                out << "enable_if=some_condition\n";
+                out << "T + T -> T\n";
+            }
+
+            CHECK_THROWS_AS(
+                AtlasCommandLine::parse_interaction_file(temp_file.string()),
+                AtlasCommandLineError);
+
+            std::filesystem::remove(temp_file);
+        }
+
+        SUBCASE("concept with only parameter name uses same for both") {
+            // USER EXPECTATION: "concept=T" means both name and concept are T
+            auto temp_file = std::filesystem::temp_directory_path() /
+                ("test_simple_" + std::to_string(::getpid()) + ".txt");
+
+            {
+                std::ofstream out(temp_file);
+                out << "namespace=test\n";
+                out << "concept=T\n";
+                out << "T + T -> T\n";
+            }
+
+            auto result = AtlasCommandLine::parse_interaction_file(
+                temp_file.string());
+
+            REQUIRE(result.constraints.contains("T"));
+            CHECK(result.constraints["T"].concept_expr == "T");
+
+            std::filesystem::remove(temp_file);
+        }
+
+        SUBCASE("enable_if with comma in template args") {
+            // USER EXPECTATION: Extract first parameter even with commas
+            auto temp_file = std::filesystem::temp_directory_path() /
+                ("test_comma_" + std::to_string(::getpid()) + ".txt");
+
+            {
+                std::ofstream out(temp_file);
+                out << "namespace=test\n";
+                out << "enable_if=std::is_same<T, int>::value\n";
+                out << "T + T -> T\n";
+            }
+
+            auto result = AtlasCommandLine::parse_interaction_file(
+                temp_file.string());
+
+            // Should extract just "T" before the comma
+            REQUIRE(result.constraints.contains("T"));
+
+            std::filesystem::remove(temp_file);
+        }
+
+        SUBCASE("concept with trailing whitespace") {
+            // USER EXPECTATION: Whitespace should be trimmed
+            auto temp_file = std::filesystem::temp_directory_path() /
+                ("test_whitespace_" + std::to_string(::getpid()) + ".txt");
+
+            {
+                std::ofstream out(temp_file);
+                out << "namespace=math\n";
+                out << "concept=std::integral   T  \n";
+                out << "T + T -> T\n";
+            }
+
+            auto result = AtlasCommandLine::parse_interaction_file(
+                temp_file.string());
+
+            REQUIRE(result.constraints.contains("T"));
+            CHECK(result.constraints["T"].concept_expr == "std::integral");
+
+            std::filesystem::remove(temp_file);
+        }
+
     }
 }
 

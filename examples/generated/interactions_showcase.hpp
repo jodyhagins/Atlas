@@ -1,5 +1,5 @@
-#ifndef EXAMPLE_INTERACTIONS_D121E09E48FC6984AEED8F6DE149FABA359AE5BA
-#define EXAMPLE_INTERACTIONS_D121E09E48FC6984AEED8F6DE149FABA359AE5BA
+#ifndef EXAMPLE_INTERACTIONS_55468202C265B8705E260179EAF8490B47EA8217
+#define EXAMPLE_INTERACTIONS_55468202C265B8705E260179EAF8490B47EA8217
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -973,19 +973,26 @@ operator^(RedChannel lhs, RedChannel rhs)
 
 namespace math {
 
-inline constexpr T
+template <std::integral T>
+constexpr T
 operator+(T lhs, T rhs)
 {
     return T{lhs.value + atlas::value(rhs)};
 }
 
-inline constexpr U
+template <typename U, typename std::enable_if<std::is_floating_point<U>::value, bool>::type = true>
+constexpr U
 operator*(U lhs, U rhs)
 {
     return U{lhs.value * atlas::value(rhs)};
 }
 
-inline constexpr V
+#if __cpp_concepts >= 201907L
+template <std::integral V>
+#else
+template <typename V, typename std::enable_if<sizeof(V) <= 8, bool>::type = true>
+#endif
+constexpr V
 operator-(V lhs, V rhs)
 {
     return V{lhs.value - atlas::value(rhs)};
@@ -1165,4 +1172,4 @@ operator+(EncryptedData lhs, EncryptedData rhs)
 
 } // namespace security
 
-#endif // EXAMPLE_INTERACTIONS_D121E09E48FC6984AEED8F6DE149FABA359AE5BA
+#endif // EXAMPLE_INTERACTIONS_55468202C265B8705E260179EAF8490B47EA8217
