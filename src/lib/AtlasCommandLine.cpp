@@ -47,19 +47,18 @@ extract_template_param_from_enable_if(
     auto open_angle = expr.find('<');
     auto close_angle = expr.find('>');
 
-    if (open_angle == std::string::npos ||
-        close_angle == std::string::npos ||
+    if (open_angle == std::string::npos || close_angle == std::string::npos ||
         close_angle <= open_angle)
     {
         throw AtlasCommandLineError(
             "Cannot extract template parameter name from enable_if at line " +
             std::to_string(line_number) + " in " + filename +
-            ". Expected pattern like: enable_if=std::is_floating_point<U>::value");
+            ". Expected pattern like: "
+            "enable_if=std::is_floating_point<U>::value");
     }
 
-    std::string param_name = trim(expr.substr(
-        open_angle + 1,
-        close_angle - open_angle - 1));
+    std::string param_name = trim(
+        expr.substr(open_angle + 1, close_angle - open_angle - 1));
 
     // Handle nested templates by taking first identifier before comma
     // For "std::is_same<T, int>::value", extract "T"
@@ -72,7 +71,8 @@ extract_template_param_from_enable_if(
         throw AtlasCommandLineError(
             "Cannot extract template parameter name from enable_if at line " +
             std::to_string(line_number) + " in " + filename +
-            ". Expected pattern like: enable_if=std::is_floating_point<U>::value");
+            ". Expected pattern like: "
+            "enable_if=std::is_floating_point<U>::value");
     }
 
     return param_name;
@@ -113,6 +113,11 @@ parse_impl(std::vector<std::string> const & args)
         if (arg == "--help" || arg == "-h") {
             result.help = true;
             return result; // Early return for help
+        }
+
+        if (arg == "--version" || arg == "-v") {
+            result.version = true;
+            return result; // Early return for version
         }
 
         auto equals_pos = arg.find('=');
@@ -430,6 +435,7 @@ OPTIONAL ARGUMENTS:
                                 Values: true/false, 1/0, yes/no
 
     --help, -h                  Show this help message
+    --version, -v               Show version information
 
 EXAMPLES:
     # Generate a simple integer wrapper
@@ -565,7 +571,8 @@ parse_interaction_file(std::string const & filename)
             }
 
             // Space-separated syntax: "std::integral T"
-            // The template parameter name is the last whitespace-separated token
+            // The template parameter name is the last whitespace-separated
+            // token
             auto last_space = value.rfind(' ');
             std::string name;
             std::string concept_expr;
@@ -606,7 +613,9 @@ parse_interaction_file(std::string const & filename)
             } else {
                 // No pending concept - extract parameter name from enable_if
                 std::string param_name = extract_template_param_from_enable_if(
-                    expr, line_number, filename);
+                    expr,
+                    line_number,
+                    filename);
 
                 if (not result.constraints.contains(param_name)) {
                     result.constraints[param_name] = TypeConstraint{

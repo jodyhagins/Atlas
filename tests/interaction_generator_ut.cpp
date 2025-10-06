@@ -5,6 +5,7 @@
 // https://opensource.org/licenses/MIT
 // ----------------------------------------------------------------------
 #include "InteractionGenerator.hpp"
+#include "version.hpp"
 
 #include <algorithm>
 #include <regex>
@@ -1679,6 +1680,55 @@ TEST_SUITE("InteractionGenerator")
             // Should NOT generate atlas_value for double
             CHECK_FALSE(contains(code, "atlas_value(double const& v"));
             CHECK_FALSE(contains(code, "atlas_value(::double const& v"));
+        }
+    }
+
+    TEST_CASE("Version Information")
+    {
+        SUBCASE("generated interaction code includes version") {
+            InteractionFileDescription desc;
+            desc.interactions.push_back(InteractionDescription{
+                .op_symbol = "+",
+                .lhs_type = "TypeA",
+                .rhs_type = "TypeB",
+                .result_type = "TypeC",
+                .symmetric = false,
+                .lhs_is_template = false,
+                .rhs_is_template = false,
+                .is_constexpr = true,
+                .interaction_namespace = "test",
+                .lhs_value_access = ".value",
+                .rhs_value_access = ".value",
+                .value_access = ".value"});
+
+            auto code = generate_interactions(desc);
+
+            // Should contain version information in header comment
+            CHECK(
+                code.find("Atlas Interaction Generator v") !=
+                std::string::npos);
+            CHECK(code.find(codegen::version_string) != std::string::npos);
+        }
+
+        SUBCASE("generated interaction code includes DO NOT EDIT warning") {
+            InteractionFileDescription desc;
+            desc.interactions.push_back(InteractionDescription{
+                .op_symbol = "*",
+                .lhs_type = "TypeA",
+                .rhs_type = "TypeB",
+                .result_type = "TypeC",
+                .symmetric = false,
+                .lhs_is_template = false,
+                .rhs_is_template = false,
+                .is_constexpr = true,
+                .interaction_namespace = "test",
+                .lhs_value_access = ".value",
+                .rhs_value_access = ".value",
+                .value_access = ".value"});
+
+            auto code = generate_interactions(desc);
+
+            CHECK(code.find("DO NOT EDIT") != std::string::npos);
         }
     }
 }
