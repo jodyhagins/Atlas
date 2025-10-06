@@ -196,6 +196,15 @@ struct StrongTypeDescription
 struct StrongTypeGenerator
 {
     /**
+     * @brief Warning information for diagnostic messages
+     */
+    struct Warning
+    {
+        std::string message;
+        std::string type_name;
+    };
+
+    /**
      * Generate code for a strong type.
      *
      * @return  A string with the entire type definition, including any header
@@ -210,10 +219,24 @@ struct StrongTypeGenerator
      * assuming that its syntax is correct.  Likewise, it does not verify that
      * the provided operators are implemented by the wrapped class.
      */
-    std::string operator () (StrongTypeDescription const &) const;
+    std::string operator () (StrongTypeDescription const &);
+
+    /**
+     * @brief Get the warnings collected during generation
+     */
+    std::vector<Warning> const & get_warnings() const { return warnings_; }
+
+    /**
+     * @brief Clear all collected warnings
+     */
+    void clear_warnings() { warnings_.clear(); }
+
+private:
+    std::vector<Warning> warnings_;
 };
 
-inline constexpr auto generate_strong_type = StrongTypeGenerator{};
+// Removed constexpr instance - use StrongTypeGenerator directly for stateful
+// warning collection
 
 /**
  * @brief Generate multiple strong types in a single file with unified header

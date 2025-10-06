@@ -37,6 +37,14 @@ make_description(
         .default_value = std::move(default_value)};
 }
 
+// Helper function for simple code generation without warnings
+std::string
+generate_strong_type(StrongTypeDescription const & desc)
+{
+    StrongTypeGenerator gen;
+    return gen(desc);
+}
+
 TEST_SUITE("Structural Validation Demo")
 {
     TEST_CASE("Hash Support - Structural Validation")
