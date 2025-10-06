@@ -1,5 +1,5 @@
-#ifndef EXAMPLE_INTERACTIONS_62074AA5CF9F78742A189CEDB698DA2EF2EAD724
-#define EXAMPLE_INTERACTIONS_62074AA5CF9F78742A189CEDB698DA2EF2EAD724
+#ifndef EXAMPLE_INTERACTIONS_1F5D28B85CB50E4E282263E2B24CDB5DCC88F337
+#define EXAMPLE_INTERACTIONS_1F5D28B85CB50E4E282263E2B24CDB5DCC88F337
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -18,8 +18,31 @@
 #ifndef WJH_ATLAS_50E620B544874CB8BE4412EE6773BF90
 #define WJH_ATLAS_50E620B544874CB8BE4412EE6773BF90
 
-// This is boilerplate that is part of every Atlas interaction file.
-// Nothing to see here, move along.
+// ======================================================================
+// ATLAS STRONG TYPE BOILERPLATE
+// ----------------------------------------------------------------------
+//
+// This section provides the infrastructure for Atlas strong types.
+// It is identical across all Atlas-generated files and uses a shared
+// header guard (WJH_ATLAS_50E620B544874CB8BE4412EE6773BF90) to ensure
+// the boilerplate is only included once even when multiple generated
+// files are used in the same translation unit.
+//
+// The boilerplate is intentionally inlined to make generated code
+// self-contained with zero external dependencies.
+//
+// Components:
+// - atlas::strong_type_tag: Base class for strong types
+// - atlas::value(): Universal value accessor for strong types
+// - atlas_detail::*: Internal implementation utilities
+//
+// For projects using multiple Atlas-generated files, this boilerplate
+// will only be compiled once per translation unit thanks to the shared
+// header guard below.
+//
+// ----------------------------------------------------------------------
+// DO NOT EDIT THIS SECTION
+// ======================================================================
 
 // Atlas feature detection macros
 #ifndef ATLAS_NODISCARD
@@ -1373,4 +1396,4 @@ noexcept(
 
 } // namespace security
 
-#endif // EXAMPLE_INTERACTIONS_62074AA5CF9F78742A189CEDB698DA2EF2EAD724
+#endif // EXAMPLE_INTERACTIONS_1F5D28B85CB50E4E282263E2B24CDB5DCC88F337

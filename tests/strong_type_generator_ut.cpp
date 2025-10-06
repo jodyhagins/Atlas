@@ -1112,8 +1112,8 @@ TEST_SUITE("StrongTypeGenerator")
             auto code =
                 generate_strong_types_file(descriptions, "EXAMPLE", "_", true);
 
-            // The preamble guard should appear exactly 3 times: #ifndef,
-            // #define, and #endif
+            // The preamble guard should appear exactly 4 times: #ifndef,
+            // #define, #endif, and once in documentation comment
             std::string preamble_guard =
                 "WJH_ATLAS_50E620B544874CB8BE4412EE6773BF90";
 
@@ -1125,9 +1125,9 @@ TEST_SUITE("StrongTypeGenerator")
                 pos += preamble_guard.length();
             }
 
-            // Should appear exactly 3 times: #ifndef, #define at start, and
-            // #endif at end
-            CHECK(count == 3);
+            // Should appear exactly 4 times: #ifndef, #define at start,
+            // #endif at end, and once in the boilerplate documentation comment
+            CHECK(count == 4);
 
             // Verify the preamble marker appears exactly once
             std::string preamble_marker =
