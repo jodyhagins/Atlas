@@ -1,5 +1,5 @@
-#ifndef EXAMPLE_INTERACTIONS_596AF7B0094C2CEDD612C8738813EEE3F924CFEA
-#define EXAMPLE_INTERACTIONS_596AF7B0094C2CEDD612C8738813EEE3F924CFEA
+#ifndef EXAMPLE_INTERACTIONS_7E8A8E301643676EDDA5E809ED56ECDCCD56F780
+#define EXAMPLE_INTERACTIONS_7E8A8E301643676EDDA5E809ED56ECDCCD56F780
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -34,12 +34,14 @@ struct strong_type_tag
 {
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
-    friend auto
-    operator<=>(strong_type_tag const &, strong_type_tag const &) = default;
+    friend auto operator<=>(
+        strong_type_tag const &,
+        strong_type_tag const &) = default;
 #endif
 };
 
-struct value_tag {};
+struct value_tag
+{ };
 
 namespace atlas_detail {
 
@@ -99,10 +101,7 @@ value(T & val, PriorityTag<0>)
 }
 
 template <typename T, typename U = typename T::atlas_value_type>
-using val_t = _t<std::conditional<
-    std::is_const<T>::value,
-    U const &,
-    U &>>;
+using val_t = _t<std::conditional<std::is_const<T>::value, U const &, U &>>;
 
 template <typename T, typename U = val_t<T>>
 constexpr auto
@@ -141,8 +140,7 @@ class Value
 
 public:
     template <typename T>
-    constexpr auto
-    operator()(T && t) const
+    constexpr auto operator ()(T && t) const
     -> decltype(rval<T>(atlas_detail::value(t, atlas_detail::value_tag{})))
     {
         return rval<T>(atlas_detail::value(t, atlas_detail::value_tag{}));
@@ -179,109 +177,127 @@ value(T && t)
 // These allow atlas::value() to work with external library types
 // Users can override by providing atlas_value(T const&) without the tag parameter
 namespace atlas {
-inline auto atlas_value(::concurrency::ThreadId const& v, value_tag)
+inline auto
+atlas_value(::concurrency::ThreadId const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
 }
 
-inline constexpr auto atlas_value(::data::ByteCount const& v, value_tag)
+inline constexpr auto
+atlas_value(::data::ByteCount const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
 }
 
-inline constexpr auto atlas_value(::data::size_t const& v, value_tag)
+inline constexpr auto
+atlas_value(::data::size_t const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
 }
 
-inline constexpr auto atlas_value(::finance::core::Money const& v, value_tag)
+inline constexpr auto
+atlas_value(::finance::core::Money const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
 }
 
-inline constexpr auto atlas_value(::finance::core::double const& v, value_tag)
+inline constexpr auto
+atlas_value(::finance::core::double const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
 }
 
-inline constexpr auto atlas_value(::geo::Latitude const& v, value_tag)
+inline constexpr auto
+atlas_value(::geo::Latitude const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
 }
 
-inline constexpr auto atlas_value(::geo::Longitude const& v, value_tag)
+inline constexpr auto
+atlas_value(::geo::Longitude const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
 }
 
-inline constexpr auto atlas_value(::geo::double const& v, value_tag)
+inline constexpr auto
+atlas_value(::geo::double const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
 }
 
-inline constexpr auto atlas_value(::graphics::color::RedChannel const& v, value_tag)
+inline constexpr auto
+atlas_value(::graphics::color::RedChannel const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
 }
 
-inline constexpr auto atlas_value(::math::rational::Denominator const& v, value_tag)
+inline constexpr auto
+atlas_value(::math::rational::Denominator const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
 }
 
-inline constexpr auto atlas_value(::math::rational::Numerator const& v, value_tag)
+inline constexpr auto
+atlas_value(::math::rational::Numerator const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
 }
 
-inline constexpr auto atlas_value(::net::ipv4::Octet const& v, value_tag)
+inline constexpr auto
+atlas_value(::net::ipv4::Octet const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
 }
 
-inline constexpr auto atlas_value(::net::ipv4::int const& v, value_tag)
+inline constexpr auto
+atlas_value(::net::ipv4::int const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
 }
 
-inline constexpr auto atlas_value(::physics::units::Meters const& v, value_tag)
+inline constexpr auto
+atlas_value(::physics::units::Meters const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
 }
 
-inline constexpr auto atlas_value(::physics::units::MetersPerSecond const& v, value_tag)
+inline constexpr auto
+atlas_value(::physics::units::MetersPerSecond const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
 }
 
-inline constexpr auto atlas_value(::physics::units::Seconds const& v, value_tag)
+inline constexpr auto
+atlas_value(::physics::units::Seconds const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
 }
 
-inline constexpr auto atlas_value(::physics::units::double const& v, value_tag)
+inline constexpr auto
+atlas_value(::physics::units::double const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
 }
 
-inline constexpr auto atlas_value(::security::EncryptedData const& v, value_tag)
+inline constexpr auto
+atlas_value(::security::EncryptedData const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
@@ -296,16 +312,21 @@ inline constexpr auto atlas_value(::security::EncryptedData const& v, value_tag)
 namespace atlas {
 
 namespace atlas_detail {
-template<typename L, typename R, typename = void>
-struct has_compound_op_modulo : std::false_type {};
+template <typename L, typename R, typename = void>
+struct has_compound_op_modulo
+: std::false_type
+{ };
 
-template<typename L, typename R>
-struct has_compound_op_modulo<L, R,
+template <typename L, typename R>
+struct has_compound_op_modulo<
+    L,
+    R,
     decltype((void)(atlas::value(std::declval<L&>()) %=
         atlas::value(std::declval<R const&>())))>
-: std::true_type {};
+: std::true_type
+{ };
 
-template<typename L, typename R>
+template <typename L, typename R>
 constexpr L &
 compound_assign_impl_modulo(L & lhs, R const & rhs, std::true_type)
 {
@@ -313,7 +334,7 @@ compound_assign_impl_modulo(L & lhs, R const & rhs, std::true_type)
     return lhs;
 }
 
-template<typename L, typename R>
+template <typename L, typename R>
 constexpr L &
 compound_assign_impl_modulo(L & lhs, R const & rhs, std::false_type)
 {
@@ -322,31 +343,41 @@ compound_assign_impl_modulo(L & lhs, R const & rhs, std::false_type)
 }
 }
 
-template<
+template <
     typename L,
     typename R,
     typename std::enable_if<
         std::is_base_of<atlas::strong_type_tag, L>::value,
         bool>::type = true>
-inline auto operator%=(L & lhs, R const & rhs)
--> decltype(atlas_detail::compound_assign_impl_modulo(lhs, rhs,
+inline auto
+operator%=(L & lhs, R const & rhs)
+-> decltype(atlas_detail::compound_assign_impl_modulo(
+    lhs,
+    rhs,
     atlas_detail::has_compound_op_modulo<L, R>{}))
 {
-    return atlas_detail::compound_assign_impl_modulo(lhs, rhs,
+    return atlas_detail::compound_assign_impl_modulo(
+        lhs,
+        rhs,
         atlas_detail::has_compound_op_modulo<L, R>{});
 }
 
 namespace atlas_detail {
-template<typename L, typename R, typename = void>
-struct has_compound_op_bitand : std::false_type {};
+template <typename L, typename R, typename = void>
+struct has_compound_op_bitand
+: std::false_type
+{ };
 
-template<typename L, typename R>
-struct has_compound_op_bitand<L, R,
+template <typename L, typename R>
+struct has_compound_op_bitand<
+    L,
+    R,
     decltype((void)(atlas::value(std::declval<L&>()) &=
         atlas::value(std::declval<R const&>())))>
-: std::true_type {};
+: std::true_type
+{ };
 
-template<typename L, typename R>
+template <typename L, typename R>
 constexpr L &
 compound_assign_impl_bitand(L & lhs, R const & rhs, std::true_type)
 {
@@ -354,7 +385,7 @@ compound_assign_impl_bitand(L & lhs, R const & rhs, std::true_type)
     return lhs;
 }
 
-template<typename L, typename R>
+template <typename L, typename R>
 constexpr L &
 compound_assign_impl_bitand(L & lhs, R const & rhs, std::false_type)
 {
@@ -363,31 +394,41 @@ compound_assign_impl_bitand(L & lhs, R const & rhs, std::false_type)
 }
 }
 
-template<
+template <
     typename L,
     typename R,
     typename std::enable_if<
         std::is_base_of<atlas::strong_type_tag, L>::value,
         bool>::type = true>
-inline auto operator&=(L & lhs, R const & rhs)
--> decltype(atlas_detail::compound_assign_impl_bitand(lhs, rhs,
+inline auto
+operator&=(L & lhs, R const & rhs)
+-> decltype(atlas_detail::compound_assign_impl_bitand(
+    lhs,
+    rhs,
     atlas_detail::has_compound_op_bitand<L, R>{}))
 {
-    return atlas_detail::compound_assign_impl_bitand(lhs, rhs,
+    return atlas_detail::compound_assign_impl_bitand(
+        lhs,
+        rhs,
         atlas_detail::has_compound_op_bitand<L, R>{});
 }
 
 namespace atlas_detail {
-template<typename L, typename R, typename = void>
-struct has_compound_op_times : std::false_type {};
+template <typename L, typename R, typename = void>
+struct has_compound_op_times
+: std::false_type
+{ };
 
-template<typename L, typename R>
-struct has_compound_op_times<L, R,
+template <typename L, typename R>
+struct has_compound_op_times<
+    L,
+    R,
     decltype((void)(atlas::value(std::declval<L&>()) *=
         atlas::value(std::declval<R const&>())))>
-: std::true_type {};
+: std::true_type
+{ };
 
-template<typename L, typename R>
+template <typename L, typename R>
 constexpr L &
 compound_assign_impl_times(L & lhs, R const & rhs, std::true_type)
 {
@@ -395,7 +436,7 @@ compound_assign_impl_times(L & lhs, R const & rhs, std::true_type)
     return lhs;
 }
 
-template<typename L, typename R>
+template <typename L, typename R>
 constexpr L &
 compound_assign_impl_times(L & lhs, R const & rhs, std::false_type)
 {
@@ -404,31 +445,41 @@ compound_assign_impl_times(L & lhs, R const & rhs, std::false_type)
 }
 }
 
-template<
+template <
     typename L,
     typename R,
     typename std::enable_if<
         std::is_base_of<atlas::strong_type_tag, L>::value,
         bool>::type = true>
-inline auto operator*=(L & lhs, R const & rhs)
--> decltype(atlas_detail::compound_assign_impl_times(lhs, rhs,
+inline auto
+operator*=(L & lhs, R const & rhs)
+-> decltype(atlas_detail::compound_assign_impl_times(
+    lhs,
+    rhs,
     atlas_detail::has_compound_op_times<L, R>{}))
 {
-    return atlas_detail::compound_assign_impl_times(lhs, rhs,
+    return atlas_detail::compound_assign_impl_times(
+        lhs,
+        rhs,
         atlas_detail::has_compound_op_times<L, R>{});
 }
 
 namespace atlas_detail {
-template<typename L, typename R, typename = void>
-struct has_compound_op_plus : std::false_type {};
+template <typename L, typename R, typename = void>
+struct has_compound_op_plus
+: std::false_type
+{ };
 
-template<typename L, typename R>
-struct has_compound_op_plus<L, R,
+template <typename L, typename R>
+struct has_compound_op_plus<
+    L,
+    R,
     decltype((void)(atlas::value(std::declval<L&>()) +=
         atlas::value(std::declval<R const&>())))>
-: std::true_type {};
+: std::true_type
+{ };
 
-template<typename L, typename R>
+template <typename L, typename R>
 constexpr L &
 compound_assign_impl_plus(L & lhs, R const & rhs, std::true_type)
 {
@@ -436,7 +487,7 @@ compound_assign_impl_plus(L & lhs, R const & rhs, std::true_type)
     return lhs;
 }
 
-template<typename L, typename R>
+template <typename L, typename R>
 constexpr L &
 compound_assign_impl_plus(L & lhs, R const & rhs, std::false_type)
 {
@@ -445,31 +496,41 @@ compound_assign_impl_plus(L & lhs, R const & rhs, std::false_type)
 }
 }
 
-template<
+template <
     typename L,
     typename R,
     typename std::enable_if<
         std::is_base_of<atlas::strong_type_tag, L>::value,
         bool>::type = true>
-inline auto operator+=(L & lhs, R const & rhs)
--> decltype(atlas_detail::compound_assign_impl_plus(lhs, rhs,
+inline auto
+operator+=(L & lhs, R const & rhs)
+-> decltype(atlas_detail::compound_assign_impl_plus(
+    lhs,
+    rhs,
     atlas_detail::has_compound_op_plus<L, R>{}))
 {
-    return atlas_detail::compound_assign_impl_plus(lhs, rhs,
+    return atlas_detail::compound_assign_impl_plus(
+        lhs,
+        rhs,
         atlas_detail::has_compound_op_plus<L, R>{});
 }
 
 namespace atlas_detail {
-template<typename L, typename R, typename = void>
-struct has_compound_op_minus : std::false_type {};
+template <typename L, typename R, typename = void>
+struct has_compound_op_minus
+: std::false_type
+{ };
 
-template<typename L, typename R>
-struct has_compound_op_minus<L, R,
+template <typename L, typename R>
+struct has_compound_op_minus<
+    L,
+    R,
     decltype((void)(atlas::value(std::declval<L&>()) -=
         atlas::value(std::declval<R const&>())))>
-: std::true_type {};
+: std::true_type
+{ };
 
-template<typename L, typename R>
+template <typename L, typename R>
 constexpr L &
 compound_assign_impl_minus(L & lhs, R const & rhs, std::true_type)
 {
@@ -477,7 +538,7 @@ compound_assign_impl_minus(L & lhs, R const & rhs, std::true_type)
     return lhs;
 }
 
-template<typename L, typename R>
+template <typename L, typename R>
 constexpr L &
 compound_assign_impl_minus(L & lhs, R const & rhs, std::false_type)
 {
@@ -486,31 +547,41 @@ compound_assign_impl_minus(L & lhs, R const & rhs, std::false_type)
 }
 }
 
-template<
+template <
     typename L,
     typename R,
     typename std::enable_if<
         std::is_base_of<atlas::strong_type_tag, L>::value,
         bool>::type = true>
-inline auto operator-=(L & lhs, R const & rhs)
--> decltype(atlas_detail::compound_assign_impl_minus(lhs, rhs,
+inline auto
+operator-=(L & lhs, R const & rhs)
+-> decltype(atlas_detail::compound_assign_impl_minus(
+    lhs,
+    rhs,
     atlas_detail::has_compound_op_minus<L, R>{}))
 {
-    return atlas_detail::compound_assign_impl_minus(lhs, rhs,
+    return atlas_detail::compound_assign_impl_minus(
+        lhs,
+        rhs,
         atlas_detail::has_compound_op_minus<L, R>{});
 }
 
 namespace atlas_detail {
-template<typename L, typename R, typename = void>
-struct has_compound_op_divide : std::false_type {};
+template <typename L, typename R, typename = void>
+struct has_compound_op_divide
+: std::false_type
+{ };
 
-template<typename L, typename R>
-struct has_compound_op_divide<L, R,
+template <typename L, typename R>
+struct has_compound_op_divide<
+    L,
+    R,
     decltype((void)(atlas::value(std::declval<L&>()) /=
         atlas::value(std::declval<R const&>())))>
-: std::true_type {};
+: std::true_type
+{ };
 
-template<typename L, typename R>
+template <typename L, typename R>
 constexpr L &
 compound_assign_impl_divide(L & lhs, R const & rhs, std::true_type)
 {
@@ -518,7 +589,7 @@ compound_assign_impl_divide(L & lhs, R const & rhs, std::true_type)
     return lhs;
 }
 
-template<typename L, typename R>
+template <typename L, typename R>
 constexpr L &
 compound_assign_impl_divide(L & lhs, R const & rhs, std::false_type)
 {
@@ -527,31 +598,41 @@ compound_assign_impl_divide(L & lhs, R const & rhs, std::false_type)
 }
 }
 
-template<
+template <
     typename L,
     typename R,
     typename std::enable_if<
         std::is_base_of<atlas::strong_type_tag, L>::value,
         bool>::type = true>
-inline auto operator/=(L & lhs, R const & rhs)
--> decltype(atlas_detail::compound_assign_impl_divide(lhs, rhs,
+inline auto
+operator/=(L & lhs, R const & rhs)
+-> decltype(atlas_detail::compound_assign_impl_divide(
+    lhs,
+    rhs,
     atlas_detail::has_compound_op_divide<L, R>{}))
 {
-    return atlas_detail::compound_assign_impl_divide(lhs, rhs,
+    return atlas_detail::compound_assign_impl_divide(
+        lhs,
+        rhs,
         atlas_detail::has_compound_op_divide<L, R>{});
 }
 
 namespace atlas_detail {
-template<typename L, typename R, typename = void>
-struct has_compound_op_lshift : std::false_type {};
+template <typename L, typename R, typename = void>
+struct has_compound_op_lshift
+: std::false_type
+{ };
 
-template<typename L, typename R>
-struct has_compound_op_lshift<L, R,
+template <typename L, typename R>
+struct has_compound_op_lshift<
+    L,
+    R,
     decltype((void)(atlas::value(std::declval<L&>()) <<=
         atlas::value(std::declval<R const&>())))>
-: std::true_type {};
+: std::true_type
+{ };
 
-template<typename L, typename R>
+template <typename L, typename R>
 constexpr L &
 compound_assign_impl_lshift(L & lhs, R const & rhs, std::true_type)
 {
@@ -559,7 +640,7 @@ compound_assign_impl_lshift(L & lhs, R const & rhs, std::true_type)
     return lhs;
 }
 
-template<typename L, typename R>
+template <typename L, typename R>
 constexpr L &
 compound_assign_impl_lshift(L & lhs, R const & rhs, std::false_type)
 {
@@ -568,31 +649,41 @@ compound_assign_impl_lshift(L & lhs, R const & rhs, std::false_type)
 }
 }
 
-template<
+template <
     typename L,
     typename R,
     typename std::enable_if<
         std::is_base_of<atlas::strong_type_tag, L>::value,
         bool>::type = true>
-inline auto operator<<=(L & lhs, R const & rhs)
--> decltype(atlas_detail::compound_assign_impl_lshift(lhs, rhs,
+inline auto
+operator<<=(L & lhs, R const & rhs)
+-> decltype(atlas_detail::compound_assign_impl_lshift(
+    lhs,
+    rhs,
     atlas_detail::has_compound_op_lshift<L, R>{}))
 {
-    return atlas_detail::compound_assign_impl_lshift(lhs, rhs,
+    return atlas_detail::compound_assign_impl_lshift(
+        lhs,
+        rhs,
         atlas_detail::has_compound_op_lshift<L, R>{});
 }
 
 namespace atlas_detail {
-template<typename L, typename R, typename = void>
-struct has_compound_op_rshift : std::false_type {};
+template <typename L, typename R, typename = void>
+struct has_compound_op_rshift
+: std::false_type
+{ };
 
-template<typename L, typename R>
-struct has_compound_op_rshift<L, R,
+template <typename L, typename R>
+struct has_compound_op_rshift<
+    L,
+    R,
     decltype((void)(atlas::value(std::declval<L&>()) >>=
         atlas::value(std::declval<R const&>())))>
-: std::true_type {};
+: std::true_type
+{ };
 
-template<typename L, typename R>
+template <typename L, typename R>
 constexpr L &
 compound_assign_impl_rshift(L & lhs, R const & rhs, std::true_type)
 {
@@ -600,7 +691,7 @@ compound_assign_impl_rshift(L & lhs, R const & rhs, std::true_type)
     return lhs;
 }
 
-template<typename L, typename R>
+template <typename L, typename R>
 constexpr L &
 compound_assign_impl_rshift(L & lhs, R const & rhs, std::false_type)
 {
@@ -609,31 +700,41 @@ compound_assign_impl_rshift(L & lhs, R const & rhs, std::false_type)
 }
 }
 
-template<
+template <
     typename L,
     typename R,
     typename std::enable_if<
         std::is_base_of<atlas::strong_type_tag, L>::value,
         bool>::type = true>
-inline auto operator>>=(L & lhs, R const & rhs)
--> decltype(atlas_detail::compound_assign_impl_rshift(lhs, rhs,
+inline auto
+operator>>=(L & lhs, R const & rhs)
+-> decltype(atlas_detail::compound_assign_impl_rshift(
+    lhs,
+    rhs,
     atlas_detail::has_compound_op_rshift<L, R>{}))
 {
-    return atlas_detail::compound_assign_impl_rshift(lhs, rhs,
+    return atlas_detail::compound_assign_impl_rshift(
+        lhs,
+        rhs,
         atlas_detail::has_compound_op_rshift<L, R>{});
 }
 
 namespace atlas_detail {
-template<typename L, typename R, typename = void>
-struct has_compound_op_bitxor : std::false_type {};
+template <typename L, typename R, typename = void>
+struct has_compound_op_bitxor
+: std::false_type
+{ };
 
-template<typename L, typename R>
-struct has_compound_op_bitxor<L, R,
+template <typename L, typename R>
+struct has_compound_op_bitxor<
+    L,
+    R,
     decltype((void)(atlas::value(std::declval<L&>()) ^=
         atlas::value(std::declval<R const&>())))>
-: std::true_type {};
+: std::true_type
+{ };
 
-template<typename L, typename R>
+template <typename L, typename R>
 constexpr L &
 compound_assign_impl_bitxor(L & lhs, R const & rhs, std::true_type)
 {
@@ -641,7 +742,7 @@ compound_assign_impl_bitxor(L & lhs, R const & rhs, std::true_type)
     return lhs;
 }
 
-template<typename L, typename R>
+template <typename L, typename R>
 constexpr L &
 compound_assign_impl_bitxor(L & lhs, R const & rhs, std::false_type)
 {
@@ -650,31 +751,41 @@ compound_assign_impl_bitxor(L & lhs, R const & rhs, std::false_type)
 }
 }
 
-template<
+template <
     typename L,
     typename R,
     typename std::enable_if<
         std::is_base_of<atlas::strong_type_tag, L>::value,
         bool>::type = true>
-inline auto operator^=(L & lhs, R const & rhs)
--> decltype(atlas_detail::compound_assign_impl_bitxor(lhs, rhs,
+inline auto
+operator^=(L & lhs, R const & rhs)
+-> decltype(atlas_detail::compound_assign_impl_bitxor(
+    lhs,
+    rhs,
     atlas_detail::has_compound_op_bitxor<L, R>{}))
 {
-    return atlas_detail::compound_assign_impl_bitxor(lhs, rhs,
+    return atlas_detail::compound_assign_impl_bitxor(
+        lhs,
+        rhs,
         atlas_detail::has_compound_op_bitxor<L, R>{});
 }
 
 namespace atlas_detail {
-template<typename L, typename R, typename = void>
-struct has_compound_op_bitor : std::false_type {};
+template <typename L, typename R, typename = void>
+struct has_compound_op_bitor
+: std::false_type
+{ };
 
-template<typename L, typename R>
-struct has_compound_op_bitor<L, R,
+template <typename L, typename R>
+struct has_compound_op_bitor<
+    L,
+    R,
     decltype((void)(atlas::value(std::declval<L&>()) |=
         atlas::value(std::declval<R const&>())))>
-: std::true_type {};
+: std::true_type
+{ };
 
-template<typename L, typename R>
+template <typename L, typename R>
 constexpr L &
 compound_assign_impl_bitor(L & lhs, R const & rhs, std::true_type)
 {
@@ -682,7 +793,7 @@ compound_assign_impl_bitor(L & lhs, R const & rhs, std::true_type)
     return lhs;
 }
 
-template<typename L, typename R>
+template <typename L, typename R>
 constexpr L &
 compound_assign_impl_bitor(L & lhs, R const & rhs, std::false_type)
 {
@@ -691,17 +802,22 @@ compound_assign_impl_bitor(L & lhs, R const & rhs, std::false_type)
 }
 }
 
-template<
+template <
     typename L,
     typename R,
     typename std::enable_if<
         std::is_base_of<atlas::strong_type_tag, L>::value,
         bool>::type = true>
-inline auto operator|=(L & lhs, R const & rhs)
--> decltype(atlas_detail::compound_assign_impl_bitor(lhs, rhs,
+inline auto
+operator|=(L & lhs, R const & rhs)
+-> decltype(atlas_detail::compound_assign_impl_bitor(
+    lhs,
+    rhs,
     atlas_detail::has_compound_op_bitor<L, R>{}))
 {
-    return atlas_detail::compound_assign_impl_bitor(lhs, rhs,
+    return atlas_detail::compound_assign_impl_bitor(
+        lhs,
+        rhs,
         atlas_detail::has_compound_op_bitor<L, R>{});
 }
 
@@ -1063,4 +1179,4 @@ operator+(EncryptedData lhs, EncryptedData rhs)
 
 } // namespace security
 
-#endif // EXAMPLE_INTERACTIONS_596AF7B0094C2CEDD612C8738813EEE3F924CFEA
+#endif // EXAMPLE_INTERACTIONS_7E8A8E301643676EDDA5E809ED56ECDCCD56F780
