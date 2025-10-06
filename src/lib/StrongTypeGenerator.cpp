@@ -455,6 +455,7 @@ constexpr char hash_specialization_template[] = R"(
 template <>
 struct std::hash<{{{full_qualified_name}}}>
 {
+    ATLAS_NODISCARD
     {{{hash_const_expr}}}std::size_t operator () ({{{full_qualified_name}}} const & t) const
     noexcept(
         noexcept(std::hash<{{{underlying_type}}}>{}(

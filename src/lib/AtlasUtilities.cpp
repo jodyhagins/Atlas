@@ -81,6 +81,15 @@ preamble()
 // This is boilerplate that is part of every Atlas interaction file.
 // Nothing to see here, move along.
 
+// Atlas feature detection macros
+#ifndef ATLAS_NODISCARD
+#if defined(__cpp_attributes) && __cpp_attributes >= 201603L
+#define ATLAS_NODISCARD [[nodiscard]]
+#else
+#define ATLAS_NODISCARD
+#endif
+#endif
+
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
 #include <compare>

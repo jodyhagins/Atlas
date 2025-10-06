@@ -1,5 +1,5 @@
-#ifndef EXAMPLE_INTERACTIONS_2BE4FB95E1480887C38474541431D346057268C4
-#define EXAMPLE_INTERACTIONS_2BE4FB95E1480887C38474541431D346057268C4
+#ifndef EXAMPLE_INTERACTIONS_62074AA5CF9F78742A189CEDB698DA2EF2EAD724
+#define EXAMPLE_INTERACTIONS_62074AA5CF9F78742A189CEDB698DA2EF2EAD724
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -20,6 +20,15 @@
 
 // This is boilerplate that is part of every Atlas interaction file.
 // Nothing to see here, move along.
+
+// Atlas feature detection macros
+#ifndef ATLAS_NODISCARD
+#if defined(__cpp_attributes) && __cpp_attributes >= 201603L
+#define ATLAS_NODISCARD [[nodiscard]]
+#else
+#define ATLAS_NODISCARD
+#endif
+#endif
 
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
@@ -1364,4 +1373,4 @@ noexcept(
 
 } // namespace security
 
-#endif // EXAMPLE_INTERACTIONS_2BE4FB95E1480887C38474541431D346057268C4
+#endif // EXAMPLE_INTERACTIONS_62074AA5CF9F78742A189CEDB698DA2EF2EAD724
