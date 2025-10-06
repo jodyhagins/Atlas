@@ -1082,4 +1082,363 @@ TEST_SUITE("InteractionGenerator")
             CHECK_NOTHROW(generate_interactions(desc));
         }
     }
+
+    TEST_CASE("Primitive type qualification")
+    {
+        SUBCASE("size_t is not namespace-qualified in atlas_value") {
+            InteractionFileDescription desc;
+            desc.interactions.push_back(InteractionDescription{
+                .op_symbol = "*",
+                .lhs_type = "ByteCount",
+                .rhs_type = "size_t",
+                .result_type = "ByteCount",
+                .symmetric = false,
+                .lhs_is_template = false,
+                .rhs_is_template = false,
+                .is_constexpr = true,
+                .interaction_namespace = "data",
+                .lhs_value_access = "",
+                .rhs_value_access = "",
+                .value_access = ".value"});
+
+            auto code = generate_interactions(desc);
+
+            // Should NOT contain ::data::size_t (invalid)
+            CHECK_FALSE(contains(code, "::data::size_t"));
+
+            // Should contain plain size_t in atlas_value
+            CHECK(contains(code, "atlas_value(size_t const& v, value_tag)"));
+        }
+
+        SUBCASE("double is not namespace-qualified in atlas_value") {
+            InteractionFileDescription desc;
+            desc.interactions.push_back(InteractionDescription{
+                .op_symbol = "*",
+                .lhs_type = "Money",
+                .rhs_type = "double",
+                .result_type = "Money",
+                .symmetric = false,
+                .lhs_is_template = false,
+                .rhs_is_template = false,
+                .is_constexpr = true,
+                .interaction_namespace = "finance::core",
+                .lhs_value_access = "",
+                .rhs_value_access = "",
+                .value_access = ".value"});
+
+            auto code = generate_interactions(desc);
+
+            // Should NOT contain ::finance::core::double (invalid)
+            CHECK_FALSE(contains(code, "::finance::core::double"));
+
+            // Should contain plain double in atlas_value
+            CHECK(contains(code, "atlas_value(double const& v, value_tag)"));
+        }
+
+        SUBCASE("int is not namespace-qualified in atlas_value") {
+            InteractionFileDescription desc;
+            desc.interactions.push_back(InteractionDescription{
+                .op_symbol = "<<",
+                .lhs_type = "Octet",
+                .rhs_type = "int",
+                .result_type = "Octet",
+                .symmetric = false,
+                .lhs_is_template = false,
+                .rhs_is_template = false,
+                .is_constexpr = true,
+                .interaction_namespace = "net::ipv4",
+                .lhs_value_access = "",
+                .rhs_value_access = "",
+                .value_access = ".value"});
+
+            auto code = generate_interactions(desc);
+
+            // Should NOT contain ::net::ipv4::int (invalid)
+            CHECK_FALSE(contains(code, "::net::ipv4::int"));
+
+            // Should contain plain int in atlas_value
+            CHECK(contains(code, "atlas_value(int const& v, value_tag)"));
+        }
+
+        SUBCASE("Multiple primitive types") {
+            InteractionFileDescription desc;
+
+            // ByteCount * size_t
+            desc.interactions.push_back(InteractionDescription{
+                .op_symbol = "*",
+                .lhs_type = "ByteCount",
+                .rhs_type = "size_t",
+                .result_type = "ByteCount",
+                .symmetric = false,
+                .lhs_is_template = false,
+                .rhs_is_template = false,
+                .is_constexpr = true,
+                .interaction_namespace = "data",
+                .lhs_value_access = "",
+                .rhs_value_access = "",
+                .value_access = ".value"});
+
+            // Money * double
+            desc.interactions.push_back(InteractionDescription{
+                .op_symbol = "*",
+                .lhs_type = "Money",
+                .rhs_type = "double",
+                .result_type = "Money",
+                .symmetric = false,
+                .lhs_is_template = false,
+                .rhs_is_template = false,
+                .is_constexpr = true,
+                .interaction_namespace = "finance",
+                .lhs_value_access = "",
+                .rhs_value_access = "",
+                .value_access = ".value"});
+
+            auto code = generate_interactions(desc);
+
+            // Check no invalid namespace-qualified primitives
+            CHECK_FALSE(contains(code, "::data::size_t"));
+            CHECK_FALSE(contains(code, "::finance::double"));
+
+            // Check correct plain primitive types
+            CHECK(contains(code, "atlas_value(size_t const& v, value_tag)"));
+            CHECK(contains(code, "atlas_value(double const& v, value_tag)"));
+        }
+    }
+
+    TEST_CASE("std:: type qualification")
+    {
+        SUBCASE("std::string is globally qualified in atlas_value") {
+            InteractionFileDescription desc;
+            desc.interactions.push_back(InteractionDescription{
+                .op_symbol = "+",
+                .lhs_type = "ConfigKey",
+                .rhs_type = "std::string",
+                .result_type = "ConfigKey",
+                .symmetric = false,
+                .lhs_is_template = false,
+                .rhs_is_template = false,
+                .is_constexpr = true,
+                .interaction_namespace = "app::config",
+                .lhs_value_access = "",
+                .rhs_value_access = "",
+                .value_access = ".value"});
+
+            auto code = generate_interactions(desc);
+
+            // Should NOT contain ::app::config::std::string (invalid)
+            CHECK_FALSE(contains(code, "::app::config::std::string"));
+
+            // Should contain ::std::string (globally qualified)
+            CHECK(contains(code, "atlas_value(::std::string const& v, value_tag)"));
+        }
+
+        SUBCASE("Already globally qualified std::string stays as-is") {
+            InteractionFileDescription desc;
+            desc.interactions.push_back(InteractionDescription{
+                .op_symbol = "+",
+                .lhs_type = "Text",
+                .rhs_type = "::std::string",
+                .result_type = "Text",
+                .symmetric = false,
+                .lhs_is_template = false,
+                .rhs_is_template = false,
+                .is_constexpr = true,
+                .interaction_namespace = "app",
+                .lhs_value_access = "",
+                .rhs_value_access = "",
+                .value_access = ".value"});
+
+            auto code = generate_interactions(desc);
+
+            // Should contain ::std::string exactly as provided
+            CHECK(contains(code, "atlas_value(::std::string const& v, value_tag)"));
+        }
+    }
+
+    TEST_CASE("User-defined type qualification")
+    {
+        SUBCASE("Unqualified user type gets namespace prefix") {
+            InteractionFileDescription desc;
+            desc.interactions.push_back(InteractionDescription{
+                .op_symbol = "*",
+                .lhs_type = "Meters",
+                .rhs_type = "Seconds",
+                .result_type = "MetersPerSecond",
+                .symmetric = false,
+                .lhs_is_template = false,
+                .rhs_is_template = false,
+                .is_constexpr = true,
+                .interaction_namespace = "physics::units",
+                .lhs_value_access = "atlas::value",
+                .rhs_value_access = "",
+                .value_access = ".value"});
+
+            auto code = generate_interactions(desc);
+
+            // Only RHS types with custom value access get atlas_value overloads
+            // RHS (Seconds) should be namespace-qualified in atlas_value
+            CHECK(contains(code, "atlas_value(::physics::units::Seconds const& v, value_tag)"));
+        }
+
+        SUBCASE("Already qualified user type gets global qualifier") {
+            InteractionFileDescription desc;
+            desc.interactions.push_back(InteractionDescription{
+                .op_symbol = "+",
+                .lhs_type = "MyType",
+                .rhs_type = "other::ns::OtherType",
+                .result_type = "MyType",
+                .symmetric = false,
+                .lhs_is_template = false,
+                .rhs_is_template = false,
+                .is_constexpr = true,
+                .interaction_namespace = "my::namespace",
+                .lhs_value_access = "atlas::value",
+                .rhs_value_access = "",
+                .value_access = ".value"});
+
+            auto code = generate_interactions(desc);
+
+            // Should add global qualifier to already-qualified type
+            CHECK(contains(code, "atlas_value(::other::ns::OtherType const& v, value_tag)"));
+        }
+
+        SUBCASE("Global namespace type (::Foo) stays as-is") {
+            InteractionFileDescription desc;
+            desc.interactions.push_back(InteractionDescription{
+                .op_symbol = "*",
+                .lhs_type = "MyType",
+                .rhs_type = "::GlobalType",
+                .result_type = "MyType",
+                .symmetric = false,
+                .lhs_is_template = false,
+                .rhs_is_template = false,
+                .is_constexpr = true,
+                .interaction_namespace = "my::namespace",
+                .lhs_value_access = "atlas::value",
+                .rhs_value_access = "",
+                .value_access = ".value"});
+
+            auto code = generate_interactions(desc);
+
+            // Global namespace type should remain unchanged
+            CHECK(contains(code, "atlas_value(::GlobalType const& v, value_tag)"));
+        }
+
+        SUBCASE("Unqualified type in empty namespace gets global qualifier") {
+            InteractionFileDescription desc;
+            desc.interactions.push_back(InteractionDescription{
+                .op_symbol = "+",
+                .lhs_type = "TypeA",
+                .rhs_type = "TypeB",
+                .result_type = "TypeA",
+                .symmetric = false,
+                .lhs_is_template = false,
+                .rhs_is_template = false,
+                .is_constexpr = true,
+                .interaction_namespace = "",
+                .lhs_value_access = "atlas::value",
+                .rhs_value_access = "",
+                .value_access = ".value"});
+
+            auto code = generate_interactions(desc);
+
+            // Type in empty namespace should get :: prefix
+            CHECK(contains(code, "atlas_value(::TypeB const& v, value_tag)"));
+        }
+    }
+
+    TEST_CASE("Mixed type qualification scenarios")
+    {
+        SUBCASE("User type with primitive type") {
+            InteractionFileDescription desc;
+            desc.interactions.push_back(InteractionDescription{
+                .op_symbol = "*",
+                .lhs_type = "Distance",
+                .rhs_type = "double",
+                .result_type = "Distance",
+                .symmetric = true,
+                .lhs_is_template = false,
+                .rhs_is_template = false,
+                .is_constexpr = true,
+                .interaction_namespace = "physics",
+                .lhs_value_access = "atlas::value",
+                .rhs_value_access = "",
+                .value_access = ".value"});
+
+            auto code = generate_interactions(desc);
+
+            // Primitive should NOT be qualified (this is the critical test)
+            CHECK(contains(code, "atlas_value(double const& v, value_tag)"));
+            CHECK_FALSE(contains(code, "::physics::double"));
+        }
+
+        SUBCASE("User type with std:: type") {
+            InteractionFileDescription desc;
+            desc.interactions.push_back(InteractionDescription{
+                .op_symbol = "+",
+                .lhs_type = "Container",
+                .rhs_type = "std::vector",
+                .result_type = "Container",
+                .symmetric = false,
+                .lhs_is_template = false,
+                .rhs_is_template = false,
+                .is_constexpr = true,
+                .interaction_namespace = "data",
+                .lhs_value_access = "atlas::value",
+                .rhs_value_access = "",
+                .value_access = ".value"});
+
+            auto code = generate_interactions(desc);
+
+            // std:: type should be globally qualified (this is the critical test)
+            CHECK(contains(code, "atlas_value(::std::vector const& v, value_tag)"));
+            CHECK_FALSE(contains(code, "::data::std::vector"));
+        }
+
+        SUBCASE("All primitive types are correctly handled") {
+            InteractionFileDescription desc;
+
+            // Test various primitive types including signed variants
+            std::vector<std::string> primitives = {
+                "int",
+                "signed int",
+                "unsigned",
+                "signed",
+                "long",
+                "signed long",
+                "signed long long",
+                "float",
+                "double",
+                "size_t",
+                "uint8_t",
+                "int32_t"};
+
+            for (auto const & prim : primitives) {
+                desc.interactions.push_back(InteractionDescription{
+                    .op_symbol = "*",
+                    .lhs_type = "MyType",
+                    .rhs_type = prim,
+                    .result_type = "MyType",
+                    .symmetric = false,
+                    .lhs_is_template = false,
+                    .rhs_is_template = false,
+                    .is_constexpr = true,
+                    .interaction_namespace = "test::namespace",
+                    .lhs_value_access = "",
+                    .rhs_value_access = "",
+                    .value_access = ".value"});
+            }
+
+            auto code = generate_interactions(desc);
+
+            // None of the primitives should have namespace qualification
+            for (auto const & prim : primitives) {
+                std::string invalid = "::test::namespace::" + prim;
+                CHECK_FALSE(contains(code, invalid));
+
+                std::string valid = "atlas_value(" + prim + " const& v, value_tag)";
+                CHECK(contains(code, valid));
+            }
+        }
+    }
 }

@@ -1,5 +1,5 @@
-#ifndef EXAMPLE_INTERACTIONS_8CAF909640A5375E7AF68E95192B125DAE92EE7E
-#define EXAMPLE_INTERACTIONS_8CAF909640A5375E7AF68E95192B125DAE92EE7E
+#ifndef EXAMPLE_INTERACTIONS_D121E09E48FC6984AEED8F6DE149FABA359AE5BA
+#define EXAMPLE_INTERACTIONS_D121E09E48FC6984AEED8F6DE149FABA359AE5BA
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -192,21 +192,7 @@ atlas_value(::data::ByteCount const& v, value_tag)
 }
 
 inline constexpr auto
-atlas_value(::data::size_t const& v, value_tag)
--> decltype(v.value)
-{
-    return v.value;
-}
-
-inline constexpr auto
 atlas_value(::finance::core::Money const& v, value_tag)
--> decltype(v.value)
-{
-    return v.value;
-}
-
-inline constexpr auto
-atlas_value(::finance::core::double const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
@@ -221,13 +207,6 @@ atlas_value(::geo::Latitude const& v, value_tag)
 
 inline constexpr auto
 atlas_value(::geo::Longitude const& v, value_tag)
--> decltype(v.value)
-{
-    return v.value;
-}
-
-inline constexpr auto
-atlas_value(::geo::double const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
@@ -262,13 +241,6 @@ atlas_value(::net::ipv4::Octet const& v, value_tag)
 }
 
 inline constexpr auto
-atlas_value(::net::ipv4::int const& v, value_tag)
--> decltype(v.value)
-{
-    return v.value;
-}
-
-inline constexpr auto
 atlas_value(::physics::units::Meters const& v, value_tag)
 -> decltype(v.value)
 {
@@ -290,14 +262,28 @@ atlas_value(::physics::units::Seconds const& v, value_tag)
 }
 
 inline constexpr auto
-atlas_value(::physics::units::double const& v, value_tag)
+atlas_value(::security::EncryptedData const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
 }
 
 inline constexpr auto
-atlas_value(::security::EncryptedData const& v, value_tag)
+atlas_value(double const& v, value_tag)
+-> decltype(v.value)
+{
+    return v.value;
+}
+
+inline constexpr auto
+atlas_value(int const& v, value_tag)
+-> decltype(v.value)
+{
+    return v.value;
+}
+
+inline constexpr auto
+atlas_value(size_t const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
@@ -1179,4 +1165,4 @@ operator+(EncryptedData lhs, EncryptedData rhs)
 
 } // namespace security
 
-#endif // EXAMPLE_INTERACTIONS_8CAF909640A5375E7AF68E95192B125DAE92EE7E
+#endif // EXAMPLE_INTERACTIONS_D121E09E48FC6984AEED8F6DE149FABA359AE5BA
