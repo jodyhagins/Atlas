@@ -1,0 +1,9 @@
+# Test: Modulo operator
+# Feature: Modulo with compound assignment
+# Expected: operator%, operator%=
+
+[type]
+kind=struct
+namespace=test
+name=ModuloType
+description=strong int; %

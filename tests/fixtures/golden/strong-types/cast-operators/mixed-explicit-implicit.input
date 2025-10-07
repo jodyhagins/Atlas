@@ -1,0 +1,9 @@
+# Test: Mixed explicit and implicit casts
+# Feature: Combination of explicit and implicit conversion operators
+# Expected: explicit operator bool(), operator int()
+
+[type]
+kind=struct
+namespace=test
+name=MixedCastType
+description=strong double; cast<bool>, implicit_cast<int>

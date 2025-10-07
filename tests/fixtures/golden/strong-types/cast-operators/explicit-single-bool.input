@@ -1,0 +1,9 @@
+# Test: Single explicit cast to bool
+# Feature: Explicit conversion operator to bool
+# Expected: explicit operator bool()
+
+[type]
+kind=struct
+namespace=test
+name=ExplicitBoolType
+description=strong int; cast<bool>

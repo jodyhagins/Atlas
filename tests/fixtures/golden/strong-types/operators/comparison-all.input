@@ -1,0 +1,9 @@
+# Test: All comparison operators
+# Feature: Complete set of comparison operators
+# Expected: operator==, operator!=, operator<, operator<=, operator>, operator>=, operator<=>
+
+[type]
+kind=struct
+namespace=test
+name=ComparisonAllType
+description=strong int; ==, !=, <, <=, >, >=, <=>

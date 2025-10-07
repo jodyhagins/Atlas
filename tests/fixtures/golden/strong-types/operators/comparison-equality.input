@@ -1,0 +1,9 @@
+# Test: Equality comparison operators
+# Feature: Equality and inequality comparison
+# Expected: operator==, operator!=
+
+[type]
+kind=struct
+namespace=test
+name=EqualityType
+description=strong int; ==, !=

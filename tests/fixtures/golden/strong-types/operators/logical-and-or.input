@@ -1,0 +1,9 @@
+# Test: Logical AND and OR operators
+# Feature: Short-circuit logical operators
+# Expected: operator&&, operator||
+
+[type]
+kind=struct
+namespace=test
+name=LogicalAndOrType
+description=strong int; &&, ||

@@ -1,0 +1,9 @@
+# Test: Hash specialization for string-based type
+# Feature: std::hash specialization for string
+# Expected: std::hash<test::HashStringType> specialization
+
+[type]
+kind=struct
+namespace=test
+name=HashStringType
+description=strong std::string; hash

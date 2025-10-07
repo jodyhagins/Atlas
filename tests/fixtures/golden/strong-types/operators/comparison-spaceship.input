@@ -1,0 +1,9 @@
+# Test: Three-way comparison operator (spaceship)
+# Feature: C++20 three-way comparison
+# Expected: operator<=> with <compare> include
+
+[type]
+kind=struct
+namespace=test
+name=SpaceshipType
+description=strong int; <=>

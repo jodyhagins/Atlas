@@ -1,0 +1,9 @@
+# Test: Implicit conversion to int
+# Feature: Implicit cast operator to int
+# Expected: operator int() (not explicit)
+
+[type]
+kind=struct
+namespace=test
+name=ImplicitIntType
+description=strong double; implicit_cast<int>

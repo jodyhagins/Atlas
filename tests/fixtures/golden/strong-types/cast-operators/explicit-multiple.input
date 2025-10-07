@@ -1,0 +1,9 @@
+# Test: Multiple explicit cast operators
+# Feature: Multiple explicit conversion operators
+# Expected: explicit operator bool(), explicit operator int()
+
+[type]
+kind=struct
+namespace=test
+name=ExplicitMultipleType
+description=strong double; cast<bool>, cast<int>

@@ -1,0 +1,9 @@
+# Test: Implicit conversion to bool
+# Feature: Implicit cast operator (reduces type safety)
+# Expected: operator bool() (not explicit)
+
+[type]
+kind=struct
+namespace=test
+name=ImplicitBoolType
+description=strong int; implicit_cast<bool>

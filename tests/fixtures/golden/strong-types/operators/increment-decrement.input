@@ -1,0 +1,9 @@
+# Test: Increment and decrement operators
+# Feature: Pre and post increment/decrement
+# Expected: operator++, operator-- (both prefix and postfix)
+
+[type]
+kind=struct
+namespace=test
+name=IncrementDecrementType
+description=strong int; ++, --

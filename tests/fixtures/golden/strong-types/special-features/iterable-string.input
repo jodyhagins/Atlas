@@ -1,0 +1,9 @@
+# Test: Iterable for string-based type
+# Feature: Range iteration support for string
+# Expected: begin() and end() member functions for string
+
+[type]
+kind=struct
+namespace=test
+name=IterableStringType
+description=strong std::string; iterable

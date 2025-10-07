@@ -1,0 +1,9 @@
+# Test: Basic arithmetic operators
+# Feature: All five basic arithmetic operators
+# Expected: operator+, operator+=, operator-, operator-=, operator*, operator*=, operator/, operator/=, operator%, operator%=
+
+[type]
+kind=struct
+namespace=test
+name=ArithmeticBasicType
+description=strong int; +, -, *, /, %

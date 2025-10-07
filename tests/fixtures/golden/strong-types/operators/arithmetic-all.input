@@ -1,0 +1,9 @@
+# Test: All arithmetic operators including unary
+# Feature: Binary arithmetic plus unary operators
+# Expected: All arithmetic operators plus unary +, -, ~
+
+[type]
+kind=struct
+namespace=test
+name=ArithmeticAllType
+description=strong int; +, -, *, /, %, u+, u-, u~

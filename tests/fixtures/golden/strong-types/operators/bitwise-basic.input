@@ -1,0 +1,9 @@
+# Test: Basic bitwise operators
+# Feature: Bitwise AND, OR, XOR
+# Expected: operator&, operator&=, operator|, operator|=, operator^, operator^=
+
+[type]
+kind=struct
+namespace=test
+name=BitwiseBasicType
+description=strong int; &, |, ^

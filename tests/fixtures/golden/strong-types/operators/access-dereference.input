@@ -1,0 +1,9 @@
+# Test: Dereference operator
+# Feature: operator* to access underlying value
+# Expected: operator*() returning reference to wrapped value
+
+[type]
+kind=struct
+namespace=test
+name=DereferenceType
+description=strong int; @

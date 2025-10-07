@@ -1,0 +1,9 @@
+# Test: Bitwise shift operators
+# Feature: Left and right shift operators
+# Expected: operator<<, operator<<=, operator>>, operator>>=
+
+[type]
+kind=struct
+namespace=test
+name=BitwiseShiftType
+description=strong int; <<, >>

@@ -1,0 +1,9 @@
+# Test: Address-of operator
+# Feature: Get address of underlying value
+# Expected: operator& returning std::addressof(value)
+
+[type]
+kind=struct
+namespace=test
+name=AddressOfType
+description=strong int; &of

@@ -1,0 +1,9 @@
+# Test: All unary operators
+# Feature: Complete set of unary operators
+# Expected: operator+(), operator-(), operator~(), operator!()
+
+[type]
+kind=struct
+namespace=test
+name=UnaryAllType
+description=strong int; u+, u-, u~, !
