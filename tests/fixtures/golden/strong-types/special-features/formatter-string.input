@@ -1,0 +1,9 @@
+# Test: Formatter specialization for string
+# Feature: std::formatter specialization for string
+# Expected: std::formatter<test::FormatterStringType> specialization
+
+[type]
+kind=struct
+namespace=test
+name=FormatterStringType
+description=strong std::string; fmt

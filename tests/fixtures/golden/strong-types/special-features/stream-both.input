@@ -1,0 +1,9 @@
+# Test: Both input and output stream operators
+# Feature: operator<< and operator>> for streams
+# Expected: Both stream insertion and extraction operators
+
+[type]
+kind=struct
+namespace=test
+name=StreamBothType
+description=strong int; in, out

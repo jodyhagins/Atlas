@@ -1,0 +1,9 @@
+# Test: Logical NOT operator
+# Feature: Boolean negation
+# Expected: operator!
+
+[type]
+kind=struct
+namespace=test
+name=LogicalNotType
+description=strong int; !

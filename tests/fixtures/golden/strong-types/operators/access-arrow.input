@@ -1,0 +1,9 @@
+# Test: Arrow operator
+# Feature: Pointer-like member access
+# Expected: operator->() for member access
+
+[type]
+kind=struct
+namespace=test
+name=ArrowType
+description=strong std::string; ->

@@ -1,0 +1,9 @@
+# Test: Bitwise NOT operator
+# Feature: Unary bitwise complement
+# Expected: operator~
+
+[type]
+kind=struct
+namespace=test
+name=BitwiseNotType
+description=strong int; ~

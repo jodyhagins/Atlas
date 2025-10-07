@@ -1,0 +1,9 @@
+# Test: Nullary call operator
+# Feature: Function call operator returning wrapped value
+# Expected: operator()() returning the wrapped value
+
+[type]
+kind=struct
+namespace=test
+name=CallNullaryType
+description=strong int; ()

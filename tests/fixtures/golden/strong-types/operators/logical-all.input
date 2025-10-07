@@ -1,0 +1,9 @@
+# Test: All logical operators
+# Feature: Complete set of logical operators
+# Expected: operator!, operator&&, operator||
+
+[type]
+kind=struct
+namespace=test
+name=LogicalAllType
+description=strong int; !, &&, ||

@@ -1,0 +1,9 @@
+# Test: Formatter specialization for int
+# Feature: std::formatter specialization for C++20 format
+# Expected: std::formatter<test::FormatterIntType> with feature test macro
+
+[type]
+kind=struct
+namespace=test
+name=FormatterIntType
+description=strong int; fmt

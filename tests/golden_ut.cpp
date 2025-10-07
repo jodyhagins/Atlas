@@ -23,6 +23,13 @@ namespace fs = std::filesystem;
 using namespace wjh::atlas;
 using namespace wjh::atlas::testing;
 
+// Forward declarations
+std::vector<std::string> split_lines(std::string const & text);
+std::string visualize_whitespace(std::string const & s);
+std::string character_diff(
+    std::string const & expected,
+    std::string const & generated);
+
 /**
  * Get the source directory from environment or discover it.
  *
@@ -109,16 +116,177 @@ test_golden_file(fs::path const & input_path)
     auto expected = read_file(expected_path);
 
     if (generated != expected) {
-        INFO("Generated output differs from expected");
-        INFO("Input: " << input_path.string());
-        INFO("Expected: " << expected_path.string());
-        INFO("To update golden file:");
-        INFO(
-            "  atlas --input=" << input_path.string() << " > "
-            << expected_path.string());
+        // Build detailed diff information
+        std::ostringstream diff_output;
 
-        CHECK(generated == expected);
+        diff_output << "\n========================================\n";
+        diff_output << "GOLDEN FILE MISMATCH\n";
+        diff_output << "========================================\n\n";
+        diff_output << "Input:    " << input_path.string() << "\n";
+        diff_output << "Expected: " << expected_path.string() << "\n\n";
+
+        // Split into lines for diff
+        auto expected_lines = split_lines(expected);
+        auto generated_lines = split_lines(generated);
+
+        diff_output << "Line count: expected=" << expected_lines.size()
+            << ", generated=" << generated_lines.size() << "\n\n";
+
+        // Show line-by-line diff
+        size_t max_lines = std::max(
+            expected_lines.size(),
+            generated_lines.size());
+        size_t diff_count = 0;
+        size_t context_lines = 3; // Lines of context around differences
+
+        for (size_t i = 0; i < max_lines && diff_count < 20; ++i) {
+            bool has_expected = i < expected_lines.size();
+            bool has_generated = i < generated_lines.size();
+
+            if (has_expected && has_generated &&
+                expected_lines[i] == generated_lines[i])
+            {
+                // Lines match - only show if near a difference
+                continue; // We'll show context separately
+            }
+
+            // Found a difference
+            diff_count++;
+
+            diff_output << "--- Line " << (i + 1) << " ---\n";
+
+            if (has_expected) {
+                diff_output
+                    << "  EXPECTED: " << visualize_whitespace(expected_lines[i])
+                    << "\n";
+            } else {
+                diff_output << "  EXPECTED: <missing line>\n";
+            }
+
+            if (has_generated) {
+                diff_output << "  GENERATED: "
+                    << visualize_whitespace(generated_lines[i]) << "\n";
+            } else {
+                diff_output << "  GENERATED: <missing line>\n";
+            }
+
+            // Show character-level diff if both lines exist
+            if (has_expected && has_generated) {
+                auto char_diff = character_diff(
+                    expected_lines[i],
+                    generated_lines[i]);
+                if (not char_diff.empty()) {
+                    diff_output << "  DIFF: " << char_diff << "\n";
+                }
+            }
+
+            diff_output << "\n";
+        }
+
+        if (diff_count >= 20) {
+            diff_output << "... (showing first 20 differences)\n\n";
+        }
+
+        diff_output << "To update golden file:\n";
+        diff_output << "  atlas --input=" << input_path.string() << " > "
+            << expected_path.string() << "\n";
+        diff_output << "Or run: ./tests/tools/update_goldens.sh\n";
+        diff_output << "========================================\n";
+
+        FAIL(diff_output.str());
     }
+}
+
+/**
+ * Split string into lines, preserving line endings.
+ */
+std::vector<std::string>
+split_lines(std::string const & text)
+{
+    std::vector<std::string> lines;
+    std::istringstream stream(text);
+    std::string line;
+
+    while (std::getline(stream, line)) {
+        lines.push_back(line);
+    }
+
+    // Handle trailing newline
+    if (not text.empty() && text.back() == '\n') {
+        lines.push_back("");
+    }
+
+    return lines;
+}
+
+/**
+ * Visualize whitespace characters in a string.
+ * Shows spaces as '·', tabs as '→', and newlines as '↵'.
+ */
+std::string
+visualize_whitespace(std::string const & s)
+{
+    std::string result;
+    result.reserve(s.size() * 2);
+
+    for (char c : s) {
+        if (c == ' ') {
+            result += "\xC2\xB7"; // · (middle dot, UTF-8)
+        } else if (c == '\t') {
+            result += "\xE2\x86\x92   "; // → (rightwards arrow, UTF-8)
+        } else if (c == '\n') {
+            result += "\xE2\x86\xB5"; // ↵ (downwards arrow with corner, UTF-8)
+        } else if (c == '\r') {
+            result += "\xE2\x90\x8D"; // ␍ (symbol for carriage return, UTF-8)
+        } else if (std::isprint(static_cast<unsigned char>(c))) {
+            result += c;
+        } else {
+            // Show non-printable as hex
+            char buf[10];
+            std::snprintf(
+                buf,
+                sizeof(buf),
+                "\\x%02x",
+                static_cast<unsigned char>(c));
+            result += buf;
+        }
+    }
+
+    return result;
+}
+
+/**
+ * Create character-level diff showing where strings differ.
+ * Returns a string with '^' markers under differing positions.
+ */
+std::string
+character_diff(std::string const & expected, std::string const & generated)
+{
+    size_t min_len = std::min(expected.size(), generated.size());
+    size_t max_len = std::max(expected.size(), generated.size());
+
+    std::string diff;
+    diff.reserve(max_len);
+
+    for (size_t i = 0; i < min_len; ++i) {
+        if (expected[i] == generated[i]) {
+            diff += ' ';
+        } else {
+            diff += '^';
+        }
+    }
+
+    // Mark length difference
+    for (size_t i = min_len; i < max_len; ++i) {
+        diff += '!';
+    }
+
+    // Only return if there are differences
+    if (diff.find_first_not_of(' ') != std::string::npos) {
+        return diff;
+    }
+
+    return "";
 }
 
 /**

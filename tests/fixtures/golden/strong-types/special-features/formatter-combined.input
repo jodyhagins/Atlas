@@ -1,0 +1,9 @@
+# Test: Formatter combined with other features
+# Feature: Formatter with operators
+# Expected: std::formatter specialization plus operators
+
+[type]
+kind=struct
+namespace=test
+name=FormatterCombinedType
+description=strong int; fmt, ==, <=>

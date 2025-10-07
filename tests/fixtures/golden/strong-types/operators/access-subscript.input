@@ -1,0 +1,9 @@
+# Test: Subscript operator
+# Feature: Array-like element access
+# Expected: operator[] for indexing
+
+[type]
+kind=struct
+namespace=test
+name=SubscriptType
+description=strong std::string; []

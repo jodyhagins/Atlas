@@ -1,0 +1,9 @@
+# Test: All bitwise operators
+# Feature: Complete set of bitwise operators
+# Expected: operator&, operator|, operator^, operator<<, operator>> with compound assignments
+
+[type]
+kind=struct
+namespace=test
+name=BitwiseAllType
+description=strong int; &, |, ^, <<, >>

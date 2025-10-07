@@ -1,0 +1,9 @@
+# Test: Template assignment for string
+# Feature: Template assignment operator
+# Expected: template<typename T> operator= allowing compatible type assignment
+
+[type]
+kind=struct
+namespace=test
+name=AssignStringType
+description=strong std::string; assign

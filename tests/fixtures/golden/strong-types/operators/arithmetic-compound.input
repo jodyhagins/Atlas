@@ -1,0 +1,9 @@
+# Test: Compound assignment operators
+# Feature: Arithmetic operators generate compound assignments
+# Expected: operator+=, operator-=, operator*=, operator/=, operator%=
+
+[type]
+kind=struct
+namespace=test
+name=ArithmeticCompoundType
+description=strong int; +, -, *, /, %

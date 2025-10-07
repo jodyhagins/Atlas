@@ -1,0 +1,9 @@
+# Test: Increment operator only
+# Feature: Pre and post increment
+# Expected: operator++ (prefix and postfix)
+
+[type]
+kind=struct
+namespace=test
+name=IncrementOnlyType
+description=strong int; ++

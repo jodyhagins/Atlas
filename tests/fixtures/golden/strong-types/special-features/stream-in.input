@@ -1,0 +1,9 @@
+# Test: Input stream operator
+# Feature: operator>> for input streams
+# Expected: friend operator>>(std::istream&, Type&)
+
+[type]
+kind=struct
+namespace=test
+name=StreamInType
+description=strong int; in

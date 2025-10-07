@@ -1,0 +1,9 @@
+# Test: Hash without constexpr
+# Feature: Hash specialization without constexpr qualifier
+# Expected: std::hash specialization without constexpr on operator()
+
+[type]
+kind=struct
+namespace=test
+name=HashNoConstexprType
+description=strong std::string; hash, no-constexpr-hash

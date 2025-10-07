@@ -1,0 +1,9 @@
+# Test: Output stream operator
+# Feature: operator<< for output streams
+# Expected: friend operator<<(std::ostream&, Type const&)
+
+[type]
+kind=struct
+namespace=test
+name=StreamOutType
+description=strong int; out

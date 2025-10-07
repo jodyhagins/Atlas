@@ -1,0 +1,9 @@
+# Test: Templated call operator
+# Feature: Call operator invoking callable with value
+# Expected: template<typename...> operator() that invokes callable
+
+[type]
+kind=struct
+namespace=test
+name=CallTemplateType
+description=strong int; (&)

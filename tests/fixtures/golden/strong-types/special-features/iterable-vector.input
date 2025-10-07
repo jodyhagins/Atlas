@@ -1,0 +1,9 @@
+# Test: Iterable for vector-based type
+# Feature: Range iteration support with begin()/end()
+# Expected: begin() and end() member functions
+
+[type]
+kind=struct
+namespace=test
+name=IterableVectorType
+description=strong std::vector<int>; iterable

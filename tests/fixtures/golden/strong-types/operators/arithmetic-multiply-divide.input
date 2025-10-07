@@ -1,0 +1,9 @@
+# Test: Multiplication and division operators
+# Feature: Binary multiplication and division with compound assignment
+# Expected: operator*, operator*=, operator/, operator/=
+
+[type]
+kind=struct
+namespace=test
+name=MultiplyDivideType
+description=strong int; *, /

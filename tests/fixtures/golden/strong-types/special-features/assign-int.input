@@ -1,0 +1,9 @@
+# Test: Template assignment for int
+# Feature: Template assignment operator for int
+# Expected: template<typename T> operator= for int-based type
+
+[type]
+kind=struct
+namespace=test
+name=AssignIntType
+description=strong int; assign

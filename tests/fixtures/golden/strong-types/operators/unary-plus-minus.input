@@ -1,0 +1,9 @@
+# Test: Unary plus and minus operators
+# Feature: Unary arithmetic operators
+# Expected: operator+(), operator-()
+
+[type]
+kind=struct
+namespace=test
+name=UnaryPlusMinusType
+description=strong int; u+, u-

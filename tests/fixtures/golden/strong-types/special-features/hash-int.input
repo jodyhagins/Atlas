@@ -1,0 +1,9 @@
+# Test: Hash specialization for int-based type
+# Feature: std::hash specialization
+# Expected: std::hash<test::HashIntType> specialization
+
+[type]
+kind=struct
+namespace=test
+name=HashIntType
+description=strong int; hash

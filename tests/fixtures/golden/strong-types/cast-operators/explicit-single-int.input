@@ -1,0 +1,9 @@
+# Test: Single explicit cast to int
+# Feature: Explicit conversion operator to int
+# Expected: explicit operator int()
+
+[type]
+kind=struct
+namespace=test
+name=ExplicitIntType
+description=strong double; cast<int>

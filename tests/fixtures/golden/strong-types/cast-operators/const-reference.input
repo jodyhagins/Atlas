@@ -1,0 +1,9 @@
+# Test: Cast to const reference
+# Feature: Explicit cast to const reference type
+# Expected: explicit operator Type const&()
+
+[type]
+kind=struct
+namespace=test
+name=ConstRefCastType
+description=strong std::string; cast<std::string_view>

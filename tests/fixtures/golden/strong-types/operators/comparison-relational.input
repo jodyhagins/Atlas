@@ -1,0 +1,9 @@
+# Test: Relational comparison operators
+# Feature: Less than, less/equal, greater than, greater/equal
+# Expected: operator<, operator<=, operator>, operator>=
+
+[type]
+kind=struct
+namespace=test
+name=RelationalType
+description=strong int; <, <=, >, >=
