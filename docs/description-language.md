@@ -62,6 +62,7 @@ Quick facts:
 | `fmt` | `std::formatter` specialization for C++20 `std::format` (wrapped in feature test macro) |
 | `hash` | `std::hash` specialization |
 | `iterable` | Member `begin()/end()` for range-based for loops |
+| `assign` | Template assignment operator allowing assignment from compatible types |
 
 ### Control
 | Option | Behavior |
