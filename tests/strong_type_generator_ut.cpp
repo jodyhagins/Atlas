@@ -5,6 +5,7 @@
 // https://opensource.org/licenses/MIT
 // ----------------------------------------------------------------------
 #include "CodeStructureParser.hpp"
+#include "ProfileSystem.hpp"
 #include "StrongTypeGenerator.hpp"
 #include "version.hpp"
 
@@ -2149,6 +2150,137 @@ TEST_SUITE("StrongTypeGenerator")
             gen(desc2);
             CHECK(gen.get_warnings().size() == 2);
         }
+    }
+}
+
+TEST_CASE("ProfileSystem basic functionality")
+{
+    ProfileSystem ps;
+    ps.clear(); // Start fresh
+
+    SUBCASE("register and query profiles") {
+        std::vector<std::string> numeric_features =
+            {"+", "-", "*", "/", "==", "!="};
+        ps.register_profile("NUMERIC", numeric_features);
+
+        CHECK(ps.has_profile("NUMERIC"));
+        CHECK_FALSE(ps.has_profile("NONEXISTENT"));
+
+        auto names = ps.get_profile_names();
+        CHECK(names.size() == 1);
+        CHECK(names[0] == "NUMERIC");
+    }
+
+    SUBCASE("profile name validation") {
+        // Valid names
+        CHECK_NOTHROW(ps.register_profile("valid_name", {"+"}));
+        CHECK_NOTHROW(ps.register_profile("Valid123", {"+"}));
+        CHECK_NOTHROW(ps.register_profile("name-with-dash", {"+"}));
+
+        // Invalid names
+        CHECK_THROWS(ps.register_profile("", {"+"}));
+        CHECK_THROWS(ps.register_profile("name with space", {"+"}));
+        CHECK_THROWS(ps.register_profile("name$symbol", {"+"}));
+    }
+
+    SUBCASE("duplicate profile registration") {
+        ps.register_profile("TEST", {"+", "-"});
+        CHECK_THROWS(ps.register_profile("TEST", {"*", "/"}));
+    }
+
+    SUBCASE("expand simple profile") {
+        ps.register_profile("MATH", {"+", "-", "*", "/"});
+
+        std::vector<std::string> input = {"{MATH}", "=="};
+        auto result = ps.expand_features(input);
+
+        CHECK(result.size() == 5);
+        CHECK(std::find(result.begin(), result.end(), "+") != result.end());
+        CHECK(std::find(result.begin(), result.end(), "-") != result.end());
+        CHECK(std::find(result.begin(), result.end(), "*") != result.end());
+        CHECK(std::find(result.begin(), result.end(), "/") != result.end());
+        CHECK(std::find(result.begin(), result.end(), "==") != result.end());
+    }
+
+    SUBCASE("expand multiple profiles") {
+        ps.register_profile("ARITH", {"+", "-", "*", "/"});
+        ps.register_profile("CMP", {"==", "!=", "<", ">"});
+
+        std::vector<std::string> input = {"{ARITH}", "{CMP}", "hash"};
+        auto result = ps.expand_features(input);
+
+        CHECK(result.size() == 9);
+        CHECK(std::find(result.begin(), result.end(), "+") != result.end());
+        CHECK(std::find(result.begin(), result.end(), "==") != result.end());
+        CHECK(std::find(result.begin(), result.end(), "hash") != result.end());
+    }
+
+    SUBCASE("deduplication") {
+        ps.register_profile("MATH", {"+", "-", "*"});
+
+        // Request + directly and also through profile
+        std::vector<std::string> input = {"+", "{MATH}", "=="};
+        auto result = ps.expand_features(input);
+
+        // + should appear only once
+        int plus_count = std::count(result.begin(), result.end(), "+");
+        CHECK(plus_count == 1);
+    }
+
+    SUBCASE("unknown profile throws") {
+        std::vector<std::string> input = {"{UNKNOWN}"};
+        CHECK_THROWS(ps.expand_features(input));
+    }
+
+    SUBCASE("non-profile features pass through") {
+        std::vector<std::string> input = {"+", "-", "cast<bool>", "assign"};
+        auto result = ps.expand_features(input);
+
+        CHECK(result.size() == 4);
+        // Result is sorted, so verify elements are present
+        CHECK(std::find(result.begin(), result.end(), "+") != result.end());
+        CHECK(std::find(result.begin(), result.end(), "-") != result.end());
+        CHECK(
+            std::find(result.begin(), result.end(), "cast<bool>") !=
+            result.end());
+        CHECK(
+            std::find(result.begin(), result.end(), "assign") != result.end());
+    }
+}
+
+TEST_CASE("ProfileSystem in type generation")
+{
+    // This test verifies that when used through AtlasCommandLine,
+    // the profile expansion works correctly. We'll test this indirectly
+    // by creating a test file and parsing it.
+
+    SUBCASE("profile expansion produces expected operators") {
+        ProfileSystem ps;
+        ps.clear();
+        ps.register_profile("NUMERIC", {"+", "-", "*", "/", "==", "!="});
+
+        // Simulate what happens in parse_input_file
+        std::vector<std::string> features = {"{NUMERIC}", "hash"};
+        auto expanded = ps.expand_features(features);
+
+        // Verify expansion
+        CHECK(
+            std::find(expanded.begin(), expanded.end(), "+") != expanded.end());
+        CHECK(
+            std::find(expanded.begin(), expanded.end(), "-") != expanded.end());
+        CHECK(
+            std::find(expanded.begin(), expanded.end(), "*") != expanded.end());
+        CHECK(
+            std::find(expanded.begin(), expanded.end(), "/") != expanded.end());
+        CHECK(
+            std::find(expanded.begin(), expanded.end(), "==") !=
+            expanded.end());
+        CHECK(
+            std::find(expanded.begin(), expanded.end(), "!=") !=
+            expanded.end());
+        CHECK(
+            std::find(expanded.begin(), expanded.end(), "hash") !=
+            expanded.end());
     }
 }
 

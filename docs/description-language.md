@@ -29,6 +29,46 @@ Quick facts:
 - Each `[type]` section = one strong type
 - All types share a header guard with SHA1 hash (collision-proof, even when you try)
 
+## Profiles
+
+Profiles let you define reusable feature bundles:
+
+```
+# Define profiles at file level (before any [type] sections)
+profile=NUMERIC; +, -, *, /, ==, !=, <, <=, >, >=, hash
+profile=COMPARABLE; ==, !=
+
+[type]
+kind=struct
+namespace=math
+name=Distance
+description=strong double; {NUMERIC}, ->
+
+[type]
+kind=struct
+namespace=util
+name=Id
+description=strong int; {COMPARABLE}, hash
+```
+
+Profile rules:
+- Profile names must be `[a-zA-Z0-9_-]+`
+- Define profiles with `profile=NAME; feature, feature, ...`
+- Use profiles with `{NAME}` in descriptions
+- Multiple profiles can be composed: `{FOO}, {BAR}, +`
+- Features are deduplicated automatically
+- Profiles must be defined before use
+
+Example:
+```
+profile=ARITH; +, -, *, /, +=, -=, *=, /=
+profile=CMP; ==, !=, <, <=, >, >=
+
+[type]
+description=strong int; {ARITH}, {CMP}, hash
+# Expands to: +, -, *, /, +=, -=, *=, /=, ==, !=, <, <=, >, >=, hash
+```
+
 ## Options
 
 ### Operators
@@ -107,4 +147,5 @@ strong int; ++, --, bool, #<iostream>               # Counter with explicit incl
 strong std::vector<int>; ==, [], iterable           # Iterable container wrapper
 strong std::string; ==, cast<std::string_view>      # String with explicit cast to view
 strong int; ==, implicit_cast<bool>                 # Int with implicit bool conversion
+strong double; {NUMERIC}, ->                        # Using a profile (defined elsewhere)
 ```
