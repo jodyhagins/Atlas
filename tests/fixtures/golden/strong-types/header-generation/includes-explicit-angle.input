@@ -1,0 +1,9 @@
+# Test: Explicit include with angle brackets
+# Feature: #<header> adds explicit system include
+# Expected: Generated code includes <iostream>
+
+[type]
+kind=struct
+namespace=test
+name=ExplicitIncludeAngle
+description=strong int; ==, #<iostream>

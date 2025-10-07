@@ -1,0 +1,9 @@
+# Test: Plus with both binary and unary forms
+# Feature: +* generates BOTH binary operator+ AND unary operator+
+# Expected: Binary and unary operator+ in generated code
+
+[type]
+kind=struct
+namespace=test
+name=PlusStarType
+description=strong int; +*

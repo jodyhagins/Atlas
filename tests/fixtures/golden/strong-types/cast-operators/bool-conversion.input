@@ -1,0 +1,10 @@
+# Test: Bool conversion operator (standalone 'bool' feature)
+# Feature: 'bool' generates explicit operator bool
+# Expected: explicit operator bool() for truthiness testing
+# Note: Different from cast<bool> - this is the documented standalone feature
+
+[type]
+kind=struct
+namespace=test
+name=BoolConversionType
+description=strong int; bool

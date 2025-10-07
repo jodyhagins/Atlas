@@ -1,0 +1,9 @@
+# Test: Explicit include with quotes
+# Feature: #"header" adds explicit local include
+# Expected: Generated code includes "my_header.hpp"
+
+[type]
+kind=struct
+namespace=test
+name=ExplicitIncludeQuote
+description=strong int; ==, #"my_header.hpp"

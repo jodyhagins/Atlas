@@ -1,0 +1,10 @@
+# Test: Default value for int type
+# Feature: default_value sets the default constructor value
+# Expected: Default constructor initializes value to 42
+
+[type]
+kind=struct
+namespace=test
+name=DefaultValueInt
+default_value=42
+description=strong int; ==

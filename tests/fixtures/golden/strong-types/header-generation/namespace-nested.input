@@ -1,0 +1,9 @@
+# Test: Deeply nested namespace
+# Feature: namespace supports multi-level nesting with ::
+# Expected: Type defined in namespace a::b::c::d
+
+[type]
+kind=struct
+namespace=a::b::c::d
+name=DeeplyNestedType
+description=strong int; ==

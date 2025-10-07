@@ -1,0 +1,9 @@
+# Test: explicit_cast as alias for cast
+# Feature: explicit_cast<Type> is documented alias for cast<Type>
+# Expected: Same output as cast<int>
+
+[type]
+kind=struct
+namespace=test
+name=ExplicitCastAliasType
+description=strong double; explicit_cast<int>

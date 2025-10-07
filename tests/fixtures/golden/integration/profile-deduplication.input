@@ -1,0 +1,12 @@
+# Test: Profile feature deduplication
+# Feature: Features are deduplicated when profiles overlap
+# Expected: Each operator appears only once even if specified multiple times
+
+profile=OPS1; +, ==
+profile=OPS2; ==, hash
+
+[type]
+kind=struct
+namespace=test::profiles
+name=ProfileDeduplicationType
+description=strong int; {OPS1}, {OPS2}, ==

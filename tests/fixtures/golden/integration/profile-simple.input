@@ -1,0 +1,11 @@
+# Test: Simple profile definition and usage
+# Feature: Profiles allow defining reusable feature bundles
+# Expected: Profile features expanded in generated type
+
+profile=NUMERIC; +, -, *, /
+
+[type]
+kind=struct
+namespace=test::profiles
+name=SimpleProfileType
+description=strong int; {NUMERIC}, ==

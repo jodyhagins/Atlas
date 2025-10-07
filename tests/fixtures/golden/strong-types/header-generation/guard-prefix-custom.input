@@ -1,0 +1,11 @@
+# Test: Custom header guard prefix
+# Feature: guard_prefix allows customizing the header guard prefix
+# Expected: Header guard starts with CUSTOM_PREFIX_ instead of FOO_BAR_
+
+guard_prefix=CUSTOM_PREFIX
+
+[type]
+kind=struct
+namespace=test
+name=GuardPrefixType
+description=strong int; ==

@@ -1,0 +1,10 @@
+# Test: Default value for string type
+# Feature: default_value works with complex types
+# Expected: Default constructor initializes value to "hello"
+
+[type]
+kind=struct
+namespace=test
+name=DefaultValueString
+default_value="hello"
+description=strong std::string; ==

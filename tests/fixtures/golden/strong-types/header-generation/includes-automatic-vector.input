@@ -1,0 +1,9 @@
+# Test: Automatic include detection for std::vector
+# Feature: Atlas automatically includes <vector> for std::vector types
+# Expected: Generated code includes <vector>
+
+[type]
+kind=struct
+namespace=test
+name=AutoIncludeVector
+description=strong std::vector<int>; ==

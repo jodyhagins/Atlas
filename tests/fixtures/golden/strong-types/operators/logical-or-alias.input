@@ -1,0 +1,9 @@
+# Test: Logical or using 'or' keyword alias
+# Feature: 'or' is alias for '||' operator (ISO C++ alternative token)
+# Expected: operator|| generated (same as using '||')
+
+[type]
+kind=struct
+namespace=test
+name=LogicalOrAliasType
+description=strong int; or
