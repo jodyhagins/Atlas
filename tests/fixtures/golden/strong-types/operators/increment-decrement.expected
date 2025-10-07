@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_475C4E981083D670EC7338770E5170E5D1A7BE13
-#define FOO_BAR_475C4E981083D670EC7338770E5170E5D1A7BE13
+#ifndef FOO_BAR_1BCD45B2ADCDEF273313E0E4129111FBA7E6772B
+#define FOO_BAR_1BCD45B2ADCDEF273313E0E4129111FBA7E6772B
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -289,7 +289,7 @@ struct IncrementDecrementType
     friend constexpr IncrementDecrementType
     operator ++ (IncrementDecrementType & t, int)
     noexcept(
-        std::is_nothrow_copy_constructible<IncrementDecrementType>::value &&
+        std::is_nothrow_copy_constructible<int>::value &&
         noexcept(++std::declval<int&>()))
     {
         auto result = t;
@@ -313,7 +313,7 @@ struct IncrementDecrementType
     friend constexpr IncrementDecrementType
     operator -- (IncrementDecrementType & t, int)
     noexcept(
-        std::is_nothrow_copy_constructible<IncrementDecrementType>::value &&
+        std::is_nothrow_copy_constructible<int>::value &&
         noexcept(--std::declval<int&>()))
     {
         auto result = t;
@@ -323,5 +323,5 @@ struct IncrementDecrementType
 };
 } // namespace test
 
-#endif // FOO_BAR_475C4E981083D670EC7338770E5170E5D1A7BE13
+#endif // FOO_BAR_1BCD45B2ADCDEF273313E0E4129111FBA7E6772B
 

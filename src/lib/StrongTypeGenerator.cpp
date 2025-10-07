@@ -335,7 +335,7 @@ constexpr char increment_operator[] = R"(
     friend {{{const_expr}}}{{{class_name}}}
     operator {{{op}}} ({{{class_name}}} & t, int)
     noexcept(
-        std::is_nothrow_copy_constructible<{{{class_name}}}>::value &&
+        std::is_nothrow_copy_constructible<{{{underlying_type}}}>::value &&
         noexcept({{{op}}}std::declval<{{{underlying_type}}}&>()))
     {
         auto result = t;

@@ -1,5 +1,5 @@
-#ifndef EXAMPLE_A0EF1687394EC8017FD21460EBDAE7F5AB7AD1CB
-#define EXAMPLE_A0EF1687394EC8017FD21460EBDAE7F5AB7AD1CB
+#ifndef EXAMPLE_E925ED190AC664B1F7942557AA1C22382C60A5AC
+#define EXAMPLE_E925ED190AC664B1F7942557AA1C22382C60A5AC
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -1648,7 +1648,7 @@ struct ByteCount
     friend constexpr ByteCount
     operator ++ (ByteCount & t, int)
     noexcept(
-        std::is_nothrow_copy_constructible<ByteCount>::value &&
+        std::is_nothrow_copy_constructible<size_t>::value &&
         noexcept(++std::declval<size_t&>()))
     {
         auto result = t;
@@ -1672,7 +1672,7 @@ struct ByteCount
     friend constexpr ByteCount
     operator -- (ByteCount & t, int)
     noexcept(
-        std::is_nothrow_copy_constructible<ByteCount>::value &&
+        std::is_nothrow_copy_constructible<size_t>::value &&
         noexcept(--std::declval<size_t&>()))
     {
         auto result = t;
@@ -4300,4 +4300,4 @@ struct EnableFlag
 };
 } // namespace flags
 
-#endif // EXAMPLE_A0EF1687394EC8017FD21460EBDAE7F5AB7AD1CB
+#endif // EXAMPLE_E925ED190AC664B1F7942557AA1C22382C60A5AC

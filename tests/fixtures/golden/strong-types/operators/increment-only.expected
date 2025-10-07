@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_8B7161E299531C77A5EF33927B245B43CF4512B2
-#define FOO_BAR_8B7161E299531C77A5EF33927B245B43CF4512B2
+#ifndef FOO_BAR_60B2BC87C6C23B3DF47EE5E722B3066D26DD2A95
+#define FOO_BAR_60B2BC87C6C23B3DF47EE5E722B3066D26DD2A95
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -289,7 +289,7 @@ struct IncrementOnlyType
     friend constexpr IncrementOnlyType
     operator ++ (IncrementOnlyType & t, int)
     noexcept(
-        std::is_nothrow_copy_constructible<IncrementOnlyType>::value &&
+        std::is_nothrow_copy_constructible<int>::value &&
         noexcept(++std::declval<int&>()))
     {
         auto result = t;
@@ -299,5 +299,5 @@ struct IncrementOnlyType
 };
 } // namespace test
 
-#endif // FOO_BAR_8B7161E299531C77A5EF33927B245B43CF4512B2
+#endif // FOO_BAR_60B2BC87C6C23B3DF47EE5E722B3066D26DD2A95
 
