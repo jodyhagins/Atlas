@@ -122,3 +122,15 @@ kind=class
 namespace=containers
 name=DataBuffer
 description=strong std::vector<uint8_t>; ==, !=, iterable, [], hash
+
+[type]
+kind=struct
+namespace=formatting
+name=FormattedString
+description=strong std::string; ==, !=, fmt, out, hash
+
+[type]
+kind=struct
+namespace=formatting
+name=FormattedInt
+description=strong int; ==, fmt

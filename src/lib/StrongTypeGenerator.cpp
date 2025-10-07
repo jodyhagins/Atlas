@@ -38,7 +38,8 @@ BOOST_DESCRIBE_STRUCT(
      guard_prefix,
      guard_separator,
      upcase_guard,
-     generate_iterators))
+     generate_iterators,
+     generate_formatter))
 
 namespace {
 
@@ -109,10 +110,7 @@ make_notice_banner()
     return banner.str();
 }
 
-auto strong_template = R"({{#includes}}
-#include {{{.}}}
-{{/includes}}
-{{#namespace_open}}
+auto strong_template = R"({{{includes}}}{{#namespace_open}}
 {{{.}}}{{/namespace_open}}
 /**
  * @brief Strong type wrapper for {{{underlying_type}}}
@@ -215,6 +213,9 @@ auto strong_template = R"({{#includes}}
 {{#hash_specialization}}
 {{>hash_specialization}}
 {{/hash_specialization}}
+{{#formatter_specialization}}
+{{>formatter_specialization}}
+{{/formatter_specialization}}
 )";
 
 constexpr char addressof_operators[] = R"(
@@ -471,6 +472,30 @@ struct std::hash<{{{full_qualified_name}}}>
 };
 )";
 
+constexpr char formatter_specialization_template[] = R"(
+/**
+ * @brief std::formatter specialization for {{{full_qualified_name}}}
+ *
+ * Enables use with std::format and std::print in C++20 and later:
+ *   std::format("{}", strong_type_instance)
+ *
+ * This specialization is only available when std::format is available
+ * (checked via __cpp_lib_format >= 202110L). Delegates formatting to the
+ * underlying type {{{underlying_type}}}
+ */
+#if defined(__cpp_lib_format) && __cpp_lib_format >= 202110L
+template <>
+struct std::formatter<{{{full_qualified_name}}}> : std::formatter<{{{underlying_type}}}>
+{
+    auto format({{{full_qualified_name}}} const & t, std::format_context & ctx) const
+    {
+        return std::formatter<{{{underlying_type}}}>::format(
+            static_cast<{{{underlying_type}}} const &>(t), ctx);
+    }
+};
+#endif // defined(__cpp_lib_format) && __cpp_lib_format >= 202110L
+)";
+
 constexpr char subscript_operator_template[] = R"(
     /**
      * Subscript operator that forwards to the wrapped object.
@@ -586,8 +611,11 @@ struct ClassInfo
     std::string public_specifier;
     bool logical_not_operator = false;
     std::vector<Operator> logical_operators;
-    std::vector<std::string> includes;
+    std::vector<std::string> includes_vec; // for processing
+    std::map<std::string, std::string> include_guards; // header -> condition
+    std::string includes; // final rendered includes for mustache
     bool hash_specialization = false;
+    bool formatter_specialization = false;
     std::string full_qualified_name;
     bool subscript_operator = false;
     bool has_default_value = false;
@@ -623,6 +651,7 @@ BOOST_DESCRIBE_STRUCT(
      includes,
      increment_operators,
      hash_specialization,
+     formatter_specialization,
      full_qualified_name,
      subscript_operator,
      has_default_value,
@@ -869,16 +898,16 @@ parse(
                 } else if (sv == "&of") {
                     recognized = true;
                     info.addressof_operators.emplace_back("&");
-                    info.includes.push_back("<memory>");
+                    info.includes_vec.push_back("<memory>");
                 } else if (sv == "->") {
                     recognized = true;
                     info.addressof_operators.emplace_back(sv);
-                    info.includes.push_back("<memory>");
+                    info.includes_vec.push_back("<memory>");
                 } else if (sv == "<=>") {
                     recognized = true;
                     has_spaceship = true;
                     info.spaceship_operator = true;
-                    info.includes.push_back("<compare>");
+                    info.includes_vec.push_back("<compare>");
                 } else if (is_relational_operator(sv)) {
                     recognized = true;
                     if (sv == "==" || sv == "!=") {
@@ -890,11 +919,11 @@ parse(
                 } else if (sv == "out") {
                     recognized = true;
                     info.ostream_operator = true;
-                    info.includes.push_back("<ostream>");
+                    info.includes_vec.push_back("<ostream>");
                 } else if (sv == "in") {
                     recognized = true;
                     info.istream_operator = true;
-                    info.includes.push_back("<istream>");
+                    info.includes_vec.push_back("<istream>");
                 } else if (sv == "bool") {
                     recognized = true;
                     info.bool_operator = bool_operator_template;
@@ -904,23 +933,30 @@ parse(
                 } else if (sv == "(&)") {
                     recognized = true;
                     info.callable = true;
-                    info.includes.push_back("<utility>");
-                    info.includes.push_back("<functional>");
+                    info.includes_vec.push_back("<utility>");
+                    info.includes_vec.push_back("<functional>");
                 } else if (sv == "[]") {
                     recognized = true;
                     info.subscript_operator = true;
                 } else if (sv == "hash") {
                     recognized = true;
                     info.hash_specialization = true;
-                    info.includes.push_back("<functional>");
+                    info.includes_vec.push_back("<functional>");
                 } else if (sv == "no-constexpr-hash") {
                     recognized = true;
                     info.hash_specialization = true;
                     info.hash_const_expr = "";
-                    info.includes.push_back("<functional>");
+                    info.includes_vec.push_back("<functional>");
                 } else if (sv == "iterable") {
                     recognized = true;
                     info.desc.generate_iterators = true;
+                } else if (sv == "fmt") {
+                    recognized = true;
+                    info.desc.generate_formatter = true;
+                    info.includes_vec.push_back("<format>");
+                    info.include_guards["<format>"] =
+                        "defined(__cpp_lib_format) && __cpp_lib_format >= "
+                        "202110L";
                 } else if (sv == "no-constexpr") {
                     recognized = true;
                     info.const_expr = "";
@@ -933,7 +969,7 @@ parse(
                             c = '"';
                         }
                     }
-                    info.includes.push_back(std::move(str));
+                    info.includes_vec.push_back(std::move(str));
                 }
 
                 if (not recognized) {
@@ -987,7 +1023,7 @@ parse(
             [&](auto const & p) { return p.first == info.underlying_type; });
         i != equals.end())
     {
-        info.includes.emplace_back(i->second);
+        info.includes_vec.emplace_back(i->second);
     }
     std::vector<std::pair<std::string_view, std::string_view>> starts_with = {
         {"std::bitset<", "<bitset>"},
@@ -1023,17 +1059,38 @@ parse(
             });
         i != starts_with.end())
     {
-        info.includes.emplace_back(i->second);
+        info.includes_vec.emplace_back(i->second);
     }
 
     // Add standard includes that are always needed
-    info.includes.push_back("<type_traits>");
-    info.includes.push_back("<utility>");
+    info.includes_vec.push_back("<type_traits>");
+    info.includes_vec.push_back("<utility>");
 
-    std::sort(info.includes.begin(), info.includes.end());
-    info.includes.erase(
-        std::unique(info.includes.begin(), info.includes.end()),
-        info.includes.end());
+    // Sort and uniquify the includes vector
+    std::sort(info.includes_vec.begin(), info.includes_vec.end());
+    info.includes_vec.erase(
+        std::unique(info.includes_vec.begin(), info.includes_vec.end()),
+        info.includes_vec.end());
+    info.includes_vec.erase(
+        std::find(
+            info.includes_vec.begin(),
+            info.includes_vec.end(),
+            "<version>"),
+        info.includes_vec.end());
+
+    // Build the final includes string with guards
+    std::ostringstream includes_stream;
+    for (auto const & include : info.includes_vec) {
+        auto guard_it = info.include_guards.find(include);
+        if (guard_it != info.include_guards.end()) {
+            includes_stream << "#if " << guard_it->second << '\n';
+            includes_stream << "#include " << include << '\n';
+            includes_stream << "#endif // " << guard_it->second << '\n';
+        } else {
+            includes_stream << "#include " << include << '\n';
+        }
+    }
+    info.includes = includes_stream.str();
     for (auto * c :
          {&info.arithmetic_binary_operators,
           &info.unary_operators,
@@ -1045,8 +1102,8 @@ parse(
         std::sort(c->begin(), c->end());
     }
 
-    // Build fully qualified name for hash specialization
-    if (info.hash_specialization) {
+    // Build fully qualified name for hash and formatter specializations
+    if (info.hash_specialization || info.desc.generate_formatter) {
         if (not info.class_namespace.empty()) {
             info.full_qualified_name = info.class_namespace +
                 "::" + info.full_class_name;
@@ -1058,6 +1115,11 @@ parse(
     // Enable iterator support if requested
     if (info.desc.generate_iterators) {
         info.iterator_support_member = true;
+    }
+
+    // Enable formatter specialization if requested
+    if (info.desc.generate_formatter) {
+        info.formatter_specialization = true;
     }
 
     return info;
@@ -1087,7 +1149,8 @@ render_code(ClassInfo const & info)
          {"ostream_operator", ostream_operator_template},
          {"istream_operator", istream_operator_template},
          {"increment_operator", increment_operator},
-         {"hash_specialization", hash_specialization_template}});
+         {"hash_specialization", hash_specialization_template},
+         {"formatter_specialization", formatter_specialization_template}});
     return strm.str();
 }
 
@@ -1141,6 +1204,9 @@ operator () (StrongTypeDescription const & desc)
     strm << "#ifndef " << guard << '\n'
         << "#define " << guard << "\n\n"
         << make_notice_banner() << '\n'
+        << R"(#if __has_include(<version>)
+#include <version>
+#endif)" << '\n'
         << preamble() << code << "#endif // " << guard << '\n';
     return strm.str();
 }
@@ -1153,6 +1219,7 @@ generate_strong_types_file(
     bool upcase_guard)
 {
     std::set<std::string> all_includes;
+    std::map<std::string, std::string> all_guards;
     std::ostringstream combined_code;
     std::vector<StrongTypeGenerator::Warning> warnings;
 
@@ -1160,9 +1227,12 @@ generate_strong_types_file(
     for (auto const & desc : descriptions) {
         auto info = parse(desc, &warnings);
 
-        // Collect includes from this type
-        for (auto const & include : info.includes) {
-            all_includes.insert("#include " + include);
+        // Collect includes and guards from this type
+        for (auto const & include : info.includes_vec) {
+            all_includes.insert(include);
+        }
+        for (auto const & [header, guard] : info.include_guards) {
+            all_guards[header] = guard;
         }
 
         // Clear includes from info since we're hoisting them to the top
@@ -1196,15 +1266,27 @@ generate_strong_types_file(
     // Add header guard first, then NOTICE banner
     output << "#ifndef " << guard << '\n'
         << "#define " << guard << "\n\n"
-        << make_notice_banner() << '\n';
+        << make_notice_banner() << '\n'
+        << R"(#if __has_include(<version>)
+#include <version>
+#endif
+)";
 
     // Remove <compare> from top-level includes since it's already
     // conditionally included in the preamble
-    all_includes.erase("#include <compare>");
+    all_includes.erase("<compare>");
+    all_includes.erase("<version>");
 
-    // Add all unique includes (already sorted by std::set)
+    // Add all unique includes with guards
     for (auto const & include : all_includes) {
-        output << include << '\n';
+        auto guard_it = all_guards.find(include);
+        if (guard_it != all_guards.end()) {
+            output << "#if " << guard_it->second << '\n';
+            output << "#include " << include << '\n';
+            output << "#endif\n";
+        } else {
+            output << "#include " << include << '\n';
+        }
     }
     if (not all_includes.empty()) {
         output << '\n';

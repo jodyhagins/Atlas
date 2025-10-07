@@ -1108,6 +1108,115 @@ TEST_SUITE("StrongTypeGenerator")
         }
     }
 
+    TEST_CASE("Formatter Support")
+    {
+        SUBCASE("fmt keyword generates formatter specialization") {
+            auto desc = make_description(
+                "struct",
+                "test",
+                "FormattableString",
+                "strong std::string; ==, fmt");
+
+            auto code = generate_strong_type(desc);
+
+            // Verify formatter is generated
+            CHECK(
+                code.find("struct std::formatter<test::FormattableString>") !=
+                std::string::npos);
+
+            // Verify it inherits from underlying formatter
+            CHECK(
+                code.find(": std::formatter<std::string>") !=
+                std::string::npos);
+
+            // Verify <version> is included to get feature test macros
+            CHECK(code.find("#include <version>") != std::string::npos);
+
+            // Verify <format> include uses proper feature test macro
+            CHECK(
+                code.find("#if defined(__cpp_lib_format) && __cpp_lib_format "
+                          ">= 202110L") != std::string::npos);
+            CHECK(code.find("#include <format>") != std::string::npos);
+
+            // Verify formatter specialization also uses proper feature test
+            // macro
+            CHECK(
+                code.find("#endif // defined(__cpp_lib_format) && "
+                          "__cpp_lib_format >= "
+                          "202110L") != std::string::npos);
+
+            // Verify format method
+            CHECK(
+                code.find("auto format(test::FormattableString const & t") !=
+                std::string::npos);
+        }
+
+        SUBCASE("nested namespace in formatter specialization") {
+            auto desc = make_description(
+                "struct",
+                "a::b::c",
+                "DeepType",
+                "strong int; ==, fmt");
+
+            auto code = generate_strong_type(desc);
+
+            // Verify fully qualified name
+            CHECK(
+                code.find("struct std::formatter<a::b::c::DeepType>") !=
+                std::string::npos);
+        }
+
+        SUBCASE("without fmt keyword no formatter generated") {
+            auto desc = make_description(
+                "struct",
+                "test",
+                "NoFormatter",
+                "strong std::string; ==, out"); // out but not fmt
+
+            auto code = generate_strong_type(desc);
+
+            // Should not have formatter
+            CHECK(
+                code.find("std::formatter<test::NoFormatter>") ==
+                std::string::npos);
+        }
+
+        SUBCASE("fmt with various types") {
+            auto desc = make_description(
+                "struct",
+                "test",
+                "FormattableInt",
+                "strong int; ==, fmt");
+
+            auto code = generate_strong_type(desc);
+
+            CHECK(
+                code.find("struct std::formatter<test::FormattableInt>") !=
+                std::string::npos);
+            CHECK(code.find(": std::formatter<int>") != std::string::npos);
+        }
+
+        SUBCASE("fmt combined with other operators") {
+            auto desc = make_description(
+                "struct",
+                "test",
+                "FullFeatured",
+                "strong std::string; ==, fmt, out, hash");
+
+            auto code = generate_strong_type(desc);
+
+            // Should have both formatter and hash
+            CHECK(
+                code.find("std::formatter<test::FullFeatured>") !=
+                std::string::npos);
+            CHECK(
+                code.find("std::hash<test::FullFeatured>") !=
+                std::string::npos);
+            // Should have ostream operator
+            CHECK(code.find("operator <<") != std::string::npos);
+        }
+    }
+
     TEST_CASE("Constexpr Code Generation")
     {
         CodeStructureParser parser;

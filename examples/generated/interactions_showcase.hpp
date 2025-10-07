@@ -15,6 +15,11 @@
 // ----------------------------------------------------------------------
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
 // ======================================================================
+
+#if __has_include(<version>)
+#include <version>
+#endif
+
 #ifndef WJH_ATLAS_50E620B544874CB8BE4412EE6773BF90
 #define WJH_ATLAS_50E620B544874CB8BE4412EE6773BF90
 

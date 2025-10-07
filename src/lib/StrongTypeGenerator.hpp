@@ -140,6 +140,13 @@ struct StrongTypeDescription
      * free functions are generated as std::begin/std::end will find the members
      * via ADL.
      *
+     * The <opt> "fmt" will generate a std::formatter specialization for C++20
+     * std::format and std::print support. The specialization is wrapped in
+     * __cpp_lib_format >= 202110L feature test macro for compatibility with
+     * pre-C++20 compilers. The formatter inherits from the underlying type's
+     * formatter and delegates all formatting operations, including custom
+     * format specifications.
+     *
      * Any <opt> that starts with an octothorpe will designate a required header
      * file that needs to be included.  Depending on the context, it may be
      * easier to use a single quote rather than a double quote.  Either will be
@@ -208,6 +215,12 @@ struct StrongTypeDescription
      * range-based for loops via ADL (Argument-Dependent Lookup).
      */
     bool generate_iterators = false;
+
+    /**
+     * When true, generates a std::formatter specialization for C++20
+     * std::format support, wrapped in __cpp_lib_format feature test macro.
+     */
+    bool generate_formatter = false;
 };
 
 struct StrongTypeGenerator
