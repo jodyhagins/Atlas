@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_1A39B78FD61A01D67F237D719BB62FFBB0FBD1CD
-#define FOO_BAR_1A39B78FD61A01D67F237D719BB62FFBB0FBD1CD
+#ifndef FOO_BAR_64746066E60B13C6A57BC4665B6EADFA04D10BFB
+#define FOO_BAR_64746066E60B13C6A57BC4665B6EADFA04D10BFB
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -278,11 +278,13 @@ struct ConstRefCastType
      * Explicit cast to std::string_view
      */
     constexpr explicit operator std::string_view() const
+    noexcept(noexcept(static_cast<std::string_view>(
+        std::declval<std::string const&>())))
     {
         return static_cast<std::string_view>(value);
     }
 };
 } // namespace test
 
-#endif // FOO_BAR_1A39B78FD61A01D67F237D719BB62FFBB0FBD1CD
+#endif // FOO_BAR_64746066E60B13C6A57BC4665B6EADFA04D10BFB
 

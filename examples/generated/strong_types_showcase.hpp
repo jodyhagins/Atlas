@@ -1,5 +1,5 @@
-#ifndef EXAMPLE_BE8A8D3FAB35565F9D859687CEEB1CE49A8FCFA0
-#define EXAMPLE_BE8A8D3FAB35565F9D859687CEEB1CE49A8FCFA0
+#ifndef EXAMPLE_A0EF1687394EC8017FD21460EBDAE7F5AB7AD1CB
+#define EXAMPLE_A0EF1687394EC8017FD21460EBDAE7F5AB7AD1CB
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -1053,26 +1053,12 @@ public:
         UserId const &) = default;
 
     /**
-     * Is @p lhs.value != @p rhs.value?
-     */
-    friend constexpr bool operator != (
-        UserId const & lhs,
-        UserId const & rhs)
-    noexcept(noexcept(std::declval<unsigned long const&>() != std::declval<unsigned long const&>()))
-    {
-        return lhs.value != rhs.value;
-    }
-
-    /**
-     * Is @p lhs.value == @p rhs.value?
+     * The default equality comparison operator.
+     * Provided with spaceship operator for optimal performance.
      */
     friend constexpr bool operator == (
-        UserId const & lhs,
-        UserId const & rhs)
-    noexcept(noexcept(std::declval<unsigned long const&>() == std::declval<unsigned long const&>()))
-    {
-        return lhs.value == rhs.value;
-    }
+        UserId const &,
+        UserId const &) = default;
 };
 } // namespace v1
 } // namespace ids
@@ -1255,26 +1241,12 @@ struct Meters
         Meters const &) = default;
 
     /**
-     * Is @p lhs.value != @p rhs.value?
-     */
-    friend constexpr bool operator != (
-        Meters const & lhs,
-        Meters const & rhs)
-    noexcept(noexcept(std::declval<double const&>() != std::declval<double const&>()))
-    {
-        return lhs.value != rhs.value;
-    }
-
-    /**
-     * Is @p lhs.value == @p rhs.value?
+     * The default equality comparison operator.
+     * Provided with spaceship operator for optimal performance.
      */
     friend constexpr bool operator == (
-        Meters const & lhs,
-        Meters const & rhs)
-    noexcept(noexcept(std::declval<double const&>() == std::declval<double const&>()))
-    {
-        return lhs.value == rhs.value;
-    }
+        Meters const &,
+        Meters const &) = default;
 };
 } // namespace units
 } // namespace physics
@@ -1438,26 +1410,12 @@ struct Seconds
         Seconds const &) = default;
 
     /**
-     * Is @p lhs.value != @p rhs.value?
-     */
-    friend constexpr bool operator != (
-        Seconds const & lhs,
-        Seconds const & rhs)
-    noexcept(noexcept(std::declval<double const&>() != std::declval<double const&>()))
-    {
-        return lhs.value != rhs.value;
-    }
-
-    /**
-     * Is @p lhs.value == @p rhs.value?
+     * The default equality comparison operator.
+     * Provided with spaceship operator for optimal performance.
      */
     friend constexpr bool operator == (
-        Seconds const & lhs,
-        Seconds const & rhs)
-    noexcept(noexcept(std::declval<double const&>() == std::declval<double const&>()))
-    {
-        return lhs.value == rhs.value;
-    }
+        Seconds const &,
+        Seconds const &) = default;
 };
 } // namespace units
 } // namespace physics
@@ -1621,26 +1579,12 @@ struct MetersPerSecond
         MetersPerSecond const &) = default;
 
     /**
-     * Is @p lhs.value != @p rhs.value?
-     */
-    friend constexpr bool operator != (
-        MetersPerSecond const & lhs,
-        MetersPerSecond const & rhs)
-    noexcept(noexcept(std::declval<double const&>() != std::declval<double const&>()))
-    {
-        return lhs.value != rhs.value;
-    }
-
-    /**
-     * Is @p lhs.value == @p rhs.value?
+     * The default equality comparison operator.
+     * Provided with spaceship operator for optimal performance.
      */
     friend constexpr bool operator == (
-        MetersPerSecond const & lhs,
-        MetersPerSecond const & rhs)
-    noexcept(noexcept(std::declval<double const&>() == std::declval<double const&>()))
-    {
-        return lhs.value == rhs.value;
-    }
+        MetersPerSecond const &,
+        MetersPerSecond const &) = default;
 };
 } // namespace units
 } // namespace physics
@@ -1691,7 +1635,8 @@ struct ByteCount
     /**
      * Apply the prefix ++ operator to the wrapped object.
      */
-    friend constexpr ByteCount & operator ++ (ByteCount & t)
+    friend constexpr ByteCount &
+    operator ++ (ByteCount & t)
     noexcept(noexcept(++std::declval<size_t&>()))
     {
         ++t.value;
@@ -1700,8 +1645,11 @@ struct ByteCount
     /**
      * Apply the postfix ++ operator to the wrapped object.
      */
-    friend constexpr ByteCount operator ++ (ByteCount & t, int)
-    noexcept(noexcept(++std::declval<size_t&>()))
+    friend constexpr ByteCount
+    operator ++ (ByteCount & t, int)
+    noexcept(
+        std::is_nothrow_copy_constructible<ByteCount>::value &&
+        noexcept(++std::declval<size_t&>()))
     {
         auto result = t;
         ++t.value;
@@ -1711,7 +1659,8 @@ struct ByteCount
     /**
      * Apply the prefix -- operator to the wrapped object.
      */
-    friend constexpr ByteCount & operator -- (ByteCount & t)
+    friend constexpr ByteCount &
+    operator -- (ByteCount & t)
     noexcept(noexcept(--std::declval<size_t&>()))
     {
         --t.value;
@@ -1720,8 +1669,11 @@ struct ByteCount
     /**
      * Apply the postfix -- operator to the wrapped object.
      */
-    friend constexpr ByteCount operator -- (ByteCount & t, int)
-    noexcept(noexcept(--std::declval<size_t&>()))
+    friend constexpr ByteCount
+    operator -- (ByteCount & t, int)
+    noexcept(
+        std::is_nothrow_copy_constructible<ByteCount>::value &&
+        noexcept(--std::declval<size_t&>()))
     {
         auto result = t;
         --t.value;
@@ -2162,26 +2114,12 @@ struct RedChannel
         RedChannel const &) = default;
 
     /**
-     * Is @p lhs.value != @p rhs.value?
-     */
-    friend constexpr bool operator != (
-        RedChannel const & lhs,
-        RedChannel const & rhs)
-    noexcept(noexcept(std::declval<uint8_t const&>() != std::declval<uint8_t const&>()))
-    {
-        return lhs.value != rhs.value;
-    }
-
-    /**
-     * Is @p lhs.value == @p rhs.value?
+     * The default equality comparison operator.
+     * Provided with spaceship operator for optimal performance.
      */
     friend constexpr bool operator == (
-        RedChannel const & lhs,
-        RedChannel const & rhs)
-    noexcept(noexcept(std::declval<uint8_t const&>() == std::declval<uint8_t const&>()))
-    {
-        return lhs.value == rhs.value;
-    }
+        RedChannel const &,
+        RedChannel const &) = default;
 };
 } // namespace color
 } // namespace graphics
@@ -2824,26 +2762,12 @@ struct Numerator
         Numerator const &) = default;
 
     /**
-     * Is @p lhs.value != @p rhs.value?
-     */
-    friend constexpr bool operator != (
-        Numerator const & lhs,
-        Numerator const & rhs)
-    noexcept(noexcept(std::declval<long const&>() != std::declval<long const&>()))
-    {
-        return lhs.value != rhs.value;
-    }
-
-    /**
-     * Is @p lhs.value == @p rhs.value?
+     * The default equality comparison operator.
+     * Provided with spaceship operator for optimal performance.
      */
     friend constexpr bool operator == (
-        Numerator const & lhs,
-        Numerator const & rhs)
-    noexcept(noexcept(std::declval<long const&>() == std::declval<long const&>()))
-    {
-        return lhs.value == rhs.value;
-    }
+        Numerator const &,
+        Numerator const &) = default;
 };
 } // namespace rational
 } // namespace math
@@ -2946,26 +2870,12 @@ struct Denominator
         Denominator const &) = default;
 
     /**
-     * Is @p lhs.value != @p rhs.value?
-     */
-    friend constexpr bool operator != (
-        Denominator const & lhs,
-        Denominator const & rhs)
-    noexcept(noexcept(std::declval<long const&>() != std::declval<long const&>()))
-    {
-        return lhs.value != rhs.value;
-    }
-
-    /**
-     * Is @p lhs.value == @p rhs.value?
+     * The default equality comparison operator.
+     * Provided with spaceship operator for optimal performance.
      */
     friend constexpr bool operator == (
-        Denominator const & lhs,
-        Denominator const & rhs)
-    noexcept(noexcept(std::declval<long const&>() == std::declval<long const&>()))
-    {
-        return lhs.value == rhs.value;
-    }
+        Denominator const &,
+        Denominator const &) = default;
 };
 } // namespace rational
 } // namespace math
@@ -3220,23 +3130,27 @@ public:
 #if __cpp_multidimensional_subscript >= 202110L
     template <typename ArgT, typename... ArgTs>
     constexpr decltype(auto) operator [] (ArgT && arg, ArgTs && ... args)
+    noexcept(noexcept(value[std::forward<ArgT>(arg), std::forward<ArgTs>(args)...]))
     {
         return value[std::forward<ArgT>(arg), std::forward<ArgTs>(args)...];
     }
     template <typename ArgT, typename... ArgTs>
     constexpr decltype(auto) operator [] (ArgT && arg, ArgTs && ... args) const
+    noexcept(noexcept(value[std::forward<ArgT>(arg), std::forward<ArgTs>(args)...]))
     {
         return value[std::forward<ArgT>(arg), std::forward<ArgTs>(args)...];
     }
 #else
     template <typename ArgT>
     constexpr auto operator [] (ArgT && arg)
+    noexcept(noexcept(value[std::forward<ArgT>(arg)]))
     -> decltype(value[std::forward<ArgT>(arg)])
     {
         return value[std::forward<ArgT>(arg)];
     }
     template <typename ArgT>
     constexpr auto operator [] (ArgT && arg) const
+    noexcept(noexcept(value[std::forward<ArgT>(arg)]))
     -> decltype(value[std::forward<ArgT>(arg)])
     {
         return value[std::forward<ArgT>(arg)];
@@ -3504,23 +3418,27 @@ struct IntVector
 #if __cpp_multidimensional_subscript >= 202110L
     template <typename ArgT, typename... ArgTs>
     constexpr decltype(auto) operator [] (ArgT && arg, ArgTs && ... args)
+    noexcept(noexcept(value[std::forward<ArgT>(arg), std::forward<ArgTs>(args)...]))
     {
         return value[std::forward<ArgT>(arg), std::forward<ArgTs>(args)...];
     }
     template <typename ArgT, typename... ArgTs>
     constexpr decltype(auto) operator [] (ArgT && arg, ArgTs && ... args) const
+    noexcept(noexcept(value[std::forward<ArgT>(arg), std::forward<ArgTs>(args)...]))
     {
         return value[std::forward<ArgT>(arg), std::forward<ArgTs>(args)...];
     }
 #else
     template <typename ArgT>
     constexpr auto operator [] (ArgT && arg)
+    noexcept(noexcept(value[std::forward<ArgT>(arg)]))
     -> decltype(value[std::forward<ArgT>(arg)])
     {
         return value[std::forward<ArgT>(arg)];
     }
     template <typename ArgT>
     constexpr auto operator [] (ArgT && arg) const
+    noexcept(noexcept(value[std::forward<ArgT>(arg)]))
     -> decltype(value[std::forward<ArgT>(arg)])
     {
         return value[std::forward<ArgT>(arg)];
@@ -3634,23 +3552,27 @@ public:
 #if __cpp_multidimensional_subscript >= 202110L
     template <typename ArgT, typename... ArgTs>
     constexpr decltype(auto) operator [] (ArgT && arg, ArgTs && ... args)
+    noexcept(noexcept(value[std::forward<ArgT>(arg), std::forward<ArgTs>(args)...]))
     {
         return value[std::forward<ArgT>(arg), std::forward<ArgTs>(args)...];
     }
     template <typename ArgT, typename... ArgTs>
     constexpr decltype(auto) operator [] (ArgT && arg, ArgTs && ... args) const
+    noexcept(noexcept(value[std::forward<ArgT>(arg), std::forward<ArgTs>(args)...]))
     {
         return value[std::forward<ArgT>(arg), std::forward<ArgTs>(args)...];
     }
 #else
     template <typename ArgT>
     constexpr auto operator [] (ArgT && arg)
+    noexcept(noexcept(value[std::forward<ArgT>(arg)]))
     -> decltype(value[std::forward<ArgT>(arg)])
     {
         return value[std::forward<ArgT>(arg)];
     }
     template <typename ArgT>
     constexpr auto operator [] (ArgT && arg) const
+    noexcept(noexcept(value[std::forward<ArgT>(arg)]))
     -> decltype(value[std::forward<ArgT>(arg)])
     {
         return value[std::forward<ArgT>(arg)];
@@ -4205,6 +4127,8 @@ struct CastableString
      * Explicit cast to std::string_view
      */
     constexpr explicit operator std::string_view() const
+    noexcept(noexcept(static_cast<std::string_view>(
+        std::declval<std::string const&>())))
     {
         return static_cast<std::string_view>(value);
     }
@@ -4281,6 +4205,8 @@ public:
      * Explicit cast to bool
      */
     constexpr explicit operator bool() const
+    noexcept(noexcept(static_cast<bool>(
+        std::declval<std::string const&>())))
     {
         return static_cast<bool>(value);
     }
@@ -4289,6 +4215,8 @@ public:
      * Explicit cast to std::string_view
      */
     constexpr explicit operator std::string_view() const
+    noexcept(noexcept(static_cast<std::string_view>(
+        std::declval<std::string const&>())))
     {
         return static_cast<std::string_view>(value);
     }
@@ -4353,6 +4281,8 @@ struct EnableFlag
      * Implicit cast to bool
      */
     constexpr operator bool() const
+    noexcept(noexcept(static_cast<bool>(
+        std::declval<int const&>())))
     {
         return static_cast<bool>(value);
     }
@@ -4370,4 +4300,4 @@ struct EnableFlag
 };
 } // namespace flags
 
-#endif // EXAMPLE_BE8A8D3FAB35565F9D859687CEEB1CE49A8FCFA0
+#endif // EXAMPLE_A0EF1687394EC8017FD21460EBDAE7F5AB7AD1CB

@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_78AB547CCB21771BDDB579E7F6AE1E8038658BA5
-#define FOO_BAR_78AB547CCB21771BDDB579E7F6AE1E8038658BA5
+#ifndef FOO_BAR_F8B1A95FD5091235C368F3FB78732407F3DBBB2D
+#define FOO_BAR_F8B1A95FD5091235C368F3FB78732407F3DBBB2D
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -350,10 +350,18 @@ struct TypeThree
     friend constexpr auto operator <=> (
         TypeThree const &,
         TypeThree const &) = default;
+
+    /**
+     * The default equality comparison operator.
+     * Provided with spaceship operator for optimal performance.
+     */
+    friend constexpr bool operator == (
+        TypeThree const &,
+        TypeThree const &) = default;
 };
 } // namespace odr
 } // namespace integration
 } // namespace test
 
-#endif // FOO_BAR_78AB547CCB21771BDDB579E7F6AE1E8038658BA5
+#endif // FOO_BAR_F8B1A95FD5091235C368F3FB78732407F3DBBB2D
 

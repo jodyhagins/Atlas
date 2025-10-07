@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_2D0B586CF1409B95E1ABC598DD0CA22F6C5B7AE9
-#define FOO_BAR_2D0B586CF1409B95E1ABC598DD0CA22F6C5B7AE9
+#ifndef FOO_BAR_5D9927FC37B5D78F4E647CB2962CDE9CAD517115
+#define FOO_BAR_5D9927FC37B5D78F4E647CB2962CDE9CAD517115
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -277,7 +277,8 @@ struct NoexceptVerification
     /**
      * Apply the prefix ++ operator to the wrapped object.
      */
-    friend constexpr NoexceptVerification & operator ++ (NoexceptVerification & t)
+    friend constexpr NoexceptVerification &
+    operator ++ (NoexceptVerification & t)
     noexcept(noexcept(++std::declval<int&>()))
     {
         ++t.value;
@@ -286,8 +287,11 @@ struct NoexceptVerification
     /**
      * Apply the postfix ++ operator to the wrapped object.
      */
-    friend constexpr NoexceptVerification operator ++ (NoexceptVerification & t, int)
-    noexcept(noexcept(++std::declval<int&>()))
+    friend constexpr NoexceptVerification
+    operator ++ (NoexceptVerification & t, int)
+    noexcept(
+        std::is_nothrow_copy_constructible<NoexceptVerification>::value &&
+        noexcept(++std::declval<int&>()))
     {
         auto result = t;
         ++t.value;
@@ -331,5 +335,5 @@ struct NoexceptVerification
 } // namespace edge_cases
 } // namespace test
 
-#endif // FOO_BAR_2D0B586CF1409B95E1ABC598DD0CA22F6C5B7AE9
+#endif // FOO_BAR_5D9927FC37B5D78F4E647CB2962CDE9CAD517115
 

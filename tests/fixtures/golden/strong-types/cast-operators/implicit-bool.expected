@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_D5A2822F8AC9FD893D7258EB05DACB1F63599F23
-#define FOO_BAR_D5A2822F8AC9FD893D7258EB05DACB1F63599F23
+#ifndef FOO_BAR_B59A6C5EA164A3A991C4027E4568055BB4BFDB0F
+#define FOO_BAR_B59A6C5EA164A3A991C4027E4568055BB4BFDB0F
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -277,11 +277,13 @@ struct ImplicitBoolType
      * Implicit cast to bool
      */
     constexpr operator bool() const
+    noexcept(noexcept(static_cast<bool>(
+        std::declval<int const&>())))
     {
         return static_cast<bool>(value);
     }
 };
 } // namespace test
 
-#endif // FOO_BAR_D5A2822F8AC9FD893D7258EB05DACB1F63599F23
+#endif // FOO_BAR_B59A6C5EA164A3A991C4027E4568055BB4BFDB0F
 

@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_F40B3246A855CC5ADCC77D946E3A976E0592C769
-#define FOO_BAR_F40B3246A855CC5ADCC77D946E3A976E0592C769
+#ifndef FOO_BAR_E6C17C1914E232D36AD68AD65892A780C2D3FE34
+#define FOO_BAR_E6C17C1914E232D36AD68AD65892A780C2D3FE34
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -279,8 +279,16 @@ struct SpaceshipType
     friend constexpr auto operator <=> (
         SpaceshipType const &,
         SpaceshipType const &) = default;
+
+    /**
+     * The default equality comparison operator.
+     * Provided with spaceship operator for optimal performance.
+     */
+    friend constexpr bool operator == (
+        SpaceshipType const &,
+        SpaceshipType const &) = default;
 };
 } // namespace test
 
-#endif // FOO_BAR_F40B3246A855CC5ADCC77D946E3A976E0592C769
+#endif // FOO_BAR_E6C17C1914E232D36AD68AD65892A780C2D3FE34
 

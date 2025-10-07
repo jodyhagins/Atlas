@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_41A02A08642A9BD3D97C121BBDBDB040F89FFA71
-#define FOO_BAR_41A02A08642A9BD3D97C121BBDBDB040F89FFA71
+#ifndef FOO_BAR_ACB42A681E1F1AA9D202173073B04A12A8A56D9E
+#define FOO_BAR_ACB42A681E1F1AA9D202173073B04A12A8A56D9E
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -277,12 +277,13 @@ struct BoolConversionType
      * Return the result of casting the wrapped object to bool.
      */
     constexpr explicit operator bool () const
-    noexcept(noexcept(static_cast<bool>(std::declval<int const&>())))
+    noexcept(noexcept(static_cast<bool>(
+        std::declval<int const&>())))
     {
         return static_cast<bool>(value);
     }
 };
 } // namespace test
 
-#endif // FOO_BAR_41A02A08642A9BD3D97C121BBDBDB040F89FFA71
+#endif // FOO_BAR_ACB42A681E1F1AA9D202173073B04A12A8A56D9E
 

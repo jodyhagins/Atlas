@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_F63C1C599E2711821E325E195D6230B7224CD0E3
-#define FOO_BAR_F63C1C599E2711821E325E195D6230B7224CD0E3
+#ifndef FOO_BAR_475C4E981083D670EC7338770E5170E5D1A7BE13
+#define FOO_BAR_475C4E981083D670EC7338770E5170E5D1A7BE13
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -276,7 +276,8 @@ struct IncrementDecrementType
     /**
      * Apply the prefix ++ operator to the wrapped object.
      */
-    friend constexpr IncrementDecrementType & operator ++ (IncrementDecrementType & t)
+    friend constexpr IncrementDecrementType &
+    operator ++ (IncrementDecrementType & t)
     noexcept(noexcept(++std::declval<int&>()))
     {
         ++t.value;
@@ -285,8 +286,11 @@ struct IncrementDecrementType
     /**
      * Apply the postfix ++ operator to the wrapped object.
      */
-    friend constexpr IncrementDecrementType operator ++ (IncrementDecrementType & t, int)
-    noexcept(noexcept(++std::declval<int&>()))
+    friend constexpr IncrementDecrementType
+    operator ++ (IncrementDecrementType & t, int)
+    noexcept(
+        std::is_nothrow_copy_constructible<IncrementDecrementType>::value &&
+        noexcept(++std::declval<int&>()))
     {
         auto result = t;
         ++t.value;
@@ -296,7 +300,8 @@ struct IncrementDecrementType
     /**
      * Apply the prefix -- operator to the wrapped object.
      */
-    friend constexpr IncrementDecrementType & operator -- (IncrementDecrementType & t)
+    friend constexpr IncrementDecrementType &
+    operator -- (IncrementDecrementType & t)
     noexcept(noexcept(--std::declval<int&>()))
     {
         --t.value;
@@ -305,8 +310,11 @@ struct IncrementDecrementType
     /**
      * Apply the postfix -- operator to the wrapped object.
      */
-    friend constexpr IncrementDecrementType operator -- (IncrementDecrementType & t, int)
-    noexcept(noexcept(--std::declval<int&>()))
+    friend constexpr IncrementDecrementType
+    operator -- (IncrementDecrementType & t, int)
+    noexcept(
+        std::is_nothrow_copy_constructible<IncrementDecrementType>::value &&
+        noexcept(--std::declval<int&>()))
     {
         auto result = t;
         --t.value;
@@ -315,5 +323,5 @@ struct IncrementDecrementType
 };
 } // namespace test
 
-#endif // FOO_BAR_F63C1C599E2711821E325E195D6230B7224CD0E3
+#endif // FOO_BAR_475C4E981083D670EC7338770E5170E5D1A7BE13
 

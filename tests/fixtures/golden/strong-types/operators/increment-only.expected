@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_B27FB591FD47F3D4B4CB73C37A439A10F9DAFBB8
-#define FOO_BAR_B27FB591FD47F3D4B4CB73C37A439A10F9DAFBB8
+#ifndef FOO_BAR_8B7161E299531C77A5EF33927B245B43CF4512B2
+#define FOO_BAR_8B7161E299531C77A5EF33927B245B43CF4512B2
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -276,7 +276,8 @@ struct IncrementOnlyType
     /**
      * Apply the prefix ++ operator to the wrapped object.
      */
-    friend constexpr IncrementOnlyType & operator ++ (IncrementOnlyType & t)
+    friend constexpr IncrementOnlyType &
+    operator ++ (IncrementOnlyType & t)
     noexcept(noexcept(++std::declval<int&>()))
     {
         ++t.value;
@@ -285,8 +286,11 @@ struct IncrementOnlyType
     /**
      * Apply the postfix ++ operator to the wrapped object.
      */
-    friend constexpr IncrementOnlyType operator ++ (IncrementOnlyType & t, int)
-    noexcept(noexcept(++std::declval<int&>()))
+    friend constexpr IncrementOnlyType
+    operator ++ (IncrementOnlyType & t, int)
+    noexcept(
+        std::is_nothrow_copy_constructible<IncrementOnlyType>::value &&
+        noexcept(++std::declval<int&>()))
     {
         auto result = t;
         ++t.value;
@@ -295,5 +299,5 @@ struct IncrementOnlyType
 };
 } // namespace test
 
-#endif // FOO_BAR_B27FB591FD47F3D4B4CB73C37A439A10F9DAFBB8
+#endif // FOO_BAR_8B7161E299531C77A5EF33927B245B43CF4512B2
 

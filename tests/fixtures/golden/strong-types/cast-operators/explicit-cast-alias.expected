@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_AD5F9687F9764D8A33EA145852F7C858553FDFD5
-#define FOO_BAR_AD5F9687F9764D8A33EA145852F7C858553FDFD5
+#ifndef FOO_BAR_79EFA3EA496CAABC24785AC282037DDD460342F4
+#define FOO_BAR_79EFA3EA496CAABC24785AC282037DDD460342F4
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -277,11 +277,13 @@ struct ExplicitCastAliasType
      * Explicit cast to int
      */
     constexpr explicit operator int() const
+    noexcept(noexcept(static_cast<int>(
+        std::declval<double const&>())))
     {
         return static_cast<int>(value);
     }
 };
 } // namespace test
 
-#endif // FOO_BAR_AD5F9687F9764D8A33EA145852F7C858553FDFD5
+#endif // FOO_BAR_79EFA3EA496CAABC24785AC282037DDD460342F4
 

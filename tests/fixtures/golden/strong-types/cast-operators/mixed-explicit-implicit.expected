@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_29571639263B78967155EEFE54EF46102AA782DA
-#define FOO_BAR_29571639263B78967155EEFE54EF46102AA782DA
+#ifndef FOO_BAR_D79BA27F4AE26A159D22D5B1BDE4539F4E6CD31A
+#define FOO_BAR_D79BA27F4AE26A159D22D5B1BDE4539F4E6CD31A
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -277,6 +277,8 @@ struct MixedCastType
      * Explicit cast to bool
      */
     constexpr explicit operator bool() const
+    noexcept(noexcept(static_cast<bool>(
+        std::declval<double const&>())))
     {
         return static_cast<bool>(value);
     }
@@ -285,11 +287,13 @@ struct MixedCastType
      * Implicit cast to int
      */
     constexpr operator int() const
+    noexcept(noexcept(static_cast<int>(
+        std::declval<double const&>())))
     {
         return static_cast<int>(value);
     }
 };
 } // namespace test
 
-#endif // FOO_BAR_29571639263B78967155EEFE54EF46102AA782DA
+#endif // FOO_BAR_D79BA27F4AE26A159D22D5B1BDE4539F4E6CD31A
 

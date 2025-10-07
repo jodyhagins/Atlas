@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_CF7B701AEA1D31067ACCF86A7E79D6238BFDDF80
-#define FOO_BAR_CF7B701AEA1D31067ACCF86A7E79D6238BFDDF80
+#ifndef FOO_BAR_9208E2EE2C803F3BE30310F5DB2CFEBC95ADD03D
+#define FOO_BAR_9208E2EE2C803F3BE30310F5DB2CFEBC95ADD03D
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -278,15 +278,17 @@ struct AddressOfType
      * Access a pointer to the wrapped object.
      */
     constexpr int const * operator & () const
+    noexcept
     {
         return std::addressof(value);
     }
     constexpr int * operator & ()
+    noexcept
     {
         return std::addressof(value);
     }
 };
 } // namespace test
 
-#endif // FOO_BAR_CF7B701AEA1D31067ACCF86A7E79D6238BFDDF80
+#endif // FOO_BAR_9208E2EE2C803F3BE30310F5DB2CFEBC95ADD03D
 
