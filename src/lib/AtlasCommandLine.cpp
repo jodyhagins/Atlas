@@ -485,6 +485,11 @@ OPERATOR REFERENCE:
     Comparison:     ==, !=, <, <=, >, >=, <=>
     Special:        ++, --, bool, (), (&), [], @, &of, ->
     Stream:         in, out
+    Iteration:      iterable (enables range-based for loops)
+    Formatting:     fmt (enables std::format support in C++20)
+    Assignment:     assign (template assignment operator)
+    Casts:          cast<Type> or explicit_cast<Type> (explicit cast)
+                    implicit_cast<Type> (implicit cast, use sparingly)
     Hash:           hash (enables std::hash specialization)
                     no-constexpr-hash (hash without constexpr)
     Subscript:      [] (supports C++23 multidimensional subscripts)

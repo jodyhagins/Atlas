@@ -1322,6 +1322,213 @@ TEST_SUITE("StrongTypeGenerator")
         }
     }
 
+    TEST_CASE("Cast Operators")
+    {
+        SUBCASE("explicit cast<Type> generates explicit operator") {
+            auto desc = make_description(
+                "struct",
+                "test",
+                "CastableString",
+                "strong std::string; ==, cast<std::string_view>");
+
+            auto code = generate_strong_type(desc);
+
+            // Verify explicit cast is generated
+            CHECK(
+                code.find("explicit operator std::string_view() const") !=
+                std::string::npos);
+
+            // Verify it uses direct construction
+            CHECK(
+                code.find("static_cast<std::string_view>(value)") !=
+                std::string::npos);
+
+            // Verify documentation
+            CHECK(
+                code.find("Explicit cast to std::string_view") !=
+                std::string::npos);
+        }
+
+        SUBCASE("implicit_cast<Type> generates implicit operator") {
+            auto desc = make_description(
+                "struct",
+                "test",
+                "ImplicitString",
+                "strong std::string; ==, implicit_cast<bool>");
+
+            auto code = generate_strong_type(desc);
+
+            // Verify implicit cast (no 'explicit' keyword before operator)
+            // Look for pattern: "operator bool()" not "explicit operator
+            // bool()"
+            CHECK(code.find("operator bool() const") != std::string::npos);
+
+            // Make sure it's not explicit by checking there's no "explicit
+            // operator bool"
+            size_t bool_op_pos = code.find("operator bool() const");
+            REQUIRE(bool_op_pos != std::string::npos);
+
+            // Check backwards from operator - should not find "explicit"
+            // immediately before
+            auto before_op = code.substr(
+                bool_op_pos > 20 ? bool_op_pos - 20 : 0,
+                20);
+            CHECK(before_op.find("explicit") == std::string::npos);
+
+            // Verify documentation
+            CHECK(code.find("Implicit cast to bool") != std::string::npos);
+        }
+
+        SUBCASE("multiple casts") {
+            auto desc = make_description(
+                "struct",
+                "test",
+                "MultiCast",
+                "strong std::string; ==, cast<std::string_view>, cast<bool>, "
+                "implicit_cast<int>");
+
+            auto code = generate_strong_type(desc);
+
+            // Check all three casts
+            CHECK(
+                code.find("explicit operator std::string_view()") !=
+                std::string::npos);
+            CHECK(code.find("explicit operator bool()") != std::string::npos);
+            CHECK(code.find("operator int()") != std::string::npos);
+        }
+
+        SUBCASE("cast with const reference") {
+            auto desc = make_description(
+                "struct",
+                "test",
+                "ConstRefCast",
+                "strong std::string; ==, cast<std::string const &>");
+
+            auto code = generate_strong_type(desc);
+
+            CHECK(
+                code.find("explicit operator std::string const &()") !=
+                std::string::npos);
+        }
+
+        SUBCASE("invalid cast syntax throws - missing closing bracket") {
+            auto desc = make_description(
+                "struct",
+                "test",
+                "Bad",
+                "strong int; cast<bool");
+
+            CHECK_THROWS_AS(generate_strong_type(desc), std::invalid_argument);
+        }
+
+        SUBCASE("invalid implicit_cast syntax throws") {
+            auto desc = make_description(
+                "struct",
+                "test",
+                "Bad",
+                "strong int; implicit_cast<bool");
+
+            CHECK_THROWS_AS(generate_strong_type(desc), std::invalid_argument);
+        }
+
+        SUBCASE("cast with no-constexpr") {
+            auto desc = make_description(
+                "struct",
+                "test",
+                "NonConstexprCast",
+                "strong std::string; ==, cast<bool>, no-constexpr");
+
+            auto code = generate_strong_type(desc);
+
+            // Should have cast operator
+            CHECK(code.find("explicit operator bool()") != std::string::npos);
+
+            // The operator should not have constexpr
+            size_t bool_op_pos = code.find("explicit operator bool()");
+            REQUIRE(bool_op_pos != std::string::npos);
+
+            // Check a reasonable window before the operator
+            auto before_op = code.substr(
+                bool_op_pos > 30 ? bool_op_pos - 30 : 0,
+                30);
+            // Should not find "constexpr explicit operator bool"
+            CHECK(before_op.find("constexpr") == std::string::npos);
+        }
+
+        SUBCASE("no casts specified - no extra cast operators") {
+            auto desc = make_description(
+                "struct",
+                "test",
+                "NoCasts",
+                "strong std::string; ==");
+
+            auto code = generate_strong_type(desc);
+
+            // Should only have the default explicit casts to underlying type
+            // Count occurrences of "operator " - should be minimal
+            CHECK(code.find("Explicit cast operators") == std::string::npos);
+            CHECK(code.find("Implicit cast operators") == std::string::npos);
+        }
+
+        SUBCASE("cast operators have constexpr by default") {
+            auto desc = make_description(
+                "struct",
+                "test",
+                "ConstexprCast",
+                "strong int; cast<bool>");
+
+            auto code = generate_strong_type(desc);
+
+            CHECK(
+                code.find("constexpr explicit operator bool()") !=
+                std::string::npos);
+        }
+
+        SUBCASE("explicit_cast<Type> is accepted as alias for cast<Type>") {
+            auto desc = make_description(
+                "struct",
+                "test",
+                "ExplicitCastAlias",
+                "strong std::string; ==, explicit_cast<std::string_view>");
+
+            auto code = generate_strong_type(desc);
+
+            // Should generate same explicit operator as cast<>
+            CHECK(
+                code.find("explicit operator std::string_view() const") !=
+                std::string::npos);
+            CHECK(
+                code.find("static_cast<std::string_view>(value)") !=
+                std::string::npos);
+        }
+
+        SUBCASE("implicit_cast supersedes explicit cast for same type") {
+            auto desc = make_description(
+                "struct",
+                "test",
+                "DuplicateCast",
+                "strong int; cast<bool>, implicit_cast<bool>");
+
+            auto code = generate_strong_type(desc);
+
+            // Should only have ONE operator bool - the implicit one
+            // Count occurrences of "operator bool"
+            size_t count = 0;
+            size_t pos = 0;
+            while ((pos = code.find("operator bool", pos)) != std::string::npos)
+            {
+                count++;
+                pos++;
+            }
+
+            // Should be exactly 1 (the implicit one)
+            CHECK(count == 1);
+
+            // And it should NOT be explicit
+            CHECK(code.find("explicit operator bool") == std::string::npos);
+        }
+    }
+
     TEST_CASE("Constexpr Code Generation")
     {
         CodeStructureParser parser;

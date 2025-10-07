@@ -57,6 +57,9 @@ Quick facts:
 | Option | Behavior |
 |--------|----------|
 | `bool` | Explicit conversion to `bool` |
+| `cast<Type>` | Explicit cast operator to `Type` (requires `static_cast`) |
+| `explicit_cast<Type>` | Explicit cast operator to `Type` (alias for `cast<Type>`) |
+| `implicit_cast<Type>` | Implicit cast operator to `Type` (reduces type safety, use sparingly) |
 | `out` | `operator<<` for output streams |
 | `in` | `operator>>` for input streams |
 | `fmt` | `std::formatter` specialization for C++20 `std::format` (wrapped in feature test macro) |
@@ -102,4 +105,6 @@ strong double; +, -, *, /, <=>                      # Math-friendly double
 strong std::string; ==, !=, out, no-constexpr-hash  # String with runtime hash
 strong int; ++, --, bool, #<iostream>               # Counter with explicit include
 strong std::vector<int>; ==, [], iterable           # Iterable container wrapper
+strong std::string; ==, cast<std::string_view>      # String with explicit cast to view
+strong int; ==, implicit_cast<bool>                 # Int with implicit bool conversion
 ```
