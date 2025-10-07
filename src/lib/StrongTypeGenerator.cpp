@@ -37,7 +37,8 @@ BOOST_DESCRIBE_STRUCT(
      default_value,
      guard_prefix,
      guard_separator,
-     upcase_guard))
+     upcase_guard,
+     generate_iterators))
 
 namespace {
 
@@ -178,6 +179,9 @@ auto strong_template = R"({{#includes}}
     {{#subscript_operator}}
     {{>subscript_operator}}
     {{/subscript_operator}}
+    {{#iterator_support_member}}
+    {{>iterator_support_member}}
+    {{/iterator_support_member}}
     {{#unary_operators}}
     {{>unary_operators}}
     {{/unary_operators}}
@@ -498,6 +502,52 @@ constexpr char subscript_operator_template[] = R"(
 #endif
 )";
 
+constexpr char iterator_support_template[] = R"(
+    /**
+     * Iterator type aliases for container-like interface.
+     */
+    using iterator = decltype(atlas::atlas_detail::begin_(
+        std::declval<{{{underlying_type}}}&>()));
+    using const_iterator = decltype(atlas::atlas_detail::begin_(
+        std::declval<{{{underlying_type}}} const&>()));
+    using value_type = typename std::remove_reference<decltype(
+        *atlas::atlas_detail::begin_(
+            std::declval<{{{underlying_type}}}&>()))>::type;
+
+    /**
+     * Member functions for iterator access.
+     * Enables both explicit calls (e.g., s.begin()) and range-based for loops.
+     * Uses ADL-enabled helpers that work in decltype/noexcept contexts.
+     */
+    {{{const_expr}}}auto begin()
+    noexcept(noexcept(atlas::atlas_detail::begin_(value)))
+    -> decltype(atlas::atlas_detail::begin_(value))
+    {
+        return atlas::atlas_detail::begin_(value);
+    }
+
+    {{{const_expr}}}auto end()
+    noexcept(noexcept(atlas::atlas_detail::end_(value)))
+    -> decltype(atlas::atlas_detail::end_(value))
+    {
+        return atlas::atlas_detail::end_(value);
+    }
+
+    {{{const_expr}}}auto begin() const
+    noexcept(noexcept(atlas::atlas_detail::begin_(value)))
+    -> decltype(atlas::atlas_detail::begin_(value))
+    {
+        return atlas::atlas_detail::begin_(value);
+    }
+
+    {{{const_expr}}}auto end() const
+    noexcept(noexcept(atlas::atlas_detail::end_(value)))
+    -> decltype(atlas::atlas_detail::end_(value))
+    {
+        return atlas::atlas_detail::end_(value);
+    }
+)";
+
 struct Operator
 {
     std::string_view op;
@@ -544,6 +594,7 @@ struct ClassInfo
     std::string default_initializer = "{}";
     std::string const_expr = "constexpr ";
     std::string hash_const_expr = "constexpr ";
+    bool iterator_support_member = false;
     StrongTypeDescription desc;
 };
 BOOST_DESCRIBE_STRUCT(
@@ -578,6 +629,7 @@ BOOST_DESCRIBE_STRUCT(
      default_initializer,
      const_expr,
      hash_const_expr,
+     iterator_support_member,
      desc))
 
 constexpr auto arithmetic_binary_op_tags = std::to_array<std::string_view>(
@@ -866,6 +918,9 @@ parse(
                     info.hash_specialization = true;
                     info.hash_const_expr = "";
                     info.includes.push_back("<functional>");
+                } else if (sv == "iterable") {
+                    recognized = true;
+                    info.desc.generate_iterators = true;
                 } else if (sv == "no-constexpr") {
                     recognized = true;
                     info.const_expr = "";
@@ -1000,6 +1055,11 @@ parse(
         }
     }
 
+    // Enable iterator support if requested
+    if (info.desc.generate_iterators) {
+        info.iterator_support_member = true;
+    }
+
     return info;
 }
 
@@ -1021,6 +1081,7 @@ render_code(ClassInfo const & info)
          {"nullary", nullary_template},
          {"callable", callable_template},
          {"subscript_operator", subscript_operator_template},
+         {"iterator_support_member", iterator_support_template},
          {"logical_not_operator", logical_not_template},
          {"spaceship_operator", spaceship_operator_template},
          {"ostream_operator", ostream_operator_template},

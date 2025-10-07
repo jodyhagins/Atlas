@@ -103,3 +103,22 @@ kind=class
 namespace=app::config
 name=ConfigKey
 description=strong std::string; +, ==, !=, <, <<, hash, []
+
+[type]
+kind=struct
+namespace=containers
+name=IterableString
+description=strong std::string; ==, !=, iterable
+default_value=""
+
+[type]
+kind=struct
+namespace=containers
+name=IntVector
+description=strong std::vector<int>; ==, iterable, []
+
+[type]
+kind=class
+namespace=containers
+name=DataBuffer
+description=strong std::vector<uint8_t>; ==, !=, iterable, [], hash

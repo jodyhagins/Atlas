@@ -121,7 +121,7 @@ Common options (because we're all about that opt-in life):
 - Stream: `in`, `out` — `std::cout` compatibility sold separately
 - Callable: `()`, `(&)` — yes, your strong type can be a functor. Why? Because C++.
 - Pointer-like: `@`, `->`, `&of` — make it look like a pointer without the segfaults
-- Containers: `[]`, `hash` — for those fancy data structures
+- Containers: `[]`, `hash`, `iterable` — for those fancy data structures
 - Special: `bool`, `no-constexpr` — the "it's complicated" options
 
 Full reference (for the masochists): [`docs/description-language.md`](docs/description-language.md)
