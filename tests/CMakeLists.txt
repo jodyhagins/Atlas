@@ -86,6 +86,10 @@ add_executable(property_ut
     property_ut.cpp
 )
 
+add_executable(compilation_ut
+    compilation_ut.cpp
+)
+
 
 target_link_libraries(strong_type_generator_ut
     PRIVATE
@@ -223,6 +227,17 @@ target_include_directories(property_ut
         ${rapidcheck_SOURCE_DIR}/extras/doctest/include
 )
 
+target_link_libraries(compilation_ut
+    PRIVATE
+        atlas_lib
+        doctest::doctest
+)
+
+target_include_directories(compilation_ut
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
 
 add_test(NAME AtlasCommandLineTest COMMAND atlas_command_line_ut)
 add_test(NAME ErrorHandlingTest COMMAND error_handling_ut)
@@ -238,7 +253,10 @@ doctest_discover_tests(atlas_tool_ut TEST_PREFIX "Atlas Tool : "
 doctest_discover_tests(interaction_generator_ut TEST_PREFIX "Interaction Generator : ")
 doctest_discover_tests(interaction_compilation_ut TEST_PREFIX "Interaction Compilation : ")
 doctest_discover_tests(structural_validation_demo_ut TEST_PREFIX "Structural Demo : ")
-doctest_discover_tests(golden_ut TEST_PREFIX "Golden : "
+doctest_discover_tests(golden_ut TEST_PREFIX "Golden : "
     PROPERTIES ENVIRONMENT "SOURCE_DIR=${CMAKE_SOURCE_DIR}"
 )
-doctest_discover_tests(property_ut TEST_PREFIX "Property : ")
+doctest_discover_tests(property_ut TEST_PREFIX "Property : ")
+doctest_discover_tests(compilation_ut TEST_PREFIX "Compilation : "
+    PROPERTIES TIMEOUT 120 LABELS "slow"
+)
