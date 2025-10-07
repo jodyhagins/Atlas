@@ -1,0 +1,15 @@
+guard_prefix=TEST
+guard_separator=_
+upcase_guard=true
+
+# Test includes directive emission
+include "Distance.hpp"
+include "Time.hpp"
+include <concepts>
+
+namespace=physics
+constexpr
+value_access=.value
+
+Distance + Distance -> Distance
+Time + Time -> Time

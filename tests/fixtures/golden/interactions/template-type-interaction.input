@@ -1,0 +1,11 @@
+guard_prefix=TEST
+guard_separator=_
+upcase_guard=true
+
+namespace=math
+constexpr
+value_access=atlas::value
+
+concept=std::integral T
+T + T -> T
+T - T -> T

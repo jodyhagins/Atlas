@@ -68,6 +68,16 @@ generate_from_input_file(fs::path const & input_path)
         "atlas",
         "--input=" + input_path.string()};
 
+    // Check if this is an interactions test by examining the path
+    // If the file is in a directory named "interactions", add
+    // --interactions=true
+    auto path_str = input_path.string();
+    if (path_str.find("/interactions/") != std::string::npos ||
+        path_str.find("\\interactions\\") != std::string::npos)
+    {
+        arg_strings.push_back("--interactions=true");
+    }
+
     // Convert to char* array (atlas_main interface)
     std::vector<char *> argv;
     for (auto & arg : arg_strings) {

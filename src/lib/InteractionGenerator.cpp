@@ -369,6 +369,53 @@ generate_operator_function(
         oss << "inline ";
     }
 
+    // Validate result type for template interactions
+    // If either operand is a template, check if result_type is a constraint
+    // name that doesn't match the template parameters being used
+    if (lhs_is_template || rhs_is_template) {
+        // Check if result_type is a constraint name
+        if (constraints.contains(interaction.result_type)) {
+            // Result type is a constraint name
+            // Verify it matches one of the active template parameters
+            bool result_matches_param = false;
+
+            if (lhs_is_template && rhs_is_template) {
+                // Both are templates
+                if (lhs_type == rhs_type) {
+                    // Single template parameter - result must match it
+                    result_matches_param =
+                        (interaction.result_type == lhs_type);
+                } else {
+                    // Two different template parameters (TL, TR)
+                    // Result type can be either one of them
+                    result_matches_param = (interaction.result_type ==
+                                            lhs_type) ||
+                        (interaction.result_type == rhs_type);
+                }
+            } else {
+                // Only one is a template - result must match the template
+                // parameter
+                std::string template_param = lhs_is_template ? lhs_type
+                                                             : rhs_type;
+                result_matches_param =
+                    (interaction.result_type == template_param);
+            }
+
+            if (not result_matches_param) {
+                throw std::runtime_error(
+                    "Result type '" + interaction.result_type +
+                    "' is a template constraint name but doesn't match the "
+                    "template " +
+                    "parameter(s). For template interactions, the result type "
+                    "must either " +
+                    "be a concrete type name (e.g., 'double', 'MyType') or "
+                    "match the " +
+                    "template parameter being used. LHS type: '" + lhs_type +
+                    "', RHS type: '" + rhs_type + "'");
+            }
+        }
+    }
+
     // Generate function signature
     if (interaction.is_constexpr) {
         oss << "constexpr ";

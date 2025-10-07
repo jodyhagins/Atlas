@@ -1,0 +1,11 @@
+guard_prefix=TEST
+guard_separator=_
+upcase_guard=true
+
+# Modulo is integer-only and has different semantics than other arithmetic
+namespace=data
+constexpr
+value_access=.value
+
+ByteCount % ByteCount -> ByteCount
+ByteCount % size_t -> ByteCount

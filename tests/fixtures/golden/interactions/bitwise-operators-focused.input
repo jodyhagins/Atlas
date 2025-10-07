@@ -1,0 +1,12 @@
+guard_prefix=TEST
+guard_separator=_
+upcase_guard=true
+
+# Focused test for bitwise operators with atlas_value generation
+namespace=graphics::color
+constexpr
+value_access=.value
+
+RedChannel & RedChannel -> RedChannel
+RedChannel | RedChannel -> RedChannel
+RedChannel ^ RedChannel -> RedChannel

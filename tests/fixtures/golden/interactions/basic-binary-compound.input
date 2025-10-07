@@ -1,0 +1,9 @@
+guard_prefix=TEST
+guard_separator=_
+upcase_guard=true
+
+namespace=test
+constexpr
+value_access=.value
+
+Price + Discount -> Price
