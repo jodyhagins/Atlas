@@ -78,6 +78,10 @@ add_executable(structural_validation_demo_ut
     structural_validation_demo_ut.cpp
 )
 
+add_executable(golden_ut
+    golden_ut.cpp
+)
+
 
 target_link_libraries(strong_type_generator_ut
     PRIVATE
@@ -191,6 +195,17 @@ target_include_directories(structural_validation_demo_ut
         ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
+target_link_libraries(golden_ut
+    PRIVATE
+        atlas_lib
+        doctest::doctest
+)
+
+target_include_directories(golden_ut
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
 
 add_test(NAME AtlasCommandLineTest COMMAND atlas_command_line_ut)
 add_test(NAME ErrorHandlingTest COMMAND error_handling_ut)
@@ -206,3 +221,6 @@ doctest_discover_tests(atlas_tool_ut TEST_PREFIX "Atlas Tool : "
 doctest_discover_tests(interaction_generator_ut TEST_PREFIX "Interaction Generator : ")
 doctest_discover_tests(interaction_compilation_ut TEST_PREFIX "Interaction Compilation : ")
 doctest_discover_tests(structural_validation_demo_ut TEST_PREFIX "Structural Demo : ")
+doctest_discover_tests(golden_ut TEST_PREFIX "Golden : "
+    PROPERTIES ENVIRONMENT "SOURCE_DIR=${CMAKE_SOURCE_DIR}"
+)
