@@ -1,0 +1,9 @@
+# Test: Basic arithmetic operators (+ and -)
+# Feature: Binary arithmetic with compound assignment
+# Expected: operator+, operator+=, operator-, operator-=
+
+[type]
+kind=struct
+namespace=test
+name=AddSubtractType
+description=strong int; +, -
