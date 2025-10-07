@@ -129,6 +129,17 @@ struct StrongTypeDescription
      * std::hash of the underlying type. The hash function is conditionally
      * noexcept based on the underlying type's hash function.
      *
+     * The <opt> "iterable" will generate iterator support for container-like
+     * types, enabling range-based for loops and STL algorithm usage. This
+     * generates: (1) iterator type aliases (iterator, const_iterator,
+     * value_type), and (2) member begin()/end() functions (both const and
+     * non-const). Member functions forward to std::begin/std::end which work
+     * with both types that have member iterators and types that only provide
+     * free function iterators. All iterator functions use decltype for
+     * SFINAE-friendly return type deduction and are conditionally noexcept. No
+     * free functions are generated as std::begin/std::end will find the members
+     * via ADL.
+     *
      * Any <opt> that starts with an octothorpe will designate a required header
      * file that needs to be included.  Depending on the context, it may be
      * easier to use a single quote rather than a double quote.  Either will be
@@ -191,6 +202,12 @@ struct StrongTypeDescription
      * When true, the header guard will be converted to uppercase.
      */
     bool upcase_guard = true;
+
+    /**
+     * When true, generates free begin() and end() functions to enable
+     * range-based for loops via ADL (Argument-Dependent Lookup).
+     */
+    bool generate_iterators = false;
 };
 
 struct StrongTypeGenerator

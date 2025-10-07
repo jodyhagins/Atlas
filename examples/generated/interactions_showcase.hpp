@@ -1,5 +1,5 @@
-#ifndef EXAMPLE_INTERACTIONS_1F5D28B85CB50E4E282263E2B24CDB5DCC88F337
-#define EXAMPLE_INTERACTIONS_1F5D28B85CB50E4E282263E2B24CDB5DCC88F337
+#ifndef EXAMPLE_INTERACTIONS_9857100EBDEC1E9D886D3B1EAF90D02213343303
+#define EXAMPLE_INTERACTIONS_9857100EBDEC1E9D886D3B1EAF90D02213343303
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -178,6 +178,25 @@ public:
         return rval<T>(atlas_detail::value(t, atlas_detail::value_tag{}));
     }
 };
+
+void begin();
+void end();
+
+template <typename T>
+constexpr auto
+begin_(T && t) noexcept(noexcept(begin(std::forward<T>(t))))
+-> decltype(begin(std::forward<T>(t)))
+{
+    return begin(std::forward<T>(t));
+}
+
+template <typename T>
+constexpr auto
+end_(T && t) noexcept(noexcept(end(std::forward<T>(t))))
+-> decltype(end(std::forward<T>(t)))
+{
+    return end(std::forward<T>(t));
+}
 
 } // namespace atlas_detail
 
@@ -1396,4 +1415,4 @@ noexcept(
 
 } // namespace security
 
-#endif // EXAMPLE_INTERACTIONS_1F5D28B85CB50E4E282263E2B24CDB5DCC88F337
+#endif // EXAMPLE_INTERACTIONS_9857100EBDEC1E9D886D3B1EAF90D02213343303

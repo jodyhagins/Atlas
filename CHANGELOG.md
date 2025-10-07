@@ -25,6 +25,13 @@ All notable changes to this project will be documented here. This format follows
 - `scripts/test_install.sh` script for local validation of installation and find_package.
 - Comprehensive CI with GCC/Clang on Ubuntu and macOS.
 - Code coverage reporting via codecov.
+- **Iterator Support**: New `iterable` keyword enables range-based for loops on container-like strong types.
+  - Generates member `begin()` and `end()` functions (const and non-const overloads)
+  - Uses canonical ADL pattern with `atlas::atlas_detail::begin_/end_` helpers for compatibility
+  - Includes iterator type aliases (`iterator`, `const_iterator`, `value_type`)
+  - Works with any type that supports iteration via member or free function `begin()/end()`
+  - Enables usage with range-based for loops and STL algorithms
+  - All iterator functions are conditionally `constexpr` and `noexcept` based on underlying type
 
 ### Changed
 - N/A

@@ -60,6 +60,7 @@ Quick facts:
 | `out` | `operator<<` for output streams |
 | `in` | `operator>>` for input streams |
 | `hash` | `std::hash` specialization |
+| `iterable` | Member `begin()/end()` for range-based for loops |
 
 ### Control
 | Option | Behavior |
@@ -98,4 +99,5 @@ When it guesses wrong, use `#<header>` to fix it.
 strong double; +, -, *, /, <=>                      # Math-friendly double
 strong std::string; ==, !=, out, no-constexpr-hash  # String with runtime hash
 strong int; ++, --, bool, #<iostream>               # Counter with explicit include
+strong std::vector<int>; ==, [], iterable           # Iterable container wrapper
 ```

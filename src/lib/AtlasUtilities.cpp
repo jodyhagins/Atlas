@@ -239,6 +239,25 @@ public:
     }
 };
 
+void begin();
+void end();
+
+template <typename T>
+constexpr auto
+begin_(T && t) noexcept(noexcept(begin(std::forward<T>(t))))
+-> decltype(begin(std::forward<T>(t)))
+{
+    return begin(std::forward<T>(t));
+}
+
+template <typename T>
+constexpr auto
+end_(T && t) noexcept(noexcept(end(std::forward<T>(t))))
+-> decltype(end(std::forward<T>(t)))
+{
+    return end(std::forward<T>(t));
+}
+
 } // namespace atlas_detail
 
 #if defined(__cpp_inline_variables) && __cpp_inline_variables >= 201606L

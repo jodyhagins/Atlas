@@ -479,6 +479,119 @@ TEST_SUITE("StrongTypeGenerator")
         }
     }
 
+    TEST_CASE("Iterator Support")
+    {
+        SUBCASE("string with iterable generates member begin/end") {
+            auto desc = make_description(
+                "struct",
+                "test",
+                "StringIterable",
+                "strong std::string; ==, iterable");
+
+            auto code = generate_strong_type(desc);
+
+            // Verify member functions are generated
+            CHECK(code.find("auto begin()") != std::string::npos);
+            CHECK(code.find("auto end()") != std::string::npos);
+            CHECK(code.find("auto begin() const") != std::string::npos);
+            CHECK(code.find("auto end() const") != std::string::npos);
+
+            // Verify calls to atlas::atlas_detail::begin_/end_
+            CHECK(
+                code.find("return atlas::atlas_detail::begin_(value);") !=
+                std::string::npos);
+            CHECK(
+                code.find("return atlas::atlas_detail::end_(value);") !=
+                std::string::npos);
+
+            // Verify return type deduction uses ADL helpers
+            CHECK(
+                code.find("-> decltype(atlas::atlas_detail::begin_(value))") !=
+                std::string::npos);
+            CHECK(
+                code.find("-> decltype(atlas::atlas_detail::end_(value))") !=
+                std::string::npos);
+
+            // Verify iterator type aliases
+            CHECK(code.find("using iterator =") != std::string::npos);
+            CHECK(code.find("using const_iterator =") != std::string::npos);
+            CHECK(code.find("using value_type =") != std::string::npos);
+
+            // Verify noexcept uses ADL helpers
+            CHECK(
+                code.find(
+                    "noexcept(noexcept(atlas::atlas_detail::begin_(value)))") !=
+                std::string::npos);
+            CHECK(
+                code.find(
+                    "noexcept(noexcept(atlas::atlas_detail::end_(value)))") !=
+                std::string::npos);
+
+            // Verify NO free functions are generated (std::begin will find
+            // members)
+            CHECK(code.find("begin(StringIterable& t)") == std::string::npos);
+            CHECK(code.find("end(StringIterable& t)") == std::string::npos);
+
+            // Verify they're in the right namespace
+            CHECK(code.find("namespace test") != std::string::npos);
+        }
+
+        SUBCASE("vector with iterable generates member begin/end") {
+            auto desc = make_description(
+                "struct",
+                "test",
+                "IntVector",
+                "strong std::vector<int>; ==, iterable");
+
+            auto code = generate_strong_type(desc);
+
+            // Verify member functions, not free functions
+            CHECK(code.find("auto begin()") != std::string::npos);
+            CHECK(code.find("auto end()") != std::string::npos);
+            CHECK(
+                code.find("atlas::atlas_detail::begin_(value)") !=
+                std::string::npos);
+
+            // Verify NO free functions
+            CHECK(code.find("begin(IntVector& t)") == std::string::npos);
+        }
+
+        SUBCASE("no-constexpr with iterable removes constexpr") {
+            auto desc = make_description(
+                "struct",
+                "test",
+                "NonConstexprIterable",
+                "strong std::string; ==, iterable, no-constexpr");
+
+            auto code = generate_strong_type(desc);
+
+            // Should not have constexpr on member begin/end
+            auto begin_pos = code.find("auto begin()");
+            REQUIRE(begin_pos != std::string::npos);
+
+            // Look backward from begin_pos to find if there's constexpr
+            auto search_start = begin_pos > 100 ? begin_pos - 100 : 0;
+            auto snippet = code.substr(
+                search_start,
+                begin_pos - search_start + 15);
+            CHECK(snippet.find("constexpr auto") == std::string::npos);
+        }
+
+        SUBCASE("type without iterable does not generate begin/end") {
+            auto desc = make_description(
+                "struct",
+                "test",
+                "NonIterable",
+                "strong std::string; ==");
+
+            auto code = generate_strong_type(desc);
+
+            // Should NOT have free begin/end functions
+            CHECK(code.find("begin(NonIterable& t)") == std::string::npos);
+            CHECK(code.find("end(NonIterable& t)") == std::string::npos);
+        }
+    }
+
     TEST_CASE("Stream Operators")
     {
         CodeStructureParser parser;
