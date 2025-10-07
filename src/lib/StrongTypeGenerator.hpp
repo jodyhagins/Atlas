@@ -234,14 +234,14 @@ struct StrongTypeDescription
      * cast<std::string_view>). Each generates: explicit operator TargetType()
      * const
      */
-    std::vector<std::string> explicit_casts;
+    std::vector<std::string> explicit_casts = {};
 
     /**
      * List of implicit cast operators to generate (e.g., implicit_cast<bool>).
      * Each generates: operator TargetType() const (no explicit)
      * WARNING: Implicit casts reduce type safety, use sparingly.
      */
-    std::vector<std::string> implicit_casts;
+    std::vector<std::string> implicit_casts = {};
 };
 
 struct StrongTypeGenerator
