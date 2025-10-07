@@ -1,0 +1,10 @@
+# Test: Constexpr operations
+# Feature: Compile-time evaluation of operations
+# Expected: Operators are constexpr
+# Note: Enables constexpr StrongInt x(5); constexpr auto y = x + x;
+
+[type]
+kind=struct
+namespace=test::edge_cases
+name=ConstexprOperations
+description=strong int; +, -, *, ==, <

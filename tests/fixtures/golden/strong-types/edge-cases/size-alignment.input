@@ -1,0 +1,10 @@
+# Test: Zero-overhead guarantee verification
+# Feature: sizeof and alignof match underlying type
+# Expected: Static assertions for size, alignment, standard layout
+# Note: Generated code should include static_assert checks
+
+[type]
+kind=struct
+namespace=test::edge_cases
+name=SizeAlignment
+description=strong int; ==

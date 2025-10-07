@@ -1,0 +1,9 @@
+# Test: No-constexpr with multiple operators
+# Feature: no-constexpr option disables constexpr on all operators
+# Expected: Operators NOT marked constexpr
+
+[type]
+kind=struct
+namespace=test::edge_cases
+name=NoConstexprAll
+description=strong int; +, -, ==, hash, no-constexpr-hash

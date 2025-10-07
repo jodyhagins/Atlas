@@ -1,0 +1,9 @@
+# Test: Formatter integration with std::format
+# Feature: Strong type can be formatted with std::format
+# Expected: std::formatter specialization for C++20
+
+[type]
+kind=struct
+namespace=test::integration
+name=FormattableInt
+description=strong int; fmt, ==

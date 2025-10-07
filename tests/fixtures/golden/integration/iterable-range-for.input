@@ -1,0 +1,9 @@
+# Test: Iterable with range-based for loop
+# Feature: Strong type supports begin()/end() for range-based for
+# Expected: Dereference and arrow operators for iterator access
+
+[type]
+kind=struct
+namespace=test::integration
+name=RangeForString
+description=strong std::string; iterable

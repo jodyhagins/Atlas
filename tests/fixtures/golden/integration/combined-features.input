@@ -1,0 +1,9 @@
+# Test: Multiple features combined in real-world use
+# Feature: Strong type with arithmetic, comparison, hash, and formatting
+# Expected: All features work together harmoniously
+
+[type]
+kind=struct
+namespace=test::integration
+name=RealWorldInt
+description=strong int; +, -, *, ==, <, hash, fmt

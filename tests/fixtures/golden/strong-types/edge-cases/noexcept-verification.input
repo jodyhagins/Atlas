@@ -1,0 +1,10 @@
+# Test: Noexcept verification
+# Feature: Operations are noexcept when underlying operations are
+# Expected: Generated operators marked noexcept appropriately
+# Note: Enables static_assert(noexcept(x + y))
+
+[type]
+kind=struct
+namespace=test::edge_cases
+name=NoexceptVerification
+description=strong int; +, ++, ==

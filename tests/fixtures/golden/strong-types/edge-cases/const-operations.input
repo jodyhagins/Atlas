@@ -1,0 +1,9 @@
+# Test: Operations on const strong types
+# Feature: Const-correctness of generated operators
+# Expected: All operators work with const instances
+
+[type]
+kind=struct
+namespace=test::edge_cases
+name=ConstOperations
+description=strong int; +, -, ==, <

@@ -1,0 +1,10 @@
+# Test: ODR violation test - Type 2 (part of multi-file test)
+# Feature: Multiple generated headers in different translation units
+# Expected: No ODR violations from shared boilerplate header guard
+# Note: This is part 2 of a multi-file test
+
+[type]
+kind=struct
+namespace=test::integration::odr
+name=TypeTwo
+description=strong std::string; ==, hash
