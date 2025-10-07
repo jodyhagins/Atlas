@@ -6,6 +6,33 @@ guard_prefix=EXAMPLE
 guard_separator=_
 upcase_guard=true
 
+# Profile definitions - reusable feature bundles
+profile=NUMERIC; +, -, *, /
+profile=COMPARABLE; ==, !=, <, <=, >, >=
+profile=HASHABLE; ==, !=, hash
+profile=STREAMABLE; out, in
+
+# Profile demo: Using profiles to reduce verbosity
+[type]
+kind=struct
+namespace=demo::profiles
+name=Price
+description=strong double; {NUMERIC}, {COMPARABLE}, hash
+default_value=0.0
+
+[type]
+kind=struct
+namespace=demo::profiles
+name=Quantity
+description=strong int; {NUMERIC}, {HASHABLE}
+default_value=0
+
+[type]
+kind=struct
+namespace=demo::profiles
+name=Identifier
+description=strong std::string; {HASHABLE}, {STREAMABLE}
+
 [type]
 kind=struct
 namespace=finance::core

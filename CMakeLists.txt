@@ -88,7 +88,9 @@ add_library(atlas_lib
     src/lib/AtlasUtilities.cpp
     src/lib/AtlasUtilities.hpp
     src/lib/AtlasCommandLine.cpp
-    src/lib/AtlasCommandLine.hpp)
+    src/lib/AtlasCommandLine.hpp
+    src/lib/ProfileSystem.cpp
+    src/lib/ProfileSystem.hpp)
 
 target_include_directories(atlas_lib
     PUBLIC

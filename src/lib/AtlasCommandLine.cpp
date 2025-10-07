@@ -6,6 +6,7 @@
 // ----------------------------------------------------------------------
 #include "AtlasCommandLine.hpp"
 #include "AtlasUtilities.hpp"
+#include "ProfileSystem.hpp"
 
 #include <boost/uuid/detail/sha1.hpp>
 
@@ -34,6 +35,22 @@ parse_bool(std::string value, std::string const & option_name)
     throw AtlasCommandLineError(
         "Invalid value for " + option_name + ": '" + value +
         "'. Expected true/false, 1/0, or yes/no.");
+}
+
+// Split comma-separated features and trim whitespace
+std::vector<std::string>
+split_features(std::string const & features_str)
+{
+    std::vector<std::string> features;
+    std::stringstream ss(features_str);
+    std::string feature;
+    while (std::getline(ss, feature, ',')) {
+        feature = trim(feature);
+        if (not feature.empty()) {
+            features.push_back(feature);
+        }
+    }
+    return features;
 }
 
 // Extract template parameter name from enable_if expression
@@ -278,6 +295,9 @@ parse_input_file(Arguments const & args)
     result.guard_separator = args.guard_separator;
     result.upcase_guard = args.upcase_guard;
 
+    // Profile system for user-defined profiles
+    ProfileSystem profile_system;
+
     std::string line;
     int line_number = 0;
     bool in_type_section = false;
@@ -299,11 +319,50 @@ parse_input_file(Arguments const & args)
                     std::to_string(line_number) + " in " + args.input_file);
             }
 
+            // Expand {NAME} tokens in description
+            std::string expanded_description = current_description;
+
+            // Parse description: "strong TYPE; features..."
+            auto semicolon_pos = expanded_description.find(';');
+            if (semicolon_pos != std::string::npos) {
+                std::string type_part = expanded_description.substr(
+                    0,
+                    semicolon_pos + 1);
+                std::string features_str = trim(
+                    expanded_description.substr(semicolon_pos + 1));
+
+                // Split features by comma
+                auto features = split_features(features_str);
+
+                // Expand profile tokens
+                try {
+                    features = profile_system.expand_features(features);
+                } catch (std::exception const & e) {
+                    throw AtlasCommandLineError(
+                        "Error expanding profile in description near line " +
+                        std::to_string(line_number) + " in " + args.input_file +
+                        ": " + e.what());
+                }
+
+                // Reconstruct description
+                if (not features.empty()) {
+                    expanded_description = type_part + " ";
+                    for (size_t i = 0; i < features.size(); ++i) {
+                        if (i > 0) {
+                            expanded_description += ", ";
+                        }
+                        expanded_description += features[i];
+                    }
+                } else {
+                    expanded_description = type_part;
+                }
+            }
+
             result.types.push_back(StrongTypeDescription{
                 .kind = current_kind,
                 .type_namespace = current_namespace,
                 .type_name = current_name,
-                .description = current_description,
+                .description = expanded_description,
                 .default_value = current_default_value,
                 .guard_prefix = result.guard_prefix,
                 .guard_separator = result.guard_separator,
@@ -353,6 +412,32 @@ parse_input_file(Arguments const & args)
                 result.guard_separator = value;
             } else if (key == "upcase_guard") {
                 result.upcase_guard = parse_bool(value, "upcase_guard");
+            } else if (key == "profile") {
+                // Parse profile=NAME; features...
+                // value contains everything after the = sign
+                auto semicolon_pos = value.find(';');
+                if (semicolon_pos == std::string::npos) {
+                    throw AtlasCommandLineError(
+                        "Invalid profile definition at line " +
+                        std::to_string(line_number) + " in " + args.input_file +
+                        ": expected 'profile=NAME; features...'");
+                }
+
+                std::string profile_name = trim(value.substr(0, semicolon_pos));
+                std::string features_str = trim(
+                    value.substr(semicolon_pos + 1));
+
+                // Split features by comma
+                auto features = split_features(features_str);
+
+                try {
+                    profile_system.register_profile(profile_name, features);
+                } catch (std::exception const & e) {
+                    throw AtlasCommandLineError(
+                        "Error registering profile at line " +
+                        std::to_string(line_number) + " in " + args.input_file +
+                        ": " + e.what());
+                }
             } else {
                 throw AtlasCommandLineError(
                     "Unknown configuration key at line " +
