@@ -6,6 +6,7 @@
 // ----------------------------------------------------------------------
 #include "AtlasMain.hpp"
 
+#include <algorithm>
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
