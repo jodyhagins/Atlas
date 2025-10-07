@@ -59,6 +59,7 @@ Quick facts:
 | `bool` | Explicit conversion to `bool` |
 | `out` | `operator<<` for output streams |
 | `in` | `operator>>` for input streams |
+| `fmt` | `std::formatter` specialization for C++20 `std::format` (wrapped in feature test macro) |
 | `hash` | `std::hash` specialization |
 | `iterable` | Member `begin()/end()` for range-based for loops |
 

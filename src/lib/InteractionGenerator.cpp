@@ -696,6 +696,11 @@ namespace atlas {
     output << "#ifndef " << guard << "\n";
     output << "#define " << guard << "\n\n";
     output << banner();
+    output << R"(
+#if __has_include(<version>)
+#include <version>
+#endif
+)" << '\n';
     output << content;
     output << "#endif // " << guard << "\n";
 
