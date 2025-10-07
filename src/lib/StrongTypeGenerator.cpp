@@ -153,6 +153,9 @@ auto strong_template = R"({{{includes}}}{{#namespace_open}}
     {{{const_expr}}}explicit {{{class_name}}}(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     { }
+    {{#template_assignment_operator}}
+    {{>template_assignment_operator}}
+    {{/template_assignment_operator}}
 
     /**
      * The explicit cast operator provides a reference to the wrapped object.
@@ -573,6 +576,45 @@ constexpr char iterator_support_template[] = R"(
     }
 )";
 
+constexpr char template_assignment_operator_template[] = R"(
+    /**
+     * @brief Template assignment operator
+     *
+     * Allows assignment from any type that is assignable to the underlying type.
+     * This provides convenience while maintaining type safety through SFINAE.
+     *
+     * Example:
+     *   StrongType s{"initial"};
+     *   s = "new value";        // Works if assignable
+     *   s = std::string("foo"); // Works if assignable
+     *   s = 42;                 // Rejected if not assignable
+     *
+     * Note: constexpr is applied only in C++14 and later because in C++11,
+     * constexpr non-static member functions are implicitly const.
+     */
+#if defined(__cpp_concepts) && __cpp_concepts >= 201907L
+    template <typename T>
+      requires (std::assignable_from<{{{underlying_type}}}&, T> &&
+                not std::same_as<std::decay_t<T>, {{{class_name}}}>)
+#else
+    template <typename T,
+        typename std::enable_if<
+            std::is_assignable<{{{underlying_type}}}&, T>::value &&
+            not std::is_same<typename std::decay<T>::type, {{{class_name}}}>::value,
+            int>::type = 0>
+#endif
+#if __cplusplus >= 201402L
+    {{{const_expr}}}{{{class_name}}}& operator=(T&& t)
+#else
+    {{{class_name}}}& operator=(T&& t)
+#endif
+    noexcept(noexcept(std::declval<{{{underlying_type}}}&>() = std::declval<T>()))
+    {
+        value = std::forward<T>(t);
+        return *this;
+    }
+)";
+
 struct Operator
 {
     std::string_view op;
@@ -623,6 +665,7 @@ struct ClassInfo
     std::string const_expr = "constexpr ";
     std::string hash_const_expr = "constexpr ";
     bool iterator_support_member = false;
+    bool template_assignment_operator = false;
     StrongTypeDescription desc;
 };
 BOOST_DESCRIBE_STRUCT(
@@ -659,6 +702,7 @@ BOOST_DESCRIBE_STRUCT(
      const_expr,
      hash_const_expr,
      iterator_support_member,
+     template_assignment_operator,
      desc))
 
 constexpr auto arithmetic_binary_op_tags = std::to_array<std::string_view>(
@@ -957,6 +1001,12 @@ parse(
                     info.include_guards["<format>"] =
                         "defined(__cpp_lib_format) && __cpp_lib_format >= "
                         "202110L";
+                } else if (sv == "assign") {
+                    recognized = true;
+                    info.desc.generate_template_assignment = true;
+                    info.includes_vec.push_back("<concepts>");
+                    info.include_guards["<concepts>"] =
+                        "defined(__cpp_concepts) && __cpp_concepts >= 201907L";
                 } else if (sv == "no-constexpr") {
                     recognized = true;
                     info.const_expr = "";
@@ -1122,6 +1172,11 @@ parse(
         info.formatter_specialization = true;
     }
 
+    // Enable template assignment operator if requested
+    if (info.desc.generate_template_assignment) {
+        info.template_assignment_operator = true;
+    }
+
     return info;
 }
 
@@ -1144,6 +1199,8 @@ render_code(ClassInfo const & info)
          {"callable", callable_template},
          {"subscript_operator", subscript_operator_template},
          {"iterator_support_member", iterator_support_template},
+         {"template_assignment_operator",
+          template_assignment_operator_template},
          {"logical_not_operator", logical_not_template},
          {"spaceship_operator", spaceship_operator_template},
          {"ostream_operator", ostream_operator_template},

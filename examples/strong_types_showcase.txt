@@ -134,3 +134,15 @@ kind=struct
 namespace=formatting
 name=FormattedInt
 description=strong int; ==, fmt
+
+[type]
+kind=struct
+namespace=text
+name=AssignableString
+description=strong std::string; ==, !=, assign, out
+
+[type]
+kind=struct
+namespace=config
+name=AssignablePort
+description=strong int; ==, !=, assign

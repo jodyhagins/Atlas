@@ -221,6 +221,13 @@ struct StrongTypeDescription
      * std::format support, wrapped in __cpp_lib_format feature test macro.
      */
     bool generate_formatter = false;
+
+    /**
+     * When true, generates a template assignment operator that accepts any
+     * type assignable to the underlying type, using C++20 concepts or C++11
+     * SFINAE.
+     */
+    bool generate_template_assignment = false;
 };
 
 struct StrongTypeGenerator

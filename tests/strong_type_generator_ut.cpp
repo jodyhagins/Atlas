@@ -1217,6 +1217,111 @@ TEST_SUITE("StrongTypeGenerator")
         }
     }
 
+    TEST_CASE("Template Assignment Operator")
+    {
+        SUBCASE("assign keyword generates template assignment") {
+            auto desc = make_description(
+                "struct",
+                "test",
+                "AssignableString",
+                "strong std::string; ==, assign");
+
+            auto code = generate_strong_type(desc);
+
+            // Verify template assignment is generated
+            CHECK(code.find("template <typename T>") != std::string::npos);
+            CHECK(code.find("operator=(T&& t)") != std::string::npos);
+
+            // Verify C++20 version with concepts
+            CHECK(
+                code.find("requires (std::assignable_from") !=
+                std::string::npos);
+            CHECK(
+                code.find("not std::same_as<std::decay_t<T>") !=
+                std::string::npos);
+
+            // Verify C++11 fallback
+            CHECK(code.find("#else") != std::string::npos);
+            CHECK(code.find("std::enable_if") != std::string::npos);
+            CHECK(code.find("std::is_assignable<") != std::string::npos);
+
+            // Verify perfect forwarding
+            CHECK(code.find("std::forward<T>(t)") != std::string::npos);
+
+            // Verify noexcept specification
+            CHECK(code.find("noexcept(noexcept(") != std::string::npos);
+        }
+
+        SUBCASE("no-constexpr with assign") {
+            auto desc = make_description(
+                "struct",
+                "test",
+                "NonConstexprAssign",
+                "strong std::string; ==, assign, no-constexpr");
+
+            auto code = generate_strong_type(desc);
+
+            // Should still have template assignment
+            CHECK(code.find("operator=(T&& t)") != std::string::npos);
+        }
+
+        SUBCASE("without assign no template assignment generated") {
+            auto desc = make_description(
+                "struct",
+                "test",
+                "NoAssign",
+                "strong std::string; ==");
+
+            auto code = generate_strong_type(desc);
+
+            // Should not have template assignment (look for the specific
+            // pattern) The pattern should be "template <typename T>" followed
+            // by operator= with T&& parameter
+            size_t template_pos = code.find("template <typename T>");
+            if (template_pos != std::string::npos) {
+                // If we find a template, make sure it's not for assignment
+                size_t next_operator = code.find("operator=", template_pos);
+                size_t next_template = code.find(
+                    "template <",
+                    template_pos + 1);
+
+                // Either no operator= after template, or another template comes
+                // first
+                CHECK(
+                    (next_operator == std::string::npos ||
+                     (next_template != std::string::npos &&
+                      next_template < next_operator)));
+            }
+        }
+
+        SUBCASE("assign with integral type") {
+            auto desc = make_description(
+                "struct",
+                "test",
+                "AssignableInt",
+                "strong int; ==, assign");
+
+            auto code = generate_strong_type(desc);
+
+            CHECK(code.find("template <typename T>") != std::string::npos);
+            CHECK(code.find("operator=(T&& t)") != std::string::npos);
+        }
+
+        SUBCASE("nested namespace with assign") {
+            auto desc = make_description(
+                "struct",
+                "a::b::c",
+                "AssignableDeep",
+                "strong int; ==, assign");
+
+            auto code = generate_strong_type(desc);
+
+            // Verify template assignment with proper class name
+            CHECK(code.find("AssignableDeep&") != std::string::npos);
+            CHECK(code.find("not std::is_same") != std::string::npos);
+        }
+    }
+
     TEST_CASE("Constexpr Code Generation")
     {
         CodeStructureParser parser;
