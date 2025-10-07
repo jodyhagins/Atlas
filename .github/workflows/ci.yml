@@ -232,6 +232,10 @@ jobs:
     - name: Build
       run: cmake --build build
 
+    - name: Clean coverage data
+      working-directory: build
+      run: find . -name '*.gcda' -path '*/_deps/*' -delete
+
     - name: Run tests
       working-directory: build
       run: ctest --output-on-failure
@@ -241,7 +245,9 @@ jobs:
         lcov --capture --directory build \
           --output-file coverage.info \
           --rc lcov_branch_coverage=1 \
-          --ignore-errors mismatch
+          --exclude '*/build/_deps/*' \
+          --exclude '*/_deps/*' \
+          --ignore-errors mismatch,source
         lcov --remove coverage.info \
           '/usr/*' \
           '*/build/_deps/*' \

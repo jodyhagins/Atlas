@@ -40,11 +40,15 @@ echo -e "${YELLOW}Step 2: Building project...${NC}"
 cmake --build . -j$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4)
 
 echo
-echo -e "${YELLOW}Step 3: Running tests...${NC}"
+echo -e "${YELLOW}Step 3: Cleaning dependency coverage data...${NC}"
+find . -name "*.gcda" -path "*/_deps/*" -delete
+
+echo
+echo -e "${YELLOW}Step 4: Running tests...${NC}"
 ctest --output-on-failure
 
 echo
-echo -e "${YELLOW}Step 4: Collecting coverage data...${NC}"
+echo -e "${YELLOW}Step 5: Collecting coverage data...${NC}"
 
 # Find all .gcda files and run gcov on them
 find . -name "*.gcda" -type f | while read gcda; do
@@ -54,14 +58,17 @@ find . -name "*.gcda" -type f | while read gcda; do
 done
 
 echo
-echo -e "${YELLOW}Step 5: Generating coverage report...${NC}"
+echo -e "${YELLOW}Step 6: Generating coverage report...${NC}"
 
 # Use lcov if available, otherwise use simple gcov report
 if command -v lcov &> /dev/null; then
     echo "Using lcov for detailed HTML report..."
 
-    # Capture coverage data
-    lcov --capture --directory . --output-file coverage.info
+    # Capture coverage data, excluding dependencies
+    lcov --capture --directory . --output-file coverage.info \
+        --exclude '*/_deps/*' \
+        --exclude '*/build/_deps/*' \
+        --ignore-errors mismatch,source
 
     # Remove external/test files from coverage
     lcov --remove coverage.info \

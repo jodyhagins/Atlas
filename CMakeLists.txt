@@ -217,11 +217,14 @@ if(ATLAS_BUILD_TESTS)
 
     if(LCOV_PATH AND GENHTML_PATH)
         add_custom_target(coverage
+            COMMAND ${CMAKE_COMMAND} -E echo "Cleaning dependency coverage data..."
+            COMMAND find ${CMAKE_BINARY_DIR} -name "*.gcda" -path "*/_deps/*" -delete
             COMMAND ${CMAKE_COMMAND} -E echo "Running tests for coverage..."
             COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
             COMMAND ${CMAKE_COMMAND} -E echo "Collecting coverage data..."
             COMMAND ${LCOV_PATH} --capture --directory ${CMAKE_BINARY_DIR} --output-file coverage_raw.info
                 --rc branch_coverage=1 --rc derive_function_end_line=0
+                --exclude '*/_deps/*' --exclude '*/build/_deps/*'
                 --ignore-errors mismatch,source --gcov-tool ${GCOV_TOOL}
             COMMAND ${CMAKE_COMMAND} -E echo "Filtering to project sources only..."
             COMMAND ${LCOV_PATH} --remove coverage_raw.info '/usr/*' '*/tests/*' '*/_deps/*' '*/doctest.hpp'

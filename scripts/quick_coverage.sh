@@ -21,6 +21,10 @@ echo -e "${GREEN}Quick Coverage Check${NC}"
 echo "===================="
 echo
 
+# Clean dependency coverage data
+echo -e "${YELLOW}Cleaning dependency coverage data...${NC}"
+find . -name "*.gcda" -path "*/_deps/*" -delete
+
 # Run tests first
 echo -e "${YELLOW}Running tests...${NC}"
 ctest --output-on-fail --quiet
