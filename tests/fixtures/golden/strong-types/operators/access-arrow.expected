@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_A13EF74B6D7E3150990E50D16015E626A8803800
-#define FOO_BAR_A13EF74B6D7E3150990E50D16015E626A8803800
+#ifndef FOO_BAR_4789C2927E6BA79DEB9DB1ADB3A8919EAE5862E4
+#define FOO_BAR_4789C2927E6BA79DEB9DB1ADB3A8919EAE5862E4
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -279,15 +279,17 @@ struct ArrowType
      * Access a pointer to the wrapped object.
      */
     constexpr std::string const * operator -> () const
+    noexcept
     {
         return std::addressof(value);
     }
     constexpr std::string * operator -> ()
+    noexcept
     {
         return std::addressof(value);
     }
 };
 } // namespace test
 
-#endif // FOO_BAR_A13EF74B6D7E3150990E50D16015E626A8803800
+#endif // FOO_BAR_4789C2927E6BA79DEB9DB1ADB3A8919EAE5862E4
 

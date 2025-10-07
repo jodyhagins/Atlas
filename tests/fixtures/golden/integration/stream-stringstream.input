@@ -1,0 +1,9 @@
+# Test: Stream operators with std::stringstream
+# Feature: Strong type supports stream insertion and extraction
+# Expected: operator<< and operator>> for iostreams
+
+[type]
+kind=struct
+namespace=test::integration
+name=StreamableInt
+description=strong int; in, out, ==

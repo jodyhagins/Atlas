@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_BDEC65C2AA586C0E72018488D6448CECE820B7CC
-#define FOO_BAR_BDEC65C2AA586C0E72018488D6448CECE820B7CC
+#ifndef FOO_BAR_E6823DE468250762E5ED70DF3F4AAA956AA0EC4B
+#define FOO_BAR_E6823DE468250762E5ED70DF3F4AAA956AA0EC4B
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -284,15 +284,12 @@ struct FormatterCombinedType
         FormatterCombinedType const &) = default;
 
     /**
-     * Is @p lhs.value == @p rhs.value?
+     * The default equality comparison operator.
+     * Provided with spaceship operator for optimal performance.
      */
     friend constexpr bool operator == (
-        FormatterCombinedType const & lhs,
-        FormatterCombinedType const & rhs)
-    noexcept(noexcept(std::declval<int const&>() == std::declval<int const&>()))
-    {
-        return lhs.value == rhs.value;
-    }
+        FormatterCombinedType const &,
+        FormatterCombinedType const &) = default;
 };
 } // namespace test
 
@@ -318,5 +315,5 @@ struct std::formatter<test::FormatterCombinedType> : std::formatter<int>
     }
 };
 #endif // defined(__cpp_lib_format) && __cpp_lib_format >= 202110L
-#endif // FOO_BAR_BDEC65C2AA586C0E72018488D6448CECE820B7CC
+#endif // FOO_BAR_E6823DE468250762E5ED70DF3F4AAA956AA0EC4B
 

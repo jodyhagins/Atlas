@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_A6480C120EDC517BBC3D4B492E37AA875F886F51
-#define FOO_BAR_A6480C120EDC517BBC3D4B492E37AA875F886F51
+#ifndef FOO_BAR_B3A9632281CDD13FB798F084BF6DA9F9384BD069
+#define FOO_BAR_B3A9632281CDD13FB798F084BF6DA9F9384BD069
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -280,23 +280,27 @@ struct SubscriptType
 #if __cpp_multidimensional_subscript >= 202110L
     template <typename ArgT, typename... ArgTs>
     constexpr decltype(auto) operator [] (ArgT && arg, ArgTs && ... args)
+    noexcept(noexcept(value[std::forward<ArgT>(arg), std::forward<ArgTs>(args)...]))
     {
         return value[std::forward<ArgT>(arg), std::forward<ArgTs>(args)...];
     }
     template <typename ArgT, typename... ArgTs>
     constexpr decltype(auto) operator [] (ArgT && arg, ArgTs && ... args) const
+    noexcept(noexcept(value[std::forward<ArgT>(arg), std::forward<ArgTs>(args)...]))
     {
         return value[std::forward<ArgT>(arg), std::forward<ArgTs>(args)...];
     }
 #else
     template <typename ArgT>
     constexpr auto operator [] (ArgT && arg)
+    noexcept(noexcept(value[std::forward<ArgT>(arg)]))
     -> decltype(value[std::forward<ArgT>(arg)])
     {
         return value[std::forward<ArgT>(arg)];
     }
     template <typename ArgT>
     constexpr auto operator [] (ArgT && arg) const
+    noexcept(noexcept(value[std::forward<ArgT>(arg)]))
     -> decltype(value[std::forward<ArgT>(arg)])
     {
         return value[std::forward<ArgT>(arg)];
@@ -305,5 +309,5 @@ struct SubscriptType
 };
 } // namespace test
 
-#endif // FOO_BAR_A6480C120EDC517BBC3D4B492E37AA875F886F51
+#endif // FOO_BAR_B3A9632281CDD13FB798F084BF6DA9F9384BD069
 

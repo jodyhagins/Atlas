@@ -1,0 +1,9 @@
+# Test: Complex template type
+# Feature: Strong wrappers around nested template types
+# Expected: Handles complex template types like std::vector<std::pair<int, std::string>>
+
+[type]
+kind=struct
+namespace=test::edge_cases
+name=ComplexTemplateType
+description=strong std::vector<std::pair<int, std::string>>; ==, @, []

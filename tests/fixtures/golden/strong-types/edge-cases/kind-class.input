@@ -1,0 +1,9 @@
+# Test: Class instead of struct
+# Feature: kind=class generates a class (private by default) instead of struct
+# Expected: 'class' keyword used, members would be private without public:
+
+[type]
+kind=class
+namespace=test::edge_cases
+name=KindClassType
+description=strong int; ==

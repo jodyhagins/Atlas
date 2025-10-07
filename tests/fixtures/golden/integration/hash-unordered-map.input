@@ -1,0 +1,9 @@
+# Test: Hash integration with std::unordered_map
+# Feature: Strong type can be used as unordered_map key
+# Expected: std::hash specialization that works with standard containers
+
+[type]
+kind=struct
+namespace=test::integration
+name=HashMapKey
+description=strong int; hash, ==

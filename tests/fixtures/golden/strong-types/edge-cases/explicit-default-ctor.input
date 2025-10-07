@@ -1,0 +1,10 @@
+# Test: Explicit default constructor implications
+# Feature: Default constructor is explicit
+# Expected: Prevents aggregate initialization
+# Note: This is intentional design - prevents std::vector<StrongInt>(10)
+
+[type]
+kind=struct
+namespace=test::edge_cases
+name=ExplicitDefaultCtor
+description=strong int; ==

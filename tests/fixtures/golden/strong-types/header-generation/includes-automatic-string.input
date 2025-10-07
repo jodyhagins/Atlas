@@ -1,0 +1,9 @@
+# Test: Automatic include detection for std::string
+# Feature: Atlas automatically includes <string> for std::string types
+# Expected: Generated code includes <string>
+
+[type]
+kind=struct
+namespace=test
+name=AutoIncludeString
+description=strong std::string; ==

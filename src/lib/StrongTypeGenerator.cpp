@@ -207,6 +207,9 @@ auto strong_template = R"({{{includes}}}{{#namespace_open}}
     {{#spaceship_operator}}
     {{>spaceship_operator}}
     {{/spaceship_operator}}
+    {{#defaulted_equality_operator}}
+    {{>defaulted_equality_operator}}
+    {{/defaulted_equality_operator}}
     {{#relational_operators}}
     {{>relational_operator}}
     {{/relational_operators}}
@@ -232,10 +235,12 @@ constexpr char addressof_operators[] = R"(
      * Access a pointer to the wrapped object.
      */
     {{{const_expr}}}{{{underlying_type}}} const * operator {{{op}}} () const
+    noexcept
     {
         return std::addressof(value);
     }
     {{{const_expr}}}{{{underlying_type}}} * operator {{{op}}} ()
+    noexcept
     {
         return std::addressof(value);
     }
@@ -317,7 +322,8 @@ constexpr char increment_operator[] = R"(
     /**
      * Apply the prefix {{{op}}} operator to the wrapped object.
      */
-    friend {{{const_expr}}}{{{class_name}}} & operator {{{op}}} ({{{class_name}}} & t)
+    friend {{{const_expr}}}{{{class_name}}} &
+    operator {{{op}}} ({{{class_name}}} & t)
     noexcept(noexcept({{{op}}}std::declval<{{{underlying_type}}}&>()))
     {
         {{{op}}}t.value;
@@ -326,8 +332,11 @@ constexpr char increment_operator[] = R"(
     /**
      * Apply the postfix {{{op}}} operator to the wrapped object.
      */
-    friend {{{const_expr}}}{{{class_name}}} operator {{{op}}} ({{{class_name}}} & t, int)
-    noexcept(noexcept({{{op}}}std::declval<{{{underlying_type}}}&>()))
+    friend {{{const_expr}}}{{{class_name}}}
+    operator {{{op}}} ({{{class_name}}} & t, int)
+    noexcept(
+        std::is_nothrow_copy_constructible<{{{underlying_type}}}>::value &&
+        noexcept({{{op}}}std::declval<{{{underlying_type}}}&>()))
     {
         auto result = t;
         {{{op}}}t.value;
@@ -340,7 +349,8 @@ constexpr char bool_operator_template[] = R"(
      * Return the result of casting the wrapped object to bool.
      */
     {{{const_expr}}}explicit operator bool () const
-    noexcept(noexcept(static_cast<bool>(std::declval<{{{underlying_type}}} const&>())))
+    noexcept(noexcept(static_cast<bool>(
+        std::declval<{{{underlying_type}}} const&>())))
     {
         return static_cast<bool>(value);
     }
@@ -351,6 +361,8 @@ constexpr char explicit_cast_operator_template[] = R"(
      * Explicit cast to {{{cast_type}}}
      */
     {{{const_expr}}}explicit operator {{{cast_type}}}() const
+    noexcept(noexcept(static_cast<{{{cast_type}}}>(
+        std::declval<{{{underlying_type}}} const&>())))
     {
         return static_cast<{{{cast_type}}}>(value);
     }
@@ -361,6 +373,8 @@ constexpr char implicit_cast_operator_template[] = R"(
      * Implicit cast to {{{cast_type}}}
      */
     {{{const_expr}}}operator {{{cast_type}}}() const
+    noexcept(noexcept(static_cast<{{{cast_type}}}>(
+        std::declval<{{{underlying_type}}} const&>())))
     {
         return static_cast<{{{cast_type}}}>(value);
     }
@@ -456,6 +470,16 @@ constexpr char spaceship_operator_template[] = R"(
         {{{class_name}}} const &) = default;
 )";
 
+constexpr char defaulted_equality_operator_template[] = R"(
+    /**
+     * The default equality comparison operator.
+     * Provided with spaceship operator for optimal performance.
+     */
+    friend {{{const_expr}}}bool operator == (
+        {{{class_name}}} const &,
+        {{{class_name}}} const &) = default;
+)";
+
 constexpr char ostream_operator_template[] = R"(
     /**
      * Insert the wrapped object into an ostream.
@@ -532,23 +556,27 @@ constexpr char subscript_operator_template[] = R"(
 #if __cpp_multidimensional_subscript >= 202110L
     template <typename ArgT, typename... ArgTs>
     {{{const_expr}}}decltype(auto) operator [] (ArgT && arg, ArgTs && ... args)
+    noexcept(noexcept(value[std::forward<ArgT>(arg), std::forward<ArgTs>(args)...]))
     {
         return value[std::forward<ArgT>(arg), std::forward<ArgTs>(args)...];
     }
     template <typename ArgT, typename... ArgTs>
     {{{const_expr}}}decltype(auto) operator [] (ArgT && arg, ArgTs && ... args) const
+    noexcept(noexcept(value[std::forward<ArgT>(arg), std::forward<ArgTs>(args)...]))
     {
         return value[std::forward<ArgT>(arg), std::forward<ArgTs>(args)...];
     }
 #else
     template <typename ArgT>
     {{{const_expr}}}auto operator [] (ArgT && arg)
+    noexcept(noexcept(value[std::forward<ArgT>(arg)]))
     -> decltype(value[std::forward<ArgT>(arg)])
     {
         return value[std::forward<ArgT>(arg)];
     }
     template <typename ArgT>
     {{{const_expr}}}auto operator [] (ArgT && arg) const
+    noexcept(noexcept(value[std::forward<ArgT>(arg)]))
     -> decltype(value[std::forward<ArgT>(arg)])
     {
         return value[std::forward<ArgT>(arg)];
@@ -679,6 +707,7 @@ struct ClassInfo
     std::string indirection_operator;
     std::vector<Operator> addressof_operators;
     bool spaceship_operator = false;
+    bool defaulted_equality_operator = false;
     std::vector<Operator> relational_operators;
     std::vector<Operator> increment_operators;
     bool ostream_operator = false;
@@ -720,6 +749,7 @@ BOOST_DESCRIBE_STRUCT(
      indirection_operator,
      addressof_operators,
      spaceship_operator,
+     defaulted_equality_operator,
      relational_operators,
      ostream_operator,
      istream_operator,
@@ -1132,6 +1162,31 @@ parse(
         info,
         warnings);
 
+    // Handle spaceship operator + equality operator defaulting
+    if (has_spaceship) {
+        // If spaceship is alone (no other relational operators), auto-generate
+        // defaulted operator==
+        if (not has_equality_ops && not has_relational_ops) {
+            info.defaulted_equality_operator = true;
+        }
+        // If spaceship is with equality operators (== or !=), use defaulted
+        // operator== instead of hand-written
+        else if (has_equality_ops)
+        {
+            info.defaulted_equality_operator = true;
+            // Remove == and != from relational_operators since we'll use
+            // defaulted version
+            info.relational_operators.erase(
+                std::remove_if(
+                    info.relational_operators.begin(),
+                    info.relational_operators.end(),
+                    [](auto const & op) {
+                        return op.op == "==" || op.op == "!=";
+                    }),
+                info.relational_operators.end());
+        }
+    }
+
     // Handle default_value from the StrongTypeDescription
     if (not desc.default_value.empty()) {
         info.has_default_value = true;
@@ -1315,6 +1370,7 @@ render_code(ClassInfo const & info)
           template_assignment_operator_template},
          {"logical_not_operator", logical_not_template},
          {"spaceship_operator", spaceship_operator_template},
+         {"defaulted_equality_operator", defaulted_equality_operator_template},
          {"ostream_operator", ostream_operator_template},
          {"istream_operator", istream_operator_template},
          {"increment_operator", increment_operator},

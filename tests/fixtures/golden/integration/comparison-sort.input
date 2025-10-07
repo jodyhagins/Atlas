@@ -1,0 +1,9 @@
+# Test: Comparison operators with std::sort
+# Feature: Strong type can be used with sorting algorithms
+# Expected: Comparison operators compatible with std algorithms
+
+[type]
+kind=struct
+namespace=test::integration
+name=SortableInt
+description=strong int; <, ==

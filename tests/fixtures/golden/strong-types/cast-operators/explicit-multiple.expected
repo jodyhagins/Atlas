@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_2DFA3ACCEEA909E3582C243DFA6955298C522A14
-#define FOO_BAR_2DFA3ACCEEA909E3582C243DFA6955298C522A14
+#ifndef FOO_BAR_DF55AD5D3014E65CADAAECBD45BA544949EAE201
+#define FOO_BAR_DF55AD5D3014E65CADAAECBD45BA544949EAE201
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -277,6 +277,8 @@ struct ExplicitMultipleType
      * Explicit cast to bool
      */
     constexpr explicit operator bool() const
+    noexcept(noexcept(static_cast<bool>(
+        std::declval<double const&>())))
     {
         return static_cast<bool>(value);
     }
@@ -285,11 +287,13 @@ struct ExplicitMultipleType
      * Explicit cast to int
      */
     constexpr explicit operator int() const
+    noexcept(noexcept(static_cast<int>(
+        std::declval<double const&>())))
     {
         return static_cast<int>(value);
     }
 };
 } // namespace test
 
-#endif // FOO_BAR_2DFA3ACCEEA909E3582C243DFA6955298C522A14
+#endif // FOO_BAR_DF55AD5D3014E65CADAAECBD45BA544949EAE201
 

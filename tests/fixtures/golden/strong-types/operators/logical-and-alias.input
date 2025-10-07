@@ -1,0 +1,9 @@
+# Test: Logical and using 'and' keyword alias
+# Feature: 'and' is alias for '&&' operator (ISO C++ alternative token)
+# Expected: operator&& generated (same as using '&&')
+
+[type]
+kind=struct
+namespace=test
+name=LogicalAndAliasType
+description=strong int; and

@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_A973F1D038945D5BBE08E4DCD7E2B5D3ECC3B5D9
-#define FOO_BAR_A973F1D038945D5BBE08E4DCD7E2B5D3ECC3B5D9
+#ifndef FOO_BAR_18F2DD7D642503236B9691F311946FD64A520030
+#define FOO_BAR_18F2DD7D642503236B9691F311946FD64A520030
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -281,15 +281,12 @@ struct ComparisonAllType
         ComparisonAllType const &) = default;
 
     /**
-     * Is @p lhs.value != @p rhs.value?
+     * The default equality comparison operator.
+     * Provided with spaceship operator for optimal performance.
      */
-    friend constexpr bool operator != (
-        ComparisonAllType const & lhs,
-        ComparisonAllType const & rhs)
-    noexcept(noexcept(std::declval<int const&>() != std::declval<int const&>()))
-    {
-        return lhs.value != rhs.value;
-    }
+    friend constexpr bool operator == (
+        ComparisonAllType const &,
+        ComparisonAllType const &) = default;
 
     /**
      * Is @p lhs.value < @p rhs.value?
@@ -311,17 +308,6 @@ struct ComparisonAllType
     noexcept(noexcept(std::declval<int const&>() <= std::declval<int const&>()))
     {
         return lhs.value <= rhs.value;
-    }
-
-    /**
-     * Is @p lhs.value == @p rhs.value?
-     */
-    friend constexpr bool operator == (
-        ComparisonAllType const & lhs,
-        ComparisonAllType const & rhs)
-    noexcept(noexcept(std::declval<int const&>() == std::declval<int const&>()))
-    {
-        return lhs.value == rhs.value;
     }
 
     /**
@@ -348,5 +334,5 @@ struct ComparisonAllType
 };
 } // namespace test
 
-#endif // FOO_BAR_A973F1D038945D5BBE08E4DCD7E2B5D3ECC3B5D9
+#endif // FOO_BAR_18F2DD7D642503236B9691F311946FD64A520030
 

@@ -1,0 +1,9 @@
+# Test: Empty type (zero-size struct)
+# Feature: Empty base optimization
+# Expected: Wrapper works with empty types
+
+[type]
+kind=struct
+namespace=test::edge_cases
+name=EmptyType
+description=strong struct Empty {}; ==

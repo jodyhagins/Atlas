@@ -1,0 +1,12 @@
+# Test: Multiple profile composition
+# Feature: Multiple profiles can be composed with {FOO}, {BAR}
+# Expected: All profile features combined and deduplicated
+
+profile=ARITH; +, -, *, /
+profile=CMP; ==, !=, <, <=, >, >=
+
+[type]
+kind=struct
+namespace=test::profiles
+name=MultipleProfileType
+description=strong int; {ARITH}, {CMP}

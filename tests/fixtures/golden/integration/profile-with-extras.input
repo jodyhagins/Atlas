@@ -1,0 +1,11 @@
+# Test: Profile combined with additional features
+# Feature: Profiles can be mixed with individual features
+# Expected: Profile features plus additional features
+
+profile=COMPARABLE; ==, !=
+
+[type]
+kind=struct
+namespace=test::profiles
+name=ProfileWithExtrasType
+description=strong int; {COMPARABLE}, hash, fmt

@@ -1,0 +1,12 @@
+# Test: Lowercase header guard
+# Feature: upcase_guard=false generates lowercase header guards
+# Expected: Header guard in lowercase instead of uppercase
+
+guard_prefix=my_app_types
+upcase_guard=false
+
+[type]
+kind=struct
+namespace=test
+name=LowercaseGuardType
+description=strong int; ==

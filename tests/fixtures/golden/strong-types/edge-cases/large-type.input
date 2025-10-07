@@ -1,0 +1,9 @@
+# Test: Large type (std::array with 1000 elements)
+# Feature: Pass-by-reference optimization for large types
+# Expected: Operators use const references appropriately
+
+[type]
+kind=struct
+namespace=test::edge_cases
+name=LargeType
+description=strong std::array<int, 1000>; ==

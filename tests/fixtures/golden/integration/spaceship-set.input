@@ -1,0 +1,9 @@
+# Test: Spaceship operator with std::set
+# Feature: Strong type can be used in ordered containers
+# Expected: Spaceship operator provides total ordering
+
+[type]
+kind=struct
+namespace=test::integration
+name=OrderedSetInt
+description=strong int; <=>

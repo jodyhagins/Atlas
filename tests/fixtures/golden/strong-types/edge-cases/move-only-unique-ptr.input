@@ -1,0 +1,9 @@
+# Test: Move-only type (std::unique_ptr)
+# Feature: Move semantics with non-copyable types
+# Expected: Operators that support move-only types (==, @)
+
+[type]
+kind=struct
+namespace=test::edge_cases
+name=MoveOnlyUniquePtr
+description=strong std::unique_ptr<int>; ==, @

@@ -1,0 +1,12 @@
+# Test: Custom header guard separator
+# Feature: guard_separator allows customizing separator between prefix and hash
+# Expected: Header guard uses custom separator instead of underscore
+
+guard_prefix=MY_APP
+guard_separator=__
+
+[type]
+kind=struct
+namespace=test
+name=GuardSeparatorType
+description=strong int; ==

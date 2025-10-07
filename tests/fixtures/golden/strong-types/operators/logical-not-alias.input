@@ -1,0 +1,9 @@
+# Test: Logical not using 'not' keyword alias
+# Feature: 'not' is alias for '!' operator (ISO C++ alternative token)
+# Expected: operator! generated (same as using '!')
+
+[type]
+kind=struct
+namespace=test
+name=LogicalNotAliasType
+description=strong int; not
