@@ -162,6 +162,12 @@ auto strong_template = R"({{{includes}}}{{#namespace_open}}
      */
     {{{const_expr}}}explicit operator {{{underlying_type}}} const & () const { return value; }
     {{{const_expr}}}explicit operator {{{underlying_type}}} & () { return value; }
+    {{#explicit_cast_operators}}
+    {{>explicit_cast_operator}}
+    {{/explicit_cast_operators}}
+    {{#implicit_cast_operators}}
+    {{>implicit_cast_operator}}
+    {{/implicit_cast_operators}}
     {{#bool_operator}}
     {{>bool_operator}}
     {{/bool_operator}}
@@ -337,6 +343,26 @@ constexpr char bool_operator_template[] = R"(
     noexcept(noexcept(static_cast<bool>(std::declval<{{{underlying_type}}} const&>())))
     {
         return static_cast<bool>(value);
+    }
+)";
+
+constexpr char explicit_cast_operator_template[] = R"(
+    /**
+     * Explicit cast to {{{cast_type}}}
+     */
+    {{{const_expr}}}explicit operator {{{cast_type}}}() const
+    {
+        return static_cast<{{{cast_type}}}>(value);
+    }
+)";
+
+constexpr char implicit_cast_operator_template[] = R"(
+    /**
+     * Implicit cast to {{{cast_type}}}
+     */
+    {{{const_expr}}}operator {{{cast_type}}}() const
+    {
+        return static_cast<{{{cast_type}}}>(value);
     }
 )";
 
@@ -630,6 +656,16 @@ struct Operator
 };
 BOOST_DESCRIBE_STRUCT(Operator, (), (op))
 
+struct CastOperator
+{
+    std::string cast_type;
+
+    explicit CastOperator(std::string cast_type_)
+    : cast_type(std::move(cast_type_))
+    { }
+};
+BOOST_DESCRIBE_STRUCT(CastOperator, (), (cast_type))
+
 struct ClassInfo
 {
     std::string class_namespace;
@@ -666,6 +702,8 @@ struct ClassInfo
     std::string hash_const_expr = "constexpr ";
     bool iterator_support_member = false;
     bool template_assignment_operator = false;
+    std::vector<CastOperator> explicit_cast_operators;
+    std::vector<CastOperator> implicit_cast_operators;
     StrongTypeDescription desc;
 };
 BOOST_DESCRIBE_STRUCT(
@@ -703,6 +741,8 @@ BOOST_DESCRIBE_STRUCT(
      hash_const_expr,
      iterator_support_member,
      template_assignment_operator,
+     explicit_cast_operators,
+     implicit_cast_operators,
      desc))
 
 constexpr auto arithmetic_binary_op_tags = std::to_array<std::string_view>(
@@ -817,6 +857,42 @@ split(std::string_view sv, char sep)
 inline constexpr auto stripns = [](auto sv) {
     return strip(sv, [](unsigned char c) { return c == ':'; });
 };
+
+// Parse cast<Type>, explicit_cast<Type>, or implicit_cast<Type> syntax
+// Returns the type name if valid cast syntax, empty string otherwise
+std::string
+parse_cast_syntax(std::string_view token, bool & is_implicit)
+{
+    constexpr std::string_view prefix_implicit = "implicit_cast<";
+    constexpr std::string_view prefix_explicit = "explicit_cast<";
+    constexpr std::string_view prefix_cast = "cast<";
+
+    // Determine which prefix matches (check longest first)
+    std::string_view prefix;
+    if (token.starts_with(prefix_implicit)) {
+        is_implicit = true;
+        prefix = prefix_implicit;
+    } else if (token.starts_with(prefix_explicit)) {
+        is_implicit = false;
+        prefix = prefix_explicit;
+    } else if (token.starts_with(prefix_cast)) {
+        is_implicit = false;
+        prefix = prefix_cast;
+    } else {
+        // Not a cast operator
+        return "";
+    }
+
+    // Extract type between < and >
+    auto start = prefix.length();
+    auto end = token.find_last_of('>');
+    if (end == std::string_view::npos || end <= start) {
+        throw std::invalid_argument(
+            "Invalid " + std::string(prefix.substr(0, prefix.length() - 1)) +
+            "> syntax: " + std::string(token));
+    }
+    return std::string(strip(token.substr(start, end - start)));
+}
 
 // Expand nested namespaces for C++11 compatibility
 // Input: "foo::bar::baz"
@@ -1022,6 +1098,23 @@ parse(
                     info.includes_vec.push_back(std::move(str));
                 }
 
+                // Try to parse as cast operator
+                if (not recognized) {
+                    bool is_implicit = false;
+                    std::string cast_type = parse_cast_syntax(sv, is_implicit);
+
+                    if (not cast_type.empty()) {
+                        recognized = true;
+                        if (is_implicit) {
+                            info.desc.implicit_casts.push_back(
+                                std::move(cast_type));
+                        } else {
+                            info.desc.explicit_casts.push_back(
+                                std::move(cast_type));
+                        }
+                    }
+                }
+
                 if (not recognized) {
                     throw std::invalid_argument(
                         "Unrecognized operator or option in description: '" +
@@ -1177,6 +1270,23 @@ parse(
         info.template_assignment_operator = true;
     }
 
+    // Populate cast operator vectors
+    // Filter out explicit casts that are also in implicit casts
+    // (implicit cast supersedes explicit cast for the same type)
+    for (auto const & cast_type : info.desc.explicit_casts) {
+        if (std::find(
+                info.desc.implicit_casts.begin(),
+                info.desc.implicit_casts.end(),
+                cast_type) == info.desc.implicit_casts.end())
+        {
+            info.explicit_cast_operators.emplace_back(cast_type);
+        }
+    }
+
+    for (auto const & cast_type : info.desc.implicit_casts) {
+        info.implicit_cast_operators.emplace_back(cast_type);
+    }
+
     return info;
 }
 
@@ -1194,6 +1304,8 @@ render_code(ClassInfo const & info)
          {"relational_operator", relational_operator},
          {"logical_operator", logical_operator},
          {"bool_operator", bool_operator_template},
+         {"explicit_cast_operator", explicit_cast_operator_template},
+         {"implicit_cast_operator", implicit_cast_operator_template},
          {"indirection_operator", indirection_operator_template},
          {"nullary", nullary_template},
          {"callable", callable_template},

@@ -146,3 +146,21 @@ kind=struct
 namespace=config
 name=AssignablePort
 description=strong int; ==, !=, assign
+
+[type]
+kind=struct
+namespace=text
+name=CastableString
+description=strong std::string; ==, !=, cast<std::string_view>
+
+[type]
+kind=class
+namespace=text
+name=ViewableText
+description=strong std::string; ==, explicit_cast<std::string_view>, cast<bool>
+
+[type]
+kind=struct
+namespace=flags
+name=EnableFlag
+description=strong int; ==, implicit_cast<bool>
