@@ -64,14 +64,8 @@ add_custom_target(showcase_examples ALL
     COMMENT "Building showcase examples"
 )
 
-# Add each example as a test
+# Add FetchContent example as integration test
+# This verifies the primary user workflow: download Atlas via FetchContent and use it
+# Other examples (basic, file, inline) remain as documentation but are not tested in CI
+# Rationale: CMake helper variations are redundant with FetchContent test + compilation tests
 add_example_test(fetchcontent fetchcontent_example example_app)
-add_example_test(basic helpers_basic_example basic_example)
-add_example_test(file helpers_file_example file_example)
-add_example_test(inline helpers_inline_example inline_example)
-
-# Serialize example tests to avoid FetchContent race conditions when writing to shared _deps
-# First test populates the directory, subsequent tests reuse without conflicts
-set_tests_properties(example_basic PROPERTIES DEPENDS example_fetchcontent)
-set_tests_properties(example_file PROPERTIES DEPENDS example_basic)
-set_tests_properties(example_inline PROPERTIES DEPENDS example_file)
