@@ -4,12 +4,19 @@ This document describes the CMake helper functions provided by Atlas for easy in
 
 ## Overview
 
-Atlas provides four CMake functions to simplify strong type generation:
+Atlas provides six CMake functions to simplify code generation:
+
+### Strong Type Generation
 
 1. **`atlas_add_type()`** - Simplified single-type generation with minimal syntax
 2. **`add_atlas_strong_type()`** - Full-featured single-type generation with all options
 3. **`add_atlas_strong_types_from_file()`** - Generate multiple types from a configuration file
 4. **`add_atlas_strong_types_inline()`** - Define multiple types inline in CMakeLists.txt
+
+### Cross-Type Interaction Generation
+
+5. **`add_atlas_interactions_from_file()`** - Generate cross-type interactions from a configuration file
+6. **`add_atlas_interactions_inline()`** - Define cross-type interactions inline in CMakeLists.txt
 
 These functions are automatically available when you use `find_package(Atlas)` or `FetchContent` with Atlas.
 
@@ -416,6 +423,195 @@ namespace=local
 name=TempId
 description=strong int; ==, !=
 ")
+```
+
+## Interaction Function Reference
+
+### 5. add_atlas_interactions_from_file()
+
+**Generate cross-type operator implementations from a configuration file.**
+
+```cmake
+add_atlas_interactions_from_file(
+    INPUT <path>
+    OUTPUT <path>
+    [TARGET <target>]
+)
+```
+
+**Parameters:**
+- `INPUT` (required) - Input file containing interaction definitions
+- `OUTPUT` (required) - Output file path for generated code
+- `TARGET` (optional) - Target to add dependency to
+
+**Input File Format:**
+
+```
+include "price.hpp"
+include "quantity.hpp"
+
+namespace=commerce
+
+Price * Quantity -> Total
+Price * int <-> Price        # Symmetric (commutative)
+
+namespace=physics
+concept=Numeric
+enable_if=std::is_arithmetic_v<Numeric>
+
+Distance * Numeric <-> Distance
+Distance / Time -> Velocity
+```
+
+**Examples:**
+
+```cmake
+# Generate interactions from file
+add_atlas_interactions_from_file(
+    INPUT interactions.txt
+    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/Interactions.hpp
+    TARGET my_library)
+
+# Using relative path (resolved to CMAKE_CURRENT_SOURCE_DIR)
+add_atlas_interactions_from_file(
+    INPUT config/interactions.txt
+    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/TypeInteractions.hpp)
+```
+
+### 6. add_atlas_interactions_inline()
+
+**Define cross-type interactions directly in CMakeLists.txt without a separate file.**
+
+```cmake
+add_atlas_interactions_inline(
+    OUTPUT <path>
+    CONTENT <definitions>
+    [TARGET <target>]
+)
+```
+
+**Parameters:**
+- `OUTPUT` (required) - Output file path for generated code
+- `CONTENT` (required) - Interaction definitions in Atlas input file format
+- `TARGET` (optional) - Target to add dependency to
+
+**Examples:**
+
+```cmake
+add_atlas_interactions_inline(
+    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/CommerceInteractions.hpp
+    TARGET my_library
+    CONTENT "
+include \"Price.hpp\"
+include \"Quantity.hpp\"
+include \"Total.hpp\"
+
+namespace=commerce
+
+# Define cross-type operations
+Price * Quantity -> Total
+Price * int <-> Price
+Quantity * int <-> Quantity
+Total / Price -> Quantity
+Total / Quantity -> Price
+")
+```
+
+## Interaction Examples
+
+### Example 1: E-commerce Domain
+
+```cmake
+# First, generate the strong types
+atlas_add_type(Price double "+, -, <=>" TARGET commerce_lib)
+atlas_add_type(Quantity int "+, -, <=>" TARGET commerce_lib)
+atlas_add_type(Total double "+, -, <=>" TARGET commerce_lib)
+
+# Then, define interactions between them
+add_atlas_interactions_inline(
+    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/CommerceOps.hpp
+    TARGET commerce_lib
+    CONTENT "
+include \"Price.hpp\"
+include \"Quantity.hpp\"
+include \"Total.hpp\"
+
+namespace=commerce
+
+Price * Quantity -> Total
+Price * int <-> Price
+Quantity * int <-> Quantity
+Total / Price -> Quantity
+Total / Quantity -> Price
+")
+```
+
+### Example 2: Physics Calculations
+
+```cmake
+# Create physics_types.txt with your strong types
+add_atlas_strong_types_from_file(
+    INPUT physics_types.txt
+    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/PhysicsTypes.hpp
+    TARGET physics_lib)
+
+# Create interactions.txt with your cross-type operations
+add_atlas_interactions_from_file(
+    INPUT interactions.txt
+    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/PhysicsOps.hpp
+    TARGET physics_lib)
+```
+
+**interactions.txt:**
+```
+include "PhysicsTypes.hpp"
+
+namespace=physics
+concept=Numeric
+enable_if=std::is_arithmetic_v<Numeric>
+
+Distance * Numeric <-> Distance
+Distance / Time -> Velocity
+Velocity * Time -> Distance
+Distance + Distance -> Distance
+```
+
+### Example 3: Complete Project with Types and Interactions
+
+```cmake
+cmake_minimum_required(VERSION 3.20)
+project(DomainModel LANGUAGES CXX)
+
+include(FetchContent)
+FetchContent_Declare(Atlas GIT_REPOSITORY ... GIT_TAG ...)
+FetchContent_MakeAvailable(Atlas)
+
+add_library(domain_lib INTERFACE)
+
+# Generate domain types
+atlas_add_type(UserId int "==, !=, <=>, hash" TARGET domain_lib)
+atlas_add_type(Price double "+, -, *, /, <=>" TARGET domain_lib)
+atlas_add_type(Quantity int "+, -, <=>" TARGET domain_lib)
+atlas_add_type(Total double "+, -, <=>" TARGET domain_lib)
+
+# Generate cross-type interactions
+add_atlas_interactions_inline(
+    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/DomainOps.hpp
+    TARGET domain_lib
+    CONTENT "
+include \"Price.hpp\"
+include \"Quantity.hpp\"
+include \"Total.hpp\"
+
+namespace=domain
+
+Price * Quantity -> Total
+Price * int <-> Price
+Quantity * int <-> Quantity
+")
+
+add_executable(my_app main.cpp)
+target_link_libraries(my_app PRIVATE domain_lib)
 ```
 
 ## Best Practices
