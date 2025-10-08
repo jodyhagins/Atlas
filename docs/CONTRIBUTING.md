@@ -31,7 +31,6 @@ Found a bug? Welcome to the club! Open a GitHub issue with:
 **Do:**
 - Keep changes focused (one thing at a time, like a normal person)
 - Update docs when you change behavior (future-you will thank you)
-- Add entries to `CHANGELOG.md` under "Unreleased"
 - Follow the existing code style (consistency > personal preference)
 - Use the standard library when possible (we're not reinventing `std::vector`)
 

@@ -110,7 +110,8 @@ target_apply_atlas_warnings(atlas_lib)
 
 # Add boost and mustache include directories
 target_include_directories(atlas_lib
-    SYSTEM PRIVATE
+    SYSTEM
+    PRIVATE
         ${boost_mustache_SOURCE_DIR}/include
         ${boost_SOURCE_DIR})
 
@@ -189,10 +190,11 @@ write_basic_package_version_file(
     COMPATIBILITY SameMajorVersion)
 
 # Install config files
-install(FILES
-    ${CMAKE_CURRENT_BINARY_DIR}/AtlasConfig.cmake
-    ${CMAKE_CURRENT_BINARY_DIR}/AtlasConfigVersion.cmake
-    ${CMAKE_CURRENT_SOURCE_DIR}/cmake/AtlasHelpers.cmake
+install(
+    FILES
+        ${CMAKE_CURRENT_BINARY_DIR}/AtlasConfig.cmake
+        ${CMAKE_CURRENT_BINARY_DIR}/AtlasConfigVersion.cmake
+        ${CMAKE_CURRENT_SOURCE_DIR}/cmake/AtlasHelpers.cmake
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Atlas)
 
 # Export targets for use in build tree (for FetchContent users)

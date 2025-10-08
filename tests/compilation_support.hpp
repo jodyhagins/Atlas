@@ -243,8 +243,8 @@ public:
             std::ofstream test(test_path);
             test << "#include \"" << types_header_path.filename().string()
                 << "\"\n";
-            test << "#include \"" << interactions_header_path.filename().string()
-                << "\"\n";
+            test << "#include \""
+                << interactions_header_path.filename().string() << "\"\n";
             test << test_code;
         }
 

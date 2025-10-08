@@ -6,8 +6,7 @@
 # ----------------------------------------------------------------------
 cmake_minimum_required(VERSION 3.20)
 
-project(AtlasHelpersInlineExample
-    LANGUAGES CXX)
+project(AtlasHelpersInlineExample LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)

@@ -14,7 +14,7 @@ Instead of using automated tools like `cmake-format` (which have limitations wit
 
 ## Formatting Rules
 
-All formatting rules are documented in `.cmake-format-rules.md`. These rules were derived from samples from as existing project.
+All formatting rules are documented in `cmake/.cmake-format-rules.md`. These rules were derived from samples from as existing project.
 
 ### Key Principles
 
@@ -62,11 +62,11 @@ Format CMake files when:
 
 1. **Ask Claude to format:**
    ```
-   Format this CMakeLists.txt file according to the rules in .cmake-format-rules.md
+   Format this CMakeLists.txt file according to the rules in cmake/.cmake-format-rules.md
    ```
 
 2. **Claude will:**
-   - Read `.cmake-format-rules.md` for the style guide
+   - Read `cmake/.cmake-format-rules.md` for the style guide
    - Apply rules deterministically (no random variations)
    - Preserve functionality while improving readability
 
@@ -75,14 +75,6 @@ Format CMake files when:
    cd /Users/jhagins/build/atlas/debug
    cmake /Users/jhagins/src/atlas
    ```
-
-## Files Formatted
-
-The following files are currently formatted according to these rules:
-- `/Users/jhagins/src/atlas/CMakeLists.txt`
-- `/Users/jhagins/src/atlas/examples/helpers_basic_example/CMakeLists.txt`
-- `/Users/jhagins/src/atlas/examples/helpers_file_example/CMakeLists.txt`
-- `/Users/jhagins/src/atlas/examples/helpers_inline_example/CMakeLists.txt`
 
 ## Deterministic Formatting
 
@@ -96,7 +88,7 @@ To ensure consistency, Claude Code follows these principles:
 ## Future Maintenance
 
 When CMake files need reformatting:
-1. Review `.cmake-format-rules.md` to ensure rules are still current
+1. Review `cmake/.cmake-format-rules.md` to ensure rules are still current
 2. Ask Claude Code to format the file(s)
 3. Verify CMake still parses correctly
 4. Update this document if new patterns emerge

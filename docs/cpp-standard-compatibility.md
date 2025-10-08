@@ -1,4 +1,4 @@
-# C++ Standard Compatibility
+#C++ Standard Compatibility
 
 Atlas Strong Type Generator is designed to work with C++11 and later standards, with automatic feature detection and fallbacks for maximum portability.
 
@@ -43,7 +43,7 @@ All basic strong type features work with C++11:
 - **C++20+**: Supports `constexpr` destructors
 
 If you specify `constexpr` in your type description and compile with C++11:
-- ✅ Simple operations (getters, const member functions) will compile
+- ✅ Simple operations (getters, member const functions) will compile
 - ❌ Complex operations (assignments, mutations) will fail to compile
 
 **Recommendation**: If targeting C++11, only use `constexpr` for types with simple operations, or compile with C++14+.
@@ -55,20 +55,25 @@ Some advanced features require modern C++ standards:
 | Feature | C++ Version Required | Reason | Opt-in |
 |---------|---------------------|--------|--------|
 | **Subscript operator** (`[]`) | C++11 | Uses trailing return type with `decltype` | ✅ User opts-in |
-| **Callable operator** (`()`) | C++11 | Direct call; C++17 uses `std::invoke` | ✅ User opts-in |
-| **Spaceship operator** (`<=>`) | C++20 | Language feature | ✅ User opts-in |
-| **Multidimensional subscript** | C++23 | Multidimensional `operator[]` | Auto-detected |
+| **Callable operator** (`()`) | C++11 | Direct call;
 
-### Subscript Operator (C++11+)
+C++ 17 uses `std::invoke` | ✅ User opts - in | |
+    **Spaceship operator ** (`<=>`) | C++ 20 | Language feature
+    | ✅ User opts - in | | **Multidimensional subscript ** | C++ 23 |
+    Multidimensional `operator[]` | Auto - detected |
+
+    ## #Subscript Operator (C++ 11 +)
 
 ```cpp
-// C++11 compatible using trailing return type
-template <typename ArgT>
-constexpr auto operator [] (ArgT && arg)
--> decltype(value[std::forward<ArgT>(arg)])
+    // C++11 compatible using trailing return type
+    template <typename ArgT>
+    constexpr auto
+    operator[] (ArgT && arg)
+    -> decltype(value[std::forward<ArgT>(arg)])
 {
     return value[std::forward<ArgT>(arg)];
 }
+
 ```
 
 **How to use**: Add `[]` to your type description.
@@ -87,16 +92,19 @@ constexpr auto operator () (InvocableT && inv) const
 {
     return std::invoke(std::forward<InvocableT>(inv), value);
 }
+
 ```
 
-**C++11/14 (direct call):**
-```cpp
-template <typename InvocableT>
+        ** C++ 11 /
+    14(direct call)
+: **
+```cpp template <typename InvocableT>
 constexpr auto operator () (InvocableT && inv) const
 -> decltype(std::forward<InvocableT>(inv)(value))
 {
     return std::forward<InvocableT>(inv)(value);
 }
+
 ```
 
 **How to use**: Add `()` to your type description.
@@ -105,36 +113,46 @@ constexpr auto operator () (InvocableT && inv) const
 
 ### Spaceship Operator (C++20+)
 
-```cpp
+``` constexpr cpp
 // Requires C++20 for operator <=>
-friend constexpr auto operator <=> (
+friend  auto operator <=> (
     ClassName const &,
     ClassName const &) = default;
 ```
 
-**How to use**: Add `<=>` to your type description.
+        ** How to use **
+: Add `<=>` to your type description
+              .
 
-**Fallback**: None. Compile with `-std=c++20` or later.
+                  ** Fallback **
+: None.Compile with `-
+      std = c++ 20` or
+    later.
 
-**Note**: When using `<=>`, you typically don't need to specify individual comparison operators (`<`, `<=`, `>`, `>=`) as they are synthesized automatically.
+            * *Note *
+            *
+: When using `<=>`
+, you typically don't need to specify individual comparison operators (`<`, `<=`, `>`, `>=`) as they are synthesized automatically.
 
-### Multidimensional Subscript (C++23+)
+    ## #Multidimensional Subscript(C++ 23 +)
 
 ```cpp
 // Automatically uses C++23 feature when available
 #if __cpp_multidimensional_subscript >= 202110L
     template <typename ArgT, typename... ArgTs>
-    constexpr decltype(auto) operator [] (ArgT && arg, ArgTs && ... args)
-    {
-        return value[std::forward<ArgT>(arg), std::forward<ArgTs>(args)...];
-    }
+    constexpr decltype(auto)
+    operator[] (ArgT && arg, ArgTs &&... args)
+{
+    return value[std::forward<ArgT>(arg), std::forward<ArgTs>(args)...];
+}
 #else
     // Fallback to single-argument version
     template <typename ArgT>
-    constexpr decltype(auto) operator [] (ArgT && arg)
-    {
-        return value[std::forward<ArgT>(arg)];
-    }
+    constexpr decltype(auto)
+    operator[] (ArgT && arg)
+{
+    return value[std::forward<ArgT>(arg)];
+}
 #endif
 ```
 
@@ -151,10 +169,11 @@ The Atlas boilerplate (included in all generated files) uses feature detection f
 ```cpp
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
-#include <compare>
+    #include <compare>
 #endif
 
-struct strong_type_tag {
+struct strong_type_tag
+{
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
     friend auto operator <=> (
@@ -164,16 +183,15 @@ struct strong_type_tag {
 };
 ```
 
-### Inline Variables (C++17+)
+    ## #Inline Variables(C++ 17 +)
 
-```cpp
+``` inline constexpr cpp
 #if defined(__cpp_inline_variables) && __cpp_inline_variables >= 201606L
-inline constexpr auto value = atlas_detail::Value{};
+    auto value = atlas_detail::Value{};
 #else
-template <typename T>
-constexpr auto
-value(T && t)
--> decltype(atlas_detail::Value{}(std::forward<T>(t)))
+    template <typename T>
+    constexpr auto value(T && t)
+    -> decltype(atlas_detail::Value{}(std::forward<T>(t)))
 {
     return atlas_detail::Value{}(std::forward<T>(t));
 }
@@ -187,7 +205,8 @@ value(T && t)
 ```cpp
 // Manual implementation for C++11 compatibility
 template <typename... Ts>
-struct make_void {
+struct make_void
+{
     using type = void;
 };
 
@@ -200,16 +219,16 @@ using void_t = typename make_void<Ts...>::type;
 To verify compatibility with different C++ standards:
 
 ```bash
-# Test with C++11
+#Test with C++ 11
 g++ -std=c++11 -fsyntax-only -Isrc/lib your_generated_file.hpp
 
-# Test with C++14
+#Test with C++ 14
 g++ -std=c++14 -fsyntax-only -Isrc/lib your_generated_file.hpp
 
-# Test with C++17
+#Test with C++ 17
 g++ -std=c++17 -fsyntax-only -Isrc/lib your_generated_file.hpp
 
-# Test with C++20
+#Test with C++ 20
 g++ -std=c++20 -fsyntax-only -Isrc/lib your_generated_file.hpp
 ```
 
@@ -218,11 +237,11 @@ g++ -std=c++20 -fsyntax-only -Isrc/lib your_generated_file.hpp
 When using Atlas with CMake, set your minimum C++ standard:
 
 ```cmake
-# For maximum compatibility
+#For maximum compatibility
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Or for modern features
+#Or for modern features
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 ```
@@ -230,7 +249,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 ## Summary
 
 - ✅ **C++11**: All core features work, including subscript and callable operators
-- ✅ **C++14**: Enables constexpr for more complex operations
+- ✅ **C++14**:  constexpr Enables  for more complex operations
 - ✅ **C++17**: Adds `std::invoke` support for callable operator (member pointers), inline variables
 - ✅ **C++20**: Adds spaceship operator, constexpr destructors
 - ✅ **C++23**: Adds multidimensional subscript support

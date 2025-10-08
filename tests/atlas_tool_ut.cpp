@@ -5,9 +5,8 @@
 // https://opensource.org/licenses/MIT
 // ----------------------------------------------------------------------
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include "doctest.hpp"
-
 #include "TestUtilities.hpp"
+#include "doctest.hpp"
 
 #include <cstdlib>
 #include <fstream>
@@ -15,7 +14,7 @@
 
 // ATLAS_TOOL_PATH is defined via CMake compile definition
 #ifndef ATLAS_TOOL_PATH
-#error "ATLAS_TOOL_PATH must be defined"
+    #error "ATLAS_TOOL_PATH must be defined"
 #endif
 
 namespace {
@@ -29,13 +28,14 @@ struct CommandResult
 };
 
 // Helper to run atlas tool and capture stderr
-CommandResult run_atlas(std::string const & args)
+CommandResult
+run_atlas(std::string const & args)
 {
     TemporaryDirectory temp_dir;
     auto stderr_file = temp_dir.path() / "stderr.txt";
 
     std::string cmd = std::string(ATLAS_TOOL_PATH) + " " + args +
-                      " >/dev/null 2>" + stderr_file.string();
+        " >/dev/null 2>" + stderr_file.string();
 
     int result = std::system(cmd.c_str());
 
