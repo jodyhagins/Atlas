@@ -15,6 +15,8 @@ buys you just enough time to have a production issue in time to tank next quarte
 
 ## Quick Start
 
+The easiest way to use Atlas in your CMake project:
+
 ```cmake
 include(FetchContent)
 FetchContent_Declare(Atlas
@@ -22,16 +24,41 @@ FetchContent_Declare(Atlas
     GIT_TAG main)
 FetchContent_MakeAvailable(Atlas)
 
-add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/UserId.hpp
-    COMMAND ${Atlas_EXECUTABLE}
-        --kind=struct --namespace=myapp --name=UserId
-        --description="strong int; ==, !=, <=>"
-        --output=${CMAKE_CURRENT_BINARY_DIR}/UserId.hpp
-    DEPENDS Atlas::atlas)
+# Generate a strong type with minimal syntax
+atlas_add_type(UserId int "==, !=, <=>" TARGET my_library)
 ```
 
-See [`docs/cmake-integration.md`](docs/cmake-integration.md) for complete examples.
+That's it! The helper function automatically:
+- Generates the header file in your source directory
+- Adds it to your target's sources
+- Sets up proper build dependencies
+
+### More Helper Functions
+
+```cmake
+# Generate multiple types from a file
+add_atlas_strong_types_from_file(
+    INPUT types.txt
+    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/Types.hpp
+    TARGET my_library)
+
+# Generate cross-type interactions (e.g., Price * Quantity -> Total)
+add_atlas_interactions_inline(
+    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/Interactions.hpp
+    TARGET my_library
+    CONTENT "
+include \"Price.hpp\"
+include \"Quantity.hpp\"
+include \"Total.hpp\"
+
+namespace=commerce
+
+Price * Quantity -> Total
+Price * int <-> Price
+")
+```
+
+See [`docs/AtlasHelpers.md`](docs/AtlasHelpers.md) for complete reference of all helper functions, or [`docs/cmake-integration.md`](docs/cmake-integration.md) for advanced integration patterns.
 
 ## Installation
 

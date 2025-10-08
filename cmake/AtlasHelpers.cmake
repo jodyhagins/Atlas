@@ -385,3 +385,177 @@ function(atlas_add_type NAME TYPE OPERATORS)
         NAMESPACE ${ns} ${ARGN} # Forward any additional arguments
     )
 endfunction()
+
+# Add Atlas-generated cross-type interactions from a file
+#
+# This function generates cross-type operator implementations (e.g., Price * Quantity -> Total)
+# from a configuration file.
+#
+# Parameters:
+#   INPUT - Required: Input file containing interaction definitions
+#   OUTPUT - Required: Output file path for generated code
+#   TARGET - Optional: Target to add dependency to (if not specified, no target integration)
+#
+# Input File Format:
+#   include "price.hpp"
+#   include "quantity.hpp"
+#
+#   namespace=commerce
+#
+#   Price * Quantity -> Total
+#   Price * int <-> Price        # Symmetric (commutative)
+#
+#   namespace=physics
+#   concept=Numeric
+#   enable_if=std::is_arithmetic_v<Numeric>
+#
+#   Distance * Numeric <-> Distance
+#   Distance / Time -> Velocity
+#
+# Example:
+#   add_atlas_interactions_from_file(
+#       INPUT interactions.txt
+#       OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/Interactions.hpp
+#       TARGET my_library)
+#
+function(add_atlas_interactions_from_file)
+    set(options "")
+    set(oneValueArgs INPUT OUTPUT TARGET)
+    set(multiValueArgs "")
+    cmake_parse_arguments(ARG "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    # Validate required arguments
+    if(NOT ARG_INPUT)
+        message(FATAL_ERROR "add_atlas_interactions_from_file: INPUT is required")
+    endif()
+    if(NOT ARG_OUTPUT)
+        message(FATAL_ERROR "add_atlas_interactions_from_file: OUTPUT is required")
+    endif()
+
+    # Make input path absolute if relative
+    if(NOT IS_ABSOLUTE "${ARG_INPUT}")
+        set(ARG_INPUT "${CMAKE_CURRENT_SOURCE_DIR}/${ARG_INPUT}")
+    endif()
+
+    # Determine Atlas executable location
+    if(TARGET Atlas::atlas)
+        set(ATLAS_EXECUTABLE $<TARGET_FILE:Atlas::atlas>)
+    elseif(DEFINED Atlas_EXECUTABLE)
+        set(ATLAS_EXECUTABLE ${Atlas_EXECUTABLE})
+    else()
+        message(
+            FATAL_ERROR
+                "add_atlas_interactions_from_file: Atlas executable not found. Ensure Atlas is available via find_package or FetchContent."
+        )
+    endif()
+
+    # Create custom command to generate interactions from file
+    add_custom_command(
+        OUTPUT ${ARG_OUTPUT}
+        COMMAND ${ATLAS_EXECUTABLE} --input=${ARG_INPUT} --interactions=true --output=${ARG_OUTPUT}
+        DEPENDS ${ATLAS_EXECUTABLE} ${ARG_INPUT}
+        COMMENT "Generating interactions from ${ARG_INPUT} with Atlas"
+        VERBATIM)
+
+    # Create custom target for this generation
+    get_filename_component(output_name ${ARG_OUTPUT} NAME_WE)
+    set(target_name "generate_${output_name}")
+    add_custom_target(${target_name} DEPENDS ${ARG_OUTPUT})
+
+    # Add dependency to the specified target (if provided)
+    if(ARG_TARGET)
+        if(TARGET ${ARG_TARGET})
+            add_dependencies(${ARG_TARGET} ${target_name})
+            target_sources(${ARG_TARGET} PUBLIC ${ARG_OUTPUT})
+        else()
+            message(WARNING "add_atlas_interactions_from_file: Target '${ARG_TARGET}' does not exist")
+        endif()
+    endif()
+endfunction()
+
+# Add Atlas-generated cross-type interactions defined inline in CMake
+#
+# This function allows you to define cross-type interactions directly in your
+# CMakeLists.txt without needing a separate input file.
+#
+# Parameters:
+#   OUTPUT - Required: Output file path for generated code
+#   CONTENT - Required: Interaction definitions in Atlas input file format
+#   TARGET - Optional: Target to add dependency to (if not specified, no target integration)
+#
+# Example:
+#   add_atlas_interactions_inline(
+#       OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/Interactions.hpp
+#       TARGET my_library
+#       CONTENT "
+#   include \"price.hpp\"
+#   include \"quantity.hpp\"
+#
+#   namespace=commerce
+#
+#   Price * Quantity -> Total
+#   Price * int <-> Price
+#
+#   namespace=physics
+#
+#   Distance / Time -> Velocity
+#   ")
+#
+function(add_atlas_interactions_inline)
+    set(options "")
+    set(oneValueArgs OUTPUT TARGET)
+    set(multiValueArgs CONTENT)
+    cmake_parse_arguments(ARG "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    # Validate required arguments
+    if(NOT ARG_OUTPUT)
+        message(FATAL_ERROR "add_atlas_interactions_inline: OUTPUT is required")
+    endif()
+    if(NOT ARG_CONTENT)
+        message(FATAL_ERROR "add_atlas_interactions_inline: CONTENT is required")
+    endif()
+
+    # Create a unique temporary input file in the build directory
+    get_filename_component(output_name ${ARG_OUTPUT} NAME_WE)
+    set(TEMP_INPUT "${CMAKE_CURRENT_BINARY_DIR}/.atlas_inline_${output_name}.txt")
+
+    # Join CONTENT list with semicolons (since CMake splits on semicolons during parsing)
+    string(REPLACE ";" ";" CONTENT_JOINED "${ARG_CONTENT}")
+
+    # Write content to temporary file
+    file(WRITE ${TEMP_INPUT} "${CONTENT_JOINED}")
+
+    # Determine Atlas executable location
+    if(TARGET Atlas::atlas)
+        set(ATLAS_EXECUTABLE $<TARGET_FILE:Atlas::atlas>)
+    elseif(DEFINED Atlas_EXECUTABLE)
+        set(ATLAS_EXECUTABLE ${Atlas_EXECUTABLE})
+    else()
+        message(
+            FATAL_ERROR
+                "add_atlas_interactions_inline: Atlas executable not found. Ensure Atlas is available via find_package or FetchContent."
+        )
+    endif()
+
+    # Create custom command to generate interactions from inline content
+    add_custom_command(
+        OUTPUT ${ARG_OUTPUT}
+        COMMAND ${ATLAS_EXECUTABLE} --input=${TEMP_INPUT} --interactions=true --output=${ARG_OUTPUT}
+        DEPENDS ${ATLAS_EXECUTABLE} ${TEMP_INPUT}
+        COMMENT "Generating interactions from inline content with Atlas"
+        VERBATIM)
+
+    # Create custom target for this generation
+    set(target_name "generate_${output_name}")
+    add_custom_target(${target_name} DEPENDS ${ARG_OUTPUT})
+
+    # Add dependency to the specified target (if provided)
+    if(ARG_TARGET)
+        if(TARGET ${ARG_TARGET})
+            add_dependencies(${ARG_TARGET} ${target_name})
+            target_sources(${ARG_TARGET} PUBLIC ${ARG_OUTPUT})
+        else()
+            message(WARNING "add_atlas_interactions_inline: Target '${ARG_TARGET}' does not exist")
+        endif()
+    endif()
+endfunction()
