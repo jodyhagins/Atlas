@@ -46,5 +46,11 @@ add_atlas_strong_type(
 
 # Main executable
 add_executable(example_app main.cpp)
-target_link_libraries(example_app PRIVATE example_types)
-target_include_directories(example_app PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+
+target_link_libraries(example_app
+    PRIVATE
+        example_types)
+
+target_include_directories(example_app
+    PRIVATE
+        ${CMAKE_CURRENT_BINARY_DIR})

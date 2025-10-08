@@ -7,39 +7,36 @@
 # Tests for StrongTypeGenerator
 
 message(STATUS "Processing third-party DocTest...")
-FetchContent_Declare(
-    DocTest
+fetchcontent_declare(DocTest
     GIT_REPOSITORY https://github.com/jodyhagins/doctest.git
     GIT_TAG dev
-    SYSTEM
-)
-FetchContent_MakeAvailable(DocTest)
+    SYSTEM)
+
+fetchcontent_makeavailable(DocTest)
 
 message(STATUS "Processing third-party RapidCheck...")
 set(RC_ENABLE_DOCTEST ON)
-FetchContent_Declare(
-    rapidcheck
+
+fetchcontent_declare(rapidcheck
     GIT_REPOSITORY https://github.com/jodyhagins/rapidcheck.git
     GIT_TAG wjh-master
-    SYSTEM
-)
-FetchContent_MakeAvailable(rapidcheck)
+    SYSTEM)
+
+fetchcontent_makeavailable(rapidcheck)
 
 
 # Test utilities library
-add_library(atlas_test_utils STATIC
-    CodeStructureParser.cpp
-)
+add_library(atlas_test_utils
+    STATIC
+        CodeStructureParser.cpp)
 
 target_link_libraries(atlas_test_utils
     PUBLIC
-        atlas_lib
-)
+        atlas_lib)
 
 target_include_directories(atlas_test_utils
     PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}
-)
+        ${CMAKE_CURRENT_SOURCE_DIR})
 
 # Helper function to add atlas test executables
 function(add_atlas_test)
@@ -93,14 +90,19 @@ set_tests_properties(GoldenTests PROPERTIES ENVIRONMENT "SOURCE_DIR=${CMAKE_SOUR
 add_atlas_test(TARGET compilation_ut)
 include(${doctest_SOURCE_DIR}/scripts/cmake/doctest.cmake)
 doctest_discover_tests(compilation_ut TEST_PREFIX "Compilation : "
-    PROPERTIES COST 99
-)
+    PROPERTIES COST 99)
 
 # Atlas tool tests - tests the actual executable
 add_executable(atlas_tool_ut atlas_tool_ut.cpp)
-target_link_libraries(atlas_tool_ut PRIVATE doctest::doctest)
-target_compile_definitions(atlas_tool_ut PRIVATE
-    ATLAS_TOOL_PATH="$<TARGET_FILE:atlas>")
+
+target_link_libraries(atlas_tool_ut
+    PRIVATE
+        doctest::doctest)
+
+target_compile_definitions(atlas_tool_ut
+    PRIVATE
+        ATLAS_TOOL_PATH="$<TARGET_FILE:atlas>")
+
 add_test(NAME AtlasToolTests COMMAND atlas_tool_ut)
 # Ensure the atlas executable is built before running the test
 add_dependencies(atlas_tool_ut atlas)

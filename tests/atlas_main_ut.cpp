@@ -5,9 +5,8 @@
 // https://opensource.org/licenses/MIT
 // ----------------------------------------------------------------------
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include "doctest.hpp"
-
 #include "AtlasMain.hpp"
+#include "doctest.hpp"
 
 #include <cstdlib>
 #include <sstream>
@@ -20,7 +19,10 @@ using namespace wjh::atlas;
 // Helper to capture stdout
 struct StdoutCapture
 {
-    StdoutCapture() : old_buf(std::cout.rdbuf(buffer.rdbuf())) { }
+    StdoutCapture()
+    : old_buf(std::cout.rdbuf(buffer.rdbuf()))
+    { }
+
     ~StdoutCapture() { std::cout.rdbuf(old_buf); }
 
     std::string get() const { return buffer.str(); }
@@ -33,7 +35,10 @@ private:
 // Helper to capture stderr
 struct StderrCapture
 {
-    StderrCapture() : old_buf(std::cerr.rdbuf(buffer.rdbuf())) { }
+    StderrCapture()
+    : old_buf(std::cerr.rdbuf(buffer.rdbuf()))
+    { }
+
     ~StderrCapture() { std::cerr.rdbuf(old_buf); }
 
     std::string get() const { return buffer.str(); }
@@ -56,7 +61,8 @@ TEST_SUITE("Atlas Main Tests")
 
         CHECK(result == EXIT_SUCCESS);
         auto output = capture.get();
-        CHECK(output.find("Atlas Strong Type Generator v") != std::string::npos);
+        CHECK(
+            output.find("Atlas Strong Type Generator v") != std::string::npos);
     }
 
     TEST_CASE("atlas_main outputs warnings for redundant equality operators")
@@ -79,8 +85,8 @@ TEST_SUITE("Atlas Main Tests")
         CHECK(stderr_output.find("Warnings:") != std::string::npos);
         CHECK(stderr_output.find("TestType:") != std::string::npos);
         CHECK(
-            stderr_output.find("makes '==' and '!=' redundant")
-            != std::string::npos);
+            stderr_output.find("makes '==' and '!=' redundant") !=
+            std::string::npos);
     }
 
     TEST_CASE("atlas_main outputs warnings for redundant relational operators")
@@ -103,8 +109,8 @@ TEST_SUITE("Atlas Main Tests")
         CHECK(stderr_output.find("Warnings:") != std::string::npos);
         CHECK(stderr_output.find("TestType:") != std::string::npos);
         CHECK(
-            stderr_output.find("makes '<', '<=', '>', '>=' redundant")
-            != std::string::npos);
+            stderr_output.find("makes '<', '<=', '>', '>=' redundant") !=
+            std::string::npos);
     }
 
     TEST_CASE("atlas_main outputs multiple warnings")
@@ -128,10 +134,10 @@ TEST_SUITE("Atlas Main Tests")
         CHECK(stderr_output.find("MultiWarn:") != std::string::npos);
         // Should have both warnings
         CHECK(
-            stderr_output.find("makes '==' and '!=' redundant")
-            != std::string::npos);
+            stderr_output.find("makes '==' and '!=' redundant") !=
+            std::string::npos);
         CHECK(
-            stderr_output.find("makes '<', '<=', '>', '>=' redundant")
-            != std::string::npos);
+            stderr_output.find("makes '<', '<=', '>', '>=' redundant") !=
+            std::string::npos);
     }
 }
