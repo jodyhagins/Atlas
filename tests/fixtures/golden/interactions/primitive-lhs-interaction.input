@@ -1,0 +1,11 @@
+guard_prefix=TEST
+guard_separator=_
+upcase_guard=true
+
+# Primitive/stdlib type on LEFT side, not just right
+namespace=physics::units
+constexpr
+value_access=.value
+
+double * Meters -> Meters
+double / Meters -> Meters

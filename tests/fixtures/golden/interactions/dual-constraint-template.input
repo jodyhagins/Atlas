@@ -1,0 +1,14 @@
+guard_prefix=TEST
+guard_separator=_
+upcase_guard=true
+
+# Both concept AND enable_if - tests feature detection macro generation
+namespace=math
+constexpr
+value_access=atlas::value
+
+# Maximum compatibility - C++20 concept with C++17 SFINAE fallback
+concept=std::integral V
+enable_if=sizeof(V) <= 8
+V - V -> V
+V + V -> V

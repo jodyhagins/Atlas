@@ -1,0 +1,9 @@
+guard_prefix=TEST
+guard_separator=_
+upcase_guard=true
+
+namespace=mylib
+lhs_value_access=atlas::value
+rhs_value_access=.getValue()
+
+AtlasValue + external::LibValue -> AtlasValue

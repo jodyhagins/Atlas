@@ -1,0 +1,20 @@
+guard_prefix=TEST
+guard_separator=_
+upcase_guard=true
+
+namespace=physics::units
+constexpr
+value_access=.value
+
+# Multiple interactions in one file
+Meters + Meters -> Meters
+Meters - Meters -> Meters
+Meters * double -> Meters
+Meters / double -> Meters
+Meters / Meters -> double
+
+Seconds + Seconds -> Seconds
+Seconds - Seconds -> Seconds
+
+# Derived unit
+Meters / Seconds -> MetersPerSecond

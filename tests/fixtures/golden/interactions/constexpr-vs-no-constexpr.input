@@ -1,0 +1,13 @@
+guard_prefix=TEST
+guard_separator=_
+upcase_guard=true
+
+namespace=test
+value_access=.value
+
+# Test constexpr and no-constexpr in same file
+constexpr
+FastValue + FastValue -> FastValue
+
+no-constexpr
+SlowValue + SlowValue -> SlowValue

@@ -1,0 +1,11 @@
+guard_prefix=TEST
+guard_separator=_
+upcase_guard=true
+
+# Cross-namespace interaction - empty namespace means global/cross-namespace
+namespace=
+constexpr
+lhs_value_access=.value
+rhs_value_access=.value
+
+physics::units::Meters * finance::core::Money -> finance::core::Money

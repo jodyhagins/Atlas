@@ -1084,6 +1084,100 @@ TEST_SUITE("InteractionGenerator")
             // Should not throw - only template types need constraints
             CHECK_NOTHROW(generate_interactions(desc));
         }
+
+        SUBCASE("Result type constraint name doesn't match template parameter")
+        {
+            InteractionFileDescription desc;
+
+            TypeConstraint int_constraint{
+                .name = "IntType",
+                .concept_expr = "std::integral",
+                .enable_if_expr = ""};
+            desc.constraints["IntType"] = int_constraint;
+
+            TypeConstraint float_constraint{
+                .name = "FloatType",
+                .concept_expr = "std::floating_point",
+                .enable_if_expr = ""};
+            desc.constraints["FloatType"] = float_constraint;
+
+            desc.interactions.push_back(InteractionDescription{
+                .op_symbol = "/",
+                .lhs_type = "IntType",
+                .rhs_type = "IntType",
+                .result_type = "FloatType",
+                .symmetric = false,
+                .lhs_is_template = true,
+                .rhs_is_template = true,
+                .is_constexpr = true,
+                .interaction_namespace = "test",
+                .value_access = "atlas::value"});
+
+            // Should throw - FloatType is a constraint name but doesn't match
+            // the template parameters (IntType)
+            CHECK_THROWS_WITH(
+                generate_interactions(desc),
+                "Result type 'FloatType' is a template constraint name but "
+                "doesn't match the template parameter(s). For template "
+                "interactions, the result type must either be a concrete type "
+                "name (e.g., 'double', 'MyType') or match the template "
+                "parameter being used. LHS type: 'IntType', RHS type: "
+                "'IntType'");
+        }
+
+        SUBCASE(
+            "Result type constraint name matches template parameter - valid")
+        {
+            InteractionFileDescription desc;
+
+            TypeConstraint int_constraint{
+                .name = "IntType",
+                .concept_expr = "std::integral",
+                .enable_if_expr = ""};
+            desc.constraints["IntType"] = int_constraint;
+
+            desc.interactions.push_back(InteractionDescription{
+                .op_symbol = "+",
+                .lhs_type = "IntType",
+                .rhs_type = "IntType",
+                .result_type = "IntType",
+                .symmetric = false,
+                .lhs_is_template = true,
+                .rhs_is_template = true,
+                .is_constexpr = true,
+                .interaction_namespace = "test",
+                .value_access = "atlas::value"});
+
+            // Should not throw - result type matches template parameter
+            CHECK_NOTHROW(generate_interactions(desc));
+        }
+
+        SUBCASE("Result type is concrete type with template parameters - valid")
+        {
+            InteractionFileDescription desc;
+
+            TypeConstraint int_constraint{
+                .name = "IntType",
+                .concept_expr = "std::integral",
+                .enable_if_expr = ""};
+            desc.constraints["IntType"] = int_constraint;
+
+            desc.interactions.push_back(InteractionDescription{
+                .op_symbol = "/",
+                .lhs_type = "IntType",
+                .rhs_type = "IntType",
+                .result_type = "double",
+                .symmetric = false,
+                .lhs_is_template = true,
+                .rhs_is_template = true,
+                .is_constexpr = true,
+                .interaction_namespace = "test",
+                .value_access = "atlas::value"});
+
+            // Should not throw - result type is a concrete type (not a
+            // constraint name)
+            CHECK_NOTHROW(generate_interactions(desc));
+        }
     }
 
     TEST_CASE("Primitive type qualification")

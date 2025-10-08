@@ -1,0 +1,12 @@
+guard_prefix=TEST
+guard_separator=_
+upcase_guard=true
+
+# Shift operators are special - RHS is shift count, not a value type
+namespace=net::ipv4
+constexpr
+value_access=.value
+
+Octet << int -> Octet
+Octet >> int -> Octet
+int << Octet -> int
