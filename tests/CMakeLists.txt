@@ -80,6 +80,7 @@ endfunction()
 # Add test executables
 add_atlas_test(TARGET strong_type_generator_ut TEST_NAME GeneratorTests USE_TEST_UTILS USE_RAPIDCHECK)
 add_atlas_test(TARGET atlas_command_line_ut TEST_NAME AtlasCommandLineTest USE_RAPIDCHECK)
+add_atlas_test(TARGET atlas_main_ut TEST_NAME AtlasMainTests)
 add_atlas_test(TARGET interaction_generator_ut TEST_NAME InteractionGeneratorTests USE_RAPIDCHECK)
 add_atlas_test(TARGET property_ut TEST_NAME PropertyTests USE_RAPIDCHECK)
 add_atlas_test(TARGET error_ut TEST_NAME ErrorConditionTests)
@@ -94,3 +95,12 @@ include(${doctest_SOURCE_DIR}/scripts/cmake/doctest.cmake)
 doctest_discover_tests(compilation_ut TEST_PREFIX "Compilation : "
     PROPERTIES COST 99
 )
+
+# Atlas tool tests - tests the actual executable
+add_executable(atlas_tool_ut atlas_tool_ut.cpp)
+target_link_libraries(atlas_tool_ut PRIVATE doctest::doctest)
+target_compile_definitions(atlas_tool_ut PRIVATE
+    ATLAS_TOOL_PATH="$<TARGET_FILE:atlas>")
+add_test(NAME AtlasToolTests COMMAND atlas_tool_ut)
+# Ensure the atlas executable is built before running the test
+add_dependencies(atlas_tool_ut atlas)
