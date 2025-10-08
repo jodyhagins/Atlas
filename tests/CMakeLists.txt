@@ -41,127 +41,56 @@ target_include_directories(atlas_test_utils
         ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
+# Helper function to add atlas test executables
+function(add_atlas_test)
+    set(options USE_RAPIDCHECK USE_TEST_UTILS)
+    set(oneValueArgs TARGET TEST_NAME)
+    set(multiValueArgs TEST_PROPERTIES)
+    cmake_parse_arguments(ARG "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    # Create executable
+    add_executable(${ARG_TARGET} ${ARG_TARGET}.cpp)
+
+    # Link libraries
+    set(LIBS atlas_lib doctest::doctest)
+    if(ARG_USE_TEST_UTILS)
+        list(PREPEND LIBS atlas_test_utils)
+    endif()
+    if(ARG_USE_RAPIDCHECK)
+        list(APPEND LIBS rapidcheck)
+    endif()
+    target_link_libraries(${ARG_TARGET} PRIVATE ${LIBS})
+
+    # Include directories
+    set(INCLUDES ${CMAKE_CURRENT_SOURCE_DIR})
+    if(ARG_USE_RAPIDCHECK)
+        list(APPEND INCLUDES ${rapidcheck_SOURCE_DIR}/extras/doctest/include)
+    endif()
+    target_include_directories(${ARG_TARGET} PRIVATE ${INCLUDES})
+
+    # Add test
+    if(ARG_TEST_NAME)
+        add_test(NAME ${ARG_TEST_NAME} COMMAND ${ARG_TARGET})
+        if(ARG_TEST_PROPERTIES)
+            set_tests_properties(${ARG_TEST_NAME} PROPERTIES ${ARG_TEST_PROPERTIES})
+        endif()
+    endif()
+endfunction()
+
 # Add test executables
-add_executable(strong_type_generator_ut
-    strong_type_generator_ut.cpp
-)
+add_atlas_test(TARGET strong_type_generator_ut TEST_NAME GeneratorTests USE_TEST_UTILS USE_RAPIDCHECK)
+add_atlas_test(TARGET atlas_command_line_ut TEST_NAME AtlasCommandLineTest USE_RAPIDCHECK)
+add_atlas_test(TARGET interaction_generator_ut TEST_NAME InteractionGeneratorTests USE_RAPIDCHECK)
+add_atlas_test(TARGET property_ut TEST_NAME PropertyTests USE_RAPIDCHECK)
+add_atlas_test(TARGET error_ut TEST_NAME ErrorConditionTests)
 
+# Tests that need special properties
+add_atlas_test(TARGET golden_ut TEST_NAME GoldenTests)
+set_tests_properties(GoldenTests PROPERTIES ENVIRONMENT "SOURCE_DIR=${CMAKE_SOURCE_DIR}")
 
-add_executable(atlas_command_line_ut
-    atlas_command_line_ut.cpp
-)
-
-
-
-add_executable(interaction_generator_ut
-    interaction_generator_ut.cpp
-)
-
-add_executable(golden_ut
-    golden_ut.cpp
-)
-
-add_executable(property_ut
-    property_ut.cpp
-)
-
-add_executable(compilation_ut
-    compilation_ut.cpp
-)
-
-
-target_link_libraries(strong_type_generator_ut
-    PRIVATE
-        atlas_test_utils
-        doctest::doctest
-        rapidcheck
-)
-
-target_include_directories(strong_type_generator_ut
-    PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}
-        ${rapidcheck_SOURCE_DIR}/extras/doctest/include
-)
-
-
-
-
-target_link_libraries(atlas_command_line_ut
-    PRIVATE
-        atlas_lib
-        doctest::doctest
-        rapidcheck
-)
-
-target_include_directories(atlas_command_line_ut
-    PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}
-        ${rapidcheck_SOURCE_DIR}/extras/doctest/include
-)
-
-
-
-
-
-target_link_libraries(interaction_generator_ut
-    PRIVATE
-        atlas_lib
-        doctest::doctest
-        rapidcheck
-)
-
-target_include_directories(interaction_generator_ut
-    PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}
-        ${rapidcheck_SOURCE_DIR}/extras/doctest/include
-)
-
-target_link_libraries(golden_ut
-    PRIVATE
-        atlas_lib
-        doctest::doctest
-)
-
-target_include_directories(golden_ut
-    PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}
-)
-
-target_link_libraries(property_ut
-    PRIVATE
-        atlas_lib
-        doctest::doctest
-        rapidcheck
-)
-
-target_include_directories(property_ut
-    PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}
-        ${rapidcheck_SOURCE_DIR}/extras/doctest/include
-)
-
-target_link_libraries(compilation_ut
-    PRIVATE
-        atlas_lib
-        doctest::doctest
-)
-
-target_include_directories(compilation_ut
-    PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}
-)
-
-
-add_test(NAME AtlasCommandLineTest COMMAND atlas_command_line_ut)
-
-# Use DocTest's built-in discovery (runs at build time, not configure time)
+# Compilation tests - use discovery for parallel execution
+add_atlas_test(TARGET compilation_ut)
 include(${doctest_SOURCE_DIR}/scripts/cmake/doctest.cmake)
-doctest_discover_tests(strong_type_generator_ut TEST_PREFIX "Generator : ")
-doctest_discover_tests(interaction_generator_ut TEST_PREFIX "Interaction Generator : ")
-doctest_discover_tests(golden_ut TEST_PREFIX "Golden : "
-    PROPERTIES ENVIRONMENT "SOURCE_DIR=${CMAKE_SOURCE_DIR}"
-)
-doctest_discover_tests(property_ut TEST_PREFIX "Property : ")
 doctest_discover_tests(compilation_ut TEST_PREFIX "Compilation : "
-    PROPERTIES TIMEOUT 120 LABELS "slow"
+    PROPERTIES COST 99
 )
