@@ -5,7 +5,7 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-ATLAS_BIN="${ATLAS_BIN:-/Users/jhagins/build/atlas/debug/bin/atlas}"
+ATLAS_BIN="${ATLAS_BIN:-${HOME}/build/atlas/debug/bin/atlas}"
 GOLDEN_DIR="$REPO_ROOT/tests/fixtures/golden"
 
 if [[ ! -f "$ATLAS_BIN" ]]; then
