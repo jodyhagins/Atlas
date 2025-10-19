@@ -72,8 +72,8 @@ Format CMake files when:
 
 3. **Verify:**
    ```bash
-   cd /Users/jhagins/build/atlas/debug
-   cmake /Users/jhagins/src/atlas
+   cd ${HOME}/build/atlas/debug
+   cmake ${HOME}/src/atlas
    ```
 
 ## Deterministic Formatting
