@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_230171A29E9E7EDEA5DB298E5DB6A9F05125A698
-#define FOO_BAR_230171A29E9E7EDEA5DB298E5DB6A9F05125A698
+#ifndef FOO_BAR_522A20AF64CC193B8D8A71A9E07F44D6F43B694D
+#define FOO_BAR_522A20AF64CC193B8D8A71A9E07F44D6F43B694D
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -279,7 +279,14 @@ struct BitwiseAllType
     friend constexpr BitwiseAllType & operator &= (
         BitwiseAllType & lhs,
         BitwiseAllType const & rhs)
-    noexcept(noexcept(std::declval<int&>() &= std::declval<int const&>()))
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
+    noexcept(noexcept(lhs.value &= rhs.value))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         lhs.value &= rhs.value;
         return lhs;
@@ -302,7 +309,14 @@ struct BitwiseAllType
     friend constexpr BitwiseAllType & operator <<= (
         BitwiseAllType & lhs,
         BitwiseAllType const & rhs)
-    noexcept(noexcept(std::declval<int&>() <<= std::declval<int const&>()))
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
+    noexcept(noexcept(lhs.value <<= rhs.value))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         lhs.value <<= rhs.value;
         return lhs;
@@ -325,7 +339,14 @@ struct BitwiseAllType
     friend constexpr BitwiseAllType & operator >>= (
         BitwiseAllType & lhs,
         BitwiseAllType const & rhs)
-    noexcept(noexcept(std::declval<int&>() >>= std::declval<int const&>()))
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
+    noexcept(noexcept(lhs.value >>= rhs.value))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         lhs.value >>= rhs.value;
         return lhs;
@@ -348,7 +369,14 @@ struct BitwiseAllType
     friend constexpr BitwiseAllType & operator ^= (
         BitwiseAllType & lhs,
         BitwiseAllType const & rhs)
-    noexcept(noexcept(std::declval<int&>() ^= std::declval<int const&>()))
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
+    noexcept(noexcept(lhs.value ^= rhs.value))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         lhs.value ^= rhs.value;
         return lhs;
@@ -371,7 +399,14 @@ struct BitwiseAllType
     friend constexpr BitwiseAllType & operator |= (
         BitwiseAllType & lhs,
         BitwiseAllType const & rhs)
-    noexcept(noexcept(std::declval<int&>() |= std::declval<int const&>()))
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
+    noexcept(noexcept(lhs.value |= rhs.value))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         lhs.value |= rhs.value;
         return lhs;
@@ -390,5 +425,5 @@ struct BitwiseAllType
 };
 } // namespace test
 
-#endif // FOO_BAR_230171A29E9E7EDEA5DB298E5DB6A9F05125A698
+#endif // FOO_BAR_522A20AF64CC193B8D8A71A9E07F44D6F43B694D
 

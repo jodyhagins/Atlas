@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_1C706F5D674AA0BE95FC7D499AAADE47E58BBA5A
-#define FOO_BAR_1C706F5D674AA0BE95FC7D499AAADE47E58BBA5A
+#ifndef FOO_BAR_FD4AC18EBBF338D23D3197F6E9886133DD8D5DD0
+#define FOO_BAR_FD4AC18EBBF338D23D3197F6E9886133DD8D5DD0
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -294,7 +294,14 @@ struct MinusStarType
     friend constexpr MinusStarType & operator -= (
         MinusStarType & lhs,
         MinusStarType const & rhs)
-    noexcept(noexcept(std::declval<int&>() -= std::declval<int const&>()))
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
+    noexcept(noexcept(lhs.value -= rhs.value))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         lhs.value -= rhs.value;
         return lhs;
@@ -313,5 +320,5 @@ struct MinusStarType
 };
 } // namespace test
 
-#endif // FOO_BAR_1C706F5D674AA0BE95FC7D499AAADE47E58BBA5A
+#endif // FOO_BAR_FD4AC18EBBF338D23D3197F6E9886133DD8D5DD0
 

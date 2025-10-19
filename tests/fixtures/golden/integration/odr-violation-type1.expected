@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_812EF79DC354F643DA3A3ABB06FB430B34ABCC53
-#define FOO_BAR_812EF79DC354F643DA3A3ABB06FB430B34ABCC53
+#ifndef FOO_BAR_6DEE0C8E125BC4DA7CD3750ABA2155D521F71D19
+#define FOO_BAR_6DEE0C8E125BC4DA7CD3750ABA2155D521F71D19
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -281,7 +281,14 @@ struct TypeOne
     friend constexpr TypeOne & operator += (
         TypeOne & lhs,
         TypeOne const & rhs)
-    noexcept(noexcept(std::declval<int&>() += std::declval<int const&>()))
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
+    noexcept(noexcept(lhs.value += rhs.value))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         lhs.value += rhs.value;
         return lhs;
@@ -313,5 +320,5 @@ struct TypeOne
 } // namespace integration
 } // namespace test
 
-#endif // FOO_BAR_812EF79DC354F643DA3A3ABB06FB430B34ABCC53
+#endif // FOO_BAR_6DEE0C8E125BC4DA7CD3750ABA2155D521F71D19
 

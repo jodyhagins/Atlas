@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_ADD5412266B8ADCB905950CB621B9531D5AAF1D1
-#define FOO_BAR_ADD5412266B8ADCB905950CB621B9531D5AAF1D1
+#ifndef FOO_BAR_9BF366E466CFED9519C31C171CD25245B2BF6A2A
+#define FOO_BAR_9BF366E466CFED9519C31C171CD25245B2BF6A2A
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -280,7 +280,14 @@ struct SimpleProfileType
     friend constexpr SimpleProfileType & operator *= (
         SimpleProfileType & lhs,
         SimpleProfileType const & rhs)
-    noexcept(noexcept(std::declval<int&>() *= std::declval<int const&>()))
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
+    noexcept(noexcept(lhs.value *= rhs.value))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         lhs.value *= rhs.value;
         return lhs;
@@ -303,7 +310,14 @@ struct SimpleProfileType
     friend constexpr SimpleProfileType & operator += (
         SimpleProfileType & lhs,
         SimpleProfileType const & rhs)
-    noexcept(noexcept(std::declval<int&>() += std::declval<int const&>()))
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
+    noexcept(noexcept(lhs.value += rhs.value))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         lhs.value += rhs.value;
         return lhs;
@@ -326,7 +340,14 @@ struct SimpleProfileType
     friend constexpr SimpleProfileType & operator -= (
         SimpleProfileType & lhs,
         SimpleProfileType const & rhs)
-    noexcept(noexcept(std::declval<int&>() -= std::declval<int const&>()))
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
+    noexcept(noexcept(lhs.value -= rhs.value))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         lhs.value -= rhs.value;
         return lhs;
@@ -349,7 +370,14 @@ struct SimpleProfileType
     friend constexpr SimpleProfileType & operator /= (
         SimpleProfileType & lhs,
         SimpleProfileType const & rhs)
-    noexcept(noexcept(std::declval<int&>() /= std::declval<int const&>()))
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
+    noexcept(noexcept(lhs.value /= rhs.value))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         lhs.value /= rhs.value;
         return lhs;
@@ -380,5 +408,5 @@ struct SimpleProfileType
 } // namespace profiles
 } // namespace test
 
-#endif // FOO_BAR_ADD5412266B8ADCB905950CB621B9531D5AAF1D1
+#endif // FOO_BAR_9BF366E466CFED9519C31C171CD25245B2BF6A2A
 

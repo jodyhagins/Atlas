@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_F855D5FADDB82FF9151ABCE2E8331E5AED206D24
-#define FOO_BAR_F855D5FADDB82FF9151ABCE2E8331E5AED206D24
+#ifndef FOO_BAR_D38C2D5ADE87A6E97C9D7B40FA1821EDFAC4A9F7
+#define FOO_BAR_D38C2D5ADE87A6E97C9D7B40FA1821EDFAC4A9F7
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -280,7 +280,14 @@ struct ConstexprOperations
     friend constexpr ConstexprOperations & operator *= (
         ConstexprOperations & lhs,
         ConstexprOperations const & rhs)
-    noexcept(noexcept(std::declval<int&>() *= std::declval<int const&>()))
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
+    noexcept(noexcept(lhs.value *= rhs.value))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         lhs.value *= rhs.value;
         return lhs;
@@ -303,7 +310,14 @@ struct ConstexprOperations
     friend constexpr ConstexprOperations & operator += (
         ConstexprOperations & lhs,
         ConstexprOperations const & rhs)
-    noexcept(noexcept(std::declval<int&>() += std::declval<int const&>()))
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
+    noexcept(noexcept(lhs.value += rhs.value))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         lhs.value += rhs.value;
         return lhs;
@@ -326,7 +340,14 @@ struct ConstexprOperations
     friend constexpr ConstexprOperations & operator -= (
         ConstexprOperations & lhs,
         ConstexprOperations const & rhs)
-    noexcept(noexcept(std::declval<int&>() -= std::declval<int const&>()))
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
+    noexcept(noexcept(lhs.value -= rhs.value))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         lhs.value -= rhs.value;
         return lhs;
@@ -368,5 +389,5 @@ struct ConstexprOperations
 } // namespace edge_cases
 } // namespace test
 
-#endif // FOO_BAR_F855D5FADDB82FF9151ABCE2E8331E5AED206D24
+#endif // FOO_BAR_D38C2D5ADE87A6E97C9D7B40FA1821EDFAC4A9F7
 

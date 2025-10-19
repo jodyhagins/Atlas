@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_B5F711E2A2F8C71338FE43FF254A412E95FCBB90
-#define FOO_BAR_B5F711E2A2F8C71338FE43FF254A412E95FCBB90
+#ifndef FOO_BAR_97C9C8681B3C9FFC0FAFEE3613F11225224C95EF
+#define FOO_BAR_97C9C8681B3C9FFC0FAFEE3613F11225224C95EF
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -281,7 +281,14 @@ struct NoConstexprAll
     friend NoConstexprAll & operator += (
         NoConstexprAll & lhs,
         NoConstexprAll const & rhs)
-    noexcept(noexcept(std::declval<int&>() += std::declval<int const&>()))
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
+    noexcept(noexcept(lhs.value += rhs.value))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         lhs.value += rhs.value;
         return lhs;
@@ -304,7 +311,14 @@ struct NoConstexprAll
     friend NoConstexprAll & operator -= (
         NoConstexprAll & lhs,
         NoConstexprAll const & rhs)
-    noexcept(noexcept(std::declval<int&>() -= std::declval<int const&>()))
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
+    noexcept(noexcept(lhs.value -= rhs.value))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         lhs.value -= rhs.value;
         return lhs;
@@ -354,5 +368,5 @@ struct std::hash<test::edge_cases::NoConstexprAll>
             static_cast<int const &>(t));
     }
 };
-#endif // FOO_BAR_B5F711E2A2F8C71338FE43FF254A412E95FCBB90
+#endif // FOO_BAR_97C9C8681B3C9FFC0FAFEE3613F11225224C95EF
 

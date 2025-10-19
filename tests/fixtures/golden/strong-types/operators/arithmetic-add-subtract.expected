@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_C2323B4F83E956F7EE005DE62D89933CE819927C
-#define FOO_BAR_C2323B4F83E956F7EE005DE62D89933CE819927C
+#ifndef FOO_BAR_EF02E1F40BB0402ACD53DC10F862292F3F05A391
+#define FOO_BAR_EF02E1F40BB0402ACD53DC10F862292F3F05A391
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -279,7 +279,14 @@ struct AddSubtractType
     friend constexpr AddSubtractType & operator += (
         AddSubtractType & lhs,
         AddSubtractType const & rhs)
-    noexcept(noexcept(std::declval<int&>() += std::declval<int const&>()))
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
+    noexcept(noexcept(lhs.value += rhs.value))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         lhs.value += rhs.value;
         return lhs;
@@ -302,7 +309,14 @@ struct AddSubtractType
     friend constexpr AddSubtractType & operator -= (
         AddSubtractType & lhs,
         AddSubtractType const & rhs)
-    noexcept(noexcept(std::declval<int&>() -= std::declval<int const&>()))
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
+    noexcept(noexcept(lhs.value -= rhs.value))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         lhs.value -= rhs.value;
         return lhs;
@@ -321,5 +335,5 @@ struct AddSubtractType
 };
 } // namespace test
 
-#endif // FOO_BAR_C2323B4F83E956F7EE005DE62D89933CE819927C
+#endif // FOO_BAR_EF02E1F40BB0402ACD53DC10F862292F3F05A391
 

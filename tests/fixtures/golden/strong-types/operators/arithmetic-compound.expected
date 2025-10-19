@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_FD28D72B9A863B4AA8374A38101C728C7DBCB092
-#define FOO_BAR_FD28D72B9A863B4AA8374A38101C728C7DBCB092
+#ifndef FOO_BAR_999175DBD35FB2D9DA2592026A0F368F19F1C5E6
+#define FOO_BAR_999175DBD35FB2D9DA2592026A0F368F19F1C5E6
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -279,7 +279,14 @@ struct ArithmeticCompoundType
     friend constexpr ArithmeticCompoundType & operator %= (
         ArithmeticCompoundType & lhs,
         ArithmeticCompoundType const & rhs)
-    noexcept(noexcept(std::declval<int&>() %= std::declval<int const&>()))
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
+    noexcept(noexcept(lhs.value %= rhs.value))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         lhs.value %= rhs.value;
         return lhs;
@@ -302,7 +309,14 @@ struct ArithmeticCompoundType
     friend constexpr ArithmeticCompoundType & operator *= (
         ArithmeticCompoundType & lhs,
         ArithmeticCompoundType const & rhs)
-    noexcept(noexcept(std::declval<int&>() *= std::declval<int const&>()))
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
+    noexcept(noexcept(lhs.value *= rhs.value))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         lhs.value *= rhs.value;
         return lhs;
@@ -325,7 +339,14 @@ struct ArithmeticCompoundType
     friend constexpr ArithmeticCompoundType & operator += (
         ArithmeticCompoundType & lhs,
         ArithmeticCompoundType const & rhs)
-    noexcept(noexcept(std::declval<int&>() += std::declval<int const&>()))
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
+    noexcept(noexcept(lhs.value += rhs.value))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         lhs.value += rhs.value;
         return lhs;
@@ -348,7 +369,14 @@ struct ArithmeticCompoundType
     friend constexpr ArithmeticCompoundType & operator -= (
         ArithmeticCompoundType & lhs,
         ArithmeticCompoundType const & rhs)
-    noexcept(noexcept(std::declval<int&>() -= std::declval<int const&>()))
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
+    noexcept(noexcept(lhs.value -= rhs.value))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         lhs.value -= rhs.value;
         return lhs;
@@ -371,7 +399,14 @@ struct ArithmeticCompoundType
     friend constexpr ArithmeticCompoundType & operator /= (
         ArithmeticCompoundType & lhs,
         ArithmeticCompoundType const & rhs)
-    noexcept(noexcept(std::declval<int&>() /= std::declval<int const&>()))
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
+    noexcept(noexcept(lhs.value /= rhs.value))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         lhs.value /= rhs.value;
         return lhs;
@@ -390,5 +425,5 @@ struct ArithmeticCompoundType
 };
 } // namespace test
 
-#endif // FOO_BAR_FD28D72B9A863B4AA8374A38101C728C7DBCB092
+#endif // FOO_BAR_999175DBD35FB2D9DA2592026A0F368F19F1C5E6
 

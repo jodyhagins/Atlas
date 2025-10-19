@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_B630843FC2A4B7B76A905E035C6588259533C311
-#define FOO_BAR_B630843FC2A4B7B76A905E035C6588259533C311
+#ifndef FOO_BAR_A3723DAA0DC8B200AC4658712A84EF516017725C
+#define FOO_BAR_A3723DAA0DC8B200AC4658712A84EF516017725C
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -294,7 +294,14 @@ struct PlusStarType
     friend constexpr PlusStarType & operator += (
         PlusStarType & lhs,
         PlusStarType const & rhs)
-    noexcept(noexcept(std::declval<int&>() += std::declval<int const&>()))
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
+    noexcept(noexcept(lhs.value += rhs.value))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         lhs.value += rhs.value;
         return lhs;
@@ -313,5 +320,5 @@ struct PlusStarType
 };
 } // namespace test
 
-#endif // FOO_BAR_B630843FC2A4B7B76A905E035C6588259533C311
+#endif // FOO_BAR_A3723DAA0DC8B200AC4658712A84EF516017725C
 
