@@ -625,6 +625,269 @@ description=strong int
                 result.description == "strong std::vector<int>; +, -, ==, out");
         }
     }
+
+    TEST_CASE("Inline Type Name Syntax - Error Cases")
+    // Note: Success cases are tested via golden test:
+    // tests/fixtures/golden/integration/inline-name-syntax.input
+    {
+        SUBCASE("conflicting name") {
+            auto temp_file = std::filesystem::temp_directory_path() /
+                ("test_input_" + std::to_string(::getpid()) + ".txt");
+
+            {
+                std::ofstream out(temp_file);
+                out << "[Price]\n";
+                out << "kind=struct\n";
+                out << "namespace=demo\n";
+                out << "name=Cost\n"; // Conflicts with [Price]
+                out << "description=strong double\n";
+            }
+
+            AtlasCommandLine::Arguments args;
+            args.input_file = temp_file.string();
+
+            CHECK_THROWS_AS(
+                AtlasCommandLine::parse_input_file(args),
+                AtlasCommandLineError);
+
+            std::filesystem::remove(temp_file);
+        }
+
+        SUBCASE("conflicting namespace") {
+            auto temp_file = std::filesystem::temp_directory_path() /
+                ("test_input_" + std::to_string(::getpid()) + ".txt");
+
+            {
+                std::ofstream out(temp_file);
+                out << "[demo::Price]\n";
+                out << "kind=struct\n";
+                out << "namespace=other\n"; // Conflicts with [demo::Price]
+                out << "description=strong double\n";
+            }
+
+            AtlasCommandLine::Arguments args;
+            args.input_file = temp_file.string();
+
+            CHECK_THROWS_AS(
+                AtlasCommandLine::parse_input_file(args),
+                AtlasCommandLineError);
+
+            std::filesystem::remove(temp_file);
+        }
+
+        SUBCASE("empty section header") {
+            auto temp_file = std::filesystem::temp_directory_path() /
+                ("test_input_" + std::to_string(::getpid()) + ".txt");
+
+            {
+                std::ofstream out(temp_file);
+                out << "[]\n"; // Empty
+                out << "kind=struct\n";
+                out << "description=strong double\n";
+            }
+
+            AtlasCommandLine::Arguments args;
+            args.input_file = temp_file.string();
+
+            CHECK_THROWS_AS(
+                AtlasCommandLine::parse_input_file(args),
+                AtlasCommandLineError);
+
+            std::filesystem::remove(temp_file);
+        }
+
+        SUBCASE("empty section header after trimming") {
+            auto temp_file = std::filesystem::temp_directory_path() /
+                ("test_input_" + std::to_string(::getpid()) + ".txt");
+
+            {
+                std::ofstream out(temp_file);
+                out << "[   ]\n"; // Only spaces
+                out << "kind=struct\n";
+                out << "description=strong double\n";
+            }
+
+            AtlasCommandLine::Arguments args;
+            args.input_file = temp_file.string();
+
+            CHECK_THROWS_AS(
+                AtlasCommandLine::parse_input_file(args),
+                AtlasCommandLineError);
+
+            std::filesystem::remove(temp_file);
+        }
+
+        SUBCASE("missing name after namespace") {
+            auto temp_file = std::filesystem::temp_directory_path() /
+                ("test_input_" + std::to_string(::getpid()) + ".txt");
+
+            {
+                std::ofstream out(temp_file);
+                out << "[demo::]\n"; // Namespace but no name
+                out << "kind=struct\n";
+                out << "description=strong double\n";
+            }
+
+            AtlasCommandLine::Arguments args;
+            args.input_file = temp_file.string();
+
+            CHECK_THROWS_AS(
+                AtlasCommandLine::parse_input_file(args),
+                AtlasCommandLineError);
+
+            std::filesystem::remove(temp_file);
+        }
+
+        SUBCASE("invalid C++ identifier - starts with digit") {
+            auto temp_file = std::filesystem::temp_directory_path() /
+                ("test_input_" + std::to_string(::getpid()) + ".txt");
+
+            {
+                std::ofstream out(temp_file);
+                out << "[123Invalid]\n";
+                out << "kind=struct\n";
+                out << "namespace=demo\n";
+                out << "description=strong double\n";
+            }
+
+            AtlasCommandLine::Arguments args;
+            args.input_file = temp_file.string();
+
+            CHECK_THROWS_AS(
+                AtlasCommandLine::parse_input_file(args),
+                AtlasCommandLineError);
+
+            std::filesystem::remove(temp_file);
+        }
+
+        SUBCASE("invalid C++ identifier - contains hyphen") {
+            auto temp_file = std::filesystem::temp_directory_path() /
+                ("test_input_" + std::to_string(::getpid()) + ".txt");
+
+            {
+                std::ofstream out(temp_file);
+                out << "[my-type]\n";
+                out << "kind=struct\n";
+                out << "namespace=demo\n";
+                out << "description=strong double\n";
+            }
+
+            AtlasCommandLine::Arguments args;
+            args.input_file = temp_file.string();
+
+            CHECK_THROWS_AS(
+                AtlasCommandLine::parse_input_file(args),
+                AtlasCommandLineError);
+
+            std::filesystem::remove(temp_file);
+        }
+
+        SUBCASE("invalid namespace - starts with digit") {
+            auto temp_file = std::filesystem::temp_directory_path() /
+                ("test_input_" + std::to_string(::getpid()) + ".txt");
+
+            {
+                std::ofstream out(temp_file);
+                out << "[123ns::Type]\n";
+                out << "kind=struct\n";
+                out << "description=strong double\n";
+            }
+
+            AtlasCommandLine::Arguments args;
+            args.input_file = temp_file.string();
+
+            CHECK_THROWS_AS(
+                AtlasCommandLine::parse_input_file(args),
+                AtlasCommandLineError);
+
+            std::filesystem::remove(temp_file);
+        }
+
+        SUBCASE("invalid namespace - contains hyphen") {
+            auto temp_file = std::filesystem::temp_directory_path() /
+                ("test_input_" + std::to_string(::getpid()) + ".txt");
+
+            {
+                std::ofstream out(temp_file);
+                out << "[bad-namespace::Type]\n";
+                out << "kind=struct\n";
+                out << "description=strong double\n";
+            }
+
+            AtlasCommandLine::Arguments args;
+            args.input_file = temp_file.string();
+
+            CHECK_THROWS_AS(
+                AtlasCommandLine::parse_input_file(args),
+                AtlasCommandLineError);
+
+            std::filesystem::remove(temp_file);
+        }
+
+        SUBCASE("conflicting kind") {
+            auto temp_file = std::filesystem::temp_directory_path() /
+                ("test_input_" + std::to_string(::getpid()) + ".txt");
+
+            {
+                std::ofstream out(temp_file);
+                out << "[struct Price]\n";
+                out << "kind=class\n"; // Conflicts with [struct Price]
+                out << "namespace=demo\n";
+                out << "description=strong double\n";
+            }
+
+            AtlasCommandLine::Arguments args;
+            args.input_file = temp_file.string();
+
+            CHECK_THROWS_AS(
+                AtlasCommandLine::parse_input_file(args),
+                AtlasCommandLineError);
+
+            std::filesystem::remove(temp_file);
+        }
+
+        SUBCASE("missing type name after struct keyword") {
+            auto temp_file = std::filesystem::temp_directory_path() /
+                ("test_input_" + std::to_string(::getpid()) + ".txt");
+
+            {
+                std::ofstream out(temp_file);
+                out << "[struct]\n"; // No type name after struct
+                out << "namespace=demo\n";
+                out << "description=strong double\n";
+            }
+
+            AtlasCommandLine::Arguments args;
+            args.input_file = temp_file.string();
+
+            CHECK_THROWS_AS(
+                AtlasCommandLine::parse_input_file(args),
+                AtlasCommandLineError);
+
+            std::filesystem::remove(temp_file);
+        }
+
+        SUBCASE("missing type name after class keyword") {
+            auto temp_file = std::filesystem::temp_directory_path() /
+                ("test_input_" + std::to_string(::getpid()) + ".txt");
+
+            {
+                std::ofstream out(temp_file);
+                out << "[class]\n"; // No type name after class
+                out << "namespace=demo\n";
+                out << "description=strong double\n";
+            }
+
+            AtlasCommandLine::Arguments args;
+            args.input_file = temp_file.string();
+
+            CHECK_THROWS_AS(
+                AtlasCommandLine::parse_input_file(args),
+                AtlasCommandLineError);
+
+            std::filesystem::remove(temp_file);
+        }
+    }
 }
 
 } // anonymous namespace

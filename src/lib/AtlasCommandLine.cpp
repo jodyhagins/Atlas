@@ -95,6 +95,57 @@ extract_template_param_from_enable_if(
     return param_name;
 }
 
+// Validate that a string is a valid C++ identifier
+bool
+is_valid_cpp_identifier(std::string const & id)
+{
+    if (id.empty()) {
+        return false;
+    }
+
+    // First character must be letter or underscore
+    if (not std::isalpha(static_cast<unsigned char>(id[0])) && id[0] != '_') {
+        return false;
+    }
+
+    // Remaining characters must be alphanumeric or underscore
+    for (size_t i = 1; i < id.size(); ++i) {
+        if (not std::isalnum(static_cast<unsigned char>(id[i])) && id[i] != '_')
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+// Validate that a string is a valid C++ namespace (may contain ::)
+bool
+is_valid_cpp_namespace(std::string const & ns)
+{
+    if (ns.empty()) {
+        return true; // Empty namespace is valid (means global)
+    }
+
+    // Split by :: and validate each part
+    std::string current_part;
+    for (size_t i = 0; i < ns.size(); ++i) {
+        if (i + 1 < ns.size() && ns[i] == ':' && ns[i + 1] == ':') {
+            // Found separator
+            if (not is_valid_cpp_identifier(current_part)) {
+                return false;
+            }
+            current_part.clear();
+            ++i; // Skip second ':'
+        } else {
+            current_part += ns[i];
+        }
+    }
+
+    // Validate the last part
+    return is_valid_cpp_identifier(current_part);
+}
+
 } // anonymous namespace
 
 AtlasCommandLine::Arguments
@@ -312,14 +363,31 @@ parse_input_file(Arguments const & args)
     std::string current_description;
     std::string current_default_value;
 
+    // Section-derived kind, namespace and name from [struct ns::Type] syntax
+    std::string section_derived_kind;
+    std::string section_derived_namespace;
+    std::string section_derived_name;
+
     auto finalize_type = [&]() {
-        if (not current_kind.empty()) {
-            // Use global namespace if type-specific namespace is not provided
+        // Use section-derived kind if current_kind is empty
+        std::string effective_kind = current_kind.empty() ? section_derived_kind
+                                                          : current_kind;
+
+        if (not effective_kind.empty()) {
+            // Use section-derived name if current_name is empty
+            std::string effective_name = current_name.empty()
+                ? section_derived_name
+                : current_name;
+
+            // Use section-derived namespace if current_namespace is empty,
+            // then fall back to global namespace
             std::string effective_namespace = current_namespace.empty()
-                ? global_namespace
+                ? (section_derived_namespace.empty()
+                       ? global_namespace
+                       : section_derived_namespace)
                 : current_namespace;
 
-            if (effective_namespace.empty() || current_name.empty() ||
+            if (effective_namespace.empty() || effective_name.empty() ||
                 current_description.empty())
             {
                 throw AtlasCommandLineError(
@@ -367,9 +435,9 @@ parse_input_file(Arguments const & args)
             }
 
             result.types.push_back(StrongTypeDescription{
-                .kind = current_kind,
+                .kind = effective_kind,
                 .type_namespace = effective_namespace,
-                .type_name = current_name,
+                .type_name = effective_name,
                 .description = expanded_description,
                 .default_value = current_default_value,
                 .guard_prefix = result.guard_prefix,
@@ -381,6 +449,9 @@ parse_input_file(Arguments const & args)
             current_name.clear();
             current_description.clear();
             current_default_value.clear();
+            section_derived_kind.clear();
+            section_derived_namespace.clear();
+            section_derived_name.clear();
         }
     };
 
@@ -393,10 +464,96 @@ parse_input_file(Arguments const & args)
             continue;
         }
 
-        // Check for [type] section
-        if (line == "[type]") {
+        // Check for section header: [type] or [TypeName] or [ns::TypeName]
+        if (line.size() >= 2 && line.front() == '[' && line.back() == ']') {
             finalize_type();
             in_type_section = true;
+
+            // Extract content between brackets and trim whitespace
+            std::string section_content = trim(line.substr(1, line.size() - 2));
+
+            if (section_content.empty()) {
+                throw AtlasCommandLineError(
+                    "Empty section header at line " +
+                    std::to_string(line_number) + " in " + args.input_file);
+            }
+
+            // Legacy syntax: [type]
+            if (section_content == "type") {
+                // Name and namespace will be specified in the section body
+                // Clear any previous section-derived values
+                section_derived_kind.clear();
+                section_derived_namespace.clear();
+                section_derived_name.clear();
+            } else {
+                // New syntax: [TypeName], [ns::TypeName], [struct TypeName],
+                // or [class ns::TypeName]
+
+                // Check for optional kind prefix (struct or class)
+                if (section_content.size() >= 7 &&
+                    section_content.substr(0, 7) == "struct ")
+                {
+                    section_derived_kind = "struct";
+                    section_content = trim(section_content.substr(7));
+                } else if (
+                    section_content.size() >= 6 &&
+                    section_content.substr(0, 6) == "class ")
+                {
+                    section_derived_kind = "class";
+                    section_content = trim(section_content.substr(6));
+                } else {
+                    section_derived_kind.clear();
+                }
+
+                // After removing kind prefix, check if anything remains
+                if (section_content.empty()) {
+                    throw AtlasCommandLineError(
+                        "Missing type name in section header at line " +
+                        std::to_string(line_number) + " in " + args.input_file);
+                }
+
+                // Find last occurrence of ::
+                auto last_colon_pos = section_content.rfind("::");
+
+                if (last_colon_pos != std::string::npos) {
+                    // Qualified name: [ns::TypeName]
+                    section_derived_namespace = trim(
+                        section_content.substr(0, last_colon_pos));
+                    section_derived_name = trim(
+                        section_content.substr(last_colon_pos + 2));
+
+                    // Validate namespace
+                    if (not is_valid_cpp_namespace(section_derived_namespace)) {
+                        throw AtlasCommandLineError(
+                            "Invalid C++ namespace in section header at line " +
+                            std::to_string(line_number) + " in " +
+                            args.input_file + ": '" +
+                            section_derived_namespace + "'");
+                    }
+
+                    // Check for trailing :: (namespace with no name)
+                    if (section_derived_name.empty()) {
+                        throw AtlasCommandLineError(
+                            "Missing type name after namespace in section "
+                            "header at line " +
+                            std::to_string(line_number) + " in " +
+                            args.input_file);
+                    }
+                } else {
+                    // Unqualified name: [TypeName]
+                    section_derived_namespace.clear();
+                    section_derived_name = section_content;
+                }
+
+                // Validate type name
+                if (not is_valid_cpp_identifier(section_derived_name)) {
+                    throw AtlasCommandLineError(
+                        "Invalid C++ identifier in section header at line " +
+                        std::to_string(line_number) + " in " + args.input_file +
+                        ": '" + section_derived_name + "'");
+                }
+            }
+
             continue;
         }
 
@@ -406,7 +563,8 @@ parse_input_file(Arguments const & args)
             throw AtlasCommandLineError(
                 "Invalid format at line " + std::to_string(line_number) +
                 " in " + args.input_file +
-                ": expected 'key=value' or '[type]'");
+                ": expected 'key=value' or section header like '[type]' or "
+                "'[TypeName]'");
         }
 
         std::string key = trim(line.substr(0, equals_pos));
@@ -456,10 +614,43 @@ parse_input_file(Arguments const & args)
             }
         } else { // Type-level configuration
             if (key == "kind") {
+                // Check for conflict with section-derived kind
+                if (not section_derived_kind.empty() &&
+                    section_derived_kind != value)
+                {
+                    throw AtlasCommandLineError(
+                        "Conflicting kind at line " +
+                        std::to_string(line_number) + " in " + args.input_file +
+                        ": section header specifies '" + section_derived_kind +
+                        "' but kind field specifies '" + value + "'");
+                }
                 current_kind = value;
             } else if (key == "namespace") {
+                // Check for conflict with section-derived namespace
+                if (not section_derived_namespace.empty() &&
+                    section_derived_namespace != value)
+                {
+                    throw AtlasCommandLineError(
+                        "Conflicting namespace at line " +
+                        std::to_string(line_number) + " in " + args.input_file +
+                        ": section header specifies '" +
+                        section_derived_namespace +
+                        "' but namespace field "
+                        "specifies '" +
+                        value + "'");
+                }
                 current_namespace = value;
             } else if (key == "name") {
+                // Check for conflict with section-derived name
+                if (not section_derived_name.empty() &&
+                    section_derived_name != value)
+                {
+                    throw AtlasCommandLineError(
+                        "Conflicting name at line " +
+                        std::to_string(line_number) + " in " + args.input_file +
+                        ": section header specifies '" + section_derived_name +
+                        "' but name field specifies '" + value + "'");
+                }
                 current_name = value;
             } else if (key == "description") {
                 current_description = value;
