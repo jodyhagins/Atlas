@@ -146,6 +146,86 @@ is_valid_cpp_namespace(std::string const & ns)
     return is_valid_cpp_identifier(current_part);
 }
 
+// Parse constants string format: "name1:value1; name2:value2"
+// Returns map of constant name to value
+// Throws on invalid format or duplicate names
+std::map<std::string, std::string>
+parse_constants_string(
+    std::string const & constants_str,
+    std::string const & context)
+{
+    std::map<std::string, std::string> result;
+
+    if (constants_str.empty()) {
+        return result;
+    }
+
+    // Split by semicolon
+    std::stringstream ss(constants_str);
+    std::string constant;
+    while (std::getline(ss, constant, ';')) {
+        constant = trim(constant);
+        if (constant.empty()) {
+            continue;
+        }
+
+        // Split by first colon
+        auto colon_pos = constant.find(':');
+        if (colon_pos == std::string::npos) {
+            throw AtlasCommandLineError(
+                "Invalid constant format " + context + ": '" + constant +
+                "'. Expected 'name:value' format.");
+        }
+
+        std::string name = trim(constant.substr(0, colon_pos));
+        std::string value = trim(constant.substr(colon_pos + 1));
+
+        if (name.empty()) {
+            throw AtlasCommandLineError(
+                "Empty constant name " + context + " in: '" + constant + "'");
+        }
+
+        // Validate name is a valid C++ identifier
+        if (not is_valid_cpp_identifier(name)) {
+            throw AtlasCommandLineError(
+                "Invalid constant name " + context + ": '" + name +
+                "'. Must be a valid C++ identifier.");
+        }
+
+        // Check for duplicates
+        if (result.find(name) != result.end()) {
+            throw AtlasCommandLineError(
+                "Duplicate constant name " + context + ": '" + name + "'");
+        }
+
+        result[name] = value;
+    }
+
+    return result;
+}
+
+// Merge constants from multiple sources, checking for duplicates
+std::map<std::string, std::string>
+merge_constants(
+    std::vector<std::string> const & constants_strings,
+    std::string const & context)
+{
+    std::map<std::string, std::string> result;
+
+    for (auto const & constants_str : constants_strings) {
+        auto parsed = parse_constants_string(constants_str, context);
+        for (auto const & [name, value] : parsed) {
+            if (result.find(name) != result.end()) {
+                throw AtlasCommandLineError(
+                    "Duplicate constant name " + context + ": '" + name + "'");
+            }
+            result[name] = value;
+        }
+    }
+
+    return result;
+}
+
 } // anonymous namespace
 
 AtlasCommandLine::Arguments
@@ -208,6 +288,9 @@ parse_impl(std::vector<std::string> const & args)
             result.description = value;
         } else if (key == "default-value") {
             result.default_value = value;
+        } else if (key == "constants") {
+            result.constants.push_back(
+                value); // Accumulate multiple --constants flags
         } else if (key == "guard-prefix") {
             result.guard_prefix = value;
         } else if (key == "guard-separator") {
@@ -317,12 +400,18 @@ to_description(Arguments const & args)
             "Cannot convert help request to type description");
     }
 
+    // Merge all constants from command-line flags
+    auto constants = merge_constants(
+        args.constants,
+        "for type '" + args.type_name + "'");
+
     return StrongTypeDescription{
         .kind = args.kind,
         .type_namespace = args.type_namespace,
         .type_name = args.type_name,
         .description = args.description,
         .default_value = args.default_value,
+        .constants = constants,
         .guard_prefix = args.guard_prefix,
         .guard_separator = args.guard_separator,
         .upcase_guard = args.upcase_guard};
@@ -362,6 +451,8 @@ parse_input_file(Arguments const & args)
     std::string current_name;
     std::string current_description;
     std::string current_default_value;
+    std::vector<std::string>
+        current_constants; // Accumulate multiple constants= lines
 
     // Section-derived kind, namespace and name from [struct ns::Type] syntax
     std::string section_derived_kind;
@@ -434,12 +525,19 @@ parse_input_file(Arguments const & args)
                 }
             }
 
+            // Merge all constants from multiple constants= lines
+            auto constants = merge_constants(
+                current_constants,
+                "for type '" + effective_name + "' near line " +
+                    std::to_string(line_number));
+
             result.types.push_back(StrongTypeDescription{
                 .kind = effective_kind,
                 .type_namespace = effective_namespace,
                 .type_name = effective_name,
                 .description = expanded_description,
                 .default_value = current_default_value,
+                .constants = constants,
                 .guard_prefix = result.guard_prefix,
                 .guard_separator = result.guard_separator,
                 .upcase_guard = result.upcase_guard});
@@ -449,6 +547,7 @@ parse_input_file(Arguments const & args)
             current_name.clear();
             current_description.clear();
             current_default_value.clear();
+            current_constants.clear();
             section_derived_kind.clear();
             section_derived_namespace.clear();
             section_derived_name.clear();
@@ -656,6 +755,9 @@ parse_input_file(Arguments const & args)
                 current_description = value;
             } else if (key == "default_value") {
                 current_default_value = value;
+            } else if (key == "constants") {
+                current_constants.push_back(
+                    value); // Accumulate multiple constants= lines
             } else {
                 throw AtlasCommandLineError(
                     "Unknown type property at line " +

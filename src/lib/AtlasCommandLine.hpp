@@ -10,6 +10,7 @@
 #include "InteractionGenerator.hpp"
 #include "StrongTypeGenerator.hpp"
 
+#include <map>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -35,6 +36,8 @@ public:
         std::string type_name;
         std::string description;
         std::string default_value;
+        std::vector<std::string>
+            constants; // Accumulates multiple --constants flags
         std::string guard_prefix;
         std::string guard_separator = "_";
         bool upcase_guard = true;

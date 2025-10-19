@@ -75,6 +75,7 @@ function(add_atlas_strong_type)
         NAMESPACE
         KIND
         DEFAULT_VALUE
+        CONSTANTS
         GUARD_PREFIX
         GUARD_SEPARATOR
         UPCASE_GUARD
@@ -122,6 +123,10 @@ function(add_atlas_strong_type)
     # Add optional parameters only if set
     if(ARG_DEFAULT_VALUE)
         list(APPEND ATLAS_ARGS "--default-value=${ARG_DEFAULT_VALUE}")
+    endif()
+
+    if(ARG_CONSTANTS)
+        list(APPEND ATLAS_ARGS "--constants=${ARG_CONSTANTS}")
     endif()
 
     if(ARG_GUARD_PREFIX)
