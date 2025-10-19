@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_E7C7DB01D9B7460F7F1B52F095B6DFA0086995CC
-#define FOO_BAR_E7C7DB01D9B7460F7F1B52F095B6DFA0086995CC
+#ifndef FOO_BAR_D41ED1E7F6DD595B834994C09762E81FAB1EEB58
+#define FOO_BAR_D41ED1E7F6DD595B834994C09762E81FAB1EEB58
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -304,7 +304,14 @@ struct NoexceptVerification
     friend constexpr NoexceptVerification & operator += (
         NoexceptVerification & lhs,
         NoexceptVerification const & rhs)
-    noexcept(noexcept(std::declval<int&>() += std::declval<int const&>()))
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
+    noexcept(noexcept(std::declval<int &>() += std::declval<int const &>()))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         lhs.value += rhs.value;
         return lhs;
@@ -335,5 +342,5 @@ struct NoexceptVerification
 } // namespace edge_cases
 } // namespace test
 
-#endif // FOO_BAR_E7C7DB01D9B7460F7F1B52F095B6DFA0086995CC
+#endif // FOO_BAR_D41ED1E7F6DD595B834994C09762E81FAB1EEB58
 

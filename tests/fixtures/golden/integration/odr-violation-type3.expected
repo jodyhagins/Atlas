@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_F8B1A95FD5091235C368F3FB78732407F3DBBB2D
-#define FOO_BAR_F8B1A95FD5091235C368F3FB78732407F3DBBB2D
+#ifndef FOO_BAR_31CA019B8A9408BFBBDF43684878972BD97D1449
+#define FOO_BAR_31CA019B8A9408BFBBDF43684878972BD97D1449
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -281,7 +281,14 @@ struct TypeThree
     friend constexpr TypeThree & operator *= (
         TypeThree & lhs,
         TypeThree const & rhs)
-    noexcept(noexcept(std::declval<double&>() *= std::declval<double const&>()))
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
+    noexcept(noexcept(std::declval<double &>() *= std::declval<double const &>()))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         lhs.value *= rhs.value;
         return lhs;
@@ -304,7 +311,14 @@ struct TypeThree
     friend constexpr TypeThree & operator += (
         TypeThree & lhs,
         TypeThree const & rhs)
-    noexcept(noexcept(std::declval<double&>() += std::declval<double const&>()))
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
+    noexcept(noexcept(std::declval<double &>() += std::declval<double const &>()))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         lhs.value += rhs.value;
         return lhs;
@@ -327,7 +341,14 @@ struct TypeThree
     friend constexpr TypeThree & operator -= (
         TypeThree & lhs,
         TypeThree const & rhs)
-    noexcept(noexcept(std::declval<double&>() -= std::declval<double const&>()))
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
+    noexcept(noexcept(std::declval<double &>() -= std::declval<double const &>()))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         lhs.value -= rhs.value;
         return lhs;
@@ -363,5 +384,5 @@ struct TypeThree
 } // namespace integration
 } // namespace test
 
-#endif // FOO_BAR_F8B1A95FD5091235C368F3FB78732407F3DBBB2D
+#endif // FOO_BAR_31CA019B8A9408BFBBDF43684878972BD97D1449
 

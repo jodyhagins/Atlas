@@ -27,8 +27,15 @@ while IFS= read -r -d '' input_file; do
 
     echo "Updating: $(basename "$input_file")"
 
+    if [[ "${input_file}" =~ "/interactions/" ]]; then
+        interactions=" --interactions=true"
+    else
+        interactions=""
+    fi
+
     # Generate code
-    "$ATLAS_BIN" --input="$input_file" > "$expected_file"
+    echo "+++++ $ATLAS_BIN" ${interactions} --input="$input_file"
+    "$ATLAS_BIN" ${interactions} --input="$input_file" > "$expected_file"
 
     UPDATED=$((UPDATED + 1))
 done < <(find "$GOLDEN_DIR" -name "*.input" -print0 | sort -z)

@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_C3FDACDD18B408A74F958433B02C4F70C16E4598
-#define FOO_BAR_C3FDACDD18B408A74F958433B02C4F70C16E4598
+#ifndef FOO_BAR_4B9EC915D94D56201A993497FF961175E62F64E3
+#define FOO_BAR_4B9EC915D94D56201A993497FF961175E62F64E3
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -279,7 +279,14 @@ struct BitwiseShiftType
     friend constexpr BitwiseShiftType & operator <<= (
         BitwiseShiftType & lhs,
         BitwiseShiftType const & rhs)
-    noexcept(noexcept(std::declval<int&>() <<= std::declval<int const&>()))
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
+    noexcept(noexcept(std::declval<int &>() <<= std::declval<int const &>()))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         lhs.value <<= rhs.value;
         return lhs;
@@ -302,7 +309,14 @@ struct BitwiseShiftType
     friend constexpr BitwiseShiftType & operator >>= (
         BitwiseShiftType & lhs,
         BitwiseShiftType const & rhs)
-    noexcept(noexcept(std::declval<int&>() >>= std::declval<int const&>()))
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
+    noexcept(noexcept(std::declval<int &>() >>= std::declval<int const &>()))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         lhs.value >>= rhs.value;
         return lhs;
@@ -321,5 +335,5 @@ struct BitwiseShiftType
 };
 } // namespace test
 
-#endif // FOO_BAR_C3FDACDD18B408A74F958433B02C4F70C16E4598
+#endif // FOO_BAR_4B9EC915D94D56201A993497FF961175E62F64E3
 

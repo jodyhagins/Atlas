@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_3674A0FA7892E58D22254140ED208769F55E58C2
-#define FOO_BAR_3674A0FA7892E58D22254140ED208769F55E58C2
+#ifndef FOO_BAR_78CEF28AECAAD270F924786845CD81008ED979A6
+#define FOO_BAR_78CEF28AECAAD270F924786845CD81008ED979A6
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -284,7 +284,14 @@ struct RealWorldInt
     friend constexpr RealWorldInt & operator *= (
         RealWorldInt & lhs,
         RealWorldInt const & rhs)
-    noexcept(noexcept(std::declval<int&>() *= std::declval<int const&>()))
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
+    noexcept(noexcept(std::declval<int &>() *= std::declval<int const &>()))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         lhs.value *= rhs.value;
         return lhs;
@@ -307,7 +314,14 @@ struct RealWorldInt
     friend constexpr RealWorldInt & operator += (
         RealWorldInt & lhs,
         RealWorldInt const & rhs)
-    noexcept(noexcept(std::declval<int&>() += std::declval<int const&>()))
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
+    noexcept(noexcept(std::declval<int &>() += std::declval<int const &>()))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         lhs.value += rhs.value;
         return lhs;
@@ -330,7 +344,14 @@ struct RealWorldInt
     friend constexpr RealWorldInt & operator -= (
         RealWorldInt & lhs,
         RealWorldInt const & rhs)
-    noexcept(noexcept(std::declval<int&>() -= std::declval<int const&>()))
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
+    noexcept(noexcept(std::declval<int &>() -= std::declval<int const &>()))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         lhs.value -= rhs.value;
         return lhs;
@@ -413,5 +434,5 @@ struct std::formatter<test::integration::RealWorldInt> : std::formatter<int>
     }
 };
 #endif // defined(__cpp_lib_format) && __cpp_lib_format >= 202110L
-#endif // FOO_BAR_3674A0FA7892E58D22254140ED208769F55E58C2
+#endif // FOO_BAR_78CEF28AECAAD270F924786845CD81008ED979A6
 

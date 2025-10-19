@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_36BA281D41E4350B371EDE6761983BBBFC9ABEA9
-#define FOO_BAR_36BA281D41E4350B371EDE6761983BBBFC9ABEA9
+#ifndef FOO_BAR_265A842FDCD9FDC1E118E080123EC8B8BCDCE94B
+#define FOO_BAR_265A842FDCD9FDC1E118E080123EC8B8BCDCE94B
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -280,7 +280,14 @@ struct MultipleProfileType
     friend constexpr MultipleProfileType & operator *= (
         MultipleProfileType & lhs,
         MultipleProfileType const & rhs)
-    noexcept(noexcept(std::declval<int&>() *= std::declval<int const&>()))
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
+    noexcept(noexcept(std::declval<int &>() *= std::declval<int const &>()))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         lhs.value *= rhs.value;
         return lhs;
@@ -303,7 +310,14 @@ struct MultipleProfileType
     friend constexpr MultipleProfileType & operator += (
         MultipleProfileType & lhs,
         MultipleProfileType const & rhs)
-    noexcept(noexcept(std::declval<int&>() += std::declval<int const&>()))
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
+    noexcept(noexcept(std::declval<int &>() += std::declval<int const &>()))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         lhs.value += rhs.value;
         return lhs;
@@ -326,7 +340,14 @@ struct MultipleProfileType
     friend constexpr MultipleProfileType & operator -= (
         MultipleProfileType & lhs,
         MultipleProfileType const & rhs)
-    noexcept(noexcept(std::declval<int&>() -= std::declval<int const&>()))
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
+    noexcept(noexcept(std::declval<int &>() -= std::declval<int const &>()))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         lhs.value -= rhs.value;
         return lhs;
@@ -349,7 +370,14 @@ struct MultipleProfileType
     friend constexpr MultipleProfileType & operator /= (
         MultipleProfileType & lhs,
         MultipleProfileType const & rhs)
-    noexcept(noexcept(std::declval<int&>() /= std::declval<int const&>()))
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
+    noexcept(noexcept(std::declval<int &>() /= std::declval<int const &>()))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         lhs.value /= rhs.value;
         return lhs;
@@ -435,5 +463,5 @@ struct MultipleProfileType
 } // namespace profiles
 } // namespace test
 
-#endif // FOO_BAR_36BA281D41E4350B371EDE6761983BBBFC9ABEA9
+#endif // FOO_BAR_265A842FDCD9FDC1E118E080123EC8B8BCDCE94B
 

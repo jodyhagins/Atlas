@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_AEA791B515093F87DCB0C190922374B9B13ADAAF
-#define FOO_BAR_AEA791B515093F87DCB0C190922374B9B13ADAAF
+#ifndef FOO_BAR_0CD05C430BAFE9469D478E77FABC60AF857F123B
+#define FOO_BAR_0CD05C430BAFE9469D478E77FABC60AF857F123B
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -281,7 +281,14 @@ struct ProfileDeduplicationType
     friend constexpr ProfileDeduplicationType & operator += (
         ProfileDeduplicationType & lhs,
         ProfileDeduplicationType const & rhs)
-    noexcept(noexcept(std::declval<int&>() += std::declval<int const&>()))
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
+    noexcept(noexcept(std::declval<int &>() += std::declval<int const &>()))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         lhs.value += rhs.value;
         return lhs;
@@ -331,5 +338,5 @@ struct std::hash<test::profiles::ProfileDeduplicationType>
             static_cast<int const &>(t));
     }
 };
-#endif // FOO_BAR_AEA791B515093F87DCB0C190922374B9B13ADAAF
+#endif // FOO_BAR_0CD05C430BAFE9469D478E77FABC60AF857F123B
 

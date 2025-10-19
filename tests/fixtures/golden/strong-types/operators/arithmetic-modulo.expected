@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_28CF10A2EDD62181EF4C0068F29B121DA378FE5D
-#define FOO_BAR_28CF10A2EDD62181EF4C0068F29B121DA378FE5D
+#ifndef FOO_BAR_8B95CDBA890E4CE019420696B7D5A4A171FD03C8
+#define FOO_BAR_8B95CDBA890E4CE019420696B7D5A4A171FD03C8
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -279,7 +279,14 @@ struct ModuloType
     friend constexpr ModuloType & operator %= (
         ModuloType & lhs,
         ModuloType const & rhs)
-    noexcept(noexcept(std::declval<int&>() %= std::declval<int const&>()))
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
+    noexcept(noexcept(std::declval<int &>() %= std::declval<int const &>()))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         lhs.value %= rhs.value;
         return lhs;
@@ -298,5 +305,5 @@ struct ModuloType
 };
 } // namespace test
 
-#endif // FOO_BAR_28CF10A2EDD62181EF4C0068F29B121DA378FE5D
+#endif // FOO_BAR_8B95CDBA890E4CE019420696B7D5A4A171FD03C8
 
