@@ -302,6 +302,9 @@ parse_input_file(Arguments const & args)
     int line_number = 0;
     bool in_type_section = false;
 
+    // Global namespace that applies to all types (unless overridden)
+    std::string global_namespace;
+
     // Current type being parsed
     std::string current_kind;
     std::string current_namespace;
@@ -311,7 +314,12 @@ parse_input_file(Arguments const & args)
 
     auto finalize_type = [&]() {
         if (not current_kind.empty()) {
-            if (current_namespace.empty() || current_name.empty() ||
+            // Use global namespace if type-specific namespace is not provided
+            std::string effective_namespace = current_namespace.empty()
+                ? global_namespace
+                : current_namespace;
+
+            if (effective_namespace.empty() || current_name.empty() ||
                 current_description.empty())
             {
                 throw AtlasCommandLineError(
@@ -360,7 +368,7 @@ parse_input_file(Arguments const & args)
 
             result.types.push_back(StrongTypeDescription{
                 .kind = current_kind,
-                .type_namespace = current_namespace,
+                .type_namespace = effective_namespace,
                 .type_name = current_name,
                 .description = expanded_description,
                 .default_value = current_default_value,
@@ -412,6 +420,8 @@ parse_input_file(Arguments const & args)
                 result.guard_separator = value;
             } else if (key == "upcase_guard") {
                 result.upcase_guard = parse_bool(value, "upcase_guard");
+            } else if (key == "namespace") {
+                global_namespace = value;
             } else if (key == "profile") {
                 // Parse profile=NAME; features...
                 // value contains everything after the = sign

@@ -562,6 +562,32 @@ TEST_SUITE("AtlasCommandLine")
         }
     }
 
+    TEST_CASE("Global Namespace Support")
+    {
+        SUBCASE("missing global and type namespace throws error") {
+            auto temp_file = std::filesystem::temp_directory_path() /
+                ("test_no_ns_" + std::to_string(::getpid()) + ".txt");
+
+            {
+                std::ofstream out(temp_file);
+                out << R"([type]
+kind=struct
+name=NoNamespace
+description=strong int
+)";
+            }
+
+            AtlasCommandLine::Arguments args;
+            args.input_file = temp_file.string();
+
+            CHECK_THROWS_AS(
+                AtlasCommandLine::parse_input_file(args),
+                AtlasCommandLineError);
+
+            std::filesystem::remove(temp_file);
+        }
+    }
+
     TEST_CASE("Edge Cases")
     {
         SUBCASE("empty values allowed for optional arguments") {

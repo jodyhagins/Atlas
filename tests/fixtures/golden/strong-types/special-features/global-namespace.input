@@ -1,0 +1,17 @@
+# Test: Global namespace
+# Feature: Namespace defined at file level applies to all types
+# Expected: All types use the global namespace unless overridden
+
+guard_prefix=WJH_IPC
+namespace=wjh::ipc
+
+[type]
+kind=struct
+name=Distance
+description=strong double; +, -, *, /, <=>
+default_value=0.0
+
+[type]
+kind=struct
+name=Handle
+description=strong size_t; ->, ==, !=, bool
