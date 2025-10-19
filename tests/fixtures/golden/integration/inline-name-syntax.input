@@ -1,0 +1,37 @@
+# Test: Inline type name syntax
+# Feature: Type names can be specified in section headers like [Price] or [demo::Price]
+#          Optionally with kind prefix like [struct Price] or [class demo::Price]
+# Expected: Generated code matches kind, namespace and name from section header
+
+guard_prefix=TEST
+namespace=global::ns
+
+# Unqualified name - uses global namespace
+[Price]
+kind=struct
+description=strong double; +, -, ==
+
+# Qualified name - overrides global namespace
+[demo::profiles::Quantity]
+kind=struct
+description=strong int; +, -, *
+
+# Kind prefix with unqualified name
+[struct Volume]
+description=strong double; +, -
+
+# Kind prefix with qualified name
+[class finance::Currency]
+description=strong int; ==, !=, <=>
+
+# Deeply nested namespace
+[a::b::c::d::Type]
+kind=struct
+description=strong unsigned long; ==, !=
+
+# Mix with legacy [type] syntax
+[type]
+kind=struct
+namespace=legacy
+name=OldStyle
+description=strong float; <, >
