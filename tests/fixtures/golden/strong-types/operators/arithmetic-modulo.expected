@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_4396CF434E49798C71E338B30BD3AFFE653E64B3
-#define FOO_BAR_4396CF434E49798C71E338B30BD3AFFE653E64B3
+#ifndef FOO_BAR_8B95CDBA890E4CE019420696B7D5A4A171FD03C8
+#define FOO_BAR_8B95CDBA890E4CE019420696B7D5A4A171FD03C8
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -283,7 +283,7 @@ struct ModuloType
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value %= rhs.value))
+    noexcept(noexcept(std::declval<int &>() %= std::declval<int const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -305,5 +305,5 @@ struct ModuloType
 };
 } // namespace test
 
-#endif // FOO_BAR_4396CF434E49798C71E338B30BD3AFFE653E64B3
+#endif // FOO_BAR_8B95CDBA890E4CE019420696B7D5A4A171FD03C8
 

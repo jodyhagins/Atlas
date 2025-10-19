@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_F4DAEC2EC459D543A42BD36F566A708761405AB7
-#define FOO_BAR_F4DAEC2EC459D543A42BD36F566A708761405AB7
+#ifndef FOO_BAR_31CA019B8A9408BFBBDF43684878972BD97D1449
+#define FOO_BAR_31CA019B8A9408BFBBDF43684878972BD97D1449
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -285,7 +285,7 @@ struct TypeThree
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value *= rhs.value))
+    noexcept(noexcept(std::declval<double &>() *= std::declval<double const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -315,7 +315,7 @@ struct TypeThree
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value += rhs.value))
+    noexcept(noexcept(std::declval<double &>() += std::declval<double const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -345,7 +345,7 @@ struct TypeThree
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value -= rhs.value))
+    noexcept(noexcept(std::declval<double &>() -= std::declval<double const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -384,5 +384,5 @@ struct TypeThree
 } // namespace integration
 } // namespace test
 
-#endif // FOO_BAR_F4DAEC2EC459D543A42BD36F566A708761405AB7
+#endif // FOO_BAR_31CA019B8A9408BFBBDF43684878972BD97D1449
 

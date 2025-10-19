@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_FAC595971C2CB66CA3092C74E1A3154942C865B7
-#define FOO_BAR_FAC595971C2CB66CA3092C74E1A3154942C865B7
+#ifndef FOO_BAR_265A842FDCD9FDC1E118E080123EC8B8BCDCE94B
+#define FOO_BAR_265A842FDCD9FDC1E118E080123EC8B8BCDCE94B
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -284,7 +284,7 @@ struct MultipleProfileType
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value *= rhs.value))
+    noexcept(noexcept(std::declval<int &>() *= std::declval<int const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -314,7 +314,7 @@ struct MultipleProfileType
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value += rhs.value))
+    noexcept(noexcept(std::declval<int &>() += std::declval<int const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -344,7 +344,7 @@ struct MultipleProfileType
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value -= rhs.value))
+    noexcept(noexcept(std::declval<int &>() -= std::declval<int const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -374,7 +374,7 @@ struct MultipleProfileType
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value /= rhs.value))
+    noexcept(noexcept(std::declval<int &>() /= std::declval<int const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -463,5 +463,5 @@ struct MultipleProfileType
 } // namespace profiles
 } // namespace test
 
-#endif // FOO_BAR_FAC595971C2CB66CA3092C74E1A3154942C865B7
+#endif // FOO_BAR_265A842FDCD9FDC1E118E080123EC8B8BCDCE94B
 

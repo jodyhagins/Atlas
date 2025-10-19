@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_A3723DAA0DC8B200AC4658712A84EF516017725C
-#define FOO_BAR_A3723DAA0DC8B200AC4658712A84EF516017725C
+#ifndef FOO_BAR_44DE1CE093ECFBE4DD49F04781118E2ECB9F757B
+#define FOO_BAR_44DE1CE093ECFBE4DD49F04781118E2ECB9F757B
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -298,7 +298,7 @@ struct PlusStarType
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value += rhs.value))
+    noexcept(noexcept(std::declval<int &>() += std::declval<int const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -320,5 +320,5 @@ struct PlusStarType
 };
 } // namespace test
 
-#endif // FOO_BAR_A3723DAA0DC8B200AC4658712A84EF516017725C
+#endif // FOO_BAR_44DE1CE093ECFBE4DD49F04781118E2ECB9F757B
 

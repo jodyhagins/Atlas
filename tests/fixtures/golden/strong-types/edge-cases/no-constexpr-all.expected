@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_97C9C8681B3C9FFC0FAFEE3613F11225224C95EF
-#define FOO_BAR_97C9C8681B3C9FFC0FAFEE3613F11225224C95EF
+#ifndef FOO_BAR_B100442D8A7990F992E5A26AAA7DB6B10B1B2E65
+#define FOO_BAR_B100442D8A7990F992E5A26AAA7DB6B10B1B2E65
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -285,7 +285,7 @@ struct NoConstexprAll
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value += rhs.value))
+    noexcept(noexcept(std::declval<int &>() += std::declval<int const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -315,7 +315,7 @@ struct NoConstexprAll
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value -= rhs.value))
+    noexcept(noexcept(std::declval<int &>() -= std::declval<int const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -368,5 +368,5 @@ struct std::hash<test::edge_cases::NoConstexprAll>
             static_cast<int const &>(t));
     }
 };
-#endif // FOO_BAR_97C9C8681B3C9FFC0FAFEE3613F11225224C95EF
+#endif // FOO_BAR_B100442D8A7990F992E5A26AAA7DB6B10B1B2E65
 

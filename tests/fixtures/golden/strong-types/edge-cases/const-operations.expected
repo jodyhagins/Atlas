@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_0907F7292972B81FD398161792A8BE71293CBDC8
-#define FOO_BAR_0907F7292972B81FD398161792A8BE71293CBDC8
+#ifndef FOO_BAR_B73E8BB569A4C731EC759CD00C51C1C84A3274D6
+#define FOO_BAR_B73E8BB569A4C731EC759CD00C51C1C84A3274D6
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -284,7 +284,7 @@ struct ConstOperations
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value += rhs.value))
+    noexcept(noexcept(std::declval<int &>() += std::declval<int const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -314,7 +314,7 @@ struct ConstOperations
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value -= rhs.value))
+    noexcept(noexcept(std::declval<int &>() -= std::declval<int const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -359,5 +359,5 @@ struct ConstOperations
 } // namespace edge_cases
 } // namespace test
 
-#endif // FOO_BAR_0907F7292972B81FD398161792A8BE71293CBDC8
+#endif // FOO_BAR_B73E8BB569A4C731EC759CD00C51C1C84A3274D6
 

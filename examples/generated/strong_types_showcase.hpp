@@ -1,5 +1,5 @@
-#ifndef EXAMPLE_F3C9099524771D50B547EF6C439ABE230E154D20
-#define EXAMPLE_F3C9099524771D50B547EF6C439ABE230E154D20
+#ifndef EXAMPLE_D1BEFB8C4AB987AA3CF8DACD0447A03E99CDD84E
+#define EXAMPLE_D1BEFB8C4AB987AA3CF8DACD0447A03E99CDD84E
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -295,7 +295,7 @@ struct Price
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value *= rhs.value))
+    noexcept(noexcept(std::declval<double &>() *= std::declval<double const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -325,7 +325,7 @@ struct Price
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value += rhs.value))
+    noexcept(noexcept(std::declval<double &>() += std::declval<double const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -355,7 +355,7 @@ struct Price
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value -= rhs.value))
+    noexcept(noexcept(std::declval<double &>() -= std::declval<double const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -385,7 +385,7 @@ struct Price
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value /= rhs.value))
+    noexcept(noexcept(std::declval<double &>() /= std::declval<double const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -547,7 +547,7 @@ struct Quantity
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value *= rhs.value))
+    noexcept(noexcept(std::declval<int &>() *= std::declval<int const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -577,7 +577,7 @@ struct Quantity
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value += rhs.value))
+    noexcept(noexcept(std::declval<int &>() += std::declval<int const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -607,7 +607,7 @@ struct Quantity
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value -= rhs.value))
+    noexcept(noexcept(std::declval<int &>() -= std::declval<int const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -637,7 +637,7 @@ struct Quantity
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value /= rhs.value))
+    noexcept(noexcept(std::declval<int &>() /= std::declval<int const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -863,7 +863,7 @@ struct Money
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value *= rhs.value))
+    noexcept(noexcept(std::declval<double &>() *= std::declval<double const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -893,7 +893,7 @@ struct Money
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value += rhs.value))
+    noexcept(noexcept(std::declval<double &>() += std::declval<double const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -923,7 +923,7 @@ struct Money
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value -= rhs.value))
+    noexcept(noexcept(std::declval<double &>() -= std::declval<double const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -953,7 +953,7 @@ struct Money
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value /= rhs.value))
+    noexcept(noexcept(std::declval<double &>() /= std::declval<double const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -983,7 +983,7 @@ struct Money
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value <<= rhs.value))
+    noexcept(noexcept(std::declval<double &>() <<= std::declval<double const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -1242,7 +1242,7 @@ struct Meters
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value *= rhs.value))
+    noexcept(noexcept(std::declval<double &>() *= std::declval<double const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -1272,7 +1272,7 @@ struct Meters
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value += rhs.value))
+    noexcept(noexcept(std::declval<double &>() += std::declval<double const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -1302,7 +1302,7 @@ struct Meters
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value -= rhs.value))
+    noexcept(noexcept(std::declval<double &>() -= std::declval<double const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -1332,7 +1332,7 @@ struct Meters
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value /= rhs.value))
+    noexcept(noexcept(std::declval<double &>() /= std::declval<double const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -1439,7 +1439,7 @@ struct Seconds
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value *= rhs.value))
+    noexcept(noexcept(std::declval<double &>() *= std::declval<double const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -1469,7 +1469,7 @@ struct Seconds
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value += rhs.value))
+    noexcept(noexcept(std::declval<double &>() += std::declval<double const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -1499,7 +1499,7 @@ struct Seconds
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value -= rhs.value))
+    noexcept(noexcept(std::declval<double &>() -= std::declval<double const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -1529,7 +1529,7 @@ struct Seconds
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value /= rhs.value))
+    noexcept(noexcept(std::declval<double &>() /= std::declval<double const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -1636,7 +1636,7 @@ struct MetersPerSecond
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value *= rhs.value))
+    noexcept(noexcept(std::declval<double &>() *= std::declval<double const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -1666,7 +1666,7 @@ struct MetersPerSecond
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value += rhs.value))
+    noexcept(noexcept(std::declval<double &>() += std::declval<double const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -1696,7 +1696,7 @@ struct MetersPerSecond
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value -= rhs.value))
+    noexcept(noexcept(std::declval<double &>() -= std::declval<double const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -1726,7 +1726,7 @@ struct MetersPerSecond
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value /= rhs.value))
+    noexcept(noexcept(std::declval<double &>() /= std::declval<double const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -1865,7 +1865,7 @@ struct ByteCount
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value %= rhs.value))
+    noexcept(noexcept(std::declval<size_t &>() %= std::declval<size_t const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -1895,7 +1895,7 @@ struct ByteCount
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value *= rhs.value))
+    noexcept(noexcept(std::declval<size_t &>() *= std::declval<size_t const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -1925,7 +1925,7 @@ struct ByteCount
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value += rhs.value))
+    noexcept(noexcept(std::declval<size_t &>() += std::declval<size_t const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -1955,7 +1955,7 @@ struct ByteCount
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value -= rhs.value))
+    noexcept(noexcept(std::declval<size_t &>() -= std::declval<size_t const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -1985,7 +1985,7 @@ struct ByteCount
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value /= rhs.value))
+    noexcept(noexcept(std::declval<size_t &>() /= std::declval<size_t const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -2015,7 +2015,7 @@ struct ByteCount
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value <<= rhs.value))
+    noexcept(noexcept(std::declval<size_t &>() <<= std::declval<size_t const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -2172,7 +2172,7 @@ struct RedChannel
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value &= rhs.value))
+    noexcept(noexcept(std::declval<uint8_t &>() &= std::declval<uint8_t const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -2202,7 +2202,7 @@ struct RedChannel
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value *= rhs.value))
+    noexcept(noexcept(std::declval<uint8_t &>() *= std::declval<uint8_t const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -2232,7 +2232,7 @@ struct RedChannel
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value += rhs.value))
+    noexcept(noexcept(std::declval<uint8_t &>() += std::declval<uint8_t const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -2262,7 +2262,7 @@ struct RedChannel
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value -= rhs.value))
+    noexcept(noexcept(std::declval<uint8_t &>() -= std::declval<uint8_t const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -2292,7 +2292,7 @@ struct RedChannel
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value /= rhs.value))
+    noexcept(noexcept(std::declval<uint8_t &>() /= std::declval<uint8_t const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -2322,7 +2322,7 @@ struct RedChannel
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value ^= rhs.value))
+    noexcept(noexcept(std::declval<uint8_t &>() ^= std::declval<uint8_t const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -2352,7 +2352,7 @@ struct RedChannel
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value |= rhs.value))
+    noexcept(noexcept(std::declval<uint8_t &>() |= std::declval<uint8_t const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -2444,7 +2444,7 @@ public:
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value <<= rhs.value))
+    noexcept(noexcept(std::declval<std::string &>() <<= std::declval<std::string const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -2575,7 +2575,7 @@ struct Latitude
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value <<= rhs.value))
+    noexcept(noexcept(std::declval<double &>() <<= std::declval<double const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -2731,7 +2731,7 @@ struct Longitude
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value <<= rhs.value))
+    noexcept(noexcept(std::declval<double &>() <<= std::declval<double const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -2872,7 +2872,7 @@ struct ThreadId
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value <<= rhs.value))
+    noexcept(noexcept(std::declval<int &>() <<= std::declval<int const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -2989,7 +2989,7 @@ struct Numerator
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value *= rhs.value))
+    noexcept(noexcept(std::declval<long &>() *= std::declval<long const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -3019,7 +3019,7 @@ struct Numerator
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value += rhs.value))
+    noexcept(noexcept(std::declval<long &>() += std::declval<long const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -3049,7 +3049,7 @@ struct Numerator
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value -= rhs.value))
+    noexcept(noexcept(std::declval<long &>() -= std::declval<long const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -3141,7 +3141,7 @@ struct Denominator
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value *= rhs.value))
+    noexcept(noexcept(std::declval<long &>() *= std::declval<long const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -3171,7 +3171,7 @@ struct Denominator
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value /= rhs.value))
+    noexcept(noexcept(std::declval<long &>() /= std::declval<long const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -3278,7 +3278,7 @@ struct Octet
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value &= rhs.value))
+    noexcept(noexcept(std::declval<uint8_t &>() &= std::declval<uint8_t const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -3308,7 +3308,7 @@ struct Octet
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value <<= rhs.value))
+    noexcept(noexcept(std::declval<uint8_t &>() <<= std::declval<uint8_t const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -3338,7 +3338,7 @@ struct Octet
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value >>= rhs.value))
+    noexcept(noexcept(std::declval<uint8_t &>() >>= std::declval<uint8_t const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -3368,7 +3368,7 @@ struct Octet
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value ^= rhs.value))
+    noexcept(noexcept(std::declval<uint8_t &>() ^= std::declval<uint8_t const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -3398,7 +3398,7 @@ struct Octet
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value |= rhs.value))
+    noexcept(noexcept(std::declval<uint8_t &>() |= std::declval<uint8_t const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -3531,7 +3531,7 @@ public:
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value += rhs.value))
+    noexcept(noexcept(std::declval<std::string &>() += std::declval<std::string const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -3561,7 +3561,7 @@ public:
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value <<= rhs.value))
+    noexcept(noexcept(std::declval<std::string &>() <<= std::declval<std::string const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -4678,4 +4678,4 @@ struct EnableFlag
 };
 } // namespace flags
 
-#endif // EXAMPLE_F3C9099524771D50B547EF6C439ABE230E154D20
+#endif // EXAMPLE_D1BEFB8C4AB987AA3CF8DACD0447A03E99CDD84E

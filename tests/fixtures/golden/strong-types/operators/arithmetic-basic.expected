@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_02F0F1D298A8239FF16676D05979485713E33A35
-#define FOO_BAR_02F0F1D298A8239FF16676D05979485713E33A35
+#ifndef FOO_BAR_4163B5F838CF4AD624A15A7664658FB230656048
+#define FOO_BAR_4163B5F838CF4AD624A15A7664658FB230656048
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -283,7 +283,7 @@ struct ArithmeticBasicType
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value %= rhs.value))
+    noexcept(noexcept(std::declval<int &>() %= std::declval<int const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -313,7 +313,7 @@ struct ArithmeticBasicType
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value *= rhs.value))
+    noexcept(noexcept(std::declval<int &>() *= std::declval<int const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -343,7 +343,7 @@ struct ArithmeticBasicType
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value += rhs.value))
+    noexcept(noexcept(std::declval<int &>() += std::declval<int const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -373,7 +373,7 @@ struct ArithmeticBasicType
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value -= rhs.value))
+    noexcept(noexcept(std::declval<int &>() -= std::declval<int const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -403,7 +403,7 @@ struct ArithmeticBasicType
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value /= rhs.value))
+    noexcept(noexcept(std::declval<int &>() /= std::declval<int const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -425,5 +425,5 @@ struct ArithmeticBasicType
 };
 } // namespace test
 
-#endif // FOO_BAR_02F0F1D298A8239FF16676D05979485713E33A35
+#endif // FOO_BAR_4163B5F838CF4AD624A15A7664658FB230656048
 

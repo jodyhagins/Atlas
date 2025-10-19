@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_1D73B3E1E90D7139F6D884A3009A9A666B80C00F
-#define FOO_BAR_1D73B3E1E90D7139F6D884A3009A9A666B80C00F
+#ifndef FOO_BAR_EFFF8BEC33116382470877B5162E01B88C45464E
+#define FOO_BAR_EFFF8BEC33116382470877B5162E01B88C45464E
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -283,7 +283,7 @@ struct MultiplyDivideType
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value *= rhs.value))
+    noexcept(noexcept(std::declval<int &>() *= std::declval<int const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -313,7 +313,7 @@ struct MultiplyDivideType
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
 #endif
-    noexcept(noexcept(lhs.value /= rhs.value))
+    noexcept(noexcept(std::declval<int &>() /= std::declval<int const &>()))
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -335,5 +335,5 @@ struct MultiplyDivideType
 };
 } // namespace test
 
-#endif // FOO_BAR_1D73B3E1E90D7139F6D884A3009A9A666B80C00F
+#endif // FOO_BAR_EFFF8BEC33116382470877B5162E01B88C45464E
 
