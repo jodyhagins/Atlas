@@ -1,0 +1,17 @@
+# Test: Global namespace with override
+# Feature: Type-specific namespace overrides global namespace
+# Expected: First type uses global namespace, second uses its own
+
+guard_prefix=TEST
+namespace=global::ns
+
+[type]
+kind=struct
+name=TypeWithGlobal
+description=strong int; +, -
+
+[type]
+kind=struct
+namespace=specific::ns
+name=TypeWithSpecific
+description=strong double; *, /
