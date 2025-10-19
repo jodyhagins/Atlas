@@ -266,7 +266,14 @@ constexpr char arithmetic_binary_operators[] = R"(
     friend {{{const_expr}}}{{{class_name}}} & operator {{{op}}}= (
         {{{class_name}}} & lhs,
         {{{class_name}}} const & rhs)
-    noexcept(noexcept(std::declval<{{{underlying_type}}}&>() {{{op}}}= std::declval<{{{underlying_type}}} const&>()))
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
+    noexcept(noexcept(lhs.value {{{op}}}= rhs.value))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         lhs.value {{{op}}}= rhs.value;
         return lhs;
