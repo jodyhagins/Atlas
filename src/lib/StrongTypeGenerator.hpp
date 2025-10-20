@@ -197,7 +197,7 @@ struct StrongTypeDescription
      *   - {"pi", "3.14159"} generates: static constexpr Type pi =
      * Type(3.14159);
      */
-    std::map<std::string, std::string> constants;
+    std::map<std::string, std::string> constants = {};
 
     /**
      * When empty, the generated header guard will be prefixed with the
