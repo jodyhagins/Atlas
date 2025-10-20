@@ -180,6 +180,9 @@ auto strong_template = R"({{{includes}}}{{#namespace_open}}
     {{#addressof_operators}}
     {{>addressof_operators}}
     {{/addressof_operators}}
+    {{#arrow_operator}}
+    {{>arrow_operator}}
+    {{/arrow_operator}}
     {{#nullary}}
     {{>nullary}}
     {{/nullary}}
@@ -261,6 +264,96 @@ constexpr char addressof_operators[] = R"(
     }
     {{{const_expr}}}{{{underlying_type}}} * operator {{{op}}} ()
     noexcept
+    {
+        return std::addressof(value);
+    }
+)";
+
+constexpr char arrow_operator_template[] = R"(
+    /**
+     * Arrow operator - forwards to wrapped type if it's a pointer or
+     * pointer-like, otherwise returns pointer to wrapped value.
+     *
+     * pointer types: returns the pointer itself (built-in -> handles the rest)
+     * pointer-like types (smart pointers): returns value.operator->()
+     * other types: returns &value
+     */
+private:
+    // forward for raw pointers (const) - return the pointer itself
+    template <typename T>
+    static {{{const_expr}}}T
+    arrow_impl(T const & v, std::true_type /* is_pointer */)
+    {
+        return v;
+    }
+
+    // forward for pointer-like types (const) - call their operator->
+    template <typename T>
+    static {{{const_expr}}}auto
+    arrow_impl(T const & v, std::false_type /* is_pointer */)
+    -> decltype(v.operator->())
+    {
+        return v.operator->();
+    }
+
+    // forward for raw pointers (non-const) - return the pointer itself
+    template <typename T>
+    static {{{const_expr}}}T
+    arrow_impl(T & v, std::true_type /* is_pointer */)
+    {
+        return v;
+    }
+
+    // forward for pointer-like types (non-const) - call their operator->
+    template <typename T>
+    static {{{const_expr}}}auto
+    arrow_impl(T & v, std::false_type /* is_pointer */)
+    -> decltype(v.operator->())
+    {
+        return v.operator->();
+    }
+
+public:
+    // Forward to wrapped type if it's arrow-operable (const)
+    template <typename T = {{{underlying_type}}}>
+    {{{const_expr}}}auto operator -> () const
+    -> typename std::enable_if<
+        atlas::atlas_detail::has_arrow_operator_const<T>::value,
+        decltype(arrow_impl(
+            std::declval<T const&>(),
+            typename std::is_pointer<T>::type{}))>::type
+    {
+        return arrow_impl(value, typename std::is_pointer<T>::type{});
+    }
+
+    // Forward to wrapped type if it's arrow-operable (non-const)
+    template <typename T = {{{underlying_type}}}>
+    {{{const_expr}}}auto operator -> ()
+    -> typename std::enable_if<
+        atlas::atlas_detail::has_arrow_operator<T>::value,
+        decltype(arrow_impl(
+            std::declval<T&>(),
+            typename std::is_pointer<T>::type{}))>::type
+    {
+        return arrow_impl(value, typename std::is_pointer<T>::type{});
+    }
+
+    // Fallback: return pointer to wrapped value (const)
+    template <typename T = {{{underlying_type}}}>
+    {{{const_expr}}}auto operator -> () const noexcept
+    -> typename std::enable_if<
+        not atlas::atlas_detail::has_arrow_operator_const<T>::value,
+        T const *>::type
+    {
+        return std::addressof(value);
+    }
+
+    // Fallback: return pointer to wrapped value (non-const)
+    template <typename T = {{{underlying_type}}}>
+    {{{const_expr}}}auto operator -> () noexcept
+    -> typename std::enable_if<
+        not atlas::atlas_detail::has_arrow_operator<T>::value,
+        T *>::type
     {
         return std::addressof(value);
     }
@@ -745,6 +838,7 @@ struct ClassInfo
     std::vector<Operator> unary_operators;
     std::string indirection_operator;
     std::vector<Operator> addressof_operators;
+    bool arrow_operator = false;
     bool spaceship_operator = false;
     bool defaulted_equality_operator = false;
     std::vector<Operator> relational_operators;
@@ -789,6 +883,7 @@ BOOST_DESCRIBE_STRUCT(
      unary_operators,
      indirection_operator,
      addressof_operators,
+     arrow_operator,
      spaceship_operator,
      defaulted_equality_operator,
      relational_operators,
@@ -1116,7 +1211,7 @@ parse(
                     info.includes_vec.push_back("<memory>");
                 } else if (sv == "->") {
                     recognized = true;
-                    info.addressof_operators.emplace_back(sv);
+                    info.arrow_operator = true;
                     info.includes_vec.push_back("<memory>");
                 } else if (sv == "<=>") {
                     recognized = true;
@@ -1437,6 +1532,7 @@ render_code(ClassInfo const & info)
         {{"arithmetic_binary_operators", arithmetic_binary_operators},
          {"unary_operators", unary_operators},
          {"addressof_operators", addressof_operators},
+         {"arrow_operator", arrow_operator_template},
          {"relational_operator", relational_operator},
          {"logical_operator", logical_operator},
          {"bool_operator", bool_operator_template},
@@ -1515,7 +1611,8 @@ operator () (StrongTypeDescription const & desc)
         << R"(#if __has_include(<version>)
 #include <version>
 #endif)" << '\n'
-        << preamble() << code << "#endif // " << guard << '\n';
+        << preamble({.include_arrow_operator_traits = info.arrow_operator})
+        << code << "#endif // " << guard << '\n';
     return strm.str();
 }
 
@@ -1530,10 +1627,16 @@ generate_strong_types_file(
     std::map<std::string, std::string> all_guards;
     std::ostringstream combined_code;
     std::vector<StrongTypeGenerator::Warning> warnings;
+    bool any_arrow_operator = false;
 
     // Generate each type WITHOUT preamble, and collect includes
     for (auto const & desc : descriptions) {
         auto info = parse(desc, &warnings);
+
+        // Check if this type uses arrow operator
+        if (info.arrow_operator) {
+            any_arrow_operator = true;
+        }
 
         // Collect includes and guards from this type
         for (auto const & include : info.includes_vec) {
@@ -1601,7 +1704,7 @@ generate_strong_types_file(
     }
 
     // Add strong_type_tag definition once for the entire file
-    output << preamble();
+    output << preamble({.include_arrow_operator_traits = any_arrow_operator});
     output << content << "#endif // " << guard << '\n';
 
     return output.str();

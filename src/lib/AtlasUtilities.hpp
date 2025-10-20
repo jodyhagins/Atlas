@@ -43,9 +43,17 @@ std::string generate_header_guard(
 std::string trim(std::string const & str);
 
 /**
+ * @brief Options for controlling what code is included in the preamble
+ */
+struct PreambleOptions
+{
+    bool include_arrow_operator_traits = false;
+};
+
+/**
  * @brief The code necessary in every generated file.
  */
-std::string preamble();
+std::string preamble(PreambleOptions options = {});
 
 /**
  * @brief Check if a file descriptor supports ANSI color codes
