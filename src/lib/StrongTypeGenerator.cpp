@@ -502,17 +502,63 @@ constexpr char implicit_cast_operator_template[] = R"(
 
 constexpr char indirection_operator_template[] = R"(
     /**
-     * The indirection operator provides a reference to the wrapped object.
+     * Dereference operator - forwards to wrapped type's operator* if available,
+     * otherwise returns reference to wrapped value.
+     *
+     * Pointer types: dereferences the pointer (returns *ptr)
+     * Pointer-like types (smart pointers, iterators, optional): returns *value
+     * Other types: returns reference to value (fallback)
      */
-    {{{const_expr}}}{{{underlying_type}}} const & operator * () const
-    noexcept
+private:
+    // Tag dispatch implementation for const version
+    template <typename T>
+    {{{const_expr}}}auto dereference_impl(T const & v, std::true_type) const
+    -> decltype(*v)
     {
-        return value;
+        return *v;
     }
-    {{{const_expr}}}{{{underlying_type}}} & operator * ()
-    noexcept
+
+    template <typename T>
+    {{{const_expr}}}T const & dereference_impl(T const & v, std::false_type) const
     {
-        return value;
+        return v;
+    }
+
+    // Tag dispatch implementation for non-const version
+    template <typename T>
+    {{{const_expr}}}auto dereference_impl(T & v, std::true_type)
+    -> decltype(*v)
+    {
+        return *v;
+    }
+
+    template <typename T>
+    {{{const_expr}}}T & dereference_impl(T & v, std::false_type)
+    {
+        return v;
+    }
+
+public:
+    // Const dereference operator
+    {{{const_expr}}}auto operator * () const
+    -> decltype(dereference_impl(
+        value,
+        atlas::atlas_detail::has_dereference_operator_const<{{{underlying_type}}}>{}))
+    {
+        return dereference_impl(
+            value,
+            atlas::atlas_detail::has_dereference_operator_const<{{{underlying_type}}}>{});
+    }
+
+    // Non-const dereference operator
+    {{{const_expr}}}auto operator * ()
+    -> decltype(dereference_impl(
+        value,
+        atlas::atlas_detail::has_dereference_operator<{{{underlying_type}}}>{}))
+    {
+        return dereference_impl(
+            value,
+            atlas::atlas_detail::has_dereference_operator<{{{underlying_type}}}>{});
     }
 )";
 
@@ -836,7 +882,7 @@ struct ClassInfo
     std::string underlying_type;
     std::vector<Operator> arithmetic_binary_operators;
     std::vector<Operator> unary_operators;
-    std::string indirection_operator;
+    bool indirection_operator = false;
     std::vector<Operator> addressof_operators;
     bool arrow_operator = false;
     bool spaceship_operator = false;
@@ -1204,7 +1250,7 @@ parse(
                     info.increment_operators.emplace_back(sv);
                 } else if (sv == "@") {
                     recognized = true;
-                    info.indirection_operator = indirection_operator_template;
+                    info.indirection_operator = true;
                 } else if (sv == "&of") {
                     recognized = true;
                     info.addressof_operators.emplace_back("&");
@@ -1611,7 +1657,10 @@ operator () (StrongTypeDescription const & desc)
         << R"(#if __has_include(<version>)
 #include <version>
 #endif)" << '\n'
-        << preamble({.include_arrow_operator_traits = info.arrow_operator})
+        << preamble(
+               {.include_arrow_operator_traits = info.arrow_operator,
+                .include_dereference_operator_traits =
+                    info.indirection_operator})
         << code << "#endif // " << guard << '\n';
     return strm.str();
 }
@@ -1628,6 +1677,7 @@ generate_strong_types_file(
     std::ostringstream combined_code;
     std::vector<StrongTypeGenerator::Warning> warnings;
     bool any_arrow_operator = false;
+    bool any_indirection_operator = false;
 
     // Generate each type WITHOUT preamble, and collect includes
     for (auto const & desc : descriptions) {
@@ -1636,6 +1686,11 @@ generate_strong_types_file(
         // Check if this type uses arrow operator
         if (info.arrow_operator) {
             any_arrow_operator = true;
+        }
+
+        // Check if this type uses indirection operator
+        if (info.indirection_operator) {
+            any_indirection_operator = true;
         }
 
         // Collect includes and guards from this type
@@ -1704,7 +1759,9 @@ generate_strong_types_file(
     }
 
     // Add strong_type_tag definition once for the entire file
-    output << preamble({.include_arrow_operator_traits = any_arrow_operator});
+    output << preamble(
+        {.include_arrow_operator_traits = any_arrow_operator,
+         .include_dereference_operator_traits = any_indirection_operator});
     output << content << "#endif // " << guard << '\n';
 
     return output.str();

@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_CE638DE37FC359F581937341B60516F3219EFB51
-#define FOO_BAR_CE638DE37FC359F581937341B60516F3219EFB51
+#ifndef FOO_BAR_9D7C0D478E81467148C39D2C3A69DCFE91393EAB
+#define FOO_BAR_9D7C0D478E81467148C39D2C3A69DCFE91393EAB
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -204,6 +204,20 @@ end_(T && t) noexcept(noexcept(end(std::forward<T>(t))))
 {
     return end(std::forward<T>(t));
 }
+// Detects if T is dereferenceable (pointers, smart pointers, iterators, optional)
+
+template <typename T, typename = void>
+struct is_dereferenceable : std::false_type {};
+
+template <typename T>
+struct is_dereferenceable<T, void_t<decltype(*std::declval<T&>())>>
+: std::true_type {};
+
+template <typename T>
+using has_dereference_operator = is_dereferenceable<T>;
+
+template <typename T>
+using has_dereference_operator_const = is_dereferenceable<typename std::add_const<T>::type>;
 
 } // namespace atlas_detail
 
@@ -275,17 +289,63 @@ struct MoveOnlyUniquePtr
     constexpr explicit operator std::unique_ptr<int> & () { return value; }
 
     /**
-     * The indirection operator provides a reference to the wrapped object.
+     * Dereference operator - forwards to wrapped type's operator* if available,
+     * otherwise returns reference to wrapped value.
+     *
+     * Pointer types: dereferences the pointer (returns *ptr)
+     * Pointer-like types (smart pointers, iterators, optional): returns *value
+     * Other types: returns reference to value (fallback)
      */
-    constexpr std::unique_ptr<int> const & operator * () const
-    noexcept
+private:
+    // Tag dispatch implementation for const version
+    template <typename T>
+    constexpr auto dereference_impl(T const & v, std::true_type) const
+    -> decltype(*v)
     {
-        return value;
+        return *v;
     }
-    constexpr std::unique_ptr<int> & operator * ()
-    noexcept
+
+    template <typename T>
+    constexpr T const & dereference_impl(T const & v, std::false_type) const
     {
-        return value;
+        return v;
+    }
+
+    // Tag dispatch implementation for non-const version
+    template <typename T>
+    constexpr auto dereference_impl(T & v, std::true_type)
+    -> decltype(*v)
+    {
+        return *v;
+    }
+
+    template <typename T>
+    constexpr T & dereference_impl(T & v, std::false_type)
+    {
+        return v;
+    }
+
+public:
+    // Const dereference operator
+    constexpr auto operator * () const
+    -> decltype(dereference_impl(
+        value,
+        atlas::atlas_detail::has_dereference_operator_const<std::unique_ptr<int>>{}))
+    {
+        return dereference_impl(
+            value,
+            atlas::atlas_detail::has_dereference_operator_const<std::unique_ptr<int>>{});
+    }
+
+    // Non-const dereference operator
+    constexpr auto operator * ()
+    -> decltype(dereference_impl(
+        value,
+        atlas::atlas_detail::has_dereference_operator<std::unique_ptr<int>>{}))
+    {
+        return dereference_impl(
+            value,
+            atlas::atlas_detail::has_dereference_operator<std::unique_ptr<int>>{});
     }
 
     /**
@@ -302,5 +362,5 @@ struct MoveOnlyUniquePtr
 } // namespace edge_cases
 } // namespace test
 
-#endif // FOO_BAR_CE638DE37FC359F581937341B60516F3219EFB51
+#endif // FOO_BAR_9D7C0D478E81467148C39D2C3A69DCFE91393EAB
 

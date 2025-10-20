@@ -48,6 +48,7 @@ std::string trim(std::string const & str);
 struct PreambleOptions
 {
     bool include_arrow_operator_traits = false;
+    bool include_dereference_operator_traits = false;
 };
 
 /**

@@ -967,6 +967,86 @@ int main() {
         }
         CHECK(result.success);
     }
+
+    TEST_CASE("Dereference operator forwards correctly for pointer types")
+    {
+        CompilationTester tester;
+
+        auto description = R"(
+# Test dereference operator forwarding with different pointer types
+
+[IntPtrWrapper]
+kind=struct
+namespace=test
+name=IntPtrWrapper
+description=strong int*; @, no-constexpr
+
+[SharedPtrWrapper]
+kind=struct
+namespace=test
+name=SharedPtrWrapper
+description=strong std::shared_ptr<std::string>; @, no-constexpr
+
+[UniquePtrWrapper]
+kind=struct
+namespace=test
+name=UniquePtrWrapper
+description=strong std::unique_ptr<std::string>; @, no-constexpr
+
+[StringWrapper]
+kind=struct
+namespace=test
+name=StringWrapper
+description=strong std::string; @, no-constexpr
+)";
+
+        auto test_code = R"(
+#include <memory>
+#include <cassert>
+#include <string>
+
+int main() {
+    // Test 1: Raw pointer dereferencing
+    int value = 42;
+    test::IntPtrWrapper ptr(&value);
+    // *ptr should dereference the pointer, giving us an int&
+    assert(*ptr == 42);
+    *ptr = 100;
+    assert(value == 100);
+
+    // Test 2: shared_ptr dereferencing
+    auto str_ptr = std::make_shared<std::string>("Hello");
+    test::SharedPtrWrapper shared(str_ptr);
+    // *shared should forward to shared_ptr's operator*, giving us string&
+    assert(*shared == "Hello");
+    *shared = "World";
+    assert(*str_ptr == "World");
+
+    // Test 3: unique_ptr dereferencing
+    test::UniquePtrWrapper unique(std::make_unique<std::string>("Test"));
+    assert(*unique == "Test");
+    *unique += "ing";
+    assert(*unique == "Testing");
+
+    // Test 4: Non-pointer type (reference fallback)
+    test::StringWrapper str("Original");
+    // *str should return reference to the wrapped string
+    assert(*str == "Original");
+    *str = "Modified";
+    assert(*str == "Modified");
+
+    return 0;
+}
+)";
+
+        auto result = tester.compile_and_run(description, test_code);
+
+        if (not result.success) {
+            std::cerr << "Dereference operator forwarding test failed:\n"
+                << result.output << "\n";
+        }
+        CHECK(result.success);
+    }
 }
 
 } // anonymous namespace

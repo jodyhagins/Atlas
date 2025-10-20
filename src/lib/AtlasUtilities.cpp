@@ -299,6 +299,23 @@ template <typename T>
 using has_arrow_operator_const = is_arrow_operable_const<T>;
 )";
 
+    static constexpr char const dereference_operator_traits[] = R"(
+// Detects if T is dereferenceable (pointers, smart pointers, iterators, optional)
+
+template <typename T, typename = void>
+struct is_dereferenceable : std::false_type {};
+
+template <typename T>
+struct is_dereferenceable<T, void_t<decltype(*std::declval<T&>())>>
+: std::true_type {};
+
+template <typename T>
+using has_dereference_operator = is_dereferenceable<T>;
+
+template <typename T>
+using has_dereference_operator_const = is_dereferenceable<typename std::add_const<T>::type>;
+)";
+
     static constexpr char const preamble_2[] = R"(
 } // namespace atlas_detail
 
@@ -330,6 +347,9 @@ value(T && t)
     std::string result = preamble_1 + 1;
     if (options.include_arrow_operator_traits) {
         result += arrow_operator_traits + 1;
+    }
+    if (options.include_dereference_operator_traits) {
+        result += dereference_operator_traits + 1;
     }
     result += preamble_2;
     return result;
