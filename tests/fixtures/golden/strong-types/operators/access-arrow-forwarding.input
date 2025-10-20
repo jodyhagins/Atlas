@@ -1,0 +1,38 @@
+# Test: Arrow operator with SFINAE-based forwarding
+# Feature: Detects and forwards to wrapped type's operator-> when available
+# Expected: operator->() forwards to T::operator->() or returns std::addressof(value)
+
+# Test 1: Regular type without operator-> (fallback to addressof)
+[ArrowStringWrapper]
+kind=struct
+namespace=test
+name=ArrowStringWrapper
+description=strong std::string; ->
+
+# Test 2: Raw pointer (has operator->)
+[ArrowRawPointer]
+kind=struct
+namespace=test
+name=ArrowRawPointer
+description=strong int*; ->
+
+# Test 3: std::shared_ptr (has operator->)
+[ArrowSharedPtr]
+kind=struct
+namespace=test
+name=ArrowSharedPtr
+description=strong std::shared_ptr<int>; ->
+
+# Test 4: std::unique_ptr (has operator->)
+[ArrowUniquePtr]
+kind=struct
+namespace=test
+name=ArrowUniquePtr
+description=strong std::unique_ptr<int>; ->
+
+# Test 5: Optional (has operator-> in C++17+)
+[ArrowOptional]
+kind=struct
+namespace=test
+name=ArrowOptional
+description=strong std::optional<int>; ->

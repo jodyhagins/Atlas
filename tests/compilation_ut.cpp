@@ -889,6 +889,84 @@ int main() {
         }
         CHECK(result.success);
     }
+
+    TEST_CASE("Arrow operator forwards correctly for pointer types")
+    {
+        CompilationTester tester;
+
+        auto description = R"(
+# Test arrow operator forwarding with different pointer types
+
+[IntPtrWrapper]
+kind=struct
+namespace=test
+name=IntPtrWrapper
+description=strong int*; ->, no-constexpr
+
+[SharedPtrWrapper]
+kind=struct
+namespace=test
+name=SharedPtrWrapper
+description=strong std::shared_ptr<std::string>; ->, no-constexpr
+
+[UniquePtrWrapper]
+kind=struct
+namespace=test
+name=UniquePtrWrapper
+description=strong std::unique_ptr<std::string>; ->, no-constexpr
+
+[StringWrapper]
+kind=struct
+namespace=test
+name=StringWrapper
+description=strong std::string; ->, no-constexpr
+)";
+
+        auto test_code = R"(
+#include <memory>
+#include <cassert>
+#include <string>
+
+int main() {
+    // Test 1: Raw pointer forwarding
+    int value = 42;
+    test::IntPtrWrapper ptr(&value);
+    // For raw pointer to int, operator-> returns the pointer
+    // C++ then applies -> again, giving us *ptr (the int)
+    // So we can't test ptr->something, but we can verify it returns right type
+    int* raw = ptr.operator->();
+    assert(*raw == 42);
+
+    // Test 2: shared_ptr forwarding
+    auto str_ptr = std::make_shared<std::string>("Hello");
+    test::SharedPtrWrapper shared(str_ptr);
+    // This should forward to shared_ptr's operator->, giving us string*
+    // Then we can access string methods
+    assert(shared->length() == 5);
+    assert(shared->substr(0, 2) == "He");
+
+    // Test 3: unique_ptr forwarding
+    test::UniquePtrWrapper unique(std::make_unique<std::string>("World"));
+    assert(unique->length() == 5);
+    assert(unique->at(0) == 'W');
+
+    // Test 4: Non-pointer type (addressof fallback)
+    test::StringWrapper str("Testing");
+    assert(str->length() == 7);
+    assert(str->substr(0, 4) == "Test");
+
+    return 0;
+}
+)";
+
+        auto result = tester.compile_and_run(description, test_code);
+
+        if (not result.success) {
+            std::cerr << "Arrow operator forwarding test failed:\n"
+                << result.output << "\n";
+        }
+        CHECK(result.success);
+    }
 }
 
 } // anonymous namespace

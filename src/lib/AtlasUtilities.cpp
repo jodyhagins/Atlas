@@ -72,9 +72,9 @@ trim(std::string const & str)
 }
 
 std::string
-preamble()
+preamble(PreambleOptions options)
 {
-    static constexpr char const result[] = R"(
+    static constexpr char const preamble_1[] = R"(
 #ifndef WJH_ATLAS_50E620B544874CB8BE4412EE6773BF90
 #define WJH_ATLAS_50E620B544874CB8BE4412EE6773BF90
 
@@ -257,7 +257,49 @@ end_(T && t) noexcept(noexcept(end(std::forward<T>(t))))
 {
     return end(std::forward<T>(t));
 }
+)";
 
+    static constexpr char const arrow_operator_traits[] = R"(
+// Detects if T is a pointer or pointer-like type (has operator->)
+
+template <typename T>
+class is_arrow_operable
+{
+    template <typename U>
+    static auto test(int)
+    -> decltype(std::declval<U&>().operator->(), std::true_type{});
+
+    template <typename U>
+    static auto test(...) -> std::false_type;
+
+public:
+    static constexpr bool value = decltype(test<T>(0))::value ||
+        std::is_pointer<T>::value;
+};
+
+template <typename T>
+class is_arrow_operable_const
+{
+    template <typename U>
+    static auto test(int)
+    -> decltype(std::declval<U const&>().operator->(), std::true_type{});
+
+    template <typename U>
+    static auto test(...) -> std::false_type;
+
+public:
+    static constexpr bool value = decltype(test<T>(0))::value ||
+        std::is_pointer<T>::value;
+};
+
+template <typename T>
+using has_arrow_operator = is_arrow_operable<T>;
+
+template <typename T>
+using has_arrow_operator_const = is_arrow_operable_const<T>;
+)";
+
+    static constexpr char const preamble_2[] = R"(
 } // namespace atlas_detail
 
 #if defined(__cpp_inline_variables) && __cpp_inline_variables >= 201606L
@@ -284,7 +326,13 @@ value(T && t)
 //////////////////////////////////////////////////////////////////////
 
 )";
-    return result + 1;
+
+    std::string result = preamble_1 + 1;
+    if (options.include_arrow_operator_traits) {
+        result += arrow_operator_traits + 1;
+    }
+    result += preamble_2;
+    return result;
 }
 
 bool

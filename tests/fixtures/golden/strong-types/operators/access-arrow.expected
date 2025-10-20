@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_4789C2927E6BA79DEB9DB1ADB3A8919EAE5862E4
-#define FOO_BAR_4789C2927E6BA79DEB9DB1ADB3A8919EAE5862E4
+#ifndef FOO_BAR_C27BB0B99B4515E0ECBDAA6291E1CD9B3E906025
+#define FOO_BAR_C27BB0B99B4515E0ECBDAA6291E1CD9B3E906025
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -206,6 +206,43 @@ end_(T && t) noexcept(noexcept(end(std::forward<T>(t))))
 {
     return end(std::forward<T>(t));
 }
+// Detects if T is a pointer or pointer-like type (has operator->)
+
+template <typename T>
+class is_arrow_operable
+{
+    template <typename U>
+    static auto test(int)
+    -> decltype(std::declval<U&>().operator->(), std::true_type{});
+
+    template <typename U>
+    static auto test(...) -> std::false_type;
+
+public:
+    static constexpr bool value = decltype(test<T>(0))::value ||
+        std::is_pointer<T>::value;
+};
+
+template <typename T>
+class is_arrow_operable_const
+{
+    template <typename U>
+    static auto test(int)
+    -> decltype(std::declval<U const&>().operator->(), std::true_type{});
+
+    template <typename U>
+    static auto test(...) -> std::false_type;
+
+public:
+    static constexpr bool value = decltype(test<T>(0))::value ||
+        std::is_pointer<T>::value;
+};
+
+template <typename T>
+using has_arrow_operator = is_arrow_operable<T>;
+
+template <typename T>
+using has_arrow_operator_const = is_arrow_operable_const<T>;
 
 } // namespace atlas_detail
 
@@ -276,20 +313,94 @@ struct ArrowType
     constexpr explicit operator std::string & () { return value; }
 
     /**
-     * Access a pointer to the wrapped object.
+     * Arrow operator - forwards to wrapped type if it's a pointer or
+     * pointer-like, otherwise returns pointer to wrapped value.
+     *
+     * pointer types: returns the pointer itself (built-in -> handles the rest)
+     * pointer-like types (smart pointers): returns value.operator->()
+     * other types: returns &value
      */
-    constexpr std::string const * operator -> () const
-    noexcept
+private:
+    // forward for raw pointers (const) - return the pointer itself
+    template <typename T>
+    static constexpr T
+    arrow_impl(T const & v, std::true_type /* is_pointer */)
+    {
+        return v;
+    }
+
+    // forward for pointer-like types (const) - call their operator->
+    template <typename T>
+    static constexpr auto
+    arrow_impl(T const & v, std::false_type /* is_pointer */)
+    -> decltype(v.operator->())
+    {
+        return v.operator->();
+    }
+
+    // forward for raw pointers (non-const) - return the pointer itself
+    template <typename T>
+    static constexpr T
+    arrow_impl(T & v, std::true_type /* is_pointer */)
+    {
+        return v;
+    }
+
+    // forward for pointer-like types (non-const) - call their operator->
+    template <typename T>
+    static constexpr auto
+    arrow_impl(T & v, std::false_type /* is_pointer */)
+    -> decltype(v.operator->())
+    {
+        return v.operator->();
+    }
+
+public:
+    // Forward to wrapped type if it's arrow-operable (const)
+    template <typename T = std::string>
+    constexpr auto operator -> () const
+    -> typename std::enable_if<
+        atlas::atlas_detail::has_arrow_operator_const<T>::value,
+        decltype(arrow_impl(
+            std::declval<T const&>(),
+            typename std::is_pointer<T>::type{}))>::type
+    {
+        return arrow_impl(value, typename std::is_pointer<T>::type{});
+    }
+
+    // Forward to wrapped type if it's arrow-operable (non-const)
+    template <typename T = std::string>
+    constexpr auto operator -> ()
+    -> typename std::enable_if<
+        atlas::atlas_detail::has_arrow_operator<T>::value,
+        decltype(arrow_impl(
+            std::declval<T&>(),
+            typename std::is_pointer<T>::type{}))>::type
+    {
+        return arrow_impl(value, typename std::is_pointer<T>::type{});
+    }
+
+    // Fallback: return pointer to wrapped value (const)
+    template <typename T = std::string>
+    constexpr auto operator -> () const noexcept
+    -> typename std::enable_if<
+        not atlas::atlas_detail::has_arrow_operator_const<T>::value,
+        T const *>::type
     {
         return std::addressof(value);
     }
-    constexpr std::string * operator -> ()
-    noexcept
+
+    // Fallback: return pointer to wrapped value (non-const)
+    template <typename T = std::string>
+    constexpr auto operator -> () noexcept
+    -> typename std::enable_if<
+        not atlas::atlas_detail::has_arrow_operator<T>::value,
+        T *>::type
     {
         return std::addressof(value);
     }
 };
 } // namespace test
 
-#endif // FOO_BAR_4789C2927E6BA79DEB9DB1ADB3A8919EAE5862E4
+#endif // FOO_BAR_C27BB0B99B4515E0ECBDAA6291E1CD9B3E906025
 
