@@ -7,7 +7,7 @@
 
 > *"I got tired of writing the same boilerplate strong type wrappers over and over, so I wrote a tool to generate them. Then I spent 10x more time perfecting the tool than I would've spent just writing the types. This is the way."*
 
-A C++20 code generator that turns terse descriptions into strongly typed wrappers.
+A C++ code generator that turns terse descriptions into strongly typed wrappers.
 Because `execute(int64_t bid_price, int64_t bid_qty, int64_t ask_price, int64_t ask_qty)`
 is a serious bug and changing it to
 `execute(Price bid_price, Quantity bid_qty, Price ask_price, Quantity ask_qty)`
@@ -46,16 +46,16 @@ add_atlas_strong_types_from_file(
 add_atlas_interactions_inline(
     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/Interactions.hpp
     TARGET my_library
-    CONTENT "
-include \"Price.hpp\"
-include \"Quantity.hpp\"
-include \"Total.hpp\"
+    CONTENT [[
+include "Price.hpp"
+include "Quantity.hpp"
+include "Total.hpp"
 
 namespace=commerce
 
 Price * Quantity -> Total
 Price * int <-> Price
-")
+]])
 ```
 
 See [`docs/AtlasHelpers.md`](docs/AtlasHelpers.md) for complete reference of all helper functions, or [`docs/cmake-integration.md`](docs/cmake-integration.md) for advanced integration patterns.
@@ -89,7 +89,7 @@ Requirements: C++20 compiler (GCC ≥11, Clang ≥15), CMake ≥3.20, and the cr
 Generate a single type:
 ```bash
 atlas --kind=struct --namespace=geom --name=Length \
-      --description="strong double; +, -, ==, !=, <=>" \
+      --description="double; +, -, ==, !=, <=>" \
       --output=Length.hpp
 ```
 
@@ -106,11 +106,8 @@ namespace=math
 name=Distance
 description=strong int; +, -, ==, <=>
 
-[type]
-kind=struct
-namespace=util
-name=Counter
-description=strong int; ++, --, out
+[struct util::Counter]
+description=int; ++, --, out
 ```
 
 ### Cross-Type Interactions
@@ -140,7 +137,7 @@ Distance / Time -> Velocity
 
 ## Description Language
 
-Syntax: `strong <type>; <options...>`
+Syntax: `[strong] <type>; <options...>` (the `strong` keyword is optional)
 
 Common options (because we're all about that opt-in life):
 - Arithmetic: `+`, `-`, `*`, `/`, `++`, `--` — when your type needs to do math
@@ -149,6 +146,7 @@ Common options (because we're all about that opt-in life):
 - Callable: `()`, `(&)` — yes, your strong type can be a functor. Why? Because C++.
 - Pointer-like: `@`, `->`, `&of` — make it look like a pointer without the segfaults
 - Containers: `[]`, `hash`, `iterable` — for those fancy data structures
+- Constants: Define named constants with `constants=key1:val1; key2:val2` — static members like scoped enums
 - Special: `bool`, `no-constexpr` — the "it's complicated" options
 
 Full reference (for the masochists): [`docs/description-language.md`](docs/description-language.md)
@@ -164,7 +162,7 @@ wjh::atlas::StrongTypeDescription desc{
     .kind = "struct",
     .type_namespace = "geom",
     .type_name = "Length",
-    .description = "strong double; +, -"
+    .description = "double; +, -"
 };
 std::string header = wjh::atlas::generate_strong_type(desc);
 ```

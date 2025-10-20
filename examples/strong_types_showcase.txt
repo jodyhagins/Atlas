@@ -191,3 +191,47 @@ kind=struct
 namespace=flags
 name=EnableFlag
 description=strong int; ==, implicit_cast<bool>
+
+# Showcase of newer features:
+
+# Optional 'strong' keyword - both syntaxes are equivalent
+[type]
+kind=struct
+namespace=demo::optional_strong
+name=Temperature
+description=double; +, -, ==, <=>
+default_value=20.0
+
+# Global namespace support - generates type in global scope
+[type]
+kind=struct
+namespace=::
+name=GlobalEventId
+description=unsigned long; ==, !=, hash
+
+# Named constants - similar to scoped enum values
+[type]
+kind=struct
+namespace=demo::constants
+name=HttpStatusCode
+description=unsigned short; ==, !=, <=>
+constants=ok:200; created: 201; bad_request :400; not_found : 404; server_error:500
+
+[type]
+kind=struct
+namespace=demo::constants
+name=Priority
+description=int; ==, !=, <, <=, >, >=
+constants=low:1
+constants=medium: 2
+constants=high :3
+constants=critical : 4
+
+[RequestCount]
+kind=struct
+namespace=demo::inline_syntax
+description=unsigned int; ++, --, ==, <=>
+
+[struct SessionTimeout]
+namespace=demo::inline_syntax
+description=std::chrono::seconds; ==, !=, <=>

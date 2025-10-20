@@ -44,6 +44,7 @@ cmake --build build
 - All the operators: arithmetic, comparison, bitwise, stream
 - Default values, hash support, subscripts
 - Constexpr control for when compile-time evaluation betrays you
+- **New features:** Optional `strong` keyword, global namespace support, named constants, inline type name syntax
 
 **`interactions_showcase.txt`** - When types need to work together
 - Cross-type operators (e.g., `Distance / Time -> Velocity`)

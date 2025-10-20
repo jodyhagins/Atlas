@@ -113,6 +113,7 @@ add_atlas_strong_type(
 - `NAMESPACE` (optional) - C++ namespace (defaults to auto-deduced from directory)
 - `KIND` (optional) - 'struct' or 'class' (defaults to 'struct')
 - `DEFAULT_VALUE` (optional) - Default value for default constructor
+- `CONSTANTS` (optional) - Named constants as a semicolon-separated list of `name:value` pairs (e.g., "zero:0;one:1")
 - `GUARD_PREFIX` (optional) - Custom prefix for header guards
 - `GUARD_SEPARATOR` (optional) - Separator for header guard components
 - `UPCASE_GUARD` (optional) - Use uppercase header guards (true/false)
@@ -141,6 +142,15 @@ add_atlas_strong_type(
     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/Distance.hpp
     TARGET my_library)
 
+# With named constants
+add_atlas_strong_type(
+    NAME Price
+    TYPE double
+    DESCRIPTION "+, -, *, /, <=>"
+    NAMESPACE commerce
+    CONSTANTS [[ zero:0.0; unlimited:1e10 ]]
+    TARGET my_library)
+
 # Generate without target integration (manual control)
 add_atlas_strong_type(
     NAME Handle
@@ -149,6 +159,13 @@ add_atlas_strong_type(
     NAMESPACE system
     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/Handle.hpp
     # No TARGET - just generates the file
+)
+
+# Global namespace type
+add_atlas_strong_type(
+    NAME GlobalCounter
+    TYPE int
+    DESCRIPTION "++, --, =="
 )
 ```
 
@@ -182,15 +199,34 @@ upcase_guard=true
 kind=struct
 namespace=example
 name=Distance
-description=strong double; +, -, *, /, <=>
+description=double; +, -, *, /, <=>
 default_value=0.0
 
 [type]
 kind=struct
 namespace=example
 name=Handle
-description=strong size_t; ->, ==, !=, bool
+description=std::size_t; ->, ==, !=, bool
+
+[type]
+kind=struct
+namespace=commerce
+name=Price
+description=double; +, -, *, /
+constants=zero:0.0
+constants=unlimited : 1e10
 ```
+
+**Constants Support:**
+
+The `constants` field allows defining named constants for your strong types.
+Multiple constants can be defined in the same line, or multiple lines since they are all merged into one set of constants:
+```ini
+constants= name1 : value1 ; name2 : value2
+constants= name3 : value3
+```
+
+Each constant generates a static member of the strong type, similar to scoped enum values.
 
 **Examples:**
 
@@ -281,6 +317,15 @@ atlas_add_type(UserId int "==, !=, <=>" TARGET my_lib)
 # Manual control
 atlas_add_type(UserId int "==, !=, <=>")
 target_sources(my_lib PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/UserId.hpp)
+```
+
+## Description Syntax
+
+The `DESCRIPTION` parameter supports an optional `strong` keyword at the beginning. Both of these are equivalent:
+
+```cmake
+DESCRIPTION "strong double; +, -, *, /"
+DESCRIPTION "double; +, -, *, /"
 ```
 
 ## Atlas Operators Reference
