@@ -1,0 +1,57 @@
+# Test: Optional 'strong' keyword
+# Feature: Both "strong TYPE" and "TYPE" syntax work identically
+# Expected: Generated code is the same regardless of 'strong' presence
+
+guard_prefix=TEST_OPTIONAL_STRONG
+
+# Test 1: With 'strong' keyword (backward compatibility)
+[type]
+kind=struct
+namespace=test
+name=WithStrong
+description=strong double; +, -, *, /, <=>
+
+# Test 2: Without 'strong' keyword (new syntax)
+[type]
+kind=struct
+namespace=test
+name=WithoutStrong
+description=double; +, -, *, /, <=>
+
+# Test 3: Complex type with 'strong'
+[type]
+kind=struct
+namespace=test
+name=ComplexWithStrong
+description=strong std::vector<int>; ==, !=, [], iterable
+
+# Test 4: Complex type without 'strong'
+[type]
+kind=struct
+namespace=test
+name=ComplexWithoutStrong
+description=std::vector<int>; ==, !=, [], iterable
+
+# Test 5: Inline namespace syntax with 'strong'
+[type]
+kind=struct
+namespace=global
+name=InlineNsWithStrong
+description=strong geo::Point; ==, !=
+
+# Test 6: Inline namespace syntax without 'strong'
+[type]
+kind=struct
+namespace=global
+name=InlineNsWithoutStrong
+description=geo::Distance; ==, !=
+
+# Test 7: All operators with 'strong'
+[test::AllOpsStrong]
+kind=struct
+description=strong int; +, -, *, /, %, ==, !=, <, >, <=, >=, ++, --, hash
+
+# Test 8: All operators without 'strong'
+[test::AllOpsNoStrong]
+kind=struct
+description=int; +, -, *, /, %, ==, !=, <, >, <=, >=, ++, --, hash
