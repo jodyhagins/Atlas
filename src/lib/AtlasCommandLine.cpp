@@ -464,7 +464,19 @@ parse_input_file(Arguments const & args)
         std::string effective_kind = current_kind.empty() ? section_derived_kind
                                                           : current_kind;
 
-        if (not effective_kind.empty()) {
+        // Check if we have started a type definition (by having any of the
+        // identifying fields set)
+        bool started_type_definition = not section_derived_name.empty() ||
+            not current_name.empty() || not section_derived_namespace.empty() ||
+            not current_namespace.empty() || not current_description.empty() ||
+            not section_derived_kind.empty() || not current_kind.empty();
+
+        if (started_type_definition) {
+            // Default to "struct" if kind is not specified
+            if (effective_kind.empty()) {
+                effective_kind = "struct";
+            }
+
             // Use section-derived name if current_name is empty
             std::string effective_name = current_name.empty()
                 ? section_derived_name
@@ -589,8 +601,13 @@ parse_input_file(Arguments const & args)
                 // or [class ns::TypeName]
 
                 // Check for optional kind prefix (struct or class)
-                if (section_content.size() >= 7 &&
-                    section_content.substr(0, 7) == "struct ")
+                if (section_content == "struct" || section_content == "class") {
+                    // Just the keyword with no typename - error
+                    throw AtlasCommandLineError(
+                        "Missing type name in section header at line " +
+                        std::to_string(line_number) + " in " + args.input_file);
+                } else if (section_content.size() >= 7 &&
+                           section_content.substr(0, 7) == "struct ")
                 {
                     section_derived_kind = "struct";
                     section_content = trim(section_content.substr(7));

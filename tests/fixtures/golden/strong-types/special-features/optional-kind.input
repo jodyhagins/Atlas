@@ -1,0 +1,49 @@
+# Test: Optional 'kind' field
+# Feature: When 'kind' is omitted, it defaults to 'struct'
+# Expected: Types without explicit kind are generated as structs
+
+guard_prefix=TEST_OPTIONAL_KIND
+
+# Test 1: Explicit struct
+[type]
+kind=struct
+namespace=test
+name=ExplicitStruct
+description=strong int; +, -
+
+# Test 2: Omitted kind (should default to struct)
+[type]
+namespace=test
+name=DefaultStruct
+description=strong double; +, -, *, /
+
+# Test 3: Explicit class
+[type]
+kind=class
+namespace=test
+name=ExplicitClass
+description=strong unsigned int; ==, !=, <=>
+
+# Test 4: Omitted kind with complex type
+[type]
+namespace=test
+name=DefaultStructComplex
+description=std::string; ==, !=, hash
+
+# Test 5: Multiple types, mixed kinds
+[type]
+kind=struct
+namespace=mixed
+name=One
+description=int; +, -
+
+[type]
+namespace=mixed
+name=Two
+description=double; +
+
+[type]
+kind=class
+namespace=mixed
+name=Three
+description=unsigned; ==
