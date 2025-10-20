@@ -1,0 +1,38 @@
+# Test: Dereference operator with SFINAE-based forwarding
+# Feature: Detects and forwards to wrapped type's operator* when available
+# Expected: operator*() forwards to T::operator*() or returns reference to value
+
+# Test 1: Regular type without operator* (fallback to reference)
+[DerefStringWrapper]
+kind=struct
+namespace=test
+name=DerefStringWrapper
+description=strong std::string; @
+
+# Test 2: Raw pointer (has operator*)
+[DerefRawPointer]
+kind=struct
+namespace=test
+name=DerefRawPointer
+description=strong int*; @
+
+# Test 3: std::shared_ptr (has operator*)
+[DerefSharedPtr]
+kind=struct
+namespace=test
+name=DerefSharedPtr
+description=strong std::shared_ptr<int>; @
+
+# Test 4: std::unique_ptr (has operator*)
+[DerefUniquePtr]
+kind=struct
+namespace=test
+name=DerefUniquePtr
+description=strong std::unique_ptr<int>; @
+
+# Test 5: Optional (has operator* in C++17+)
+[DerefOptional]
+kind=struct
+namespace=test
+name=DerefOptional
+description=strong std::optional<int>; @
