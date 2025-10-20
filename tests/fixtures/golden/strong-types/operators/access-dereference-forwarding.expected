@@ -19,6 +19,7 @@
 #if __has_include(<version>)
 #include <version>
 #endif
+#include <memory>
 #include <optional>
 #include <string>
 #include <type_traits>
