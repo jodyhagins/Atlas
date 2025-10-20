@@ -1046,9 +1046,31 @@ parse(
     bool has_relational_ops = false;
 
     for (auto s : split(desc.description, ';')) {
-        if (s.starts_with("strong ")) {
-            s.remove_prefix(7);
-            info.underlying_type = s;
+        if (info.underlying_type.empty()) {
+            // First segment: parse type specification
+            // Format: "strong TYPE" or "TYPE" (strong is optional)
+            // Note: TYPE can be multi-word (e.g., "unsigned long", "long long")
+            auto type_spec = strip(s);
+
+            if (type_spec.empty()) {
+                throw std::invalid_argument(
+                    "Empty type specification in description");
+            }
+
+            // Check if it starts with "strong "
+            if (type_spec.starts_with("strong ")) {
+                // Remove "strong " prefix (7 characters)
+                type_spec.remove_prefix(7);
+                type_spec = strip(type_spec); // Strip any leading whitespace
+
+                if (type_spec.empty()) {
+                    throw std::invalid_argument(
+                        "Type specification has 'strong' but no type follows");
+                }
+            }
+
+            // Everything remaining is the underlying type
+            info.underlying_type = std::string(type_spec);
         } else {
             for (auto sv : split(s, ',')) {
                 if (sv.empty()) {

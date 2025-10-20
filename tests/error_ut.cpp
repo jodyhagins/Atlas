@@ -94,21 +94,6 @@ unknown_field=invalid
              error_msg.find("unknown_field") != std::string::npos));
     }
 
-    TEST_CASE("Malformed description: missing 'strong' keyword")
-    {
-        auto result = test_input_content_error(R"(
-[type]
-kind=struct
-namespace=test
-name=TestType
-description=int; +, -
-)");
-
-        CHECK(result.had_error());
-        // Error: "Unrecognized operator or option" - doesn't specifically
-        // mention 'strong' but correctly rejects the malformed description
-    }
-
     TEST_CASE("Invalid operator syntax")
     {
         auto result = test_input_content_error(R"(
@@ -121,6 +106,21 @@ description=strong int; +++++
 
         CHECK(result.had_error());
         // Should reject invalid operator
+    }
+
+    TEST_CASE("Type specification: empty (only semicolon)")
+    {
+        auto result = test_input_content_error(R"(
+[type]
+kind=struct
+namespace=test
+name=TestType
+description=; +, -
+)");
+
+        CHECK(result.had_error());
+        auto error_msg = result.stderr_output + result.stdout_output;
+        CHECK(error_msg.find("Empty type specification") != std::string::npos);
     }
 
     TEST_CASE("Empty file")
