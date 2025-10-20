@@ -120,6 +120,9 @@ FetchContent_MakeAvailable(Atlas)
 # Escape semicolons because CMake treats them like list separators
 set(DESC "strong int\\; ==, !=, <=>")
 
+# Or use "raw" string literals in cmake
+set(DESC [[strong int; ==, !=, <=>]])
+
 add_custom_command(
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/UserId.hpp
     COMMAND ${Atlas_EXECUTABLE}
@@ -203,6 +206,50 @@ add_custom_command(
     OUTPUT UserId.hpp
     COMMAND ${Atlas_EXECUTABLE} ...
     DEPENDS Atlas::atlas)
+```
+
+## Named Constants
+
+All helper functions support named constants. For example:
+
+```cmake
+# Single type with constants
+atlas_add_type(Price double "+, -, *, /"
+    TARGET my_lib
+    CONSTANTS [[zero=0.0; unlimited=1e10]])
+
+# Or in add_atlas_strong_type()
+add_atlas_strong_type(
+    NAME Price
+    TYPE double
+    DESCRIPTION "+, -, *, /"
+    CONSTANTS [[zero=0.0; unlimited=1e10]]
+    TARGET my_lib)
+
+# Or in a file-based approach
+add_atlas_strong_types_from_file(
+    INPUT types.txt
+    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/Types.hpp
+    TARGET my_lib)
+```
+
+Each constant generates a static member of the strong type:
+```cpp
+static constexpr Price zero = Price(0.0);
+static constexpr Price unlimited = Price(1e10);
+```
+
+Constants are useful for providing well-known values (like min/max) and sentinel values for your types.
+
+## Global Namespace Support
+
+Generate types in the global namespace instead of a C++ namespace:
+
+```cmake
+# Use namespace=global to place in global scope
+atlas_add_type(GlobalCounter int "++, --"
+    NAMESPACE global
+    TARGET my_lib)
 ```
 
 ## Pro Tips

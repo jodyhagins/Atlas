@@ -17,17 +17,85 @@ namespace=math
 name=Distance
 description=strong int; +, -, ==, <=>
 
-[type]
-kind=struct
-namespace=util
-name=Counter
-description=strong int; ++, --, out
+[struct util::Counter]
+description=int; ++, --, out
 ```
 
 Quick facts:
 - `#` for comments (groundbreaking, I know)
 - Each `[type]` section = one strong type
 - All types share a header guard with SHA1 hash (collision-proof, even when you try)
+- The `strong` keyword in descriptions is optional (see "Optional Strong Keyword" section below)
+
+## Optional Strong Keyword
+
+The `strong` keyword in descriptions is now optional. Both of these are equivalent:
+
+```
+description=strong double; +, -, *, /
+description=double; +, -, *, /
+```
+
+This makes descriptions more concise while still maintaining clarity. The keyword is purely optional for backwards compatibility and readability preference.
+
+## Global Namespace Support
+
+Types can be declared in the global namespace by using `::` as the namespace:
+
+```
+[type]
+namespace=::
+name=GlobalCounter
+description=int; ++, --, ==
+```
+
+This generates the type at global scope instead of in a C++ namespace (this is a no-judgement zone).
+
+## Inline Type Name Syntax
+
+For in-file definitions, you can use an inline syntax that combines the name and type:
+
+```
+[type]
+kind=struct
+namespace=foo
+name=Bar
+description=int; ++, --, ==
+```
+
+The above can also be represented as:
+
+```
+[struct foo::Bar]
+description=int; ++, --, ==
+```
+
+Both syntaxes are equivalent.
+
+## Named Constants
+
+Define named constants for your strong types, similar to scoped enum values:
+
+```
+[type]
+kind=struct
+namespace=math
+name=Distance
+description=double; +, -, ==, <=>
+constants= zero : 0.0 ; epsilon : 1e-10
+constants= infinity : std::numeric_limits<double>::infinity()
+```
+
+The constants section maps constant names to their values. Each constant generates a static member:
+```cpp
+static constexpr Distance zero = Distance(0.0);
+static constexpr Distance infinity = Distance(std::numeric_limits<double>::infinity());
+static constexpr Distance epsilon = Distance(1e-10);
+```
+
+When `no-constexpr` is specified, constants are generated as `static const` instead of `static constexpr`.
+
+Constants are useful for providing well-known values and sentinel values for your strong types.
 
 ## Profiles
 
@@ -141,11 +209,11 @@ When it guesses wrong, use `#<header>` to fix it.
 ## Examples
 
 ```
-strong double; +, -, *, /, <=>                      # Math-friendly double
-strong std::string; ==, !=, out, no-constexpr-hash  # String with runtime hash
-strong int; ++, --, bool, #<iostream>               # Counter with explicit include
-strong std::vector<int>; ==, [], iterable           # Iterable container wrapper
-strong std::string; ==, cast<std::string_view>      # String with explicit cast to view
-strong int; ==, implicit_cast<bool>                 # Int with implicit bool conversion
-strong double; {NUMERIC}, ->                        # Using a profile (defined elsewhere)
+double; +, -, *, /, <=>                            # Math-friendly double (strong keyword optional)
+std::string; ==, !=, out, no-constexpr-hash        # String with runtime hash
+int; ++, --, bool, #<iostream>                     # Counter with explicit include
+std::vector<int>; ==, [], iterable                 # Iterable container wrapper
+std::string; ==, cast<std::string_view>            # String with explicit cast to view
+int; ==, implicit_cast<bool>                       # Int with implicit bool conversion
+double; {NUMERIC}, ->                              # Using a profile (defined elsewhere)
 ```
