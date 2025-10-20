@@ -137,6 +137,9 @@ auto strong_template = R"({{{includes}}}{{#namespace_open}}
 {{{.}}}
 {{/public_specifier}}
     using atlas_value_type = {{{underlying_type}}};
+{{#constants}}
+{{>constant_declarations}}
+{{/constants}}
 
     {{{const_expr}}}explicit {{{class_name}}}() = default;
     {{{const_expr}}}{{{class_name}}}({{{class_name}}} const &) = default;
@@ -220,6 +223,10 @@ auto strong_template = R"({{{includes}}}{{#namespace_open}}
     {{>istream_operator}}
     {{/istream_operator}}
 };
+{{#constants}}
+
+{{>constants}}
+{{/constants}}
 {{#namespace_close}}
 {{{.}}}{{/namespace_close}}
 {{#hash_specialization}}
@@ -228,6 +235,19 @@ auto strong_template = R"({{{includes}}}{{#namespace_open}}
 {{#formatter_specialization}}
 {{>formatter_specialization}}
 {{/formatter_specialization}}
+)";
+
+// Template for constant declarations inside the class
+// Use 'static const' (not constexpr) because type is incomplete at this point
+constexpr char constant_declarations_template[] = R"(
+    static const {{{class_name}}} {{{name}}};
+)";
+
+// Template for constant definitions after the class
+// Use 'inline constexpr' to make them usable in constexpr contexts
+// This is standard-compliant: declare as 'const', define as 'constexpr'
+constexpr char constants_template[] = R"(
+inline {{{const_qualifier}}}{{{full_qualified_name}}} {{{full_qualified_name}}}::{{{name}}} = {{{full_qualified_name}}}({{{value}}});
 )";
 
 constexpr char addressof_operators[] = R"(
@@ -701,6 +721,18 @@ struct CastOperator
 };
 BOOST_DESCRIBE_STRUCT(CastOperator, (), (cast_type))
 
+struct Constant
+{
+    std::string name;
+    std::string value;
+
+    Constant(std::string name_, std::string value_)
+    : name(std::move(name_))
+    , value(std::move(value_))
+    { }
+};
+BOOST_DESCRIBE_STRUCT(Constant, (), (name, value))
+
 struct ClassInfo
 {
     std::string class_namespace;
@@ -740,6 +772,8 @@ struct ClassInfo
     bool template_assignment_operator = false;
     std::vector<CastOperator> explicit_cast_operators;
     std::vector<CastOperator> implicit_cast_operators;
+    std::vector<Constant> constants;
+    std::string const_qualifier = "constexpr ";
     StrongTypeDescription desc;
 };
 BOOST_DESCRIBE_STRUCT(
@@ -780,6 +814,8 @@ BOOST_DESCRIBE_STRUCT(
      template_assignment_operator,
      explicit_cast_operators,
      implicit_cast_operators,
+     constants,
+     const_qualifier,
      desc))
 
 constexpr auto arithmetic_binary_op_tags = std::to_array<std::string_view>(
@@ -1307,8 +1343,11 @@ parse(
         std::sort(c->begin(), c->end());
     }
 
-    // Build fully qualified name for hash and formatter specializations
-    if (info.hash_specialization || info.desc.generate_formatter) {
+    // Build fully qualified name for hash, formatter specializations, and
+    // constants
+    if (info.hash_specialization || info.desc.generate_formatter ||
+        not info.desc.constants.empty())
+    {
         if (not info.class_namespace.empty()) {
             info.full_qualified_name = info.class_namespace +
                 "::" + info.full_class_name;
@@ -1349,6 +1388,19 @@ parse(
         info.implicit_cast_operators.emplace_back(cast_type);
     }
 
+    // Populate constants vector from description
+    for (auto const & [name, value] : info.desc.constants) {
+        info.constants.emplace_back(name, value);
+    }
+
+    // Set const_qualifier based on no-constexpr option
+    // If no-constexpr is set, use "const " instead of "constexpr "
+    if (info.const_expr.empty()) {
+        info.const_qualifier = "const ";
+    } else {
+        info.const_qualifier = "constexpr ";
+    }
+
     return info;
 }
 
@@ -1382,7 +1434,9 @@ render_code(ClassInfo const & info)
          {"istream_operator", istream_operator_template},
          {"increment_operator", increment_operator},
          {"hash_specialization", hash_specialization_template},
-         {"formatter_specialization", formatter_specialization_template}});
+         {"formatter_specialization", formatter_specialization_template},
+         {"constant_declarations", constant_declarations_template},
+         {"constants", constants_template + 1}});
     return strm.str();
 }
 

@@ -7,6 +7,7 @@
 #ifndef WJH_ATLAS_4F59B4312A2E4CF9BE42CEE05C67CEC3
 #define WJH_ATLAS_4F59B4312A2E4CF9BE42CEE05C67CEC3
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -182,6 +183,21 @@ struct StrongTypeDescription
      *         value{std::vector<int>{1, 2, 3}}
      */
     std::string default_value = "";
+
+    /**
+     * Named constants for the strong type, similar to scoped enum values.
+     * Map of constant name to value. Each constant generates a static member:
+     *   static constexpr TypeName name = TypeName(value);
+     * or when no-constexpr is specified:
+     *   static const TypeName name = TypeName(value);
+     *
+     * Examples:
+     *   - {"zero", "0"} generates: static constexpr Type zero = Type(0);
+     *   - {"empty", R"("")"} generates: static constexpr Type empty = Type("");
+     *   - {"pi", "3.14159"} generates: static constexpr Type pi =
+     * Type(3.14159);
+     */
+    std::map<std::string, std::string> constants = {};
 
     /**
      * When empty, the generated header guard will be prefixed with the

@@ -1,0 +1,35 @@
+# Test: Named constants
+# Feature: Static constant members similar to scoped enum values
+# Expected: static constexpr members for each constant
+
+guard_prefix=TEST_CONSTANTS
+
+[type]
+kind=struct
+namespace=math
+name=Angle
+description=strong double; +, -, ==, !=
+constants=pi:3.14159; tau:6.28318
+constants=zero:0.0
+
+[type]
+kind=struct
+namespace=text
+name=StringConstant
+description=strong std::string; ==, !=
+constants=empty:""
+constants=default_name:"unknown"
+
+[NumericValue]
+kind=struct
+namespace=test
+description=strong int; +, -, ==
+constants=min:0; max:100
+default_value=50
+
+[type]
+kind=class
+namespace=test
+name=NoConstexprType
+description=strong int; +, -, ==, no-constexpr
+constants=zero:0; one:1

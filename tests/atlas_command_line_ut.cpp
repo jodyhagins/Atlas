@@ -888,6 +888,206 @@ description=strong int
             std::filesystem::remove(temp_file);
         }
     }
+
+    TEST_CASE("Constants Validation")
+    {
+        SUBCASE("duplicate constant names on same line") {
+            auto temp_file = std::filesystem::temp_directory_path() /
+                ("test_input_" + std::to_string(::getpid()) + ".txt");
+
+            {
+                std::ofstream out(temp_file);
+                out << R"([type]
+kind=struct
+namespace=test
+name=Value
+description=strong int
+constants=zero:0; one:1; zero:0
+)";
+            }
+
+            AtlasCommandLine::Arguments args;
+            args.input_file = temp_file.string();
+
+            CHECK_THROWS_AS(
+                AtlasCommandLine::parse_input_file(args),
+                AtlasCommandLineError);
+
+            std::filesystem::remove(temp_file);
+        }
+
+        SUBCASE("duplicate constant names across different lines") {
+            auto temp_file = std::filesystem::temp_directory_path() /
+                ("test_input_" + std::to_string(::getpid()) + ".txt");
+
+            {
+                std::ofstream out(temp_file);
+                out << R"([type]
+kind=struct
+namespace=test
+name=Value
+description=strong int
+constants=zero:0; one:1
+constants=two:2; zero:0
+)";
+            }
+
+            AtlasCommandLine::Arguments args;
+            args.input_file = temp_file.string();
+
+            CHECK_THROWS_AS(
+                AtlasCommandLine::parse_input_file(args),
+                AtlasCommandLineError);
+
+            std::filesystem::remove(temp_file);
+        }
+
+        SUBCASE("duplicate constant names via multiple --constants flags") {
+            std::vector<std::string> args{
+                "--kind=struct",
+                "--namespace=test",
+                "--name=Value",
+                "--description=strong int",
+                "--constants=zero:0; one:1",
+                "--constants=two:2; zero:0"};
+
+            auto parsed = AtlasCommandLine::parse(args);
+            CHECK_THROWS_AS(
+                AtlasCommandLine::to_description(parsed),
+                AtlasCommandLineError);
+        }
+
+        SUBCASE("invalid constant name - starts with digit") {
+            auto temp_file = std::filesystem::temp_directory_path() /
+                ("test_input_" + std::to_string(::getpid()) + ".txt");
+
+            {
+                std::ofstream out(temp_file);
+                out << R"([type]
+kind=struct
+namespace=test
+name=Value
+description=strong int
+constants=123abc:0
+)";
+            }
+
+            AtlasCommandLine::Arguments args;
+            args.input_file = temp_file.string();
+
+            CHECK_THROWS_AS(
+                AtlasCommandLine::parse_input_file(args),
+                AtlasCommandLineError);
+
+            std::filesystem::remove(temp_file);
+        }
+
+        SUBCASE("invalid constant name - contains hyphen") {
+            auto temp_file = std::filesystem::temp_directory_path() /
+                ("test_input_" + std::to_string(::getpid()) + ".txt");
+
+            {
+                std::ofstream out(temp_file);
+                out << R"([type]
+kind=struct
+namespace=test
+name=Value
+description=strong int
+constants=my-constant:0
+)";
+            }
+
+            AtlasCommandLine::Arguments args;
+            args.input_file = temp_file.string();
+
+            CHECK_THROWS_AS(
+                AtlasCommandLine::parse_input_file(args),
+                AtlasCommandLineError);
+
+            std::filesystem::remove(temp_file);
+        }
+
+        SUBCASE("empty constant name") {
+            auto temp_file = std::filesystem::temp_directory_path() /
+                ("test_input_" + std::to_string(::getpid()) + ".txt");
+
+            {
+                std::ofstream out(temp_file);
+                out << R"([type]
+kind=struct
+namespace=test
+name=Value
+description=strong int
+constants=:0
+)";
+            }
+
+            AtlasCommandLine::Arguments args;
+            args.input_file = temp_file.string();
+
+            CHECK_THROWS_AS(
+                AtlasCommandLine::parse_input_file(args),
+                AtlasCommandLineError);
+
+            std::filesystem::remove(temp_file);
+        }
+
+        SUBCASE("missing colon in constant definition") {
+            auto temp_file = std::filesystem::temp_directory_path() /
+                ("test_input_" + std::to_string(::getpid()) + ".txt");
+
+            {
+                std::ofstream out(temp_file);
+                out << R"([type]
+kind=struct
+namespace=test
+name=Value
+description=strong int
+constants=zero 0
+)";
+            }
+
+            AtlasCommandLine::Arguments args;
+            args.input_file = temp_file.string();
+
+            CHECK_THROWS_AS(
+                AtlasCommandLine::parse_input_file(args),
+                AtlasCommandLineError);
+
+            std::filesystem::remove(temp_file);
+        }
+
+        SUBCASE("valid constants should parse successfully") {
+            auto temp_file = std::filesystem::temp_directory_path() /
+                ("test_input_" + std::to_string(::getpid()) + ".txt");
+
+            {
+                std::ofstream out(temp_file);
+                out << R"([type]
+kind=struct
+namespace=test
+name=Value
+description=strong int
+constants=zero:0; one:1; pi:3.14
+constants=max:100
+)";
+            }
+
+            AtlasCommandLine::Arguments args;
+            args.input_file = temp_file.string();
+
+            auto result = AtlasCommandLine::parse_input_file(args);
+
+            CHECK(result.types.size() == 1);
+            CHECK(result.types[0].constants.size() == 4);
+            CHECK(result.types[0].constants["zero"] == "0");
+            CHECK(result.types[0].constants["one"] == "1");
+            CHECK(result.types[0].constants["pi"] == "3.14");
+            CHECK(result.types[0].constants["max"] == "100");
+
+            std::filesystem::remove(temp_file);
+        }
+    }
 }
 
 } // anonymous namespace
