@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_BAD2BB2E10971AD625DF1E48FA9935C5CA653C39
-#define FOO_BAR_BAD2BB2E10971AD625DF1E48FA9935C5CA653C39
+#ifndef FOO_BAR_C6E3716E704CDE19225676C0F3B1ED3F66ED3AA9
+#define FOO_BAR_C6E3716E704CDE19225676C0F3B1ED3F66ED3AA9
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -207,20 +207,44 @@ end_(T && t) noexcept(noexcept(end(std::forward<T>(t))))
 {
     return end(std::forward<T>(t));
 }
+struct const_
+{
+    template <typename T>
+    static T const * _ (T * p) { return p; }
+    template <typename T>
+    static T const & _ (T const & p) { return p; }
+};
+
+struct mutable_
+{
+    template <typename T>
+    static T * _ (T * p) { return p; }
+    template <typename T>
+    static T && _ (T && p) { return static_cast<T&&>(p); }
+};
 // Detects if T is dereferenceable (pointers, smart pointers, iterators, optional)
 
-template <typename T, typename = void>
-struct is_dereferenceable : std::false_type {};
+template <typename T, typename U>
+auto
+star_impl(U & u, PriorityTag<1>)
+-> decltype(T::_(u.operator*()))
+{
+    return T::_(u.operator*());
+}
 
-template <typename T>
-struct is_dereferenceable<T, void_t<decltype(*std::declval<T&>())>>
-: std::true_type {};
+template <typename T, typename U>
+auto
+star_impl(U * u, PriorityTag<1>)
+-> decltype(*T::_(u))
+{
+    return *T::_(u);
+}
 
-template <typename T>
-using has_dereference_operator = is_dereferenceable<T>;
-
-template <typename T>
-using has_dereference_operator_const = is_dereferenceable<typename std::add_const<T>::type>;
+template <typename T, typename U>
+U & star_impl(U & u, PriorityTag<0>)
+{
+    return u;
+}
 
 } // namespace atlas_detail
 
@@ -298,56 +322,26 @@ struct DerefStringWrapper
      * Pointer-like types (smart pointers, iterators, optional): returns *value
      * Other types: returns reference to value (fallback)
      */
-private:
-    // Tag dispatch implementation for const version
-    template <typename T>
-    constexpr auto dereference_impl(T const & v, std::true_type) const
-    -> decltype(*v)
-    {
-        return *v;
-    }
-
-    template <typename T>
-    constexpr T const & dereference_impl(T const & v, std::false_type) const
-    {
-        return v;
-    }
-
-    // Tag dispatch implementation for non-const version
-    template <typename T>
-    constexpr auto dereference_impl(T & v, std::true_type)
-    -> decltype(*v)
-    {
-        return *v;
-    }
-
-    template <typename T>
-    constexpr T & dereference_impl(T & v, std::false_type)
-    {
-        return v;
-    }
-
-public:
-    // Const dereference operator
+    template <typename T = atlas::atlas_detail::const_>
     constexpr auto operator * () const
-    -> decltype(dereference_impl(
+    -> decltype(atlas::atlas_detail::star_impl<T>(
         value,
-        atlas::atlas_detail::has_dereference_operator_const<std::string>{}))
+        atlas::atlas_detail::PriorityTag<1>{}))
     {
-        return dereference_impl(
+        return atlas::atlas_detail::star_impl<T>(
             value,
-            atlas::atlas_detail::has_dereference_operator_const<std::string>{});
+            atlas::atlas_detail::PriorityTag<1>{});
     }
 
-    // Non-const dereference operator
+    template <typename T = atlas::atlas_detail::mutable_>
     constexpr auto operator * ()
-    -> decltype(dereference_impl(
+    -> decltype(atlas::atlas_detail::star_impl<T>(
         value,
-        atlas::atlas_detail::has_dereference_operator<std::string>{}))
+        atlas::atlas_detail::PriorityTag<10>{}))
     {
-        return dereference_impl(
+        return atlas::atlas_detail::star_impl<T>(
             value,
-            atlas::atlas_detail::has_dereference_operator<std::string>{});
+            atlas::atlas_detail::PriorityTag<10>{});
     }
 };
 } // namespace test
@@ -403,56 +397,26 @@ struct DerefRawPointer
      * Pointer-like types (smart pointers, iterators, optional): returns *value
      * Other types: returns reference to value (fallback)
      */
-private:
-    // Tag dispatch implementation for const version
-    template <typename T>
-    constexpr auto dereference_impl(T const & v, std::true_type) const
-    -> decltype(*v)
-    {
-        return *v;
-    }
-
-    template <typename T>
-    constexpr T const & dereference_impl(T const & v, std::false_type) const
-    {
-        return v;
-    }
-
-    // Tag dispatch implementation for non-const version
-    template <typename T>
-    constexpr auto dereference_impl(T & v, std::true_type)
-    -> decltype(*v)
-    {
-        return *v;
-    }
-
-    template <typename T>
-    constexpr T & dereference_impl(T & v, std::false_type)
-    {
-        return v;
-    }
-
-public:
-    // Const dereference operator
+    template <typename T = atlas::atlas_detail::const_>
     constexpr auto operator * () const
-    -> decltype(dereference_impl(
+    -> decltype(atlas::atlas_detail::star_impl<T>(
         value,
-        atlas::atlas_detail::has_dereference_operator_const<int*>{}))
+        atlas::atlas_detail::PriorityTag<1>{}))
     {
-        return dereference_impl(
+        return atlas::atlas_detail::star_impl<T>(
             value,
-            atlas::atlas_detail::has_dereference_operator_const<int*>{});
+            atlas::atlas_detail::PriorityTag<1>{});
     }
 
-    // Non-const dereference operator
+    template <typename T = atlas::atlas_detail::mutable_>
     constexpr auto operator * ()
-    -> decltype(dereference_impl(
+    -> decltype(atlas::atlas_detail::star_impl<T>(
         value,
-        atlas::atlas_detail::has_dereference_operator<int*>{}))
+        atlas::atlas_detail::PriorityTag<10>{}))
     {
-        return dereference_impl(
+        return atlas::atlas_detail::star_impl<T>(
             value,
-            atlas::atlas_detail::has_dereference_operator<int*>{});
+            atlas::atlas_detail::PriorityTag<10>{});
     }
 };
 } // namespace test
@@ -508,56 +472,26 @@ struct DerefSharedPtr
      * Pointer-like types (smart pointers, iterators, optional): returns *value
      * Other types: returns reference to value (fallback)
      */
-private:
-    // Tag dispatch implementation for const version
-    template <typename T>
-    constexpr auto dereference_impl(T const & v, std::true_type) const
-    -> decltype(*v)
-    {
-        return *v;
-    }
-
-    template <typename T>
-    constexpr T const & dereference_impl(T const & v, std::false_type) const
-    {
-        return v;
-    }
-
-    // Tag dispatch implementation for non-const version
-    template <typename T>
-    constexpr auto dereference_impl(T & v, std::true_type)
-    -> decltype(*v)
-    {
-        return *v;
-    }
-
-    template <typename T>
-    constexpr T & dereference_impl(T & v, std::false_type)
-    {
-        return v;
-    }
-
-public:
-    // Const dereference operator
+    template <typename T = atlas::atlas_detail::const_>
     constexpr auto operator * () const
-    -> decltype(dereference_impl(
+    -> decltype(atlas::atlas_detail::star_impl<T>(
         value,
-        atlas::atlas_detail::has_dereference_operator_const<std::shared_ptr<int>>{}))
+        atlas::atlas_detail::PriorityTag<1>{}))
     {
-        return dereference_impl(
+        return atlas::atlas_detail::star_impl<T>(
             value,
-            atlas::atlas_detail::has_dereference_operator_const<std::shared_ptr<int>>{});
+            atlas::atlas_detail::PriorityTag<1>{});
     }
 
-    // Non-const dereference operator
+    template <typename T = atlas::atlas_detail::mutable_>
     constexpr auto operator * ()
-    -> decltype(dereference_impl(
+    -> decltype(atlas::atlas_detail::star_impl<T>(
         value,
-        atlas::atlas_detail::has_dereference_operator<std::shared_ptr<int>>{}))
+        atlas::atlas_detail::PriorityTag<10>{}))
     {
-        return dereference_impl(
+        return atlas::atlas_detail::star_impl<T>(
             value,
-            atlas::atlas_detail::has_dereference_operator<std::shared_ptr<int>>{});
+            atlas::atlas_detail::PriorityTag<10>{});
     }
 };
 } // namespace test
@@ -613,56 +547,26 @@ struct DerefUniquePtr
      * Pointer-like types (smart pointers, iterators, optional): returns *value
      * Other types: returns reference to value (fallback)
      */
-private:
-    // Tag dispatch implementation for const version
-    template <typename T>
-    constexpr auto dereference_impl(T const & v, std::true_type) const
-    -> decltype(*v)
-    {
-        return *v;
-    }
-
-    template <typename T>
-    constexpr T const & dereference_impl(T const & v, std::false_type) const
-    {
-        return v;
-    }
-
-    // Tag dispatch implementation for non-const version
-    template <typename T>
-    constexpr auto dereference_impl(T & v, std::true_type)
-    -> decltype(*v)
-    {
-        return *v;
-    }
-
-    template <typename T>
-    constexpr T & dereference_impl(T & v, std::false_type)
-    {
-        return v;
-    }
-
-public:
-    // Const dereference operator
+    template <typename T = atlas::atlas_detail::const_>
     constexpr auto operator * () const
-    -> decltype(dereference_impl(
+    -> decltype(atlas::atlas_detail::star_impl<T>(
         value,
-        atlas::atlas_detail::has_dereference_operator_const<std::unique_ptr<int>>{}))
+        atlas::atlas_detail::PriorityTag<1>{}))
     {
-        return dereference_impl(
+        return atlas::atlas_detail::star_impl<T>(
             value,
-            atlas::atlas_detail::has_dereference_operator_const<std::unique_ptr<int>>{});
+            atlas::atlas_detail::PriorityTag<1>{});
     }
 
-    // Non-const dereference operator
+    template <typename T = atlas::atlas_detail::mutable_>
     constexpr auto operator * ()
-    -> decltype(dereference_impl(
+    -> decltype(atlas::atlas_detail::star_impl<T>(
         value,
-        atlas::atlas_detail::has_dereference_operator<std::unique_ptr<int>>{}))
+        atlas::atlas_detail::PriorityTag<10>{}))
     {
-        return dereference_impl(
+        return atlas::atlas_detail::star_impl<T>(
             value,
-            atlas::atlas_detail::has_dereference_operator<std::unique_ptr<int>>{});
+            atlas::atlas_detail::PriorityTag<10>{});
     }
 };
 } // namespace test
@@ -718,59 +622,29 @@ struct DerefOptional
      * Pointer-like types (smart pointers, iterators, optional): returns *value
      * Other types: returns reference to value (fallback)
      */
-private:
-    // Tag dispatch implementation for const version
-    template <typename T>
-    constexpr auto dereference_impl(T const & v, std::true_type) const
-    -> decltype(*v)
-    {
-        return *v;
-    }
-
-    template <typename T>
-    constexpr T const & dereference_impl(T const & v, std::false_type) const
-    {
-        return v;
-    }
-
-    // Tag dispatch implementation for non-const version
-    template <typename T>
-    constexpr auto dereference_impl(T & v, std::true_type)
-    -> decltype(*v)
-    {
-        return *v;
-    }
-
-    template <typename T>
-    constexpr T & dereference_impl(T & v, std::false_type)
-    {
-        return v;
-    }
-
-public:
-    // Const dereference operator
+    template <typename T = atlas::atlas_detail::const_>
     constexpr auto operator * () const
-    -> decltype(dereference_impl(
+    -> decltype(atlas::atlas_detail::star_impl<T>(
         value,
-        atlas::atlas_detail::has_dereference_operator_const<std::optional<int>>{}))
+        atlas::atlas_detail::PriorityTag<1>{}))
     {
-        return dereference_impl(
+        return atlas::atlas_detail::star_impl<T>(
             value,
-            atlas::atlas_detail::has_dereference_operator_const<std::optional<int>>{});
+            atlas::atlas_detail::PriorityTag<1>{});
     }
 
-    // Non-const dereference operator
+    template <typename T = atlas::atlas_detail::mutable_>
     constexpr auto operator * ()
-    -> decltype(dereference_impl(
+    -> decltype(atlas::atlas_detail::star_impl<T>(
         value,
-        atlas::atlas_detail::has_dereference_operator<std::optional<int>>{}))
+        atlas::atlas_detail::PriorityTag<10>{}))
     {
-        return dereference_impl(
+        return atlas::atlas_detail::star_impl<T>(
             value,
-            atlas::atlas_detail::has_dereference_operator<std::optional<int>>{});
+            atlas::atlas_detail::PriorityTag<10>{});
     }
 };
 } // namespace test
 
-#endif // FOO_BAR_BAD2BB2E10971AD625DF1E48FA9935C5CA653C39
+#endif // FOO_BAR_C6E3716E704CDE19225676C0F3B1ED3F66ED3AA9
 
