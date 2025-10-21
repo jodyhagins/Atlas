@@ -136,15 +136,6 @@ target_link_libraries(atlas
 # Apply compiler warnings to executable
 target_apply_atlas_warnings(atlas)
 
-# Golden file verification tool
-add_executable(verify_goldens src/tools/verify_goldens.cpp)
-
-target_link_libraries(verify_goldens
-    PRIVATE
-        atlas_lib)
-
-target_apply_atlas_warnings(verify_goldens)
-
 # Export the atlas executable location for downstream users
 set(Atlas_EXECUTABLE $<TARGET_FILE:atlas>
     CACHE INTERNAL "Path to atlas executable")

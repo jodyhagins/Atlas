@@ -1,0 +1,4 @@
+--kind=struct
+--namespace=test
+--name=IntType
+--description=strong int; +, -

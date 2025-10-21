@@ -488,7 +488,7 @@ operator () (InteractionFileDescription const & desc) const
 {
     std::ostringstream body;
 
-    // Generate includes
+    // Generate user-specified includes
     for (auto const & include : desc.includes) {
         if (include[0] == '<' || include[0] == '"') {
             body << "#include " << include << "\n";
@@ -497,7 +497,13 @@ operator () (InteractionFileDescription const & desc) const
         }
     }
 
-    // Always include <type_traits> and <utility> for atlas::value
+    // Always include <type_traits> and <utility> needed by preamble
+    auto preamble_includes = get_preamble_includes();
+    for (auto const & include : preamble_includes) {
+        body << "#include " << include << "\n";
+    }
+    body << "\n";
+
     // Embed atlas::value implementation
     body << preamble();
 

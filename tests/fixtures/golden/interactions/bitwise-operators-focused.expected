@@ -1,5 +1,5 @@
-#ifndef TEST_7992CA015BE589253CBA9FFDE2B4B42E6B36F70F
-#define TEST_7992CA015BE589253CBA9FFDE2B4B42E6B36F70F
+#ifndef TEST_CB3638A9CB48C20E92634AADCBC5E31F8C959BC1
+#define TEST_CB3638A9CB48C20E92634AADCBC5E31F8C959BC1
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -19,6 +19,9 @@
 #if __has_include(<version>)
 #include <version>
 #endif
+
+#include <type_traits>
+#include <utility>
 
 #ifndef WJH_ATLAS_50E620B544874CB8BE4412EE6773BF90
 #define WJH_ATLAS_50E620B544874CB8BE4412EE6773BF90
@@ -62,8 +65,6 @@
     __cpp_impl_three_way_comparison >= 201907L
 #include <compare>
 #endif
-#include <type_traits>
-#include <utility>
 
 namespace atlas {
 
@@ -458,5 +459,5 @@ noexcept(
 
 } // namespace graphics::color
 
-#endif // TEST_7992CA015BE589253CBA9FFDE2B4B42E6B36F70F
+#endif // TEST_CB3638A9CB48C20E92634AADCBC5E31F8C959BC1
 

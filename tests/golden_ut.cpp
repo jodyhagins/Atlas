@@ -9,6 +9,7 @@
 
 #include <cstdlib>
 #include <filesystem>
+#include <fstream>
 #include <sstream>
 #include <vector>
 
@@ -29,6 +30,20 @@ std::string visualize_whitespace(std::string const & s);
 std::string character_diff(
     std::string const & expected,
     std::string const & generated);
+
+/**
+ * Trim whitespace from both ends of a string.
+ */
+std::string
+trim(std::string const & str)
+{
+    size_t start = str.find_first_not_of(" \t\r\n");
+    if (start == std::string::npos) {
+        return "";
+    }
+    size_t end = str.find_last_not_of(" \t\r\n");
+    return str.substr(start, end - start + 1);
+}
 
 /**
  * Get the source directory from environment or discover it.
@@ -98,25 +113,78 @@ generate_from_input_file(fs::path const & input_path)
 }
 
 /**
+ * Generate code from command-line arguments file by calling atlas_main.
+ *
+ * Captures stdout to get the generated code.
+ *
+ * @param cmdline_path Path to .cmdline file containing arguments (one per line)
+ * @return Pair of (exit_code, generated_output)
+ * @throws Exceptions from atlas_main if they occur
+ */
+std::pair<int, std::string>
+generate_from_cmdline_file(fs::path const & cmdline_path)
+{
+    // Read the command-line arguments file
+    std::ifstream cmdline_file(cmdline_path);
+    if (not cmdline_file) {
+        throw std::runtime_error(
+            "Could not open cmdline file: " + cmdline_path.string());
+    }
+
+    // Build argument vector for atlas_main
+    std::vector<std::string> arg_strings = {"atlas"};
+
+    std::string line;
+    while (std::getline(cmdline_file, line)) {
+        // Trim whitespace and skip empty lines or comments
+        auto trimmed = trim(line);
+        if (not trimmed.empty() && trimmed[0] != '#') {
+            arg_strings.push_back(trimmed);
+        }
+    }
+
+    // Convert to char* array (atlas_main interface)
+    std::vector<char *> argv;
+    for (auto & arg : arg_strings) {
+        argv.push_back(arg.data());
+    }
+
+    // Redirect stdout to capture output
+    std::ostringstream captured_output;
+    auto old_cout = std::cout.rdbuf(captured_output.rdbuf());
+
+    // Call atlas_main
+    int exit_code = atlas_main(static_cast<int>(argv.size()), argv.data());
+
+    // Restore stdout
+    std::cout.rdbuf(old_cout);
+
+    return {exit_code, captured_output.str()};
+}
+
+/**
  * Test a single golden file pair.
  *
- * @param input_path Path to .input file
+ * @param test_file_path Path to .input or .cmdline file
  */
 void
-test_golden_file(fs::path const & input_path)
+test_golden_file(fs::path const & test_file_path)
 {
-    REQUIRE(fs::exists(input_path));
+    REQUIRE(fs::exists(test_file_path));
 
-    auto expected_path = input_path;
+    auto expected_path = test_file_path;
     expected_path.replace_extension(".expected");
     if (not fs::exists(expected_path)) {
         FAIL("Expected file missing: " << expected_path.string());
     }
 
-    INFO("Testing: " << input_path.string());
+    INFO("Testing: " << test_file_path.string());
 
     // Generate code using atlas_main (captures stdout)
-    auto [exit_code, generated] = generate_from_input_file(input_path);
+    // Choose generation method based on file extension
+    auto [exit_code, generated] = (test_file_path.extension() == ".cmdline")
+        ? generate_from_cmdline_file(test_file_path)
+        : generate_from_input_file(test_file_path);
 
     if (exit_code != EXIT_SUCCESS) {
         FAIL("atlas_main returned " << exit_code);
@@ -132,7 +200,7 @@ test_golden_file(fs::path const & input_path)
         diff_output << "\n========================================\n";
         diff_output << "GOLDEN FILE MISMATCH\n";
         diff_output << "========================================\n\n";
-        diff_output << "Input:    " << input_path.string() << "\n";
+        diff_output << "Input:    " << test_file_path.string() << "\n";
         diff_output << "Expected: " << expected_path.string() << "\n\n";
 
         // Split into lines for diff
@@ -198,9 +266,15 @@ test_golden_file(fs::path const & input_path)
         }
 
         diff_output << "To update golden file:\n";
-        diff_output << "  atlas --input=" << input_path.string() << " > "
-            << expected_path.string() << "\n";
-        diff_output << "Or run: ./tests/tools/update_goldens.sh\n";
+        if (test_file_path.extension() == ".cmdline") {
+            diff_output << "  Run: ./tests/tools/update_goldens.sh\n";
+            diff_output
+                << "  (Command-line golden tests require the update script)\n";
+        } else {
+            diff_output << "  atlas --input=" << test_file_path.string()
+                << " > " << expected_path.string() << "\n";
+            diff_output << "Or run: ./tests/tools/update_goldens.sh\n";
+        }
         diff_output << "========================================\n";
 
         FAIL(diff_output.str());
@@ -300,30 +374,33 @@ character_diff(std::string const & expected, std::string const & generated)
 }
 
 /**
- * Discover all .input files in golden directory.
+ * Discover all .input and .cmdline files in golden directory.
  *
  * @param golden_dir Root directory to search
- * @return Vector of paths to .input files (sorted)
+ * @return Vector of paths to .input and .cmdline files (sorted)
  */
 std::vector<fs::path>
 discover_golden_files(fs::path const & golden_dir)
 {
-    std::vector<fs::path> input_files;
+    std::vector<fs::path> test_files;
 
     if (not fs::exists(golden_dir)) {
-        return input_files; // Empty if directory doesn't exist
+        return test_files; // Empty if directory doesn't exist
     }
 
     for (auto const & entry : fs::recursive_directory_iterator(golden_dir)) {
-        if (entry.is_regular_file() && entry.path().extension() == ".input") {
-            input_files.push_back(entry.path());
+        if (entry.is_regular_file()) {
+            auto ext = entry.path().extension();
+            if (ext == ".input" || ext == ".cmdline") {
+                test_files.push_back(entry.path());
+            }
         }
     }
 
     // Sort for consistent test ordering
-    std::sort(input_files.begin(), input_files.end());
+    std::sort(test_files.begin(), test_files.end());
 
-    return input_files;
+    return test_files;
 }
 
 TEST_SUITE("Golden File Tests")

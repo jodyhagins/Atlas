@@ -71,6 +71,25 @@ trim(std::string const & str)
     return str.substr(start, end - start + 1);
 }
 
+std::vector<std::string>
+get_preamble_includes(PreambleOptions /* options */)
+{
+    std::vector<std::string> includes;
+
+    // Base includes always needed by preamble
+    includes.push_back("<type_traits>");
+    includes.push_back("<utility>");
+
+    // Conditionally add <compare> if three-way comparison is supported
+    // This is handled separately in the generated code via #if directive,
+    // so we don't include it in the unconditional list
+
+    // Note: options parameter reserved for future use (e.g., if we need to
+    // conditionally include headers based on arrow/dereference operators)
+
+    return includes;
+}
+
 std::string
 preamble(PreambleOptions options)
 {
@@ -117,8 +136,6 @@ preamble(PreambleOptions options)
     __cpp_impl_three_way_comparison >= 201907L
 #include <compare>
 #endif
-#include <type_traits>
-#include <utility>
 
 namespace atlas {
 

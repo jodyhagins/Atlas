@@ -1,5 +1,5 @@
-#ifndef TEST_A77C407ED495AC383F81FE09D78587E981EF1DA6
-#define TEST_A77C407ED495AC383F81FE09D78587E981EF1DA6
+#ifndef TEST_6A4FC55A3FBEEE388D2A9A0A0164DE4EAA28D722
+#define TEST_6A4FC55A3FBEEE388D2A9A0A0164DE4EAA28D722
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -19,6 +19,9 @@
 #if __has_include(<version>)
 #include <version>
 #endif
+
+#include <type_traits>
+#include <utility>
 
 #ifndef WJH_ATLAS_50E620B544874CB8BE4412EE6773BF90
 #define WJH_ATLAS_50E620B544874CB8BE4412EE6773BF90
@@ -62,8 +65,6 @@
     __cpp_impl_three_way_comparison >= 201907L
 #include <compare>
 #endif
-#include <type_traits>
-#include <utility>
 
 namespace atlas {
 
@@ -322,5 +323,5 @@ noexcept(
     return finance::core::Money{lhs.value * rhs.value};
 }
 
-#endif // TEST_A77C407ED495AC383F81FE09D78587E981EF1DA6
+#endif // TEST_6A4FC55A3FBEEE388D2A9A0A0164DE4EAA28D722
 
