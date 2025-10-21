@@ -278,84 +278,26 @@ constexpr char arrow_operator_template[] = R"(
      * pointer-like types (smart pointers): returns value.operator->()
      * other types: returns &value
      */
-private:
-    // forward for raw pointers (const) - return the pointer itself
-    template <typename T>
-    static {{{const_expr}}}T
-    arrow_impl(T const & v, std::true_type /* is_pointer */)
-    {
-        return v;
-    }
-
-    // forward for pointer-like types (const) - call their operator->
-    template <typename T>
-    static {{{const_expr}}}auto
-    arrow_impl(T const & v, std::false_type /* is_pointer */)
-    -> decltype(v.operator->())
-    {
-        return v.operator->();
-    }
-
-    // forward for raw pointers (non-const) - return the pointer itself
-    template <typename T>
-    static {{{const_expr}}}T
-    arrow_impl(T & v, std::true_type /* is_pointer */)
-    {
-        return v;
-    }
-
-    // forward for pointer-like types (non-const) - call their operator->
-    template <typename T>
-    static {{{const_expr}}}auto
-    arrow_impl(T & v, std::false_type /* is_pointer */)
-    -> decltype(v.operator->())
-    {
-        return v.operator->();
-    }
-
-public:
-    // Forward to wrapped type if it's arrow-operable (const)
-    template <typename T = {{{underlying_type}}}>
+    template <typename T = atlas::atlas_detail::const_>
     {{{const_expr}}}auto operator -> () const
-    -> typename std::enable_if<
-        atlas::atlas_detail::has_arrow_operator_const<T>::value,
-        decltype(arrow_impl(
-            std::declval<T const&>(),
-            typename std::is_pointer<T>::type{}))>::type
+    -> decltype(atlas::atlas_detail::arrow_impl<T>(
+        value,
+        atlas::atlas_detail::PriorityTag<1>{}))
     {
-        return arrow_impl(value, typename std::is_pointer<T>::type{});
+        return atlas::atlas_detail::arrow_impl<T>(
+            value,
+            atlas::atlas_detail::PriorityTag<1>{});
     }
 
-    // Forward to wrapped type if it's arrow-operable (non-const)
-    template <typename T = {{{underlying_type}}}>
+    template <typename T = atlas::atlas_detail::mutable_>
     {{{const_expr}}}auto operator -> ()
-    -> typename std::enable_if<
-        atlas::atlas_detail::has_arrow_operator<T>::value,
-        decltype(arrow_impl(
-            std::declval<T&>(),
-            typename std::is_pointer<T>::type{}))>::type
+    -> decltype(atlas::atlas_detail::arrow_impl<T>(
+        value,
+        atlas::atlas_detail::PriorityTag<1>{}))
     {
-        return arrow_impl(value, typename std::is_pointer<T>::type{});
-    }
-
-    // Fallback: return pointer to wrapped value (const)
-    template <typename T = {{{underlying_type}}}>
-    {{{const_expr}}}auto operator -> () const noexcept
-    -> typename std::enable_if<
-        not atlas::atlas_detail::has_arrow_operator_const<T>::value,
-        T const *>::type
-    {
-        return std::addressof(value);
-    }
-
-    // Fallback: return pointer to wrapped value (non-const)
-    template <typename T = {{{underlying_type}}}>
-    {{{const_expr}}}auto operator -> () noexcept
-    -> typename std::enable_if<
-        not atlas::atlas_detail::has_arrow_operator<T>::value,
-        T *>::type
-    {
-        return std::addressof(value);
+        return atlas::atlas_detail::arrow_impl<T>(
+            value,
+            atlas::atlas_detail::PriorityTag<1>{});
     }
 )";
 
@@ -509,56 +451,26 @@ constexpr char indirection_operator_template[] = R"(
      * Pointer-like types (smart pointers, iterators, optional): returns *value
      * Other types: returns reference to value (fallback)
      */
-private:
-    // Tag dispatch implementation for const version
-    template <typename T>
-    {{{const_expr}}}auto dereference_impl(T const & v, std::true_type) const
-    -> decltype(*v)
-    {
-        return *v;
-    }
-
-    template <typename T>
-    {{{const_expr}}}T const & dereference_impl(T const & v, std::false_type) const
-    {
-        return v;
-    }
-
-    // Tag dispatch implementation for non-const version
-    template <typename T>
-    {{{const_expr}}}auto dereference_impl(T & v, std::true_type)
-    -> decltype(*v)
-    {
-        return *v;
-    }
-
-    template <typename T>
-    {{{const_expr}}}T & dereference_impl(T & v, std::false_type)
-    {
-        return v;
-    }
-
-public:
-    // Const dereference operator
+    template <typename T = atlas::atlas_detail::const_>
     {{{const_expr}}}auto operator * () const
-    -> decltype(dereference_impl(
+    -> decltype(atlas::atlas_detail::star_impl<T>(
         value,
-        atlas::atlas_detail::has_dereference_operator_const<{{{underlying_type}}}>{}))
+        atlas::atlas_detail::PriorityTag<1>{}))
     {
-        return dereference_impl(
+        return atlas::atlas_detail::star_impl<T>(
             value,
-            atlas::atlas_detail::has_dereference_operator_const<{{{underlying_type}}}>{});
+            atlas::atlas_detail::PriorityTag<1>{});
     }
 
-    // Non-const dereference operator
+    template <typename T = atlas::atlas_detail::mutable_>
     {{{const_expr}}}auto operator * ()
-    -> decltype(dereference_impl(
+    -> decltype(atlas::atlas_detail::star_impl<T>(
         value,
-        atlas::atlas_detail::has_dereference_operator<{{{underlying_type}}}>{}))
+        atlas::atlas_detail::PriorityTag<10>{}))
     {
-        return dereference_impl(
+        return atlas::atlas_detail::star_impl<T>(
             value,
-            atlas::atlas_detail::has_dereference_operator<{{{underlying_type}}}>{});
+            atlas::atlas_detail::PriorityTag<10>{});
     }
 )";
 

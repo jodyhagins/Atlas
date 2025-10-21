@@ -259,61 +259,74 @@ end_(T && t) noexcept(noexcept(end(std::forward<T>(t))))
 }
 )";
 
+    static constexpr char const const_mutable[] = R"(
+struct const_
+{
+    template <typename T>
+    static T const * _ (T * p) { return p; }
+    template <typename T>
+    static T const & _ (T const & p) { return p; }
+};
+
+struct mutable_
+{
+    template <typename T>
+    static T * _ (T * p) { return p; }
+    template <typename T>
+    static T && _ (T && p) { return static_cast<T&&>(p); }
+};
+)";
+
     static constexpr char const arrow_operator_traits[] = R"(
 // Detects if T is a pointer or pointer-like type (has operator->)
 
-template <typename T>
-class is_arrow_operable
+template <typename T, typename U>
+auto
+arrow_impl(U & u, PriorityTag<1>)
+-> decltype(T::_(u.operator->()))
 {
-    template <typename U>
-    static auto test(int)
-    -> decltype(std::declval<U&>().operator->(), std::true_type{});
+    return T::_(u.operator->());
+}
 
-    template <typename U>
-    static auto test(...) -> std::false_type;
-
-public:
-    static constexpr bool value = decltype(test<T>(0))::value ||
-        std::is_pointer<T>::value;
-};
-
-template <typename T>
-class is_arrow_operable_const
+template <typename T, typename U>
+auto
+arrow_impl(U * u, PriorityTag<1>)
+-> decltype(T::_(u))
 {
-    template <typename U>
-    static auto test(int)
-    -> decltype(std::declval<U const&>().operator->(), std::true_type{});
+    return T::_(u);
+}
 
-    template <typename U>
-    static auto test(...) -> std::false_type;
-
-public:
-    static constexpr bool value = decltype(test<T>(0))::value ||
-        std::is_pointer<T>::value;
-};
-
-template <typename T>
-using has_arrow_operator = is_arrow_operable<T>;
-
-template <typename T>
-using has_arrow_operator_const = is_arrow_operable_const<T>;
+template <typename T, typename U>
+U * arrow_impl(U & u, PriorityTag<0>)
+{
+    return std::addressof(u);
+}
 )";
 
     static constexpr char const dereference_operator_traits[] = R"(
 // Detects if T is dereferenceable (pointers, smart pointers, iterators, optional)
 
-template <typename T, typename = void>
-struct is_dereferenceable : std::false_type {};
+template <typename T, typename U>
+auto
+star_impl(U & u, PriorityTag<1>)
+-> decltype(T::_(u.operator*()))
+{
+    return T::_(u.operator*());
+}
 
-template <typename T>
-struct is_dereferenceable<T, void_t<decltype(*std::declval<T&>())>>
-: std::true_type {};
+template <typename T, typename U>
+auto
+star_impl(U * u, PriorityTag<1>)
+-> decltype(*T::_(u))
+{
+    return *T::_(u);
+}
 
-template <typename T>
-using has_dereference_operator = is_dereferenceable<T>;
-
-template <typename T>
-using has_dereference_operator_const = is_dereferenceable<typename std::add_const<T>::type>;
+template <typename T, typename U>
+U & star_impl(U & u, PriorityTag<0>)
+{
+    return u;
+}
 )";
 
     static constexpr char const preamble_2[] = R"(
@@ -345,6 +358,11 @@ value(T && t)
 )";
 
     std::string result = preamble_1 + 1;
+    if (options.include_arrow_operator_traits ||
+        options.include_dereference_operator_traits)
+    {
+        result += const_mutable + 1;
+    }
     if (options.include_arrow_operator_traits) {
         result += arrow_operator_traits + 1;
     }
