@@ -1,5 +1,5 @@
-#ifndef EXAMPLE_INTERACTIONS_9857100EBDEC1E9D886D3B1EAF90D02213343303
-#define EXAMPLE_INTERACTIONS_9857100EBDEC1E9D886D3B1EAF90D02213343303
+#ifndef EXAMPLE_INTERACTIONS_0619F0998CC0A830FF9C72177A21AC0A6C1370F6
+#define EXAMPLE_INTERACTIONS_0619F0998CC0A830FF9C72177A21AC0A6C1370F6
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -19,6 +19,9 @@
 #if __has_include(<version>)
 #include <version>
 #endif
+
+#include <type_traits>
+#include <utility>
 
 #ifndef WJH_ATLAS_50E620B544874CB8BE4412EE6773BF90
 #define WJH_ATLAS_50E620B544874CB8BE4412EE6773BF90
@@ -62,8 +65,6 @@
     __cpp_impl_three_way_comparison >= 201907L
 #include <compare>
 #endif
-#include <type_traits>
-#include <utility>
 
 namespace atlas {
 
@@ -1420,4 +1421,4 @@ noexcept(
 
 } // namespace security
 
-#endif // EXAMPLE_INTERACTIONS_9857100EBDEC1E9D886D3B1EAF90D02213343303
+#endif // EXAMPLE_INTERACTIONS_0619F0998CC0A830FF9C72177A21AC0A6C1370F6

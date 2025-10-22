@@ -1576,18 +1576,47 @@ operator () (StrongTypeDescription const & desc)
     auto const info = parse(desc, &warnings_);
     auto const code = render_code(info);
     auto const guard = make_guard(desc, code);
+
+    // Collect all includes: user includes + preamble includes
+    PreambleOptions preamble_opts{
+        .include_arrow_operator_traits = info.arrow_operator,
+        .include_dereference_operator_traits = info.indirection_operator};
+
+    auto preamble_includes = get_preamble_includes(preamble_opts);
+
+    // Merge with user includes from info
+    std::set<std::string> all_includes_set(
+        info.includes_vec.begin(),
+        info.includes_vec.end());
+    all_includes_set.insert(preamble_includes.begin(), preamble_includes.end());
+
+    // Remove <version> and <compare> as they're handled separately
+    all_includes_set.erase("<version>");
+    all_includes_set.erase("<compare>");
+
+    // Build the includes string with guards
+    std::ostringstream includes_stream;
+    for (auto const & include : all_includes_set) {
+        auto guard_it = info.include_guards.find(include);
+        if (guard_it != info.include_guards.end()) {
+            includes_stream << "#if " << guard_it->second << '\n';
+            includes_stream << "#include " << include << '\n';
+            includes_stream << "#endif // " << guard_it->second << '\n';
+        } else {
+            includes_stream << "#include " << include << '\n';
+        }
+    }
+
     std::stringstream strm;
     strm << "#ifndef " << guard << '\n'
         << "#define " << guard << "\n\n"
         << make_notice_banner() << '\n'
         << R"(#if __has_include(<version>)
 #include <version>
-#endif)" << '\n'
-        << preamble(
-               {.include_arrow_operator_traits = info.arrow_operator,
-                .include_dereference_operator_traits =
-                    info.indirection_operator})
-        << code << "#endif // " << guard << '\n';
+#endif
+)" << includes_stream.str()
+        << '\n'
+        << preamble(preamble_opts) << code << "#endif // " << guard << '\n';
     return strm.str();
 }
 
@@ -1652,6 +1681,15 @@ generate_strong_types_file(
         .upcase_guard = upcase_guard};
     std::string guard = make_guard(temp_desc, content);
 
+    // Add preamble includes to the collected includes
+    PreambleOptions preamble_opts{
+        .include_arrow_operator_traits = any_arrow_operator,
+        .include_dereference_operator_traits = any_indirection_operator};
+    auto preamble_includes = get_preamble_includes(preamble_opts);
+    for (auto const & include : preamble_includes) {
+        all_includes.insert(include);
+    }
+
     // Build final output
     std::ostringstream output;
 
@@ -1685,9 +1723,7 @@ generate_strong_types_file(
     }
 
     // Add strong_type_tag definition once for the entire file
-    output << preamble(
-        {.include_arrow_operator_traits = any_arrow_operator,
-         .include_dereference_operator_traits = any_indirection_operator});
+    output << preamble(preamble_opts);
     output << content << "#endif // " << guard << '\n';
 
     return output.str();

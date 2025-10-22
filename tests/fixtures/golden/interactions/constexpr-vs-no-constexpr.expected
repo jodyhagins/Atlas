@@ -1,5 +1,5 @@
-#ifndef TEST_13884A85FD52A4FB1BED9AA213414E44E27129EE
-#define TEST_13884A85FD52A4FB1BED9AA213414E44E27129EE
+#ifndef TEST_D0B4F5F984033162D543C135A5A24CD1753B9589
+#define TEST_D0B4F5F984033162D543C135A5A24CD1753B9589
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -19,6 +19,9 @@
 #if __has_include(<version>)
 #include <version>
 #endif
+
+#include <type_traits>
+#include <utility>
 
 #ifndef WJH_ATLAS_50E620B544874CB8BE4412EE6773BF90
 #define WJH_ATLAS_50E620B544874CB8BE4412EE6773BF90
@@ -62,8 +65,6 @@
     __cpp_impl_three_way_comparison >= 201907L
 #include <compare>
 #endif
-#include <type_traits>
-#include <utility>
 
 namespace atlas {
 
@@ -342,5 +343,5 @@ noexcept(
 
 } // namespace test
 
-#endif // TEST_13884A85FD52A4FB1BED9AA213414E44E27129EE
+#endif // TEST_D0B4F5F984033162D543C135A5A24CD1753B9589
 

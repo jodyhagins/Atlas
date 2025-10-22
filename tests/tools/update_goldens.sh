@@ -22,6 +22,7 @@ echo ""
 
 UPDATED=0
 
+# Update .input files
 while IFS= read -r -d '' input_file; do
     expected_file="${input_file%.input}.expected"
 
@@ -39,6 +40,30 @@ while IFS= read -r -d '' input_file; do
 
     UPDATED=$((UPDATED + 1))
 done < <(find "$GOLDEN_DIR" -name "*.input" -print0 | sort -z)
+
+# Update .cmdline files
+while IFS= read -r -d '' cmdline_file; do
+    expected_file="${cmdline_file%.cmdline}.expected"
+
+    echo "Updating: $(basename "$cmdline_file")"
+
+    # Read command-line arguments from file (one per line, skip comments and empty lines)
+    args=()
+    while IFS= read -r line; do
+        # Trim whitespace
+        line=$(echo "$line" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+        # Skip empty lines and comments
+        if [[ -n "$line" && ! "$line" =~ ^# ]]; then
+            args+=("$line")
+        fi
+    done < "$cmdline_file"
+
+    # Generate code
+    echo "+++++ $ATLAS_BIN" "${args[@]}"
+    "$ATLAS_BIN" "${args[@]}" > "$expected_file"
+
+    UPDATED=$((UPDATED + 1))
+done < <(find "$GOLDEN_DIR" -name "*.cmdline" -print0 | sort -z)
 
 echo ""
 echo "Updated $UPDATED golden file(s)"

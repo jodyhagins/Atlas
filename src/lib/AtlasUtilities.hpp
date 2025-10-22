@@ -8,6 +8,7 @@
 #define WJH_ATLAS_8651ABC1F7E740D3960747B1195C51A7
 
 #include <string>
+#include <vector>
 
 namespace wjh::atlas { inline namespace v1 {
 
@@ -50,6 +51,14 @@ struct PreambleOptions
     bool include_arrow_operator_traits = false;
     bool include_dereference_operator_traits = false;
 };
+
+/**
+ * @brief Get the list of header includes required by the preamble
+ *
+ * @param options Controls which optional preamble features are included
+ * @return Vector of header file names (e.g., "<type_traits>", "<utility>")
+ */
+std::vector<std::string> get_preamble_includes(PreambleOptions options = {});
 
 /**
  * @brief The code necessary in every generated file.

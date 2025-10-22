@@ -64,8 +64,6 @@
     __cpp_impl_three_way_comparison >= 201907L
 #include <compare>
 #endif
-#include <type_traits>
-#include <utility>
 
 namespace atlas {
 

@@ -1,5 +1,5 @@
-#ifndef TEST_65B3E4FBB3BE8EDB4E4C5936C9B5E69785EA8B24
-#define TEST_65B3E4FBB3BE8EDB4E4C5936C9B5E69785EA8B24
+#ifndef TEST_5DDD0A7FFFE4FA10FFFC4060522B3E96B65B0478
+#define TEST_5DDD0A7FFFE4FA10FFFC4060522B3E96B65B0478
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -19,6 +19,9 @@
 #if __has_include(<version>)
 #include <version>
 #endif
+
+#include <type_traits>
+#include <utility>
 
 #ifndef WJH_ATLAS_50E620B544874CB8BE4412EE6773BF90
 #define WJH_ATLAS_50E620B544874CB8BE4412EE6773BF90
@@ -62,8 +65,6 @@
     __cpp_impl_three_way_comparison >= 201907L
 #include <compare>
 #endif
-#include <type_traits>
-#include <utility>
 
 namespace atlas {
 
@@ -392,5 +393,5 @@ noexcept(
 
 } // namespace physics::units
 
-#endif // TEST_65B3E4FBB3BE8EDB4E4C5936C9B5E69785EA8B24
+#endif // TEST_5DDD0A7FFFE4FA10FFFC4060522B3E96B65B0478
 

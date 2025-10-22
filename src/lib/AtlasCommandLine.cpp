@@ -606,8 +606,9 @@ parse_input_file(Arguments const & args)
                     throw AtlasCommandLineError(
                         "Missing type name in section header at line " +
                         std::to_string(line_number) + " in " + args.input_file);
-                } else if (section_content.size() >= 7 &&
-                           section_content.substr(0, 7) == "struct ")
+                } else if (
+                    section_content.size() >= 7 &&
+                    section_content.substr(0, 7) == "struct ")
                 {
                     section_derived_kind = "struct";
                     section_content = trim(section_content.substr(7));

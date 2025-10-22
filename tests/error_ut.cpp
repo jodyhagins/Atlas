@@ -30,8 +30,9 @@ description=strong int; +, -
         CHECK(not result.had_error());
         auto output = result.stderr_output + result.stdout_output;
         // Output should contain the type definition
-        bool has_type = (output.find("struct TestType") != std::string::npos ||
-                         output.find("TestType") != std::string::npos);
+        bool has_type =
+            (output.find("struct TestType") != std::string::npos ||
+             output.find("TestType") != std::string::npos);
         CHECK(has_type);
     }
 
@@ -646,10 +647,11 @@ TEST_SUITE("Error Handling: Regression Tests")
     TEST_CASE("Bug: Missing kind in multi-type file should default to struct")
     {
         // When a file has multiple types and one is missing kind,
-        // the type with missing kind should default to struct, not be silently skipped.
+        // the type with missing kind should default to struct, not be silently
+        // skipped.
         //
-        // This test verifies that types without an explicit kind default to struct
-        // and code is generated for all types (no silent skipping).
+        // This test verifies that types without an explicit kind default to
+        // struct and code is generated for all types (no silent skipping).
         auto result = test_input_content_error(R"(
 [type]
 kind=struct
@@ -673,9 +675,10 @@ description=unsigned short; ==, !=, <=>
         CHECK(not result.had_error());
         auto output = result.stderr_output + result.stdout_output;
         // Should have generated code (at least one type present)
-        bool has_some_type = (output.find("ValidType1") != std::string::npos ||
-                              output.find("DefaultKindType") != std::string::npos ||
-                              output.find("ValidType2") != std::string::npos);
+        bool has_some_type =
+            (output.find("ValidType1") != std::string::npos ||
+             output.find("DefaultKindType") != std::string::npos ||
+             output.find("ValidType2") != std::string::npos);
         CHECK(has_some_type);
     }
 }
