@@ -8,7 +8,9 @@
 #include "AtlasMain.hpp"
 #include "doctest.hpp"
 
+#include <cstdio>
 #include <cstdlib>
+#include <fstream>
 #include <sstream>
 #include <string>
 
@@ -139,5 +141,57 @@ TEST_SUITE("Atlas Main Tests")
         CHECK(
             stderr_output.find("makes '<', '<=', '>', '>=' redundant") !=
             std::string::npos);
+    }
+
+    TEST_CASE("Command-line and file-based generation produce identical output")
+    {
+        // Create a comprehensive test with many features to ensure consistency
+        std::string const description =
+            "description="
+            "strong std::string; +, -, ==, <, ++, @, ->, out, in, hash";
+
+        // Test via command-line with explicit guard prefix
+        std::string const desc_arg = "--" + description;
+        char const * cmd_argv[] = {
+            "atlas",
+            "--kind=struct",
+            "--namespace=test",
+            "--name=ComprehensiveType",
+            "--guard-prefix=TEST_GUARD",
+            desc_arg.c_str()};
+
+        StdoutCapture cmd_stdout;
+        StderrCapture cmd_stderr;
+        int cmd_result = atlas_main(6, const_cast<char **>(cmd_argv));
+
+        CHECK(cmd_result == EXIT_SUCCESS);
+        std::string cmd_output = cmd_stdout.get();
+
+        // Create temporary file with same specification using raw string
+        // literal
+        std::string const temp_file = "/tmp/atlas_consistency_test.txt";
+        {
+            std::ofstream out(temp_file);
+            out << "guard_prefix=TEST_GUARD\n"
+                << "[test::ComprehensiveType]\nkind=struct\n"
+                << description << '\n';
+        }
+
+        // Test via file-based input
+        std::string const input_arg = "--input=" + temp_file;
+        char const * file_argv[] = {"atlas", input_arg.c_str()};
+
+        StdoutCapture file_stdout;
+        StderrCapture file_stderr;
+        int file_result = atlas_main(2, const_cast<char **>(file_argv));
+
+        CHECK(file_result == EXIT_SUCCESS);
+        std::string file_output = file_stdout.get();
+
+        // Clean up temp file
+        std::remove(temp_file.c_str());
+
+        // With identical guard prefix, outputs should be completely identical
+        CHECK(cmd_output == file_output);
     }
 }
