@@ -147,7 +147,7 @@ description=strong int; {ARITH}, {CMP}, hash
 | `+*`, `-*` | Binary and unary versions |
 | `u+`, `u-`, `u~`, `~` | Unary operators |
 | `==`, `!=`, `<`, `<=`, `>`, `>=` | Comparison operators |
-| `<=>` | Three-way comparison (adds `<compare>`) |
+| `<=>` | Three-way comparison operator (C++20+) with automatic C++11/14/17 fallback to all six comparison operators |
 | `!`, `not`, `&&`, `and`, `||`, `or` | Logical operators |
 | `++`, `--` | Increment/decrement (pre and post) |
 
@@ -216,4 +216,57 @@ std::vector<int>; ==, [], iterable                 # Iterable container wrapper
 std::string; ==, cast<std::string_view>            # String with explicit cast to view
 int; ==, implicit_cast<bool>                       # Int with implicit bool conversion
 double; {NUMERIC}, ->                              # Using a profile (defined elsewhere)
+```
+
+## Spaceship Operator (`<=>`) with Automatic C++17 Fallback
+
+The spaceship operator `<=>` is a powerful C++20 feature that simplifies comparison operations. Atlas makes it work seamlessly across all C++ standards:
+
+### How It Works
+
+When you specify `<=>` in your type description:
+
+**C++20 and later:**
+```cpp
+friend constexpr auto operator <=> (MyType const &, MyType const &) = default;
+friend constexpr bool operator == (MyType const &, MyType const &) = default;
+```
+The compiler synthesizes all comparison operators (`<`, `<=`, `>`, `>=`, `==`, `!=`) from the spaceship operator.
+
+**C++11/14/17 (automatic fallback):**
+```cpp
+friend constexpr bool operator < (MyType const & lhs, MyType const & rhs)
+{ return lhs.value < rhs.value; }
+// ... and five more comparison operators: <=, >, >=, ==, !=
+```
+Atlas automatically generates all six comparison operators that delegate to the underlying type.
+
+### Benefits
+
+- ✅ **Write once, run anywhere**: Same description works from C++11 through C++23+
+- ✅ **Semantic equivalence**: Fallback operators provide the same behavior as spaceship for strong types
+- ✅ **No manual work**: You get all six comparison operators without specifying them individually
+- ✅ **Future-proof**: Automatically upgrades to native spaceship when you move to C++20+
+
+### Example
+
+```
+[struct math::Distance]
+description=double; +, -, <=>
+```
+
+This single description generates:
+- **C++20+**: Spaceship operator with synthesized comparisons
+- **C++17-**: All six comparison operators explicitly generated
+
+### Note on Redundancy
+
+If you specify `<=>` along with individual comparison operators (like `==`, `<`, etc.), Atlas will warn you that they're redundant. Just use `<=>` alone for the cleanest code:
+
+```
+# Good - concise and works everywhere
+description=int; +, -, <=>
+
+# Works but redundant - generates warnings
+description=int; +, -, <=>, ==, <
 ```

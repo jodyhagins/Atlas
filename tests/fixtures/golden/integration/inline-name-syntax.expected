@@ -1,5 +1,5 @@
-#ifndef TEST_E56342C7FBA2EFE1C953E32DEDFD3313D55E6212
-#define TEST_E56342C7FBA2EFE1C953E32DEDFD3313D55E6212
+#ifndef TEST_025FB9C68A4384E5D0EA6D8A181BBEEFC78C0018
+#define TEST_025FB9C68A4384E5D0EA6D8A181BBEEFC78C0018
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -634,13 +634,58 @@ public:
     constexpr explicit operator int const & () const { return value; }
     constexpr explicit operator int & () { return value; }
 
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
     /**
      * The default three-way comparison (spaceship) operator.
      */
     friend constexpr auto operator <=> (
         Currency const &,
         Currency const &) = default;
+#else
+    /**
+     * Comparison operators (C++17 fallback for spaceship operator).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend constexpr bool operator < (
+        Currency const & lhs,
+        Currency const & rhs)
+    noexcept(noexcept(std::declval<int const &>() <
+        std::declval<int const &>()))
+    {
+        return lhs.value < rhs.value;
+    }
 
+    friend constexpr bool operator <= (
+        Currency const & lhs,
+        Currency const & rhs)
+    noexcept(noexcept(std::declval<int const &>() <=
+        std::declval<int const &>()))
+    {
+        return lhs.value <= rhs.value;
+    }
+
+    friend constexpr bool operator > (
+        Currency const & lhs,
+        Currency const & rhs)
+    noexcept(noexcept(std::declval<int const &>() >
+        std::declval<int const &>()))
+    {
+        return lhs.value > rhs.value;
+    }
+
+    friend constexpr bool operator >= (
+        Currency const & lhs,
+        Currency const & rhs)
+    noexcept(noexcept(std::declval<int const &>() >=
+        std::declval<int const &>()))
+    {
+        return lhs.value >= rhs.value;
+    }
+#endif
+
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
     /**
      * The default equality comparison operator.
      * Provided with spaceship operator for optimal performance.
@@ -648,6 +693,29 @@ public:
     friend constexpr bool operator == (
         Currency const &,
         Currency const &) = default;
+#else
+    /**
+     * Equality comparison operators (C++17 fallback).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend constexpr bool operator == (
+        Currency const & lhs,
+        Currency const & rhs)
+    noexcept(noexcept(std::declval<int const &>() ==
+        std::declval<int const &>()))
+    {
+        return lhs.value == rhs.value;
+    }
+
+    friend constexpr bool operator != (
+        Currency const & lhs,
+        Currency const & rhs)
+    noexcept(noexcept(std::declval<int const &>() !=
+        std::declval<int const &>()))
+    {
+        return lhs.value != rhs.value;
+    }
+#endif
 };
 } // namespace finance
 
@@ -791,5 +859,5 @@ struct OldStyle
 };
 } // namespace legacy
 
-#endif // TEST_E56342C7FBA2EFE1C953E32DEDFD3313D55E6212
+#endif // TEST_025FB9C68A4384E5D0EA6D8A181BBEEFC78C0018
 

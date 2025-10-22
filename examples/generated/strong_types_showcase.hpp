@@ -1,5 +1,5 @@
-#ifndef EXAMPLE_3EE016709D41D145456FEC2094966E58D657E5EE
-#define EXAMPLE_3EE016709D41D145456FEC2094966E58D657E5EE
+#ifndef EXAMPLE_D9A9385DF1AA558B4CF8DDC0FDCEBDE47EA1E687
+#define EXAMPLE_D9A9385DF1AA558B4CF8DDC0FDCEBDE47EA1E687
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -1135,13 +1135,58 @@ public:
     constexpr explicit operator unsigned long const & () const { return value; }
     constexpr explicit operator unsigned long & () { return value; }
 
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
     /**
      * The default three-way comparison (spaceship) operator.
      */
     friend constexpr auto operator <=> (
         UserId const &,
         UserId const &) = default;
+#else
+    /**
+     * Comparison operators (C++17 fallback for spaceship operator).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend constexpr bool operator < (
+        UserId const & lhs,
+        UserId const & rhs)
+    noexcept(noexcept(std::declval<unsigned long const &>() <
+        std::declval<unsigned long const &>()))
+    {
+        return lhs.value < rhs.value;
+    }
 
+    friend constexpr bool operator <= (
+        UserId const & lhs,
+        UserId const & rhs)
+    noexcept(noexcept(std::declval<unsigned long const &>() <=
+        std::declval<unsigned long const &>()))
+    {
+        return lhs.value <= rhs.value;
+    }
+
+    friend constexpr bool operator > (
+        UserId const & lhs,
+        UserId const & rhs)
+    noexcept(noexcept(std::declval<unsigned long const &>() >
+        std::declval<unsigned long const &>()))
+    {
+        return lhs.value > rhs.value;
+    }
+
+    friend constexpr bool operator >= (
+        UserId const & lhs,
+        UserId const & rhs)
+    noexcept(noexcept(std::declval<unsigned long const &>() >=
+        std::declval<unsigned long const &>()))
+    {
+        return lhs.value >= rhs.value;
+    }
+#endif
+
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
     /**
      * The default equality comparison operator.
      * Provided with spaceship operator for optimal performance.
@@ -1149,6 +1194,29 @@ public:
     friend constexpr bool operator == (
         UserId const &,
         UserId const &) = default;
+#else
+    /**
+     * Equality comparison operators (C++17 fallback).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend constexpr bool operator == (
+        UserId const & lhs,
+        UserId const & rhs)
+    noexcept(noexcept(std::declval<unsigned long const &>() ==
+        std::declval<unsigned long const &>()))
+    {
+        return lhs.value == rhs.value;
+    }
+
+    friend constexpr bool operator != (
+        UserId const & lhs,
+        UserId const & rhs)
+    noexcept(noexcept(std::declval<unsigned long const &>() !=
+        std::declval<unsigned long const &>()))
+    {
+        return lhs.value != rhs.value;
+    }
+#endif
 };
 } // namespace v1
 } // namespace ids
@@ -1351,13 +1419,58 @@ struct Meters
         return lhs;
     }
 
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
     /**
      * The default three-way comparison (spaceship) operator.
      */
     friend constexpr auto operator <=> (
         Meters const &,
         Meters const &) = default;
+#else
+    /**
+     * Comparison operators (C++17 fallback for spaceship operator).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend constexpr bool operator < (
+        Meters const & lhs,
+        Meters const & rhs)
+    noexcept(noexcept(std::declval<double const &>() <
+        std::declval<double const &>()))
+    {
+        return lhs.value < rhs.value;
+    }
 
+    friend constexpr bool operator <= (
+        Meters const & lhs,
+        Meters const & rhs)
+    noexcept(noexcept(std::declval<double const &>() <=
+        std::declval<double const &>()))
+    {
+        return lhs.value <= rhs.value;
+    }
+
+    friend constexpr bool operator > (
+        Meters const & lhs,
+        Meters const & rhs)
+    noexcept(noexcept(std::declval<double const &>() >
+        std::declval<double const &>()))
+    {
+        return lhs.value > rhs.value;
+    }
+
+    friend constexpr bool operator >= (
+        Meters const & lhs,
+        Meters const & rhs)
+    noexcept(noexcept(std::declval<double const &>() >=
+        std::declval<double const &>()))
+    {
+        return lhs.value >= rhs.value;
+    }
+#endif
+
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
     /**
      * The default equality comparison operator.
      * Provided with spaceship operator for optimal performance.
@@ -1365,6 +1478,29 @@ struct Meters
     friend constexpr bool operator == (
         Meters const &,
         Meters const &) = default;
+#else
+    /**
+     * Equality comparison operators (C++17 fallback).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend constexpr bool operator == (
+        Meters const & lhs,
+        Meters const & rhs)
+    noexcept(noexcept(std::declval<double const &>() ==
+        std::declval<double const &>()))
+    {
+        return lhs.value == rhs.value;
+    }
+
+    friend constexpr bool operator != (
+        Meters const & lhs,
+        Meters const & rhs)
+    noexcept(noexcept(std::declval<double const &>() !=
+        std::declval<double const &>()))
+    {
+        return lhs.value != rhs.value;
+    }
+#endif
 };
 } // namespace units
 } // namespace physics
@@ -1548,13 +1684,58 @@ struct Seconds
         return lhs;
     }
 
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
     /**
      * The default three-way comparison (spaceship) operator.
      */
     friend constexpr auto operator <=> (
         Seconds const &,
         Seconds const &) = default;
+#else
+    /**
+     * Comparison operators (C++17 fallback for spaceship operator).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend constexpr bool operator < (
+        Seconds const & lhs,
+        Seconds const & rhs)
+    noexcept(noexcept(std::declval<double const &>() <
+        std::declval<double const &>()))
+    {
+        return lhs.value < rhs.value;
+    }
 
+    friend constexpr bool operator <= (
+        Seconds const & lhs,
+        Seconds const & rhs)
+    noexcept(noexcept(std::declval<double const &>() <=
+        std::declval<double const &>()))
+    {
+        return lhs.value <= rhs.value;
+    }
+
+    friend constexpr bool operator > (
+        Seconds const & lhs,
+        Seconds const & rhs)
+    noexcept(noexcept(std::declval<double const &>() >
+        std::declval<double const &>()))
+    {
+        return lhs.value > rhs.value;
+    }
+
+    friend constexpr bool operator >= (
+        Seconds const & lhs,
+        Seconds const & rhs)
+    noexcept(noexcept(std::declval<double const &>() >=
+        std::declval<double const &>()))
+    {
+        return lhs.value >= rhs.value;
+    }
+#endif
+
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
     /**
      * The default equality comparison operator.
      * Provided with spaceship operator for optimal performance.
@@ -1562,6 +1743,29 @@ struct Seconds
     friend constexpr bool operator == (
         Seconds const &,
         Seconds const &) = default;
+#else
+    /**
+     * Equality comparison operators (C++17 fallback).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend constexpr bool operator == (
+        Seconds const & lhs,
+        Seconds const & rhs)
+    noexcept(noexcept(std::declval<double const &>() ==
+        std::declval<double const &>()))
+    {
+        return lhs.value == rhs.value;
+    }
+
+    friend constexpr bool operator != (
+        Seconds const & lhs,
+        Seconds const & rhs)
+    noexcept(noexcept(std::declval<double const &>() !=
+        std::declval<double const &>()))
+    {
+        return lhs.value != rhs.value;
+    }
+#endif
 };
 } // namespace units
 } // namespace physics
@@ -1745,13 +1949,58 @@ struct MetersPerSecond
         return lhs;
     }
 
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
     /**
      * The default three-way comparison (spaceship) operator.
      */
     friend constexpr auto operator <=> (
         MetersPerSecond const &,
         MetersPerSecond const &) = default;
+#else
+    /**
+     * Comparison operators (C++17 fallback for spaceship operator).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend constexpr bool operator < (
+        MetersPerSecond const & lhs,
+        MetersPerSecond const & rhs)
+    noexcept(noexcept(std::declval<double const &>() <
+        std::declval<double const &>()))
+    {
+        return lhs.value < rhs.value;
+    }
 
+    friend constexpr bool operator <= (
+        MetersPerSecond const & lhs,
+        MetersPerSecond const & rhs)
+    noexcept(noexcept(std::declval<double const &>() <=
+        std::declval<double const &>()))
+    {
+        return lhs.value <= rhs.value;
+    }
+
+    friend constexpr bool operator > (
+        MetersPerSecond const & lhs,
+        MetersPerSecond const & rhs)
+    noexcept(noexcept(std::declval<double const &>() >
+        std::declval<double const &>()))
+    {
+        return lhs.value > rhs.value;
+    }
+
+    friend constexpr bool operator >= (
+        MetersPerSecond const & lhs,
+        MetersPerSecond const & rhs)
+    noexcept(noexcept(std::declval<double const &>() >=
+        std::declval<double const &>()))
+    {
+        return lhs.value >= rhs.value;
+    }
+#endif
+
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
     /**
      * The default equality comparison operator.
      * Provided with spaceship operator for optimal performance.
@@ -1759,6 +2008,29 @@ struct MetersPerSecond
     friend constexpr bool operator == (
         MetersPerSecond const &,
         MetersPerSecond const &) = default;
+#else
+    /**
+     * Equality comparison operators (C++17 fallback).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend constexpr bool operator == (
+        MetersPerSecond const & lhs,
+        MetersPerSecond const & rhs)
+    noexcept(noexcept(std::declval<double const &>() ==
+        std::declval<double const &>()))
+    {
+        return lhs.value == rhs.value;
+    }
+
+    friend constexpr bool operator != (
+        MetersPerSecond const & lhs,
+        MetersPerSecond const & rhs)
+    noexcept(noexcept(std::declval<double const &>() !=
+        std::declval<double const &>()))
+    {
+        return lhs.value != rhs.value;
+    }
+#endif
 };
 } // namespace units
 } // namespace physics
@@ -2371,13 +2643,58 @@ struct RedChannel
         return lhs;
     }
 
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
     /**
      * The default three-way comparison (spaceship) operator.
      */
     friend constexpr auto operator <=> (
         RedChannel const &,
         RedChannel const &) = default;
+#else
+    /**
+     * Comparison operators (C++17 fallback for spaceship operator).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend constexpr bool operator < (
+        RedChannel const & lhs,
+        RedChannel const & rhs)
+    noexcept(noexcept(std::declval<uint8_t const &>() <
+        std::declval<uint8_t const &>()))
+    {
+        return lhs.value < rhs.value;
+    }
 
+    friend constexpr bool operator <= (
+        RedChannel const & lhs,
+        RedChannel const & rhs)
+    noexcept(noexcept(std::declval<uint8_t const &>() <=
+        std::declval<uint8_t const &>()))
+    {
+        return lhs.value <= rhs.value;
+    }
+
+    friend constexpr bool operator > (
+        RedChannel const & lhs,
+        RedChannel const & rhs)
+    noexcept(noexcept(std::declval<uint8_t const &>() >
+        std::declval<uint8_t const &>()))
+    {
+        return lhs.value > rhs.value;
+    }
+
+    friend constexpr bool operator >= (
+        RedChannel const & lhs,
+        RedChannel const & rhs)
+    noexcept(noexcept(std::declval<uint8_t const &>() >=
+        std::declval<uint8_t const &>()))
+    {
+        return lhs.value >= rhs.value;
+    }
+#endif
+
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
     /**
      * The default equality comparison operator.
      * Provided with spaceship operator for optimal performance.
@@ -2385,6 +2702,29 @@ struct RedChannel
     friend constexpr bool operator == (
         RedChannel const &,
         RedChannel const &) = default;
+#else
+    /**
+     * Equality comparison operators (C++17 fallback).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend constexpr bool operator == (
+        RedChannel const & lhs,
+        RedChannel const & rhs)
+    noexcept(noexcept(std::declval<uint8_t const &>() ==
+        std::declval<uint8_t const &>()))
+    {
+        return lhs.value == rhs.value;
+    }
+
+    friend constexpr bool operator != (
+        RedChannel const & lhs,
+        RedChannel const & rhs)
+    noexcept(noexcept(std::declval<uint8_t const &>() !=
+        std::declval<uint8_t const &>()))
+    {
+        return lhs.value != rhs.value;
+    }
+#endif
 };
 } // namespace color
 } // namespace graphics
@@ -3068,13 +3408,58 @@ struct Numerator
         return lhs;
     }
 
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
     /**
      * The default three-way comparison (spaceship) operator.
      */
     friend constexpr auto operator <=> (
         Numerator const &,
         Numerator const &) = default;
+#else
+    /**
+     * Comparison operators (C++17 fallback for spaceship operator).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend constexpr bool operator < (
+        Numerator const & lhs,
+        Numerator const & rhs)
+    noexcept(noexcept(std::declval<long const &>() <
+        std::declval<long const &>()))
+    {
+        return lhs.value < rhs.value;
+    }
 
+    friend constexpr bool operator <= (
+        Numerator const & lhs,
+        Numerator const & rhs)
+    noexcept(noexcept(std::declval<long const &>() <=
+        std::declval<long const &>()))
+    {
+        return lhs.value <= rhs.value;
+    }
+
+    friend constexpr bool operator > (
+        Numerator const & lhs,
+        Numerator const & rhs)
+    noexcept(noexcept(std::declval<long const &>() >
+        std::declval<long const &>()))
+    {
+        return lhs.value > rhs.value;
+    }
+
+    friend constexpr bool operator >= (
+        Numerator const & lhs,
+        Numerator const & rhs)
+    noexcept(noexcept(std::declval<long const &>() >=
+        std::declval<long const &>()))
+    {
+        return lhs.value >= rhs.value;
+    }
+#endif
+
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
     /**
      * The default equality comparison operator.
      * Provided with spaceship operator for optimal performance.
@@ -3082,6 +3467,29 @@ struct Numerator
     friend constexpr bool operator == (
         Numerator const &,
         Numerator const &) = default;
+#else
+    /**
+     * Equality comparison operators (C++17 fallback).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend constexpr bool operator == (
+        Numerator const & lhs,
+        Numerator const & rhs)
+    noexcept(noexcept(std::declval<long const &>() ==
+        std::declval<long const &>()))
+    {
+        return lhs.value == rhs.value;
+    }
+
+    friend constexpr bool operator != (
+        Numerator const & lhs,
+        Numerator const & rhs)
+    noexcept(noexcept(std::declval<long const &>() !=
+        std::declval<long const &>()))
+    {
+        return lhs.value != rhs.value;
+    }
+#endif
 };
 } // namespace rational
 } // namespace math
@@ -3190,13 +3598,58 @@ struct Denominator
         return lhs;
     }
 
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
     /**
      * The default three-way comparison (spaceship) operator.
      */
     friend constexpr auto operator <=> (
         Denominator const &,
         Denominator const &) = default;
+#else
+    /**
+     * Comparison operators (C++17 fallback for spaceship operator).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend constexpr bool operator < (
+        Denominator const & lhs,
+        Denominator const & rhs)
+    noexcept(noexcept(std::declval<long const &>() <
+        std::declval<long const &>()))
+    {
+        return lhs.value < rhs.value;
+    }
 
+    friend constexpr bool operator <= (
+        Denominator const & lhs,
+        Denominator const & rhs)
+    noexcept(noexcept(std::declval<long const &>() <=
+        std::declval<long const &>()))
+    {
+        return lhs.value <= rhs.value;
+    }
+
+    friend constexpr bool operator > (
+        Denominator const & lhs,
+        Denominator const & rhs)
+    noexcept(noexcept(std::declval<long const &>() >
+        std::declval<long const &>()))
+    {
+        return lhs.value > rhs.value;
+    }
+
+    friend constexpr bool operator >= (
+        Denominator const & lhs,
+        Denominator const & rhs)
+    noexcept(noexcept(std::declval<long const &>() >=
+        std::declval<long const &>()))
+    {
+        return lhs.value >= rhs.value;
+    }
+#endif
+
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
     /**
      * The default equality comparison operator.
      * Provided with spaceship operator for optimal performance.
@@ -3204,6 +3657,29 @@ struct Denominator
     friend constexpr bool operator == (
         Denominator const &,
         Denominator const &) = default;
+#else
+    /**
+     * Equality comparison operators (C++17 fallback).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend constexpr bool operator == (
+        Denominator const & lhs,
+        Denominator const & rhs)
+    noexcept(noexcept(std::declval<long const &>() ==
+        std::declval<long const &>()))
+    {
+        return lhs.value == rhs.value;
+    }
+
+    friend constexpr bool operator != (
+        Denominator const & lhs,
+        Denominator const & rhs)
+    noexcept(noexcept(std::declval<long const &>() !=
+        std::declval<long const &>()))
+    {
+        return lhs.value != rhs.value;
+    }
+#endif
 };
 } // namespace rational
 } // namespace math
@@ -4781,13 +5257,58 @@ struct Temperature
         return lhs;
     }
 
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
     /**
      * The default three-way comparison (spaceship) operator.
      */
     friend constexpr auto operator <=> (
         Temperature const &,
         Temperature const &) = default;
+#else
+    /**
+     * Comparison operators (C++17 fallback for spaceship operator).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend constexpr bool operator < (
+        Temperature const & lhs,
+        Temperature const & rhs)
+    noexcept(noexcept(std::declval<double const &>() <
+        std::declval<double const &>()))
+    {
+        return lhs.value < rhs.value;
+    }
 
+    friend constexpr bool operator <= (
+        Temperature const & lhs,
+        Temperature const & rhs)
+    noexcept(noexcept(std::declval<double const &>() <=
+        std::declval<double const &>()))
+    {
+        return lhs.value <= rhs.value;
+    }
+
+    friend constexpr bool operator > (
+        Temperature const & lhs,
+        Temperature const & rhs)
+    noexcept(noexcept(std::declval<double const &>() >
+        std::declval<double const &>()))
+    {
+        return lhs.value > rhs.value;
+    }
+
+    friend constexpr bool operator >= (
+        Temperature const & lhs,
+        Temperature const & rhs)
+    noexcept(noexcept(std::declval<double const &>() >=
+        std::declval<double const &>()))
+    {
+        return lhs.value >= rhs.value;
+    }
+#endif
+
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
     /**
      * The default equality comparison operator.
      * Provided with spaceship operator for optimal performance.
@@ -4795,6 +5316,29 @@ struct Temperature
     friend constexpr bool operator == (
         Temperature const &,
         Temperature const &) = default;
+#else
+    /**
+     * Equality comparison operators (C++17 fallback).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend constexpr bool operator == (
+        Temperature const & lhs,
+        Temperature const & rhs)
+    noexcept(noexcept(std::declval<double const &>() ==
+        std::declval<double const &>()))
+    {
+        return lhs.value == rhs.value;
+    }
+
+    friend constexpr bool operator != (
+        Temperature const & lhs,
+        Temperature const & rhs)
+    noexcept(noexcept(std::declval<double const &>() !=
+        std::declval<double const &>()))
+    {
+        return lhs.value != rhs.value;
+    }
+#endif
 };
 } // namespace optional_strong
 } // namespace demo
@@ -4936,13 +5480,58 @@ struct HttpStatusCode
     constexpr explicit operator unsigned short const & () const { return value; }
     constexpr explicit operator unsigned short & () { return value; }
 
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
     /**
      * The default three-way comparison (spaceship) operator.
      */
     friend constexpr auto operator <=> (
         HttpStatusCode const &,
         HttpStatusCode const &) = default;
+#else
+    /**
+     * Comparison operators (C++17 fallback for spaceship operator).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend constexpr bool operator < (
+        HttpStatusCode const & lhs,
+        HttpStatusCode const & rhs)
+    noexcept(noexcept(std::declval<unsigned short const &>() <
+        std::declval<unsigned short const &>()))
+    {
+        return lhs.value < rhs.value;
+    }
 
+    friend constexpr bool operator <= (
+        HttpStatusCode const & lhs,
+        HttpStatusCode const & rhs)
+    noexcept(noexcept(std::declval<unsigned short const &>() <=
+        std::declval<unsigned short const &>()))
+    {
+        return lhs.value <= rhs.value;
+    }
+
+    friend constexpr bool operator > (
+        HttpStatusCode const & lhs,
+        HttpStatusCode const & rhs)
+    noexcept(noexcept(std::declval<unsigned short const &>() >
+        std::declval<unsigned short const &>()))
+    {
+        return lhs.value > rhs.value;
+    }
+
+    friend constexpr bool operator >= (
+        HttpStatusCode const & lhs,
+        HttpStatusCode const & rhs)
+    noexcept(noexcept(std::declval<unsigned short const &>() >=
+        std::declval<unsigned short const &>()))
+    {
+        return lhs.value >= rhs.value;
+    }
+#endif
+
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
     /**
      * The default equality comparison operator.
      * Provided with spaceship operator for optimal performance.
@@ -4950,6 +5539,29 @@ struct HttpStatusCode
     friend constexpr bool operator == (
         HttpStatusCode const &,
         HttpStatusCode const &) = default;
+#else
+    /**
+     * Equality comparison operators (C++17 fallback).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend constexpr bool operator == (
+        HttpStatusCode const & lhs,
+        HttpStatusCode const & rhs)
+    noexcept(noexcept(std::declval<unsigned short const &>() ==
+        std::declval<unsigned short const &>()))
+    {
+        return lhs.value == rhs.value;
+    }
+
+    friend constexpr bool operator != (
+        HttpStatusCode const & lhs,
+        HttpStatusCode const & rhs)
+    noexcept(noexcept(std::declval<unsigned short const &>() !=
+        std::declval<unsigned short const &>()))
+    {
+        return lhs.value != rhs.value;
+    }
+#endif
 };
 
 inline constexpr demo::constants::HttpStatusCode demo::constants::HttpStatusCode::bad_request = demo::constants::HttpStatusCode(400);
@@ -5185,13 +5797,58 @@ struct RequestCount
         return result;
     }
 
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
     /**
      * The default three-way comparison (spaceship) operator.
      */
     friend constexpr auto operator <=> (
         RequestCount const &,
         RequestCount const &) = default;
+#else
+    /**
+     * Comparison operators (C++17 fallback for spaceship operator).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend constexpr bool operator < (
+        RequestCount const & lhs,
+        RequestCount const & rhs)
+    noexcept(noexcept(std::declval<unsigned int const &>() <
+        std::declval<unsigned int const &>()))
+    {
+        return lhs.value < rhs.value;
+    }
 
+    friend constexpr bool operator <= (
+        RequestCount const & lhs,
+        RequestCount const & rhs)
+    noexcept(noexcept(std::declval<unsigned int const &>() <=
+        std::declval<unsigned int const &>()))
+    {
+        return lhs.value <= rhs.value;
+    }
+
+    friend constexpr bool operator > (
+        RequestCount const & lhs,
+        RequestCount const & rhs)
+    noexcept(noexcept(std::declval<unsigned int const &>() >
+        std::declval<unsigned int const &>()))
+    {
+        return lhs.value > rhs.value;
+    }
+
+    friend constexpr bool operator >= (
+        RequestCount const & lhs,
+        RequestCount const & rhs)
+    noexcept(noexcept(std::declval<unsigned int const &>() >=
+        std::declval<unsigned int const &>()))
+    {
+        return lhs.value >= rhs.value;
+    }
+#endif
+
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
     /**
      * The default equality comparison operator.
      * Provided with spaceship operator for optimal performance.
@@ -5199,6 +5856,29 @@ struct RequestCount
     friend constexpr bool operator == (
         RequestCount const &,
         RequestCount const &) = default;
+#else
+    /**
+     * Equality comparison operators (C++17 fallback).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend constexpr bool operator == (
+        RequestCount const & lhs,
+        RequestCount const & rhs)
+    noexcept(noexcept(std::declval<unsigned int const &>() ==
+        std::declval<unsigned int const &>()))
+    {
+        return lhs.value == rhs.value;
+    }
+
+    friend constexpr bool operator != (
+        RequestCount const & lhs,
+        RequestCount const & rhs)
+    noexcept(noexcept(std::declval<unsigned int const &>() !=
+        std::declval<unsigned int const &>()))
+    {
+        return lhs.value != rhs.value;
+    }
+#endif
 };
 } // namespace inline_syntax
 } // namespace demo
@@ -5247,13 +5927,58 @@ struct SessionTimeout
     constexpr explicit operator std::chrono::seconds const & () const { return value; }
     constexpr explicit operator std::chrono::seconds & () { return value; }
 
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
     /**
      * The default three-way comparison (spaceship) operator.
      */
     friend constexpr auto operator <=> (
         SessionTimeout const &,
         SessionTimeout const &) = default;
+#else
+    /**
+     * Comparison operators (C++17 fallback for spaceship operator).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend constexpr bool operator < (
+        SessionTimeout const & lhs,
+        SessionTimeout const & rhs)
+    noexcept(noexcept(std::declval<std::chrono::seconds const &>() <
+        std::declval<std::chrono::seconds const &>()))
+    {
+        return lhs.value < rhs.value;
+    }
 
+    friend constexpr bool operator <= (
+        SessionTimeout const & lhs,
+        SessionTimeout const & rhs)
+    noexcept(noexcept(std::declval<std::chrono::seconds const &>() <=
+        std::declval<std::chrono::seconds const &>()))
+    {
+        return lhs.value <= rhs.value;
+    }
+
+    friend constexpr bool operator > (
+        SessionTimeout const & lhs,
+        SessionTimeout const & rhs)
+    noexcept(noexcept(std::declval<std::chrono::seconds const &>() >
+        std::declval<std::chrono::seconds const &>()))
+    {
+        return lhs.value > rhs.value;
+    }
+
+    friend constexpr bool operator >= (
+        SessionTimeout const & lhs,
+        SessionTimeout const & rhs)
+    noexcept(noexcept(std::declval<std::chrono::seconds const &>() >=
+        std::declval<std::chrono::seconds const &>()))
+    {
+        return lhs.value >= rhs.value;
+    }
+#endif
+
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
     /**
      * The default equality comparison operator.
      * Provided with spaceship operator for optimal performance.
@@ -5261,8 +5986,31 @@ struct SessionTimeout
     friend constexpr bool operator == (
         SessionTimeout const &,
         SessionTimeout const &) = default;
+#else
+    /**
+     * Equality comparison operators (C++17 fallback).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend constexpr bool operator == (
+        SessionTimeout const & lhs,
+        SessionTimeout const & rhs)
+    noexcept(noexcept(std::declval<std::chrono::seconds const &>() ==
+        std::declval<std::chrono::seconds const &>()))
+    {
+        return lhs.value == rhs.value;
+    }
+
+    friend constexpr bool operator != (
+        SessionTimeout const & lhs,
+        SessionTimeout const & rhs)
+    noexcept(noexcept(std::declval<std::chrono::seconds const &>() !=
+        std::declval<std::chrono::seconds const &>()))
+    {
+        return lhs.value != rhs.value;
+    }
+#endif
 };
 } // namespace inline_syntax
 } // namespace demo
 
-#endif // EXAMPLE_3EE016709D41D145456FEC2094966E58D657E5EE
+#endif // EXAMPLE_D9A9385DF1AA558B4CF8DDC0FDCEBDE47EA1E687

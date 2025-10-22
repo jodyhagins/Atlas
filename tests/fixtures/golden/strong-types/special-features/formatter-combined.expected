@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_E6823DE468250762E5ED70DF3F4AAA956AA0EC4B
-#define FOO_BAR_E6823DE468250762E5ED70DF3F4AAA956AA0EC4B
+#ifndef FOO_BAR_BD14C56CBD13A47F66B2A2E54F8BFFC9979F675C
+#define FOO_BAR_BD14C56CBD13A47F66B2A2E54F8BFFC9979F675C
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -274,13 +274,58 @@ struct FormatterCombinedType
     constexpr explicit operator int const & () const { return value; }
     constexpr explicit operator int & () { return value; }
 
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
     /**
      * The default three-way comparison (spaceship) operator.
      */
     friend constexpr auto operator <=> (
         FormatterCombinedType const &,
         FormatterCombinedType const &) = default;
+#else
+    /**
+     * Comparison operators (C++17 fallback for spaceship operator).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend constexpr bool operator < (
+        FormatterCombinedType const & lhs,
+        FormatterCombinedType const & rhs)
+    noexcept(noexcept(std::declval<int const &>() <
+        std::declval<int const &>()))
+    {
+        return lhs.value < rhs.value;
+    }
 
+    friend constexpr bool operator <= (
+        FormatterCombinedType const & lhs,
+        FormatterCombinedType const & rhs)
+    noexcept(noexcept(std::declval<int const &>() <=
+        std::declval<int const &>()))
+    {
+        return lhs.value <= rhs.value;
+    }
+
+    friend constexpr bool operator > (
+        FormatterCombinedType const & lhs,
+        FormatterCombinedType const & rhs)
+    noexcept(noexcept(std::declval<int const &>() >
+        std::declval<int const &>()))
+    {
+        return lhs.value > rhs.value;
+    }
+
+    friend constexpr bool operator >= (
+        FormatterCombinedType const & lhs,
+        FormatterCombinedType const & rhs)
+    noexcept(noexcept(std::declval<int const &>() >=
+        std::declval<int const &>()))
+    {
+        return lhs.value >= rhs.value;
+    }
+#endif
+
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
     /**
      * The default equality comparison operator.
      * Provided with spaceship operator for optimal performance.
@@ -288,6 +333,29 @@ struct FormatterCombinedType
     friend constexpr bool operator == (
         FormatterCombinedType const &,
         FormatterCombinedType const &) = default;
+#else
+    /**
+     * Equality comparison operators (C++17 fallback).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend constexpr bool operator == (
+        FormatterCombinedType const & lhs,
+        FormatterCombinedType const & rhs)
+    noexcept(noexcept(std::declval<int const &>() ==
+        std::declval<int const &>()))
+    {
+        return lhs.value == rhs.value;
+    }
+
+    friend constexpr bool operator != (
+        FormatterCombinedType const & lhs,
+        FormatterCombinedType const & rhs)
+    noexcept(noexcept(std::declval<int const &>() !=
+        std::declval<int const &>()))
+    {
+        return lhs.value != rhs.value;
+    }
+#endif
 };
 } // namespace test
 
@@ -313,5 +381,5 @@ struct std::formatter<test::FormatterCombinedType> : std::formatter<int>
     }
 };
 #endif // defined(__cpp_lib_format) && __cpp_lib_format >= 202110L
-#endif // FOO_BAR_E6823DE468250762E5ED70DF3F4AAA956AA0EC4B
+#endif // FOO_BAR_BD14C56CBD13A47F66B2A2E54F8BFFC9979F675C
 

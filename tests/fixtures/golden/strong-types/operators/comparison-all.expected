@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_18F2DD7D642503236B9691F311946FD64A520030
-#define FOO_BAR_18F2DD7D642503236B9691F311946FD64A520030
+#ifndef FOO_BAR_958B81DBC6F1185C00509C88992BEED7490CA7D8
+#define FOO_BAR_958B81DBC6F1185C00509C88992BEED7490CA7D8
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -271,13 +271,58 @@ struct ComparisonAllType
     constexpr explicit operator int const & () const { return value; }
     constexpr explicit operator int & () { return value; }
 
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
     /**
      * The default three-way comparison (spaceship) operator.
      */
     friend constexpr auto operator <=> (
         ComparisonAllType const &,
         ComparisonAllType const &) = default;
+#else
+    /**
+     * Comparison operators (C++17 fallback for spaceship operator).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend constexpr bool operator < (
+        ComparisonAllType const & lhs,
+        ComparisonAllType const & rhs)
+    noexcept(noexcept(std::declval<int const &>() <
+        std::declval<int const &>()))
+    {
+        return lhs.value < rhs.value;
+    }
 
+    friend constexpr bool operator <= (
+        ComparisonAllType const & lhs,
+        ComparisonAllType const & rhs)
+    noexcept(noexcept(std::declval<int const &>() <=
+        std::declval<int const &>()))
+    {
+        return lhs.value <= rhs.value;
+    }
+
+    friend constexpr bool operator > (
+        ComparisonAllType const & lhs,
+        ComparisonAllType const & rhs)
+    noexcept(noexcept(std::declval<int const &>() >
+        std::declval<int const &>()))
+    {
+        return lhs.value > rhs.value;
+    }
+
+    friend constexpr bool operator >= (
+        ComparisonAllType const & lhs,
+        ComparisonAllType const & rhs)
+    noexcept(noexcept(std::declval<int const &>() >=
+        std::declval<int const &>()))
+    {
+        return lhs.value >= rhs.value;
+    }
+#endif
+
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
     /**
      * The default equality comparison operator.
      * Provided with spaceship operator for optimal performance.
@@ -285,6 +330,29 @@ struct ComparisonAllType
     friend constexpr bool operator == (
         ComparisonAllType const &,
         ComparisonAllType const &) = default;
+#else
+    /**
+     * Equality comparison operators (C++17 fallback).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend constexpr bool operator == (
+        ComparisonAllType const & lhs,
+        ComparisonAllType const & rhs)
+    noexcept(noexcept(std::declval<int const &>() ==
+        std::declval<int const &>()))
+    {
+        return lhs.value == rhs.value;
+    }
+
+    friend constexpr bool operator != (
+        ComparisonAllType const & lhs,
+        ComparisonAllType const & rhs)
+    noexcept(noexcept(std::declval<int const &>() !=
+        std::declval<int const &>()))
+    {
+        return lhs.value != rhs.value;
+    }
+#endif
 
     /**
      * Is @p lhs.value < @p rhs.value?
@@ -332,5 +400,5 @@ struct ComparisonAllType
 };
 } // namespace test
 
-#endif // FOO_BAR_18F2DD7D642503236B9691F311946FD64A520030
+#endif // FOO_BAR_958B81DBC6F1185C00509C88992BEED7490CA7D8
 

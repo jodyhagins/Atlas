@@ -1,5 +1,5 @@
-#ifndef WJH_IPC_D9F199240D1D1C27C7A14DAE28109B6D5FB6C72D
-#define WJH_IPC_D9F199240D1D1C27C7A14DAE28109B6D5FB6C72D
+#ifndef WJH_IPC_30B7012B590E9C86D5982E4637FF053E3DEFBD70
+#define WJH_IPC_30B7012B590E9C86D5982E4637FF053E3DEFBD70
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -431,13 +431,58 @@ struct Distance
         return lhs;
     }
 
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
     /**
      * The default three-way comparison (spaceship) operator.
      */
     friend constexpr auto operator <=> (
         Distance const &,
         Distance const &) = default;
+#else
+    /**
+     * Comparison operators (C++17 fallback for spaceship operator).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend constexpr bool operator < (
+        Distance const & lhs,
+        Distance const & rhs)
+    noexcept(noexcept(std::declval<double const &>() <
+        std::declval<double const &>()))
+    {
+        return lhs.value < rhs.value;
+    }
 
+    friend constexpr bool operator <= (
+        Distance const & lhs,
+        Distance const & rhs)
+    noexcept(noexcept(std::declval<double const &>() <=
+        std::declval<double const &>()))
+    {
+        return lhs.value <= rhs.value;
+    }
+
+    friend constexpr bool operator > (
+        Distance const & lhs,
+        Distance const & rhs)
+    noexcept(noexcept(std::declval<double const &>() >
+        std::declval<double const &>()))
+    {
+        return lhs.value > rhs.value;
+    }
+
+    friend constexpr bool operator >= (
+        Distance const & lhs,
+        Distance const & rhs)
+    noexcept(noexcept(std::declval<double const &>() >=
+        std::declval<double const &>()))
+    {
+        return lhs.value >= rhs.value;
+    }
+#endif
+
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
     /**
      * The default equality comparison operator.
      * Provided with spaceship operator for optimal performance.
@@ -445,6 +490,29 @@ struct Distance
     friend constexpr bool operator == (
         Distance const &,
         Distance const &) = default;
+#else
+    /**
+     * Equality comparison operators (C++17 fallback).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend constexpr bool operator == (
+        Distance const & lhs,
+        Distance const & rhs)
+    noexcept(noexcept(std::declval<double const &>() ==
+        std::declval<double const &>()))
+    {
+        return lhs.value == rhs.value;
+    }
+
+    friend constexpr bool operator != (
+        Distance const & lhs,
+        Distance const & rhs)
+    noexcept(noexcept(std::declval<double const &>() !=
+        std::declval<double const &>()))
+    {
+        return lhs.value != rhs.value;
+    }
+#endif
 };
 } // namespace ipc
 } // namespace wjh
@@ -558,5 +626,5 @@ struct Handle
 } // namespace ipc
 } // namespace wjh
 
-#endif // WJH_IPC_D9F199240D1D1C27C7A14DAE28109B6D5FB6C72D
+#endif // WJH_IPC_30B7012B590E9C86D5982E4637FF053E3DEFBD70
 

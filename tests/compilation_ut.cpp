@@ -1047,6 +1047,116 @@ int main() {
         }
         CHECK(result.success);
     }
+
+    TEST_CASE("Spaceship operator generates all comparisons in C++17")
+    {
+        CompilationTester tester;
+
+        auto description = R"([type]
+kind=struct
+namespace=test
+name=SpaceshipType
+description=int; <=>, no-constexpr
+)";
+
+        auto test_code = R"(
+#include <cassert>
+#include <vector>
+#include <algorithm>
+
+int main() {
+    test::SpaceshipType x{10};
+    test::SpaceshipType y{20};
+    test::SpaceshipType z{10};
+
+    // Test all six comparison operators that should be generated
+    assert((x == z) == true);
+    assert((x != y) == true);
+    assert((x < y) == true);
+    assert((x <= y) == true);
+    assert((x <= z) == true);
+    assert((y > x) == true);
+    assert((y >= x) == true);
+    assert((x >= z) == true);
+
+    // Test that type works with std::sort (requires < operator)
+    std::vector<test::SpaceshipType> vec;
+    vec.push_back(test::SpaceshipType{30});
+    vec.push_back(test::SpaceshipType{10});
+    vec.push_back(test::SpaceshipType{20});
+    std::sort(vec.begin(), vec.end());
+
+    assert(static_cast<int>(vec[0]) == 10);
+    assert(static_cast<int>(vec[1]) == 20);
+    assert(static_cast<int>(vec[2]) == 30);
+
+    return 0;
+}
+)";
+        // Test with C++17 to verify fallback path works
+        auto result = tester.compile_and_run(description, test_code, "c++17");
+
+        CHECK(result.success);
+        if (not result.success) {
+            INFO("Spaceship C++17 fallback test failed:");
+            INFO(result.output);
+        }
+    }
+
+    TEST_CASE("Spaceship operator works in C++20 with native operator<=>")
+    {
+        CompilationTester tester;
+
+        auto description = R"([type]
+kind=struct
+namespace=test
+name=SpaceshipTypeCpp20
+description=int; <=>, no-constexpr
+)";
+
+        auto test_code = R"(
+#include <cassert>
+#include <vector>
+#include <algorithm>
+
+int main() {
+    test::SpaceshipTypeCpp20 x{10};
+    test::SpaceshipTypeCpp20 y{20};
+    test::SpaceshipTypeCpp20 z{10};
+
+    // Test all comparison operators (synthesized from <=> in C++20)
+    assert((x == z) == true);
+    assert((x != y) == true);
+    assert((x < y) == true);
+    assert((x <= y) == true);
+    assert((x <= z) == true);
+    assert((y > x) == true);
+    assert((y >= x) == true);
+    assert((x >= z) == true);
+
+    // Test that type works with std::sort
+    std::vector<test::SpaceshipTypeCpp20> vec;
+    vec.push_back(test::SpaceshipTypeCpp20{30});
+    vec.push_back(test::SpaceshipTypeCpp20{10});
+    vec.push_back(test::SpaceshipTypeCpp20{20});
+    std::sort(vec.begin(), vec.end());
+
+    assert(static_cast<int>(vec[0]) == 10);
+    assert(static_cast<int>(vec[1]) == 20);
+    assert(static_cast<int>(vec[2]) == 30);
+
+    return 0;
+}
+)";
+        // Test with C++20 to verify native spaceship path works
+        auto result = tester.compile_and_run(description, test_code, "c++20");
+
+        CHECK(result.success);
+        if (not result.success) {
+            INFO("Spaceship C++20 native test failed:");
+            INFO(result.output);
+        }
+    }
 }
 
 } // anonymous namespace

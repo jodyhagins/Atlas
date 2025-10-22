@@ -1,5 +1,5 @@
-#ifndef TEST_OPTIONAL_STRONG_54DE0023E5998B982FC931DABE73B306E5659C7F
-#define TEST_OPTIONAL_STRONG_54DE0023E5998B982FC931DABE73B306E5659C7F
+#ifndef TEST_OPTIONAL_STRONG_A5E529EB6D3A2860CC9414D660D28E0DCF1CD9E1
+#define TEST_OPTIONAL_STRONG_A5E529EB6D3A2860CC9414D660D28E0DCF1CD9E1
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -393,13 +393,58 @@ struct WithStrong
         return lhs;
     }
 
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
     /**
      * The default three-way comparison (spaceship) operator.
      */
     friend constexpr auto operator <=> (
         WithStrong const &,
         WithStrong const &) = default;
+#else
+    /**
+     * Comparison operators (C++17 fallback for spaceship operator).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend constexpr bool operator < (
+        WithStrong const & lhs,
+        WithStrong const & rhs)
+    noexcept(noexcept(std::declval<double const &>() <
+        std::declval<double const &>()))
+    {
+        return lhs.value < rhs.value;
+    }
 
+    friend constexpr bool operator <= (
+        WithStrong const & lhs,
+        WithStrong const & rhs)
+    noexcept(noexcept(std::declval<double const &>() <=
+        std::declval<double const &>()))
+    {
+        return lhs.value <= rhs.value;
+    }
+
+    friend constexpr bool operator > (
+        WithStrong const & lhs,
+        WithStrong const & rhs)
+    noexcept(noexcept(std::declval<double const &>() >
+        std::declval<double const &>()))
+    {
+        return lhs.value > rhs.value;
+    }
+
+    friend constexpr bool operator >= (
+        WithStrong const & lhs,
+        WithStrong const & rhs)
+    noexcept(noexcept(std::declval<double const &>() >=
+        std::declval<double const &>()))
+    {
+        return lhs.value >= rhs.value;
+    }
+#endif
+
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
     /**
      * The default equality comparison operator.
      * Provided with spaceship operator for optimal performance.
@@ -407,6 +452,29 @@ struct WithStrong
     friend constexpr bool operator == (
         WithStrong const &,
         WithStrong const &) = default;
+#else
+    /**
+     * Equality comparison operators (C++17 fallback).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend constexpr bool operator == (
+        WithStrong const & lhs,
+        WithStrong const & rhs)
+    noexcept(noexcept(std::declval<double const &>() ==
+        std::declval<double const &>()))
+    {
+        return lhs.value == rhs.value;
+    }
+
+    friend constexpr bool operator != (
+        WithStrong const & lhs,
+        WithStrong const & rhs)
+    noexcept(noexcept(std::declval<double const &>() !=
+        std::declval<double const &>()))
+    {
+        return lhs.value != rhs.value;
+    }
+#endif
 };
 } // namespace test
 
@@ -573,13 +641,58 @@ struct WithoutStrong
         return lhs;
     }
 
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
     /**
      * The default three-way comparison (spaceship) operator.
      */
     friend constexpr auto operator <=> (
         WithoutStrong const &,
         WithoutStrong const &) = default;
+#else
+    /**
+     * Comparison operators (C++17 fallback for spaceship operator).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend constexpr bool operator < (
+        WithoutStrong const & lhs,
+        WithoutStrong const & rhs)
+    noexcept(noexcept(std::declval<double const &>() <
+        std::declval<double const &>()))
+    {
+        return lhs.value < rhs.value;
+    }
 
+    friend constexpr bool operator <= (
+        WithoutStrong const & lhs,
+        WithoutStrong const & rhs)
+    noexcept(noexcept(std::declval<double const &>() <=
+        std::declval<double const &>()))
+    {
+        return lhs.value <= rhs.value;
+    }
+
+    friend constexpr bool operator > (
+        WithoutStrong const & lhs,
+        WithoutStrong const & rhs)
+    noexcept(noexcept(std::declval<double const &>() >
+        std::declval<double const &>()))
+    {
+        return lhs.value > rhs.value;
+    }
+
+    friend constexpr bool operator >= (
+        WithoutStrong const & lhs,
+        WithoutStrong const & rhs)
+    noexcept(noexcept(std::declval<double const &>() >=
+        std::declval<double const &>()))
+    {
+        return lhs.value >= rhs.value;
+    }
+#endif
+
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
     /**
      * The default equality comparison operator.
      * Provided with spaceship operator for optimal performance.
@@ -587,6 +700,29 @@ struct WithoutStrong
     friend constexpr bool operator == (
         WithoutStrong const &,
         WithoutStrong const &) = default;
+#else
+    /**
+     * Equality comparison operators (C++17 fallback).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend constexpr bool operator == (
+        WithoutStrong const & lhs,
+        WithoutStrong const & rhs)
+    noexcept(noexcept(std::declval<double const &>() ==
+        std::declval<double const &>()))
+    {
+        return lhs.value == rhs.value;
+    }
+
+    friend constexpr bool operator != (
+        WithoutStrong const & lhs,
+        WithoutStrong const & rhs)
+    noexcept(noexcept(std::declval<double const &>() !=
+        std::declval<double const &>()))
+    {
+        return lhs.value != rhs.value;
+    }
+#endif
 };
 } // namespace test
 
@@ -1668,5 +1804,5 @@ struct std::hash<test::AllOpsNoStrong>
             static_cast<int const &>(t));
     }
 };
-#endif // TEST_OPTIONAL_STRONG_54DE0023E5998B982FC931DABE73B306E5659C7F
+#endif // TEST_OPTIONAL_STRONG_A5E529EB6D3A2860CC9414D660D28E0DCF1CD9E1
 

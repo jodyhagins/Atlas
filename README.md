@@ -159,7 +159,7 @@ Syntax: `[strong] <type>; <options...>` (the `strong` keyword is optional)
 
 Common options (because we're all about that opt-in life):
 - Arithmetic: `+`, `-`, `*`, `/`, `++`, `--` — when your type needs to do math
-- Comparison: `==`, `!=`, `<=>`, `<`, `>` — for when sorting matters
+- Comparison: `==`, `!=`, `<=>`, `<`, `>` — for when sorting matters. `<=>` works in C++11+ via automatic fallback!
 - Stream: `in`, `out` — `std::cout` compatibility sold separately
 - Callable: `()`, `(&)` — yes, your strong type can be a functor. Why? Because C++.
 - Pointer-like: `@`, `->`, `&of` — make it look like a pointer without the segfaults
