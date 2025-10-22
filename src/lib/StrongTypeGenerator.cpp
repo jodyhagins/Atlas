@@ -540,15 +540,60 @@ constexpr char logical_not_template[] = R"(
 )";
 
 constexpr char spaceship_operator_template[] = R"(
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
     /**
      * The default three-way comparison (spaceship) operator.
      */
     friend {{{const_expr}}}auto operator <=> (
         {{{class_name}}} const &,
         {{{class_name}}} const &) = default;
+#else
+    /**
+     * Comparison operators (C++17 fallback for spaceship operator).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend {{{const_expr}}}bool operator < (
+        {{{class_name}}} const & lhs,
+        {{{class_name}}} const & rhs)
+    noexcept(noexcept(std::declval<{{{underlying_type}}} const &>() <
+        std::declval<{{{underlying_type}}} const &>()))
+    {
+        return lhs.value < rhs.value;
+    }
+
+    friend {{{const_expr}}}bool operator <= (
+        {{{class_name}}} const & lhs,
+        {{{class_name}}} const & rhs)
+    noexcept(noexcept(std::declval<{{{underlying_type}}} const &>() <=
+        std::declval<{{{underlying_type}}} const &>()))
+    {
+        return lhs.value <= rhs.value;
+    }
+
+    friend {{{const_expr}}}bool operator > (
+        {{{class_name}}} const & lhs,
+        {{{class_name}}} const & rhs)
+    noexcept(noexcept(std::declval<{{{underlying_type}}} const &>() >
+        std::declval<{{{underlying_type}}} const &>()))
+    {
+        return lhs.value > rhs.value;
+    }
+
+    friend {{{const_expr}}}bool operator >= (
+        {{{class_name}}} const & lhs,
+        {{{class_name}}} const & rhs)
+    noexcept(noexcept(std::declval<{{{underlying_type}}} const &>() >=
+        std::declval<{{{underlying_type}}} const &>()))
+    {
+        return lhs.value >= rhs.value;
+    }
+#endif
 )";
 
 constexpr char defaulted_equality_operator_template[] = R"(
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
     /**
      * The default equality comparison operator.
      * Provided with spaceship operator for optimal performance.
@@ -556,6 +601,29 @@ constexpr char defaulted_equality_operator_template[] = R"(
     friend {{{const_expr}}}bool operator == (
         {{{class_name}}} const &,
         {{{class_name}}} const &) = default;
+#else
+    /**
+     * Equality comparison operators (C++17 fallback).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend {{{const_expr}}}bool operator == (
+        {{{class_name}}} const & lhs,
+        {{{class_name}}} const & rhs)
+    noexcept(noexcept(std::declval<{{{underlying_type}}} const &>() ==
+        std::declval<{{{underlying_type}}} const &>()))
+    {
+        return lhs.value == rhs.value;
+    }
+
+    friend {{{const_expr}}}bool operator != (
+        {{{class_name}}} const & lhs,
+        {{{class_name}}} const & rhs)
+    noexcept(noexcept(std::declval<{{{underlying_type}}} const &>() !=
+        std::declval<{{{underlying_type}}} const &>()))
+    {
+        return lhs.value != rhs.value;
+    }
+#endif
 )";
 
 constexpr char ostream_operator_template[] = R"(

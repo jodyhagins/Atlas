@@ -1,5 +1,5 @@
-#ifndef TEST_OPTIONAL_KIND_A949A643E831F7EF062A3F09D5AB8BBB284DDCA3
-#define TEST_OPTIONAL_KIND_A949A643E831F7EF062A3F09D5AB8BBB284DDCA3
+#ifndef TEST_OPTIONAL_KIND_7937F8A13E8F843E88145B49817249E95B808A62
+#define TEST_OPTIONAL_KIND_7937F8A13E8F843E88145B49817249E95B808A62
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -544,13 +544,58 @@ public:
     constexpr explicit operator unsigned int const & () const { return value; }
     constexpr explicit operator unsigned int & () { return value; }
 
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
     /**
      * The default three-way comparison (spaceship) operator.
      */
     friend constexpr auto operator <=> (
         ExplicitClass const &,
         ExplicitClass const &) = default;
+#else
+    /**
+     * Comparison operators (C++17 fallback for spaceship operator).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend constexpr bool operator < (
+        ExplicitClass const & lhs,
+        ExplicitClass const & rhs)
+    noexcept(noexcept(std::declval<unsigned int const &>() <
+        std::declval<unsigned int const &>()))
+    {
+        return lhs.value < rhs.value;
+    }
 
+    friend constexpr bool operator <= (
+        ExplicitClass const & lhs,
+        ExplicitClass const & rhs)
+    noexcept(noexcept(std::declval<unsigned int const &>() <=
+        std::declval<unsigned int const &>()))
+    {
+        return lhs.value <= rhs.value;
+    }
+
+    friend constexpr bool operator > (
+        ExplicitClass const & lhs,
+        ExplicitClass const & rhs)
+    noexcept(noexcept(std::declval<unsigned int const &>() >
+        std::declval<unsigned int const &>()))
+    {
+        return lhs.value > rhs.value;
+    }
+
+    friend constexpr bool operator >= (
+        ExplicitClass const & lhs,
+        ExplicitClass const & rhs)
+    noexcept(noexcept(std::declval<unsigned int const &>() >=
+        std::declval<unsigned int const &>()))
+    {
+        return lhs.value >= rhs.value;
+    }
+#endif
+
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
     /**
      * The default equality comparison operator.
      * Provided with spaceship operator for optimal performance.
@@ -558,6 +603,29 @@ public:
     friend constexpr bool operator == (
         ExplicitClass const &,
         ExplicitClass const &) = default;
+#else
+    /**
+     * Equality comparison operators (C++17 fallback).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend constexpr bool operator == (
+        ExplicitClass const & lhs,
+        ExplicitClass const & rhs)
+    noexcept(noexcept(std::declval<unsigned int const &>() ==
+        std::declval<unsigned int const &>()))
+    {
+        return lhs.value == rhs.value;
+    }
+
+    friend constexpr bool operator != (
+        ExplicitClass const & lhs,
+        ExplicitClass const & rhs)
+    noexcept(noexcept(std::declval<unsigned int const &>() !=
+        std::declval<unsigned int const &>()))
+    {
+        return lhs.value != rhs.value;
+    }
+#endif
 };
 } // namespace test
 
@@ -884,5 +952,5 @@ public:
 };
 } // namespace mixed
 
-#endif // TEST_OPTIONAL_KIND_A949A643E831F7EF062A3F09D5AB8BBB284DDCA3
+#endif // TEST_OPTIONAL_KIND_7937F8A13E8F843E88145B49817249E95B808A62
 

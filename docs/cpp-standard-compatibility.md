@@ -111,28 +111,45 @@ constexpr auto operator () (InvocableT && inv) const
 
 **C++11/14 Limitations**: Direct call works with function objects, lambdas, and function pointers, but not with member function pointers or member object pointers (use C++17+ with `std::invoke` for those).
 
-### Spaceship Operator (C++20+)
+### Spaceship Operator (C++20+) with C++17 Fallback
 
-``` constexpr cpp
-// Requires C++20 for operator <=>
-friend  auto operator <=> (
+The spaceship operator provides a convenient way to define all comparison operations. Atlas automatically generates appropriate code based on the C++ standard:
+
+**C++20+ (with spaceship operator):**
+```cpp
+// Uses defaulted spaceship operator
+friend constexpr auto operator <=> (
+    ClassName const &,
+    ClassName const &) = default;
+friend constexpr bool operator == (
     ClassName const &,
     ClassName const &) = default;
 ```
 
-        ** How to use **
-: Add `<=>` to your type description
-              .
+**C++17 and earlier (automatic fallback):**
+```cpp
+// Generates all six comparison operators
+friend constexpr bool operator < (ClassName const & lhs, ClassName const & rhs)
+{ return lhs.value < rhs.value; }
+friend constexpr bool operator <= (ClassName const & lhs, ClassName const & rhs)
+{ return lhs.value <= rhs.value; }
+friend constexpr bool operator > (ClassName const & lhs, ClassName const & rhs)
+{ return lhs.value > rhs.value; }
+friend constexpr bool operator >= (ClassName const & lhs, ClassName const & rhs)
+{ return lhs.value >= rhs.value; }
+friend constexpr bool operator == (ClassName const & lhs, ClassName const & rhs)
+{ return lhs.value == rhs.value; }
+friend constexpr bool operator != (ClassName const & lhs, ClassName const & rhs)
+{ return lhs.value != rhs.value; }
+```
 
-                  ** Fallback **
-: None.Compile with `-
-      std = c++ 20` or
-    later.
+**How to use**: Add `<=>` to your type description.
 
-            * *Note *
-            *
-: When using `<=>`
-, you typically don't need to specify individual comparison operators (`<`, `<=`, `>`, `>=`) as they are synthesized automatically.
+**Fallback**: Automatically generates all six comparison operators for C++11/14/17.
+
+**Note**: When using `<=>` in C++20+, you typically don't need to specify individual comparison operators (`<`, `<=`, `>`, `>=`, `==`, `!=`) as they are synthesized automatically. In C++17 and earlier, Atlas generates them for you.
+
+**Semantic Equivalence**: The fallback operators provide semantically equivalent behavior to the spaceship operator for most types. The only difference is that `<=>` returns a comparison category object (`std::strong_ordering`, etc.), while the fallback operators return `bool` directly. For strong types wrapping comparable values, this distinction has no practical impact.
 
     ## #Multidimensional Subscript(C++ 23 +)
 
@@ -248,10 +265,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 ## Summary
 
-- ✅ **C++11**: All core features work, including subscript and callable operators
-- ✅ **C++14**:  constexpr Enables  for more complex operations
-- ✅ **C++17**: Adds `std::invoke` support for callable operator (member pointers), inline variables
-- ✅ **C++20**: Adds spaceship operator, constexpr destructors
-- ✅ **C++23**: Adds multidimensional subscript support
+- ✅ **C++11**: All core features work, including subscript and callable operators. Spaceship operator (`<=>`) automatically generates all six comparison operators.
+- ✅ **C++14**: Enables constexpr for more complex operations. Spaceship operator (`<=>`) continues to work via C++17 fallback.
+- ✅ **C++17**: Adds `std::invoke` support for callable operator (member pointers), inline variables. Spaceship operator (`<=>`) generates comparison operators.
+- ✅ **C++20**: Uses native spaceship operator with optimal performance. Comparison operators are synthesized by the compiler.
+- ✅ **C++23**: Adds multidimensional subscript support.
 
-**Recommendation**: C++11 provides full functionality for nearly all use cases. Use C++17 or later for member pointer invocation and additional optimizations.
+**Recommendation**: C++11 provides full functionality for nearly all use cases, including spaceship operator via automatic fallback. Use C++17 or later for member pointer invocation and additional optimizations. Use C++20+ for true spaceship operator semantics with comparison category types.
