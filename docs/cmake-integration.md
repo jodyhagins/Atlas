@@ -216,14 +216,14 @@ All helper functions support named constants. For example:
 # Single type with constants
 atlas_add_type(Price double "+, -, *, /"
     TARGET my_lib
-    CONSTANTS [[zero=0.0; unlimited=1e10]])
+    CONSTANTS [[zero:0.0; unlimited:1e10]])
 
 # Or in add_atlas_strong_type()
 add_atlas_strong_type(
     NAME Price
     TYPE double
     DESCRIPTION "+, -, *, /"
-    CONSTANTS [[zero=0.0; unlimited=1e10]]
+    CONSTANTS [[zero:0.0; unlimited:1e10]]
     TARGET my_lib)
 
 # Or in a file-based approach
@@ -246,9 +246,9 @@ Constants are useful for providing well-known values (like min/max) and sentinel
 Generate types in the global namespace instead of a C++ namespace:
 
 ```cmake
-# Use namespace=global to place in global scope
+# Use namespace=:: to place in global scope
 atlas_add_type(GlobalCounter int "++, --"
-    NAMESPACE global
+    NAMESPACE "::"
     TARGET my_lib)
 ```
 
