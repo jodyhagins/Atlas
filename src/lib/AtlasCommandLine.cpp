@@ -53,6 +53,35 @@ split_features(std::string const & features_str)
     return features;
 }
 
+// Normalize description by sorting features for deterministic output
+std::string
+normalize_description(std::string const & description)
+{
+    auto semicolon_pos = description.find(';');
+    if (semicolon_pos == std::string::npos) {
+        return description;
+    }
+
+    std::string type_part = description.substr(0, semicolon_pos + 1);
+    std::string features_str = trim(description.substr(semicolon_pos + 1));
+
+    if (features_str.empty()) {
+        return type_part;
+    }
+
+    auto features = split_features(features_str);
+    std::sort(features.begin(), features.end());
+
+    std::string result = type_part + " ";
+    for (size_t i = 0; i < features.size(); ++i) {
+        if (i > 0) {
+            result += ", ";
+        }
+        result += features[i];
+    }
+    return result;
+}
+
 // Extract template parameter name from enable_if expression
 // e.g., "std::is_floating_point<U>::value" -> "U"
 std::string
@@ -409,7 +438,7 @@ to_description(Arguments const & args)
         .kind = args.kind,
         .type_namespace = args.type_namespace,
         .type_name = args.type_name,
-        .description = args.description,
+        .description = normalize_description(args.description),
         .default_value = args.default_value,
         .constants = constants,
         .guard_prefix = args.guard_prefix,
@@ -498,10 +527,8 @@ parse_input_file(Arguments const & args)
                     std::to_string(line_number) + " in " + args.input_file);
             }
 
-            // Expand {NAME} tokens in description
+            // Expand profile tokens and normalize description
             std::string expanded_description = current_description;
-
-            // Parse description: "strong TYPE; features..."
             auto semicolon_pos = expanded_description.find(';');
             if (semicolon_pos != std::string::npos) {
                 std::string type_part = expanded_description.substr(
@@ -513,7 +540,7 @@ parse_input_file(Arguments const & args)
                 // Split features by comma
                 auto features = split_features(features_str);
 
-                // Expand profile tokens
+                // Expand profile tokens (which also sorts)
                 try {
                     features = profile_system.expand_features(features);
                 } catch (std::exception const & e) {

@@ -110,7 +110,8 @@ make_notice_banner()
     return banner.str();
 }
 
-auto strong_template = R"({{{includes}}}{{#namespace_open}}
+auto strong_template = R"(
+{{#namespace_open}}
 {{{.}}}{{/namespace_open}}
 /**
  * @brief Strong type wrapper for {{{underlying_type}}}
@@ -879,7 +880,6 @@ struct ClassInfo
     std::vector<Operator> logical_operators;
     std::vector<std::string> includes_vec; // for processing
     std::map<std::string, std::string> include_guards; // header -> condition
-    std::string includes; // final rendered includes for mustache
     bool hash_specialization = false;
     bool formatter_specialization = false;
     std::string full_qualified_name;
@@ -921,7 +921,6 @@ BOOST_DESCRIBE_STRUCT(
      public_specifier,
      logical_not_operator,
      logical_operators,
-     includes,
      increment_operators,
      hash_specialization,
      formatter_specialization,
@@ -1476,19 +1475,7 @@ parse(
             "<version>"),
         info.includes_vec.end());
 
-    // Build the final includes string with guards
-    std::ostringstream includes_stream;
-    for (auto const & include : info.includes_vec) {
-        auto guard_it = info.include_guards.find(include);
-        if (guard_it != info.include_guards.end()) {
-            includes_stream << "#if " << guard_it->second << '\n';
-            includes_stream << "#include " << include << '\n';
-            includes_stream << "#endif // " << guard_it->second << '\n';
-        } else {
-            includes_stream << "#include " << include << '\n';
-        }
-    }
-    info.includes = includes_stream.str();
+    // Sort operator vectors
     for (auto * c :
          {&info.arithmetic_binary_operators,
           &info.unary_operators,
@@ -1723,9 +1710,6 @@ generate_strong_types_file(
         for (auto const & [header, guard] : info.include_guards) {
             all_guards[header] = guard;
         }
-
-        // Clear includes from info since we're hoisting them to the top
-        info.includes.clear();
 
         // Generate just the type code (no preamble, no header guards, no
         // includes)

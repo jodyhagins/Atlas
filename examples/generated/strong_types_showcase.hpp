@@ -1,5 +1,5 @@
-#ifndef EXAMPLE_D9A9385DF1AA558B4CF8DDC0FDCEBDE47EA1E687
-#define EXAMPLE_D9A9385DF1AA558B4CF8DDC0FDCEBDE47EA1E687
+#ifndef EXAMPLE_F6B5E2F83F074EC569198D7006DF6C770261DF94
+#define EXAMPLE_F6B5E2F83F074EC569198D7006DF6C770261DF94
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -5344,6 +5344,7 @@ struct Temperature
 } // namespace demo
 
 
+
 /**
  * @brief Strong type wrapper for unsigned long
  *
@@ -6013,4 +6014,4 @@ struct SessionTimeout
 } // namespace inline_syntax
 } // namespace demo
 
-#endif // EXAMPLE_D9A9385DF1AA558B4CF8DDC0FDCEBDE47EA1E687
+#endif // EXAMPLE_F6B5E2F83F074EC569198D7006DF6C770261DF94
