@@ -833,6 +833,11 @@ FILE MODE:
 OPTIONAL ARGUMENTS:
     --default-value=<value>     Default value for default constructor
                                 (e.g., 42, "hello", std::vector<int>{1,2,3})
+    --constants=<consts>        Named constants for the strong type (similar
+                                to scoped enum values). Format:
+                                "name:value; name2:value2"
+                                Can be specified multiple times to accumulate
+                                constants.
     --guard-prefix=<prefix>     Custom prefix for header guards
                                 (default: namespace-based)
     --guard-separator=<sep>     Separator for header guard components
@@ -852,6 +857,11 @@ EXAMPLES:
     atlas --kind=class --namespace=util --name=Counter \
           --description="strong int; +, -, *, <=>, ++, --, bool, out"
 
+    # Generate a type with named constants
+    atlas --kind=struct --namespace=math --name=Status \
+          --description="int; ==, !=" \
+          --constants="SUCCESS:0; FAILURE:1" --constants="PENDING:2"
+
     # Generate from input file
     atlas --input=types.txt --output=types.hpp
 
@@ -867,24 +877,64 @@ INPUT FILE FORMAT:
     guard_prefix=MY_TYPES    # optional prefix for header guard
     guard_separator=_        # optional, default: _
     upcase_guard=true        # optional, default: true
+    namespace=math           # optional default namespace for all types
 
-    # Type definitions
-    [type]
+    # Profile definitions (optional, reusable feature bundles)
+    profile=NUMERIC; +, -, *, /
+    profile=COMPARABLE; ==, !=, <, <=, >, >=
+
+    # Type definitions (multiple formats supported)
+    [type]                   # Legacy format
     kind=struct
     namespace=math
     name=Distance
     description=strong int; +, -, ==, !=
     default_value=0
+    constants=zero:0; max:1000
 
-    [type]
-    kind=class
-    namespace=util
-    name=Counter
-    description=strong int; ++, --, bool, out
+    [struct util::Counter]   # Inline syntax: [kind namespace::name]
+    description=int; {COMPARABLE}, ++, --, bool, out
     default_value=100
+    constants=initial:100
+
+    Alternative section headers:
+    [TypeName]               # Unqualified name
+    [ns::TypeName]           # Qualified name without kind (defaults to struct)
+    [struct TypeName]        # Explicit kind with unqualified name
+    [class ns::TypeName]     # Fully qualified with kind
 
     All types are generated in a single file with one unified header guard.
-    The guard will be: guard_prefix_separator_SHA1 (defaults to ATLAS_ if no prefix).
+    The guard will be: guard_prefix_separator_SHA1 (defaults to ATLAS_ if no
+    prefix).
+
+PROFILES:
+    Profiles are reusable feature bundles defined at file level:
+
+    profile=NAME; feature1, feature2, ...
+
+    Use profiles in descriptions with {NAME} syntax:
+    description=strong int; {NUMERIC}, hash
+
+    Profiles can be composed and features are automatically deduplicated.
+    Profiles must be defined before use in type definitions.
+
+CONSTANTS:
+    Named constants generate static members similar to scoped enum values:
+
+    constants=name:value; name2:value2
+
+    Multiple constants= lines can be used per type. Example:
+
+    [type]
+    name=Status
+    description=int; ==, !=
+    constants=SUCCESS:0; FAILURE:1
+    constants=PENDING:2
+
+    Generates: static constexpr Status SUCCESS = Status(0);
+               static constexpr Status FAILURE = Status(1);
+               static constexpr Status PENDING = Status(2);
+    (or static const if no-constexpr is specified)
 
 OPERATOR REFERENCE:
     Arithmetic:     +, -, *, /, %, u+, u-, u~, &, |, ^, <<, >>
@@ -902,14 +952,15 @@ OPERATOR REFERENCE:
     Custom:         #<header> or #"header" for custom includes
 
 CONSTEXPR BEHAVIOR:
-    By default, all operations are marked constexpr for use in constant expressions.
+    By default, all operations are marked constexpr for use in constant
+    expressions.
 
     no-constexpr         Removes constexpr from all operations
     no-constexpr-hash    Removes constexpr only from hash
 
     Examples:
         "strong int; +, -, hash"              # All constexpr
-        "strong std::string; ==, no-constexpr-hash" # Ops are constexpr, hash isn't
+        "strong std::string; ==, no-constexpr-hash" # Ops constexpr, hash isn't
         "strong std::string; ==, hash, no-constexpr" # Nothing constexpr
 
 For more information, see the Atlas documentation.

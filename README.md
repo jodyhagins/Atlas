@@ -11,7 +11,9 @@ A C++ code generator that turns terse descriptions into strongly typed wrappers.
 Because `execute(int64_t bid_price, int64_t bid_qty, int64_t ask_price, int64_t ask_qty)`
 is a serious bug and changing it to
 `execute(Price bid_price, Quantity bid_qty, Price ask_price, Quantity ask_qty)`
-buys you just enough time to have a production issue in time to tank next quarter's bonus too.
+only buys you just enough time to have a production issue in time to tank next quarter's bonus too.
+
+**NOTE** This is also an AI playground. I extracted the strong type generation code from a much larger libclang tool, and used it as the kernel for this project. I then used AI for almost everything else. Most of the code in the initial commit, and almost all of the documentation and commits since were AI generated (with some human oversight). I've been playing with different techniques and tools, and this project has been one of the results of that experimentation.
 
 ## Quick Start
 
@@ -25,7 +27,7 @@ FetchContent_Declare(Atlas
 FetchContent_MakeAvailable(Atlas)
 
 # Generate a strong type with minimal syntax
-atlas_add_type(UserId int "==, !=, <=>" TARGET my_library)
+atlas_add_type(UserId int "<=>, fmt, hash" TARGET my_library)
 ```
 
 That's it! The helper function automatically:
@@ -80,7 +82,9 @@ cmake --build build/coverage --target coverage
 # See docs/COVERAGE.md for details
 ```
 
-Requirements: C++20 compiler (GCC ≥11, Clang ≥15), CMake ≥3.20, and the crushing realization that strong types actually matter
+Requirements: C++20 compiler (GCC ≥11, Clang ≥15), CMake ≥3.20, and the crushing realization that strong types actually matter.
+
+The tool requires a C++20 compiler, but generates code that should be usable back to C++11.
 
 ## Usage
 
@@ -89,8 +93,14 @@ Requirements: C++20 compiler (GCC ≥11, Clang ≥15), CMake ≥3.20, and the cr
 Generate a single type:
 ```bash
 atlas --kind=struct --namespace=geom --name=Length \
-      --description="double; +, -, ==, !=, <=>" \
+      --description="double; +, -, ==, !=" \
       --output=Length.hpp
+
+# With named constants
+atlas --kind=struct --namespace=geom --name=Distance \
+      --description="double; +, -, ==, <=>" \
+      --constants="zero:0.0; max:1000.0" \
+      --output=Distance.hpp
 ```
 
 Generate multiple types from a file (batch processing your type safety):
@@ -100,11 +110,19 @@ atlas --input=types.txt --output=strong_types.hpp
 
 **types.txt:**
 ```
+# Optional file-level configuration
+guard_prefix=MY_TYPES
+
+# Define reusable profiles
+profile=NUMERIC; +, -, *, /, <=>
+
 [type]
 kind=struct
 namespace=math
 name=Distance
-description=strong int; +, -, ==, <=>
+description=strong int; {NUMERIC}
+default_value=0
+constants=zero:0; max:1000
 
 [struct util::Counter]
 description=int; ++, --, out
@@ -146,7 +164,8 @@ Common options (because we're all about that opt-in life):
 - Callable: `()`, `(&)` — yes, your strong type can be a functor. Why? Because C++.
 - Pointer-like: `@`, `->`, `&of` — make it look like a pointer without the segfaults
 - Containers: `[]`, `hash`, `iterable` — for those fancy data structures
-- Constants: Define named constants with `constants=key1:val1; key2:val2` — static members like scoped enums
+- Constants: Named constants with `constants=name:value; name2:value2` — static members like scoped enums
+- Profiles: Reusable feature bundles with `profile=NAME; features...` and `{NAME}` references
 - Special: `bool`, `no-constexpr` — the "it's complicated" options
 
 Full reference (for the masochists): [`docs/description-language.md`](docs/description-language.md)
@@ -162,9 +181,11 @@ wjh::atlas::StrongTypeDescription desc{
     .kind = "struct",
     .type_namespace = "geom",
     .type_name = "Length",
-    .description = "double; +, -"
+    .description = "double; +, -",
+    .constants = {{"zero", "0.0"}, {"max", "1000.0"}}
 };
-std::string header = wjh::atlas::generate_strong_type(desc);
+StrongTypeGenerator generator;
+std::string header = generator(desc);
 ```
 
 ```cpp
