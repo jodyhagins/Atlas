@@ -1,0 +1,8 @@
+guard_prefix=TEST
+cpp_standard=17
+
+# Test C++17 standard assertion in interaction files
+namespace=test
+constexpr
+
+Distance * Time -> Velocity

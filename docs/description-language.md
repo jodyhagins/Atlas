@@ -335,3 +335,40 @@ description=int; +, -, <=>
 # Works but redundant - generates warnings
 description=int; +, -, <=>, ==, <
 ```
+
+## C++ Standard for Interaction Files
+
+Interaction files also support C++ standard specification, working identically to strong type files.
+
+### File-Level Specification
+
+```
+guard_prefix=MY_INTERACTIONS
+cpp_standard=20
+
+namespace=physics
+Distance * Time -> Velocity
+```
+
+### Command-Line Override
+
+```bash
+atlas --interactions=true --input=interactions.txt --cpp-standard=20
+```
+
+The `cpp_standard` directive and `--cpp-standard` flag work exactly as they do for strong type files:
+- Defaults to C++11 (no assertion)
+- Supported values: 11, 14, 17, 20, 23
+- Generates `static_assert` immediately after header guard
+- CLI flag overrides file-level specification
+
+**Example generated code for C++20:**
+```cpp
+#ifndef MY_INTERACTIONS_HASH
+#define MY_INTERACTIONS_HASH
+
+static_assert(__cplusplus >= 202002L,
+    "This file requires C++20 or later. Compile with -std=c++20 or higher.");
+
+// ... rest of generated code ...
+```

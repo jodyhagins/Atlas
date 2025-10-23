@@ -1173,6 +1173,16 @@ parse_interaction_file(std::string const & filename)
             result.upcase_guard = parse_bool(
                 extract_after_equals(line),
                 "upcase_guard");
+        } else if (starts_with(line, "cpp_standard=")) {
+            std::string standard_str = extract_after_equals(line);
+            try {
+                result.cpp_standard = parse_cpp_standard(standard_str);
+            } catch (std::invalid_argument const & e) {
+                throw AtlasCommandLineError(
+                    "Invalid cpp_standard at line " +
+                    std::to_string(line_number) + " in " + filename + ": " +
+                    e.what());
+            }
         } else if (line == "constexpr") {
             current_constexpr = true;
         } else if (line == "no-constexpr") {

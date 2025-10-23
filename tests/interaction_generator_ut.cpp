@@ -631,4 +631,62 @@ TEST_SUITE("InteractionGenerator")
             CHECK(code.find("DO NOT EDIT") != std::string::npos);
         }
     }
+
+    TEST_CASE("C++ Standard Specification - Edge Cases")
+    {
+        SUBCASE("static_assert position - immediately after header guard") {
+            InteractionFileDescription desc;
+            desc.cpp_standard = 20;
+            desc.interactions.push_back(InteractionDescription{
+                .op_symbol = "+",
+                .lhs_type = "A",
+                .rhs_type = "B",
+                .result_type = "C",
+                .symmetric = false,
+                .lhs_is_template = false,
+                .rhs_is_template = false,
+                .is_constexpr = true,
+                .interaction_namespace = "",
+                .value_access = "atlas::value"});
+
+            auto code = generate_interactions(desc);
+
+            // Find the #define line
+            auto define_pos = code.find("#define");
+            REQUIRE(define_pos != std::string::npos);
+            auto define_eol = code.find('\n', define_pos);
+
+            // Find the static_assert
+            auto assert_pos = code.find("static_assert");
+            REQUIRE(assert_pos != std::string::npos);
+
+            // Find the NOTICE banner
+            auto notice_pos = code.find("NOTICE");
+            REQUIRE(notice_pos != std::string::npos);
+
+            // static_assert should be after #define but before NOTICE
+            CHECK(assert_pos > define_eol);
+            CHECK(assert_pos < notice_pos);
+        }
+
+        SUBCASE("Default C++11 - no static_assert generated") {
+            InteractionFileDescription desc;
+            desc.interactions.push_back(InteractionDescription{
+                .op_symbol = "+",
+                .lhs_type = "A",
+                .rhs_type = "B",
+                .result_type = "C",
+                .symmetric = false,
+                .lhs_is_template = false,
+                .rhs_is_template = false,
+                .is_constexpr = true,
+                .interaction_namespace = "",
+                .value_access = "atlas::value"});
+
+            auto code = generate_interactions(desc);
+
+            // Should NOT contain static_assert for C++11 (default)
+            CHECK_FALSE(contains(code, "static_assert(__cplusplus >="));
+        }
+    }
 }

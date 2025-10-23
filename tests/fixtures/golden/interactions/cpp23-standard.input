@@ -1,0 +1,8 @@
+guard_prefix=TEST
+cpp_standard=23
+
+# Test C++23 standard assertion in interaction files
+namespace=test
+constexpr
+
+Energy / Time -> Power

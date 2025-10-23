@@ -1,0 +1,8 @@
+guard_prefix=TEST
+cpp_standard=14
+
+# Test C++14 standard assertion in interaction files
+namespace=test
+constexpr
+
+Counter + Counter -> Counter
