@@ -1,0 +1,8 @@
+# Test: C++11 default (no standard specified)
+# Feature: Default to C++11, no static_assert
+# Expected: No C++ standard assertion
+
+guard_prefix=TEST_CPP11_DEFAULT
+
+[test::Counter]
+description=strong int; +, -, ++, --

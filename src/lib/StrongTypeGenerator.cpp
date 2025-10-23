@@ -39,7 +39,8 @@ BOOST_DESCRIBE_STRUCT(
      guard_separator,
      upcase_guard,
      generate_iterators,
-     generate_formatter))
+     generate_formatter,
+     cpp_standard))
 
 namespace {
 
@@ -894,6 +895,7 @@ struct ClassInfo
     std::vector<CastOperator> implicit_cast_operators;
     std::vector<Constant> constants;
     std::string const_qualifier = "constexpr ";
+    int cpp_standard = 11;
     StrongTypeDescription desc;
 };
 BOOST_DESCRIBE_STRUCT(
@@ -936,6 +938,7 @@ BOOST_DESCRIBE_STRUCT(
      implicit_cast_operators,
      constants,
      const_qualifier,
+     cpp_standard,
      desc))
 
 constexpr auto arithmetic_binary_op_tags = std::to_array<std::string_view>(
@@ -1138,6 +1141,7 @@ parse(
 {
     ClassInfo info;
     info.desc = desc;
+    info.cpp_standard = desc.cpp_standard;
     info.class_namespace = stripns(desc.type_namespace);
 
     // Expand nested namespaces for C++11 compatibility
@@ -1311,6 +1315,16 @@ parse(
                         }
                     }
                     info.includes_vec.push_back(std::move(str));
+                } else if (sv.starts_with("c++") || sv.starts_with("C++")) {
+                    recognized = true;
+                    try {
+                        info.cpp_standard = parse_cpp_standard(sv);
+                        info.desc.cpp_standard = info.cpp_standard;
+                    } catch (std::invalid_argument const & e) {
+                        throw std::invalid_argument(
+                            "Invalid C++ standard in description: " +
+                            std::string(e.what()));
+                    }
                 }
 
                 // Try to parse as cast operator
@@ -1665,6 +1679,7 @@ operator () (StrongTypeDescription const & desc)
     std::stringstream strm;
     strm << "#ifndef " << guard << '\n'
         << "#define " << guard << "\n\n"
+        << generate_cpp_standard_assertion(info.cpp_standard)
         << make_notice_banner() << '\n'
         << R"(#if __has_include(<version>)
 #include <version>
@@ -1688,10 +1703,16 @@ generate_strong_types_file(
     std::vector<StrongTypeGenerator::Warning> warnings;
     bool any_arrow_operator = false;
     bool any_indirection_operator = false;
+    int max_cpp_standard = 11;
 
     // Generate each type WITHOUT preamble, and collect includes
     for (auto const & desc : descriptions) {
         auto info = parse(desc, &warnings);
+
+        // Track the maximum C++ standard across all types
+        if (info.cpp_standard > max_cpp_standard) {
+            max_cpp_standard = info.cpp_standard;
+        }
 
         // Check if this type uses arrow operator
         if (info.arrow_operator) {
@@ -1745,9 +1766,10 @@ generate_strong_types_file(
     // Build final output
     std::ostringstream output;
 
-    // Add header guard first, then NOTICE banner
+    // Add header guard first, then static_assert, then NOTICE banner
     output << "#ifndef " << guard << '\n'
         << "#define " << guard << "\n\n"
+        << generate_cpp_standard_assertion(max_cpp_standard)
         << make_notice_banner() << '\n'
         << R"(#if __has_include(<version>)
 #include <version>

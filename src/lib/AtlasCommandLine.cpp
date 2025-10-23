@@ -332,6 +332,13 @@ parse_impl(std::vector<std::string> const & args)
             result.output_file = value;
         } else if (key == "interactions") {
             result.interactions_mode = parse_bool(value, "--interactions");
+        } else if (key == "cpp-standard") {
+            try {
+                result.cpp_standard = parse_cpp_standard(value);
+            } catch (std::invalid_argument const & e) {
+                throw AtlasCommandLineError(
+                    "Invalid --cpp-standard value: " + std::string(e.what()));
+            }
         } else {
             throw AtlasCommandLineError("Unknown argument: --" + key);
         }
@@ -434,6 +441,9 @@ to_description(Arguments const & args)
         args.constants,
         "for type '" + args.type_name + "'");
 
+    // Use CLI cpp_standard if specified, otherwise default to 11
+    int cpp_standard = (args.cpp_standard > 0) ? args.cpp_standard : 11;
+
     return StrongTypeDescription{
         .kind = args.kind,
         .type_namespace = args.type_namespace,
@@ -443,7 +453,8 @@ to_description(Arguments const & args)
         .constants = constants,
         .guard_prefix = args.guard_prefix,
         .guard_separator = args.guard_separator,
-        .upcase_guard = args.upcase_guard};
+        .upcase_guard = args.upcase_guard,
+        .cpp_standard = cpp_standard};
 }
 
 AtlasCommandLine::FileGenerationResult
@@ -579,7 +590,8 @@ parse_input_file(Arguments const & args)
                 .constants = constants,
                 .guard_prefix = result.guard_prefix,
                 .guard_separator = result.guard_separator,
-                .upcase_guard = result.upcase_guard});
+                .upcase_guard = result.upcase_guard,
+                .cpp_standard = result.file_level_cpp_standard});
 
             current_kind.clear();
             current_namespace.clear();
@@ -724,6 +736,17 @@ parse_input_file(Arguments const & args)
                 result.upcase_guard = parse_bool(value, "upcase_guard");
             } else if (key == "namespace") {
                 global_namespace = value;
+            } else if (key == "cpp_standard") {
+                // File-level cpp_standard will be applied to all types later
+                // Store it in a variable for now
+                try {
+                    result.file_level_cpp_standard = parse_cpp_standard(value);
+                } catch (std::invalid_argument const & e) {
+                    throw AtlasCommandLineError(
+                        "Invalid cpp_standard at line " +
+                        std::to_string(line_number) + " in " + args.input_file +
+                        ": " + e.what());
+                }
             } else if (key == "profile") {
                 // Parse profile=NAME; features...
                 // value contains everything after the = sign
@@ -825,6 +848,14 @@ parse_input_file(Arguments const & args)
         result.guard_prefix = args.guard_prefix;
     }
 
+    // Override cpp_standard for all types if CLI flag is specified
+    if (args.cpp_standard > 0) {
+        result.file_level_cpp_standard = args.cpp_standard;
+        for (auto & type : result.types) {
+            type.cpp_standard = args.cpp_standard;
+        }
+    }
+
     return result;
 }
 
@@ -871,6 +902,11 @@ OPTIONAL ARGUMENTS:
                                 (default: "_")
     --upcase-guard=<bool>       Use uppercase header guards (default: true)
                                 Values: true/false, 1/0, yes/no
+    --cpp-standard=<std>        Target C++ standard (11, 14, 17, 20, or 23)
+                                Generates static_assert to enforce minimum
+                                standard at compile time. Overrides file-level
+                                and description-level specifications.
+                                (default: 11)
 
     --help, -h                  Show this help message
     --version, -v               Show version information
@@ -897,6 +933,11 @@ EXAMPLES:
           --description="strong double" \
           --guard-prefix=MYPROJECT --guard-separator=_$_ --upcase-guard=true
 
+    # Generate with C++20 requirement
+    atlas --kind=struct --namespace=test --name=UserId \
+          --description="strong int; <=>" \
+          --cpp-standard=20
+
 INPUT FILE FORMAT:
     The input file uses a simple key=value format with [type] section markers:
 
@@ -905,6 +946,7 @@ INPUT FILE FORMAT:
     guard_separator=_        # optional, default: _
     upcase_guard=true        # optional, default: true
     namespace=math           # optional default namespace for all types
+    cpp_standard=20          # optional C++ standard (11, 14, 17, 20, 23)
 
     # Profile definitions (optional, reusable feature bundles)
     profile=NUMERIC; +, -, *, /
@@ -923,6 +965,9 @@ INPUT FILE FORMAT:
     description=int; {COMPARABLE}, ++, --, bool, out
     default_value=100
     constants=initial:100
+
+    [test::UserId]           # C++ standard can be specified in description
+    description=strong int; <=>, c++20
 
     Alternative section headers:
     [TypeName]               # Unqualified name

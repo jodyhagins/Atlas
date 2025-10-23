@@ -46,6 +46,7 @@ public:
         std::string input_file;
         std::string output_file;
         bool interactions_mode = false;
+        int cpp_standard = 0; // 0 means not specified on CLI
     };
 
     struct FileGenerationResult
@@ -53,6 +54,7 @@ public:
         std::string guard_prefix;
         std::string guard_separator = "_";
         bool upcase_guard = true;
+        int file_level_cpp_standard = 11;
         std::vector<StrongTypeDescription> types;
     };
 

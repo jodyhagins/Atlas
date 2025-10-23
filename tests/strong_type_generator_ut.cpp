@@ -4,6 +4,7 @@
 // See accompanying file LICENSE or copy at
 // https://opensource.org/licenses/MIT
 // ----------------------------------------------------------------------
+#include "AtlasUtilities.hpp"
 #include "CodeStructureParser.hpp"
 #include "ProfileSystem.hpp"
 #include "StrongTypeGenerator.hpp"
@@ -562,6 +563,129 @@ TEST_SUITE("StrongTypeGenerator")
                 "strong int; <, <=>");
             gen(desc2);
             CHECK(gen.get_warnings().size() == 2);
+        }
+    }
+
+    TEST_CASE("C++ Standard Specification")
+    {
+        SUBCASE("parse_cpp_standard - valid inputs") {
+            CHECK(parse_cpp_standard("11") == 11);
+            CHECK(parse_cpp_standard("14") == 14);
+            CHECK(parse_cpp_standard("17") == 17);
+            CHECK(parse_cpp_standard("20") == 20);
+            CHECK(parse_cpp_standard("23") == 23);
+            CHECK(parse_cpp_standard("c++11") == 11);
+            CHECK(parse_cpp_standard("c++20") == 20);
+            CHECK(parse_cpp_standard("C++17") == 17);
+            CHECK(parse_cpp_standard("C++23") == 23);
+        }
+
+        SUBCASE("parse_cpp_standard - invalid inputs") {
+            CHECK_THROWS_AS(parse_cpp_standard("18"), std::invalid_argument);
+            CHECK_THROWS_AS(parse_cpp_standard("21"), std::invalid_argument);
+            CHECK_THROWS_AS(parse_cpp_standard("26"), std::invalid_argument);
+            CHECK_THROWS_AS(parse_cpp_standard("foo"), std::invalid_argument);
+            CHECK_THROWS_AS(parse_cpp_standard(""), std::invalid_argument);
+            CHECK_THROWS_AS(parse_cpp_standard("2a"), std::invalid_argument);
+            CHECK_THROWS_AS(parse_cpp_standard("2b"), std::invalid_argument);
+        }
+
+        SUBCASE("generate_cpp_standard_assertion - C++11 no assertion") {
+            auto result = generate_cpp_standard_assertion(11);
+            CHECK(result == "");
+        }
+
+        SUBCASE("generate_cpp_standard_assertion - C++14") {
+            auto result = generate_cpp_standard_assertion(14);
+            CHECK(result.find("static_assert") != std::string::npos);
+            CHECK(result.find("201402L") != std::string::npos);
+            CHECK(result.find("C++14") != std::string::npos);
+            CHECK(result.find("-std=c++14") != std::string::npos);
+        }
+
+        SUBCASE("generate_cpp_standard_assertion - C++17") {
+            auto result = generate_cpp_standard_assertion(17);
+            CHECK(result.find("201703L") != std::string::npos);
+            CHECK(result.find("C++17") != std::string::npos);
+        }
+
+        SUBCASE("generate_cpp_standard_assertion - C++20") {
+            auto result = generate_cpp_standard_assertion(20);
+            CHECK(result.find("202002L") != std::string::npos);
+            CHECK(result.find("C++20") != std::string::npos);
+        }
+
+        SUBCASE("generate_cpp_standard_assertion - C++23") {
+            auto result = generate_cpp_standard_assertion(23);
+            CHECK(result.find("202302L") != std::string::npos);
+            CHECK(result.find("C++23") != std::string::npos);
+        }
+
+        SUBCASE("description-level cpp_standard parsing") {
+            StrongTypeGenerator gen;
+            StrongTypeDescription desc{
+                .kind = "struct",
+                .type_namespace = "test",
+                .type_name = "MyType",
+                .description = "strong int; +, -, c++20"};
+
+            auto result = gen(desc);
+            CHECK(
+                result.find("static_assert(__cplusplus >= 202002L") !=
+                std::string::npos);
+            CHECK(result.find("C++20") != std::string::npos);
+        }
+
+        SUBCASE("file generates cpp_standard at top") {
+            StrongTypeDescription desc{
+                .kind = "struct",
+                .type_namespace = "test",
+                .type_name = "MyType",
+                .description = "strong int; <=>",
+                .cpp_standard = 20};
+
+            StrongTypeGenerator gen;
+            auto result = gen(desc);
+
+            // Find header guard
+            auto ifndef_pos = result.find("#ifndef");
+            auto define_pos = result.find("#define", ifndef_pos);
+            auto assert_pos = result.find("static_assert", define_pos);
+
+            CHECK(ifndef_pos != std::string::npos);
+            CHECK(define_pos != std::string::npos);
+            CHECK(assert_pos != std::string::npos);
+
+            // static_assert should come before NOTICE banner
+            auto notice_pos = result.find("NOTICE");
+            CHECK(assert_pos < notice_pos);
+        }
+
+        SUBCASE("multi-type file uses max cpp_standard") {
+            std::vector<StrongTypeDescription> types = {
+                {.kind = "struct",
+                 .type_namespace = "test",
+                 .type_name = "Type1",
+                 .description = "strong int; +, -",
+                 .cpp_standard = 14},
+                {.kind = "struct",
+                 .type_namespace = "test",
+                 .type_name = "Type2",
+                 .description = "strong int; ==, !=",
+                 .cpp_standard = 20},
+                {.kind = "struct",
+                 .type_namespace = "test",
+                 .type_name = "Type3",
+                 .description = "strong int; *",
+                 .cpp_standard = 17}};
+
+            auto result = generate_strong_types_file(types);
+
+            // Should use C++20 (max of 14, 20, 17)
+            CHECK(result.find("202002L") != std::string::npos);
+            // Should NOT have C++14 or C++17 assertions
+            CHECK(result.find("201402L") == std::string::npos);
+            CHECK(result.find("201703L") == std::string::npos);
         }
     }
 }

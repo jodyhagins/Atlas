@@ -1,0 +1,12 @@
+# Test: File-level C++20 standard specification
+# Feature: cpp_standard=20 applies to all types
+# Expected: Static assertion for C++20 at top of file
+
+guard_prefix=TEST_CPP20_FILE
+cpp_standard=20
+
+[test::UserId]
+description=strong int; <=>
+
+[test::SessionId]
+description=strong int; ==, !=

@@ -66,6 +66,29 @@ std::vector<std::string> get_preamble_includes(PreambleOptions options = {});
 std::string preamble(PreambleOptions options = {});
 
 /**
+ * @brief Parse C++ standard specification from string
+ *
+ * Accepts formats: "20", "c++20", "C++20"
+ * Valid values: 11, 14, 17, 20, 23
+ *
+ * @param val String representation of C++ standard
+ * @return Numeric C++ standard value (11, 14, 17, 20, or 23)
+ * @throws std::invalid_argument if format is invalid or value is unsupported
+ */
+int parse_cpp_standard(std::string_view val);
+
+/**
+ * @brief Generate static assertion for C++ standard requirement
+ *
+ * Generates a static_assert that verifies the code is compiled with at least
+ * the required C++ standard. For C++11 (minimum), returns empty string.
+ *
+ * @param standard Required C++ standard (11, 14, 17, 20, or 23)
+ * @return Static assertion code, or empty string for C++11
+ */
+std::string generate_cpp_standard_assertion(int standard);
+
+/**
  * @brief Check if a file descriptor supports ANSI color codes
  *
  * @param fd File descriptor to check (e.g., fileno(stderr))

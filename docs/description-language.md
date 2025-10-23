@@ -97,6 +97,71 @@ When `no-constexpr` is specified, constants are generated as `static const` inst
 
 Constants are useful for providing well-known values and sentinel values for your strong types.
 
+## C++ Standard Specification
+
+Atlas can generate a `static_assert` to enforce a minimum C++ standard at compile time. This ensures that code using modern C++ features (like the spaceship operator) will produce clear error messages if compiled with an older standard.
+
+### Three Ways to Specify the Standard
+
+**1. Description-level** (lowest precedence):
+```
+[test::UserId]
+description=strong int; <=>, c++20
+```
+
+**2. File-level** (medium precedence, applies to all types in file):
+```
+cpp_standard=20
+
+[test::UserId]
+description=strong int; <=>
+
+[test::SessionId]
+description=strong int; ==, !=
+```
+
+**3. Command-line** (highest precedence, overrides everything):
+```bash
+atlas --input=types.txt --cpp-standard=20
+```
+
+### Supported Standards
+
+- `11` or `c++11` - C++11 (default, no static_assert generated)
+- `14` or `c++14` - C++14
+- `17` or `c++17` - C++17
+- `20` or `c++20` - C++20
+- `23` or `c++23` - C++23
+
+### Generated Code
+
+For C++20, Atlas generates:
+```cpp
+#ifndef MY_TYPES_GUARD
+#define MY_TYPES_GUARD
+
+static_assert(__cplusplus >= 202002L,
+    "This file requires C++20 or later. Compile with -std=c++20 or higher.");
+
+// ... rest of generated code ...
+```
+
+For C++11 (the default), no static_assert is generated since it's the minimum supported standard.
+
+### Multi-Type Files
+
+When multiple types in one file specify different standards, Atlas uses the **maximum** standard:
+
+```
+[test::Type1]
+description=int; +, -, c++14
+
+[test::Type2]
+description=int; <=>, c++20
+
+# Generated file will require C++20 (the max of 14 and 20)
+```
+
 ## Profiles
 
 Profiles let you define reusable feature bundles:

@@ -1,0 +1,14 @@
+# Test: Multiple types with different C++ standards
+# Feature: File should use maximum standard across all types
+# Expected: Static assertion for C++20 (max of 14, 17, 20)
+
+guard_prefix=TEST_MIXED_STANDARDS
+
+[test::Type1]
+description=strong int; +, -, c++14
+
+[test::Type2]
+description=strong int; *, /, c++17
+
+[test::Type3]
+description=strong int; <=>, c++20

@@ -1,0 +1,8 @@
+# Test: C++23 with spaceship operator
+# Feature: C++23 assertion
+# Expected: Static assertion for C++23
+
+guard_prefix=TEST_CPP23
+
+[test::Timestamp]
+description=strong long; <=>, c++23
