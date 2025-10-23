@@ -1,0 +1,8 @@
+# Test: C++14 standard
+# Feature: cpp_standard=14
+# Expected: Static assertion for C++14
+
+guard_prefix=TEST_CPP14
+
+[test::Value]
+description=strong double; +, -, *, /, c++14

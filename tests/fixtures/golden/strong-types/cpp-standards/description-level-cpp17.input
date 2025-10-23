@@ -1,0 +1,8 @@
+# Test: Description-level C++17 standard specification
+# Feature: c++17 in description
+# Expected: Static assertion for C++17
+
+guard_prefix=TEST_CPP17_DESC
+
+[test::Distance]
+description=strong int; +, -, <, <=, >, >=, c++17

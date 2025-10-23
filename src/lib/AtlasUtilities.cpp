@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <cctype>
 #include <cstdlib>
+#include <sstream>
 #include <string>
 
 #ifdef _WIN32
@@ -407,6 +408,79 @@ supports_color(int fd)
     std::string term_str(term);
     // Most modern terminals support color
     return term_str != "dumb";
+}
+
+int
+parse_cpp_standard(std::string_view val)
+{
+    // Remove "c++" or "C++" prefix if present
+    if (val.size() >= 3 &&
+        (val.substr(0, 3) == "c++" || val.substr(0, 3) == "C++"))
+    {
+        val.remove_prefix(3);
+    }
+
+    // Parse the numeric value
+    int standard = 0;
+    try {
+        standard = std::stoi(std::string(val));
+    } catch (...) {
+        throw std::invalid_argument(
+            "Invalid C++ standard format: '" + std::string(val) +
+            "'\nValid formats: 11, 14, 17, 20, 23, c++20, C++20");
+    }
+
+    // Validate it's a supported standard
+    if (standard != 11 && standard != 14 && standard != 17 && standard != 20 &&
+        standard != 23)
+    {
+        throw std::invalid_argument(
+            "Unsupported C++ standard: " + std::to_string(standard) +
+            "\nValid values: 11, 14, 17, 20, 23");
+    }
+
+    return standard;
+}
+
+std::string
+generate_cpp_standard_assertion(int standard)
+{
+    // C++11 is the minimum, no assertion needed
+    if (standard == 11) {
+        return "";
+    }
+
+    // Map standard to __cplusplus value
+    long cpp_value;
+    std::string standard_name;
+
+    switch (standard) {
+    case 14:
+        cpp_value = 201402L;
+        standard_name = "C++14";
+        break;
+    case 17:
+        cpp_value = 201703L;
+        standard_name = "C++17";
+        break;
+    case 20:
+        cpp_value = 202002L;
+        standard_name = "C++20";
+        break;
+    case 23:
+        cpp_value = 202302L;
+        standard_name = "C++23";
+        break;
+    default:
+        return ""; // Should not happen if validation is done properly
+    }
+
+    std::stringstream strm;
+    strm << "static_assert(__cplusplus >= " << cpp_value
+        << "L,\n    \"This file requires " << standard_name
+        << " or later. Compile with -std=c++" << standard
+        << " or higher.\");\n\n";
+    return strm.str();
 }
 
 }} // namespace wjh::atlas::v1

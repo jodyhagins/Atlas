@@ -258,6 +258,14 @@ struct StrongTypeDescription
      * WARNING: Implicit casts reduce type safety, use sparingly.
      */
     std::vector<std::string> implicit_casts = {};
+
+    /**
+     * Target C++ standard for generated code (11, 14, 17, 20, or 23).
+     * Defaults to C++11 for maximum compatibility.
+     * Generates a static_assert to ensure the code is compiled with the
+     * correct standard.
+     */
+    int cpp_standard = 11;
 };
 
 struct StrongTypeGenerator
