@@ -197,6 +197,9 @@ auto strong_template = R"(
     {{#iterator_support_member}}
     {{>iterator_support_member}}
     {{/iterator_support_member}}
+    {{#forwarded_memfns}}
+    {{>forwarded_memfn}}
+    {{/forwarded_memfns}}
     {{#unary_operators}}
     {{>unary_operators}}
     {{/unary_operators}}
@@ -817,9 +820,90 @@ constexpr char template_assignment_operator_template[] = R"(
     }
 )";
 
+constexpr char forwarded_memfn_template[] = R"(
+    /**
+     * @brief Forward {{memfn_name}} to wrapped object{{#alias_name}} (aliased as {{alias_name}}){{/alias_name}}{{#return_type}},
+     * wrapping return value in {{return_type}}{{/return_type}}
+     *
+     * This member function forwards all calls to the underlying type's
+     * {{memfn_name}} member function, preserving const-correctness,
+     * noexcept specifications, and perfect forwarding.
+{{#const_only}}     * Only const overloads are generated.
+{{/const_only}}{{#return_type}}     * Return value is wrapped in {{return_type}} (requires {{return_type}} to be
+     * constructible from the memfn's return type).
+{{/return_type}}     */
+{{^const_only}}#if defined(__cpp_explicit_this_parameter) && __cpp_explicit_this_parameter >= 202110L
+    // C++23 deducing this - single elegant overload
+    template <typename Self, typename... Args>
+    {{const_expr}}auto {{#alias_name}}{{alias_name}}{{/alias_name}}{{^alias_name}}{{memfn_name}}{{/alias_name}}(this Self&& self, Args&&... args){{#return_type}}
+    -> {{return_type}}{{/return_type}}{{^return_type}}
+    noexcept(noexcept(std::forward<Self>(self).value.{{memfn_name}}(std::forward<Args>(args)...)))
+    -> decltype(std::forward<Self>(self).value.{{memfn_name}}(std::forward<Args>(args)...)){{/return_type}}
+    {
+        return {{#return_type}}{{return_type}}{{/return_type}}{{^return_type}}std::forward<Self>(self).value.{{memfn_name}}(std::forward<Args>(args)...){{/return_type}}{{#return_type}}(std::forward<Self>(self).value.{{memfn_name}}(std::forward<Args>(args)...)){{/return_type}};
+    }
+#else
+{{/const_only}}    // C++11-20: ref-qualified overloads (or just const for const-only)
+{{#generate_const_no_ref}}
+    template <typename... Args>
+    {{const_expr}}auto {{#alias_name}}{{alias_name}}{{/alias_name}}{{^alias_name}}{{memfn_name}}{{/alias_name}}(Args&&... args) const{{#return_type}}
+    -> {{return_type}}{{/return_type}}{{^return_type}}
+    noexcept(noexcept(value.{{memfn_name}}(std::forward<Args>(args)...)))
+    -> decltype(value.{{memfn_name}}(std::forward<Args>(args)...)){{/return_type}}
+    {
+        return {{#return_type}}{{return_type}}{{/return_type}}{{^return_type}}value.{{memfn_name}}(std::forward<Args>(args)...){{/return_type}}{{#return_type}}(value.{{memfn_name}}(std::forward<Args>(args)...)){{/return_type}};
+    }
+{{/generate_const_no_ref}}
+
+{{#generate_const_lvalue}}
+    template <typename... Args>
+    {{const_expr}}auto {{#alias_name}}{{alias_name}}{{/alias_name}}{{^alias_name}}{{memfn_name}}{{/alias_name}}(Args&&... args) const &{{#return_type}}
+    -> {{return_type}}{{/return_type}}{{^return_type}}
+    noexcept(noexcept(value.{{memfn_name}}(std::forward<Args>(args)...)))
+    -> decltype(value.{{memfn_name}}(std::forward<Args>(args)...)){{/return_type}}
+    {
+        return {{#return_type}}{{return_type}}{{/return_type}}{{^return_type}}value.{{memfn_name}}(std::forward<Args>(args)...){{/return_type}}{{#return_type}}(value.{{memfn_name}}(std::forward<Args>(args)...)){{/return_type}};
+    }
+{{/generate_const_lvalue}}
+
+{{#generate_const_rvalue}}
+    template <typename... Args>
+    {{const_expr}}auto {{#alias_name}}{{alias_name}}{{/alias_name}}{{^alias_name}}{{memfn_name}}{{/alias_name}}(Args&&... args) const &&{{#return_type}}
+    -> {{return_type}}{{/return_type}}{{^return_type}}
+    noexcept(noexcept(std::move(value).{{memfn_name}}(std::forward<Args>(args)...)))
+    -> decltype(std::move(value).{{memfn_name}}(std::forward<Args>(args)...)){{/return_type}}
+    {
+        return {{#return_type}}{{return_type}}{{/return_type}}{{^return_type}}std::move(value).{{memfn_name}}(std::forward<Args>(args)...){{/return_type}}{{#return_type}}(std::move(value).{{memfn_name}}(std::forward<Args>(args)...)){{/return_type}};
+    }
+{{/generate_const_rvalue}}
+
+{{#generate_nonconst_lvalue}}
+    template <typename... Args>
+    {{const_expr}}auto {{#alias_name}}{{alias_name}}{{/alias_name}}{{^alias_name}}{{memfn_name}}{{/alias_name}}(Args&&... args) &{{#return_type}}
+    -> {{return_type}}{{/return_type}}{{^return_type}}
+    noexcept(noexcept(value.{{memfn_name}}(std::forward<Args>(args)...)))
+    -> decltype(value.{{memfn_name}}(std::forward<Args>(args)...)){{/return_type}}
+    {
+        return {{#return_type}}{{return_type}}{{/return_type}}{{^return_type}}value.{{memfn_name}}(std::forward<Args>(args)...){{/return_type}}{{#return_type}}(value.{{memfn_name}}(std::forward<Args>(args)...)){{/return_type}};
+    }
+{{/generate_nonconst_lvalue}}
+
+{{#generate_nonconst_rvalue}}
+    template <typename... Args>
+    {{const_expr}}auto {{#alias_name}}{{alias_name}}{{/alias_name}}{{^alias_name}}{{memfn_name}}{{/alias_name}}(Args&&... args) &&{{#return_type}}
+    -> {{return_type}}{{/return_type}}{{^return_type}}
+    noexcept(noexcept(std::move(value).{{memfn_name}}(std::forward<Args>(args)...)))
+    -> decltype(std::move(value).{{memfn_name}}(std::forward<Args>(args)...)){{/return_type}}
+    {
+        return {{#return_type}}{{return_type}}{{/return_type}}{{^return_type}}std::move(value).{{memfn_name}}(std::forward<Args>(args)...){{/return_type}}{{#return_type}}(std::move(value).{{memfn_name}}(std::forward<Args>(args)...)){{/return_type}};
+    }
+{{/generate_nonconst_rvalue}}
+{{^const_only}}#endif
+{{/const_only}})";
+
 struct Operator
 {
-    std::string_view op;
+    std::string op;
 
     explicit Operator(std::string_view op_)
     : op(op_)
@@ -853,6 +937,47 @@ struct Constant
     { }
 };
 BOOST_DESCRIBE_STRUCT(Constant, (), (name, value))
+
+struct ForwardedMemfn
+{
+    std::string memfn_name;
+    std::string alias_name; // Empty if no alias
+    std::string return_type; // Empty if no return type transformation
+    bool const_only = false;
+    // Flags for template rendering
+    bool cpp23_or_later = false;
+    bool generate_const_no_ref = false; // Just const (no ref qualifier)
+    bool generate_const_lvalue = true;
+    bool generate_const_rvalue = true;
+    bool generate_nonconst_lvalue = true;
+    bool generate_nonconst_rvalue = true;
+
+    ForwardedMemfn() = default;
+
+    ForwardedMemfn(
+        std::string memfn_name_,
+        std::string alias_name_ = "",
+        bool const_only_ = false,
+        std::string return_type_ = "")
+    : memfn_name(std::move(memfn_name_))
+    , alias_name(std::move(alias_name_))
+    , return_type(std::move(return_type_))
+    , const_only(const_only_)
+    { }
+};
+BOOST_DESCRIBE_STRUCT(
+    ForwardedMemfn,
+    (),
+    (memfn_name,
+     alias_name,
+     return_type,
+     const_only,
+     cpp23_or_later,
+     generate_const_no_ref,
+     generate_const_lvalue,
+     generate_const_rvalue,
+     generate_nonconst_lvalue,
+     generate_nonconst_rvalue))
 
 struct ClassInfo
 {
@@ -894,6 +1019,7 @@ struct ClassInfo
     std::vector<CastOperator> explicit_cast_operators;
     std::vector<CastOperator> implicit_cast_operators;
     std::vector<Constant> constants;
+    std::vector<ForwardedMemfn> forwarded_memfns;
     std::string const_qualifier = "constexpr ";
     int cpp_standard = 11;
     StrongTypeDescription desc;
@@ -937,6 +1063,7 @@ BOOST_DESCRIBE_STRUCT(
      explicit_cast_operators,
      implicit_cast_operators,
      constants,
+     forwarded_memfns,
      const_qualifier,
      cpp_standard,
      desc))
@@ -975,6 +1102,9 @@ is_relational_operator(std::string_view sv)
                sv) != relational_operators.end();
 }
 
+// Local utility functions for StrongTypeGenerator
+namespace {
+
 // Default predicate for strip - checks if character is whitespace
 struct IsSpacePred
 {
@@ -983,39 +1113,6 @@ struct IsSpacePred
         return std::isspace(static_cast<int>(u));
     }
 };
-
-// Check for redundant operators when spaceship is present
-void
-check_for_redundant_operators(
-    bool has_spaceship,
-    bool has_equality_ops,
-    bool has_relational_ops,
-    ClassInfo const & info,
-    std::vector<StrongTypeGenerator::Warning> * warnings)
-{
-    if (not has_spaceship || not warnings) {
-        return;
-    }
-
-    auto type_name = info.class_namespace.empty()
-        ? info.full_class_name
-        : info.class_namespace + "::" + info.full_class_name;
-
-    if (has_equality_ops) {
-        warnings->push_back(
-            {.message = "Operator '<=>' makes '==' and '!=' redundant. "
-                        "Consider removing '==' and '!=' from the description.",
-             .type_name = type_name});
-    }
-
-    if (has_relational_ops) {
-        warnings->push_back(
-            {.message =
-                 "Operator '<=>' makes '<', '<=', '>', '>=' redundant. "
-                 "Consider removing these operators from the description.",
-             .type_name = type_name});
-    }
-}
 
 template <typename PredT = IsSpacePred>
 std::string_view
@@ -1053,6 +1150,159 @@ split(std::string_view sv, char sep)
 inline constexpr auto stripns = [](auto sv) {
     return strip(sv, [](unsigned char c) { return c == ':'; });
 };
+
+} // anonymous namespace
+
+// Check for redundant operators when spaceship is present
+void
+check_for_redundant_operators(
+    bool has_spaceship,
+    bool has_equality_ops,
+    bool has_relational_ops,
+    ClassInfo const & info,
+    std::vector<StrongTypeGenerator::Warning> * warnings)
+{
+    if (not has_spaceship || not warnings) {
+        return;
+    }
+
+    auto type_name = info.class_namespace.empty()
+        ? info.full_class_name
+        : info.class_namespace + "::" + info.full_class_name;
+
+    if (has_equality_ops) {
+        warnings->push_back(
+            {.message = "Operator '<=>' makes '==' and '!=' redundant. "
+                        "Consider removing '==' and '!=' from the description.",
+             .type_name = type_name});
+    }
+
+    if (has_relational_ops) {
+        warnings->push_back(
+            {.message =
+                 "Operator '<=>' makes '<', '<=', '>', '>=' redundant. "
+                 "Consider removing these operators from the description.",
+             .type_name = type_name});
+    }
+}
+
+// ============================================================================
+// Forward Specification Parsing
+// ============================================================================
+
+/**
+ * Result of parsing a forward specification like "size", "size:length",
+ * "substr->Type", or "const"
+ */
+struct ForwardSpec
+{
+    std::string memfn_name = ""; // The actual memfn on the wrapped type
+    std::string alias_name = ""; // Empty if no alias
+    std::string return_type = ""; // Empty if no return type transformation
+    bool is_const_marker = false; // True if this is the "const" keyword
+};
+
+/**
+ * Parse a single forward specification string
+ * Supports:
+ *   - "memfn"                    : basic forwarding
+ *   - "memfn:alias"              : forwarding with alias
+ *   - "memfn->ReturnType"        : forwarding with return type transformation
+ *   - "memfn:alias->ReturnType"  : forwarding with both alias and return type
+ *   - "const"                    : marker for const-only forwarding
+ */
+ForwardSpec
+parse_forward_spec(std::string const & forward_str)
+{
+    if (forward_str == "const") {
+        return ForwardSpec{.is_const_marker = true};
+    }
+
+    // Local strip function
+    auto strip_local = [](std::string_view sv) {
+        while (not sv.empty() &&
+               std::isspace(static_cast<unsigned char>(sv.front())))
+        {
+            sv.remove_prefix(1);
+        }
+        while (not sv.empty() &&
+               std::isspace(static_cast<unsigned char>(sv.back())))
+        {
+            sv.remove_suffix(1);
+        }
+        return sv;
+    };
+
+    // First, check for return type transformation (->)
+    std::string left_part = forward_str;
+    std::string return_type;
+
+    auto arrow_pos = forward_str.find("->");
+    if (arrow_pos != std::string::npos) {
+        // Check for multiple arrows (invalid)
+        auto second_arrow = forward_str.find("->", arrow_pos + 2);
+        if (second_arrow != std::string::npos) {
+            throw std::invalid_argument(
+                "Invalid forward return type syntax: '" + forward_str +
+                "' (only one -> allowed)");
+        }
+
+        left_part = std::string(
+            strip_local(std::string_view(forward_str).substr(0, arrow_pos)));
+        return_type = std::string(
+            strip_local(std::string_view(forward_str).substr(arrow_pos + 2)));
+
+        if (left_part.empty()) {
+            throw std::invalid_argument(
+                "Invalid forward return type syntax: '" + forward_str +
+                "' (missing memfn name before ->)");
+        }
+
+        if (return_type.empty()) {
+            throw std::invalid_argument(
+                "Invalid forward return type syntax: '" + forward_str +
+                "' (missing return type after ->)");
+        }
+    }
+
+    // Now check for alias (:) in the left part
+    auto colon_pos = left_part.find(':');
+    if (colon_pos != std::string::npos) {
+        // Check for multiple colons (invalid)
+        auto second_colon = left_part.find(':', colon_pos + 1);
+        if (second_colon != std::string::npos) {
+            throw std::invalid_argument(
+                "Invalid forward alias syntax: '" + forward_str +
+                "' (only one colon allowed in memfn:alias format)");
+        }
+
+        auto memfn = std::string(
+            strip_local(std::string_view(left_part).substr(0, colon_pos)));
+        auto alias = std::string(
+            strip_local(std::string_view(left_part).substr(colon_pos + 1)));
+
+        if (memfn.empty() || alias.empty()) {
+            throw std::invalid_argument(
+                "Invalid forward alias syntax: '" + forward_str +
+                "' (format should be memfn:alias)");
+        }
+
+        return ForwardSpec{
+            .memfn_name = memfn,
+            .alias_name = alias,
+            .return_type = return_type};
+    }
+
+    // No alias, just memfn (possibly with return type)
+    return ForwardSpec{
+        .memfn_name = left_part,
+        .alias_name = "",
+        .return_type = return_type};
+}
+
+// ============================================================================
+// End of Forward Specification Parsing
+// ============================================================================
 
 // Parse cast<Type>, explicit_cast<Type>, or implicit_cast<Type> syntax
 // Returns the type name if valid cast syntax, empty string otherwise
@@ -1134,6 +1384,89 @@ expand_namespace(std::string const & ns)
     return {opening, closing};
 }
 
+// Process forwarded memfns from description into ClassInfo
+void
+process_forwarded_memfns(ClassInfo & info)
+{
+    bool const_only = false;
+
+    // Process each forward specification string from desc.forwarded_memfns
+    // These can be either:
+    // 1. Single items like "size", "size:length", "const" (from
+    // parse_specification)
+    // 2. Comma-separated lists like "size,empty,clear" (from separate forward=
+    // lines)
+    for (auto const & forward_str_raw : info.desc.forwarded_memfns) {
+        // Validate that forward_str is not empty
+        auto trimmed = strip(forward_str_raw);
+        if (trimmed.empty()) {
+            throw std::invalid_argument(
+                "Empty forward= specification (forward= must be followed by "
+                "memfn names)");
+        }
+
+        // The forward string might contain commas (from forward= lines in the
+        // file) So we need to split by comma first IMPORTANT: Must store
+        // trimmed as a string so the string_views from split() remain valid
+        std::string trimmed_str(trimmed);
+        for (auto memfn_spec_view : split(trimmed_str, ',')) {
+            auto memfn_spec = std::string(strip(memfn_spec_view));
+
+            if (memfn_spec.empty()) {
+                continue; // Skip empty tokens
+            }
+
+            // Parse using our unified ForwardSpec parser
+            ForwardSpec spec = parse_forward_spec(memfn_spec);
+
+            // Check if it's the "const" marker
+            if (spec.is_const_marker) {
+                const_only = true;
+                continue;
+            }
+
+            // It's a normal forward specification - create ForwardedMemfn
+            ForwardedMemfn fm;
+            fm.memfn_name = spec.memfn_name;
+            fm.alias_name = spec.alias_name;
+            fm.return_type = spec.return_type;
+            fm.const_only = const_only;
+
+            // Set template rendering flags based on const_only
+            // Note: cpp23_or_later is not used anymore - we use feature test
+            // macros instead
+            if (fm.const_only) {
+                // For const-only, just const (no ref qualifier) suffices
+                fm.generate_const_no_ref = true;
+                fm.generate_const_lvalue = false;
+                fm.generate_const_rvalue = false;
+                fm.generate_nonconst_lvalue = false;
+                fm.generate_nonconst_rvalue = false;
+            } else {
+                // Generate all 4 ref-qualified overloads
+                fm.generate_const_no_ref = false;
+                fm.generate_const_lvalue = true;
+                fm.generate_const_rvalue = true;
+                fm.generate_nonconst_lvalue = true;
+                fm.generate_nonconst_rvalue = true;
+            }
+
+            info.forwarded_memfns.push_back(std::move(fm));
+        }
+    }
+
+    std::sort(
+        info.forwarded_memfns.begin(),
+        info.forwarded_memfns.end(),
+        [](auto const & x, auto const & y) {
+            auto const x_str = x.alias_name.empty() ? x.memfn_name
+                                                    : x.alias_name;
+            auto const y_str = y.alias_name.empty() ? y.memfn_name
+                                                    : y.alias_name;
+            return x_str < y_str;
+        });
+}
+
 ClassInfo
 parse(
     StrongTypeDescription const & desc,
@@ -1169,187 +1502,181 @@ parse(
     bool has_equality_ops = false;
     bool has_relational_ops = false;
 
-    for (auto s : split(desc.description, ';')) {
-        if (info.underlying_type.empty()) {
-            // First segment: parse type specification
-            // Format: "strong TYPE" or "TYPE" (strong is optional)
-            // Note: TYPE can be multi-word (e.g., "unsigned long", "long long")
-            auto type_spec = strip(s);
+    // Use unified parser to parse the description
+    ParsedSpecification parsed_spec = parse_specification(desc.description);
 
-            if (type_spec.empty()) {
+    // Extract the underlying type from the parsed specification
+    info.underlying_type = parsed_spec.first_part;
+
+    // Convert forwards set to forwarded_memfns vector (for backward
+    // compatibility) Note: We also need to handle forwarded_memfns that were
+    // passed in via desc
+    for (auto const & forward : parsed_spec.forwards) {
+        // Each element in the set is a raw forward spec like "size",
+        // "size:length", or "const" We'll collect them and process them later
+        // in process_forwarded_memfns
+        info.desc.forwarded_memfns.push_back(forward);
+    }
+
+    // Note: Any forwarded_memfns from the original desc (from separate
+    // forward= lines in file) are already in desc.forwarded_memfns, so they'll
+    // be processed later in process_forwarded_memfns
+
+    // Process all operators from the parsed specification
+    for (auto const & op_str : parsed_spec.operators) {
+        // Use string_view for compatibility with existing operator checking
+        // functions
+        std::string_view sv(op_str);
+
+        if (sv.empty()) {
+            continue; // Skip empty tokens
+        }
+
+        bool recognized = false;
+
+        if (is_arithmetic_binary_operator(sv)) {
+            recognized = true;
+            if (sv.size() > 1u && sv[1] == '*') {
+                sv.remove_suffix(1);
+                info.arithmetic_binary_operators.emplace_back(sv);
+                info.unary_operators.emplace_back(sv);
+            } else {
+                info.arithmetic_binary_operators.emplace_back(sv);
+            }
+        }
+        if (is_arithmetic_unary_operator(sv)) {
+            recognized = true;
+            if (sv.size() > 1u) {
+                sv.remove_prefix(1);
+            }
+            info.unary_operators.emplace_back(sv);
+        } else if (sv == "!" || sv == "not") {
+            recognized = true;
+            info.logical_not_operator = true;
+        } else if (sv == "||" || sv == "or") {
+            recognized = true;
+            info.logical_operators.emplace_back("or");
+        } else if (sv == "&&" || sv == "and") {
+            recognized = true;
+            info.logical_operators.emplace_back("and");
+        } else if (sv == "++" || sv == "--") {
+            recognized = true;
+            info.increment_operators.emplace_back(sv);
+        } else if (sv == "@") {
+            recognized = true;
+            info.indirection_operator = true;
+        } else if (sv == "&of") {
+            recognized = true;
+            info.addressof_operators.emplace_back("&");
+            info.includes_vec.push_back("<memory>");
+        } else if (sv == "->") {
+            recognized = true;
+            info.arrow_operator = true;
+            info.includes_vec.push_back("<memory>");
+        } else if (sv == "<=>") {
+            recognized = true;
+            has_spaceship = true;
+            info.spaceship_operator = true;
+            info.includes_vec.push_back("<compare>");
+        } else if (is_relational_operator(sv)) {
+            recognized = true;
+            if (sv == "==" || sv == "!=") {
+                has_equality_ops = true;
+            } else {
+                has_relational_ops = true;
+            }
+            info.relational_operators.emplace_back(sv);
+        } else if (sv == "out") {
+            recognized = true;
+            info.ostream_operator = true;
+            info.includes_vec.push_back("<ostream>");
+        } else if (sv == "in") {
+            recognized = true;
+            info.istream_operator = true;
+            info.includes_vec.push_back("<istream>");
+        } else if (sv == "bool") {
+            recognized = true;
+            info.bool_operator = bool_operator_template;
+        } else if (sv == "()") {
+            recognized = true;
+            info.nullary = true;
+        } else if (sv == "(&)") {
+            recognized = true;
+            info.callable = true;
+            info.includes_vec.push_back("<utility>");
+            info.includes_vec.push_back("<functional>");
+        } else if (sv == "[]") {
+            recognized = true;
+            info.subscript_operator = true;
+        } else if (sv == "hash") {
+            recognized = true;
+            info.hash_specialization = true;
+            info.includes_vec.push_back("<functional>");
+        } else if (sv == "no-constexpr-hash") {
+            recognized = true;
+            info.hash_specialization = true;
+            info.hash_const_expr = "";
+            info.includes_vec.push_back("<functional>");
+        } else if (sv == "iterable") {
+            recognized = true;
+            info.desc.generate_iterators = true;
+        } else if (sv == "fmt") {
+            recognized = true;
+            info.desc.generate_formatter = true;
+            info.includes_vec.push_back("<format>");
+            info.include_guards["<format>"] =
+                "defined(__cpp_lib_format) && __cpp_lib_format >= "
+                "202110L";
+        } else if (sv == "assign") {
+            recognized = true;
+            info.desc.generate_template_assignment = true;
+            info.includes_vec.push_back("<concepts>");
+            info.include_guards["<concepts>"] =
+                "defined(__cpp_concepts) && __cpp_concepts >= 201907L";
+        } else if (sv == "no-constexpr") {
+            recognized = true;
+            info.const_expr = "";
+            info.hash_const_expr = "";
+        } else if (sv.starts_with('#')) {
+            recognized = true;
+            auto str = std::string(strip(sv.substr(1)));
+            for (auto & c : str) {
+                if (c == '\'') {
+                    c = '"';
+                }
+            }
+            info.includes_vec.push_back(std::move(str));
+        } else if (sv.starts_with("c++") || sv.starts_with("C++")) {
+            recognized = true;
+            try {
+                info.cpp_standard = parse_cpp_standard(sv);
+                info.desc.cpp_standard = info.cpp_standard;
+            } catch (std::invalid_argument const & e) {
                 throw std::invalid_argument(
-                    "Empty type specification in description");
+                    "Invalid C++ standard in description: " +
+                    std::string(e.what()));
             }
+        }
 
-            // Check if it starts with "strong "
-            if (type_spec.starts_with("strong ")) {
-                // Remove "strong " prefix (7 characters)
-                type_spec.remove_prefix(7);
-                type_spec = strip(type_spec); // Strip any leading whitespace
+        // Try to parse as cast operator
+        if (not recognized) {
+            bool is_implicit = false;
+            std::string cast_type = parse_cast_syntax(sv, is_implicit);
 
-                if (type_spec.empty()) {
-                    throw std::invalid_argument(
-                        "Type specification has 'strong' but no type follows");
-                }
-            }
-
-            // Everything remaining is the underlying type
-            info.underlying_type = std::string(type_spec);
-        } else {
-            for (auto sv : split(s, ',')) {
-                if (sv.empty()) {
-                    continue; // Skip empty tokens from trailing commas
-                }
-
-                bool recognized = false;
-
-                if (is_arithmetic_binary_operator(sv)) {
-                    recognized = true;
-                    if (sv.size() > 1u && sv[1] == '*') {
-                        sv.remove_suffix(1);
-                        info.arithmetic_binary_operators.emplace_back(sv);
-                        info.unary_operators.emplace_back(sv);
-                    } else {
-                        info.arithmetic_binary_operators.emplace_back(sv);
-                    }
-                }
-                if (is_arithmetic_unary_operator(sv)) {
-                    recognized = true;
-                    if (sv.size() > 1u) {
-                        sv.remove_prefix(1);
-                    }
-                    info.unary_operators.emplace_back(sv);
-                } else if (sv == "!" || sv == "not") {
-                    recognized = true;
-                    info.logical_not_operator = true;
-                } else if (sv == "||" || sv == "or") {
-                    recognized = true;
-                    info.logical_operators.emplace_back("or");
-                } else if (sv == "&&" || sv == "and") {
-                    recognized = true;
-                    info.logical_operators.emplace_back("and");
-                } else if (sv == "++" || sv == "--") {
-                    recognized = true;
-                    info.increment_operators.emplace_back(sv);
-                } else if (sv == "@") {
-                    recognized = true;
-                    info.indirection_operator = true;
-                } else if (sv == "&of") {
-                    recognized = true;
-                    info.addressof_operators.emplace_back("&");
-                    info.includes_vec.push_back("<memory>");
-                } else if (sv == "->") {
-                    recognized = true;
-                    info.arrow_operator = true;
-                    info.includes_vec.push_back("<memory>");
-                } else if (sv == "<=>") {
-                    recognized = true;
-                    has_spaceship = true;
-                    info.spaceship_operator = true;
-                    info.includes_vec.push_back("<compare>");
-                } else if (is_relational_operator(sv)) {
-                    recognized = true;
-                    if (sv == "==" || sv == "!=") {
-                        has_equality_ops = true;
-                    } else {
-                        has_relational_ops = true;
-                    }
-                    info.relational_operators.emplace_back(sv);
-                } else if (sv == "out") {
-                    recognized = true;
-                    info.ostream_operator = true;
-                    info.includes_vec.push_back("<ostream>");
-                } else if (sv == "in") {
-                    recognized = true;
-                    info.istream_operator = true;
-                    info.includes_vec.push_back("<istream>");
-                } else if (sv == "bool") {
-                    recognized = true;
-                    info.bool_operator = bool_operator_template;
-                } else if (sv == "()") {
-                    recognized = true;
-                    info.nullary = true;
-                } else if (sv == "(&)") {
-                    recognized = true;
-                    info.callable = true;
-                    info.includes_vec.push_back("<utility>");
-                    info.includes_vec.push_back("<functional>");
-                } else if (sv == "[]") {
-                    recognized = true;
-                    info.subscript_operator = true;
-                } else if (sv == "hash") {
-                    recognized = true;
-                    info.hash_specialization = true;
-                    info.includes_vec.push_back("<functional>");
-                } else if (sv == "no-constexpr-hash") {
-                    recognized = true;
-                    info.hash_specialization = true;
-                    info.hash_const_expr = "";
-                    info.includes_vec.push_back("<functional>");
-                } else if (sv == "iterable") {
-                    recognized = true;
-                    info.desc.generate_iterators = true;
-                } else if (sv == "fmt") {
-                    recognized = true;
-                    info.desc.generate_formatter = true;
-                    info.includes_vec.push_back("<format>");
-                    info.include_guards["<format>"] =
-                        "defined(__cpp_lib_format) && __cpp_lib_format >= "
-                        "202110L";
-                } else if (sv == "assign") {
-                    recognized = true;
-                    info.desc.generate_template_assignment = true;
-                    info.includes_vec.push_back("<concepts>");
-                    info.include_guards["<concepts>"] =
-                        "defined(__cpp_concepts) && __cpp_concepts >= 201907L";
-                } else if (sv == "no-constexpr") {
-                    recognized = true;
-                    info.const_expr = "";
-                    info.hash_const_expr = "";
-                } else if (sv.starts_with('#')) {
-                    recognized = true;
-                    auto str = std::string(strip(sv.substr(1)));
-                    for (auto & c : str) {
-                        if (c == '\'') {
-                            c = '"';
-                        }
-                    }
-                    info.includes_vec.push_back(std::move(str));
-                } else if (sv.starts_with("c++") || sv.starts_with("C++")) {
-                    recognized = true;
-                    try {
-                        info.cpp_standard = parse_cpp_standard(sv);
-                        info.desc.cpp_standard = info.cpp_standard;
-                    } catch (std::invalid_argument const & e) {
-                        throw std::invalid_argument(
-                            "Invalid C++ standard in description: " +
-                            std::string(e.what()));
-                    }
-                }
-
-                // Try to parse as cast operator
-                if (not recognized) {
-                    bool is_implicit = false;
-                    std::string cast_type = parse_cast_syntax(sv, is_implicit);
-
-                    if (not cast_type.empty()) {
-                        recognized = true;
-                        if (is_implicit) {
-                            info.desc.implicit_casts.push_back(
-                                std::move(cast_type));
-                        } else {
-                            info.desc.explicit_casts.push_back(
-                                std::move(cast_type));
-                        }
-                    }
-                }
-
-                if (not recognized) {
-                    throw std::invalid_argument(
-                        "Unrecognized operator or option in description: '" +
-                        std::string(sv) + "'");
+            if (not cast_type.empty()) {
+                recognized = true;
+                if (is_implicit) {
+                    info.desc.implicit_casts.push_back(std::move(cast_type));
+                } else {
+                    info.desc.explicit_casts.push_back(std::move(cast_type));
                 }
             }
+        }
+
+        if (not recognized) {
+            throw std::invalid_argument(
+                "Unrecognized operator or option in description: '" +
+                std::string(sv) + "'");
         }
     }
 
@@ -1551,6 +1878,9 @@ parse(
         info.constants.emplace_back(name, value);
     }
 
+    // Process forwarded memfns from description
+    process_forwarded_memfns(info);
+
     // Set const_qualifier based on no-constexpr option
     // If no-constexpr is set, use "const " instead of "constexpr "
     if (info.const_expr.empty()) {
@@ -1595,7 +1925,8 @@ render_code(ClassInfo const & info)
          {"hash_specialization", hash_specialization_template},
          {"formatter_specialization", formatter_specialization_template},
          {"constant_declarations", constant_declarations_template},
-         {"constants", constants_template + 1}});
+         {"constants", constants_template + 1},
+         {"forwarded_memfn", forwarded_memfn_template}});
     return strm.str();
 }
 

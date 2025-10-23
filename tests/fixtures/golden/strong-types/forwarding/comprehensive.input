@@ -1,0 +1,135 @@
+# Test: Comprehensive member function forwarding
+# Feature: Test multiple forwarding scenarios in one file
+# Expected: All forwarding styles work together
+
+# Basic forwarding
+[type]
+kind=struct
+namespace=test
+name=BasicString
+description=std::string; forward=size,empty,clear; ==, !=
+
+# Member function aliasing
+[type]
+kind=struct
+namespace=test
+name=AliasedString
+description=std::string; forward=size:length,empty:is_empty; ==, !=
+
+# Both name and alias - forward size normally AND as length
+[type]
+kind=struct
+namespace=test
+name=BothNameAndAlias
+description=std::string; forward=size,size:length,empty; ==, !=
+
+# Const-only forwarding
+[type]
+kind=struct
+namespace=test
+name=ConstOnly
+description=std::string; forward=const,size,empty; ==, !=
+
+# Multiple forward lines
+[type]
+kind=struct
+namespace=test
+name=MultipleLines
+description=std::string; ==, !=
+forward=size,empty
+forward=clear
+
+# Container forwarding
+[type]
+kind=struct
+namespace=test
+name=IntVector
+description=std::vector<int>; forward=push_back,pop_back,size,empty; ==, iterable
+
+# Smart pointer forwarding
+[type]
+kind=struct
+namespace=test
+name=ResourceHandle
+description=std::unique_ptr<int>; forward=get,reset; ->, @, bool
+
+# Mixed features - aliases + const + operators
+[type]
+kind=struct
+namespace=test
+name=AdvancedString
+description=std::string; forward=size:length,const,empty:is_empty,clear; ==, !=, hash
+
+# Return type transformation - basic
+[type]
+kind=struct
+namespace=test
+name=Username
+description=std::string; forward=substr->Username; ==, !=
+
+# Return type transformation with alias
+[type]
+kind=struct
+namespace=test
+name=EmailAddress
+description=std::string; forward=substr:substring->EmailAddress; ==, !=
+
+# Return type transformation with multiple memfns
+[type]
+kind=struct
+namespace=test
+name=SafeString
+description=std::string; forward=substr->SafeString,find; ==, !=
+
+# Return type transformation mixed with regular forwarding
+[type]
+kind=struct
+namespace=test
+name=Name
+description=std::string; forward=size,empty,substr->Name; ==, !=
+
+# Return type transformation on separate line
+[type]
+kind=struct
+namespace=test
+name=Label
+description=std::string; ==, !=
+forward=substr->Label
+forward=size,empty
+
+# Alias + Return type transformation combined
+[type]
+kind=struct
+namespace=test
+name=UserId
+description=std::string; forward=substr:extract->UserId; ==, !=
+
+# Alias + Return type + regular forwarding
+[type]
+kind=struct
+namespace=test
+name=Token
+description=std::string; forward=size,substr:extract->Token,empty; ==, !=
+
+# Multiple alias + return type transformations
+[type]
+kind=struct
+namespace=test
+name=Path
+description=std::string; forward=substr:segment->Path,find:locate; ==, !=
+
+# Alias + Return type on separate lines
+[type]
+kind=struct
+namespace=test
+name=Identifier
+description=std::string; ==, !=
+forward=substr:slice->Identifier
+forward=size,empty
+
+# Const-only with alias + return type
+[type]
+kind=struct
+namespace=test
+name=ReadOnlyText
+description=std::string; forward=const,substr:portion->ReadOnlyText; ==, !=

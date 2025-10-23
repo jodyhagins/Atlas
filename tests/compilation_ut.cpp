@@ -48,11 +48,9 @@ int main() {
 )";
         auto result = tester.compile_and_run(description, test_code);
 
+        INFO("Compilation/execution output:");
+        INFO(result.output);
         CHECK(result.success);
-        if (not result.success) {
-            INFO("Compilation/execution failed:");
-            INFO(result.output);
-        }
     }
 
     TEST_CASE("Comparison operations return correct boolean values")
@@ -88,11 +86,9 @@ int main() {
 )";
         auto result = tester.compile_and_run(description, test_code);
 
+        INFO("Compilation/execution output:");
+        INFO(result.output);
         CHECK(result.success);
-        if (not result.success) {
-            INFO("Compilation/execution failed:");
-            INFO(result.output);
-        }
     }
 
     TEST_CASE("Increment/decrement operators modify values correctly")
@@ -133,11 +129,9 @@ int main() {
 )";
         auto result = tester.compile_and_run(description, test_code);
 
+        INFO("Compilation/execution output:");
+        INFO(result.output);
         CHECK(result.success);
-        if (not result.success) {
-            INFO("Compilation/execution failed:");
-            INFO(result.output);
-        }
     }
 
     TEST_CASE("Subscript operators return correct elements")
@@ -171,11 +165,9 @@ int main() {
 )";
         auto result = tester.compile_and_run(description, test_code);
 
+        INFO("Compilation/execution output:");
+        INFO(result.output);
         CHECK(result.success);
-        if (not result.success) {
-            INFO("Compilation/execution failed:");
-            INFO(result.output);
-        }
     }
 
     TEST_CASE("Default values initialize correctly")
@@ -208,11 +200,9 @@ int main() {
 )";
         auto result = tester.compile_and_run(description, test_code);
 
+        INFO("Compilation/execution output:");
+        INFO(result.output);
         CHECK(result.success);
-        if (not result.success) {
-            INFO("Compilation/execution failed:");
-            INFO(result.output);
-        }
     }
 
     TEST_CASE("Unary operators compute correct values")
@@ -251,11 +241,9 @@ int main() {
 )";
         auto result = tester.compile_and_run(description, test_code);
 
+        INFO("Compilation/execution output:");
+        INFO(result.output);
         CHECK(result.success);
-        if (not result.success) {
-            INFO("Compilation/execution failed:");
-            INFO(result.output);
-        }
     }
 
     TEST_CASE("Bool conversion works correctly")
@@ -294,11 +282,9 @@ int main() {
 )";
         auto result = tester.compile_and_run(description, test_code);
 
+        INFO("Compilation/execution output:");
+        INFO(result.output);
         CHECK(result.success);
-        if (not result.success) {
-            INFO("Compilation/execution failed:");
-            INFO(result.output);
-        }
     }
 }
 
@@ -334,11 +320,9 @@ int main() {
 )";
         auto result = tester.compile_and_run(description, test_code);
 
+        INFO("Compilation/execution output:");
+        INFO(result.output);
         CHECK(result.success);
-        if (not result.success) {
-            INFO("Compilation/execution failed:");
-            INFO(result.output);
-        }
     }
 
     TEST_CASE("Explicit cast is required to access underlying value")
@@ -367,11 +351,9 @@ int main() {
 )";
         auto result = tester.compile_and_run(description, test_code);
 
+        INFO("Compilation/execution output:");
+        INFO(result.output);
         CHECK(result.success);
-        if (not result.success) {
-            INFO("Compilation/execution failed:");
-            INFO(result.output);
-        }
     }
 
     TEST_CASE("Cannot mix different strong types")
@@ -415,11 +397,9 @@ int main() {
 )";
         auto result = tester.compile_and_run(description, test_code);
 
+        INFO("Compilation/execution output:");
+        INFO(result.output);
         CHECK(result.success);
-        if (not result.success) {
-            INFO("Compilation/execution failed:");
-            INFO(result.output);
-        }
     }
 }
 
@@ -460,11 +440,9 @@ int main() {
 )";
         auto result = tester.compile_and_run(description, test_code);
 
+        INFO("Compilation/execution output:");
+        INFO(result.output);
         CHECK(result.success);
-        if (not result.success) {
-            INFO("Compilation/execution failed:");
-            INFO(result.output);
-        }
     }
 
     TEST_CASE("Stream operators work with std::iostream")
@@ -500,11 +478,9 @@ int main() {
 )";
         auto result = tester.compile_and_run(description, test_code);
 
+        INFO("Compilation/execution output:");
+        INFO(result.output);
         CHECK(result.success);
-        if (not result.success) {
-            INFO("Compilation/execution failed:");
-            INFO(result.output);
-        }
     }
 
     TEST_CASE("Works with std::algorithm functions")
@@ -545,11 +521,9 @@ int main() {
 )";
         auto result = tester.compile_and_run(description, test_code);
 
+        INFO("Compilation/execution output:");
+        INFO(result.output);
         CHECK(result.success);
-        if (not result.success) {
-            INFO("Compilation/execution failed:");
-            INFO(result.output);
-        }
     }
 }
 
@@ -941,7 +915,7 @@ int main() {
     auto str_ptr = std::make_shared<std::string>("Hello");
     test::SharedPtrWrapper shared(str_ptr);
     // This should forward to shared_ptr's operator->, giving us string*
-    // Then we can access string methods
+    // Then we can access string memfns
     assert(shared->length() == 5);
     assert(shared->substr(0, 2) == "He");
 
@@ -1154,6 +1128,295 @@ int main() {
         CHECK(result.success);
         if (not result.success) {
             INFO("Spaceship C++20 native test failed:");
+            INFO(result.output);
+        }
+    }
+}
+
+TEST_SUITE("Memfn Forwarding: Runtime Behavior")
+{
+    TEST_CASE("Basic memfn forwarding works")
+    {
+        CompilationTester tester;
+
+        auto description = R"([type]
+kind=struct
+namespace=test
+name=StringWrapper
+description=std::string; forward=size,empty,clear; ==, !=, no-constexpr
+)";
+
+        auto test_code = R"(
+#include <cassert>
+
+int main() {
+    test::StringWrapper str{"hello"};
+
+    // Test size() forwarding
+    assert(str.size() == 5);
+
+    // Test empty() forwarding
+    assert(!str.empty());
+
+    // Test clear() forwarding - modifies the string
+    str.clear();
+    assert(str.empty());
+    assert(str.size() == 0);
+
+    return 0;
+}
+)";
+        auto result = tester.compile_and_run(description, test_code);
+
+        CHECK(result.success);
+        if (not result.success) {
+            INFO("Basic memfn forwarding test failed:");
+            INFO(result.output);
+        }
+    }
+
+    TEST_CASE("Memfn aliasing works")
+    {
+        CompilationTester tester;
+
+        auto description = R"([type]
+kind=struct
+namespace=test
+name=StringWithAlias
+description=std::string; forward=size:length,empty:is_empty; ==, no-constexpr
+)";
+
+        auto test_code = R"(
+#include <cassert>
+
+int main() {
+    test::StringWithAlias str{"test"};
+
+    // Test size aliased as length
+    assert(str.length() == 4);
+
+    // Test empty aliased as is_empty
+    assert(!str.is_empty());
+
+    test::StringWithAlias empty{""};
+    assert(empty.is_empty());
+    assert(empty.length() == 0);
+
+    return 0;
+}
+)";
+        auto result = tester.compile_and_run(description, test_code);
+
+        CHECK(result.success);
+        if (not result.success) {
+            INFO("Memfn aliasing test failed:");
+            INFO(result.output);
+        }
+    }
+
+    TEST_CASE("Const-only forwarding works")
+    {
+        CompilationTester tester;
+
+        auto description = R"([type]
+kind=struct
+namespace=test
+name=StringConstOnly
+description=std::string; forward=const,size,empty; ==, no-constexpr
+)";
+
+        auto test_code = R"(
+#include <cassert>
+
+int main() {
+    test::StringConstOnly const str{"hello"};
+
+    // These should work on const object
+    assert(str.size() == 5);
+    assert(!str.empty());
+
+    return 0;
+}
+)";
+        auto result = tester.compile_and_run(description, test_code);
+
+        CHECK(result.success);
+        if (not result.success) {
+            INFO("Const-only forwarding test failed:");
+            INFO(result.output);
+        }
+    }
+
+    TEST_CASE("Container memfn forwarding works")
+    {
+        CompilationTester tester;
+
+        auto description = R"([type]
+kind=struct
+namespace=test
+name=IntVector
+description=std::vector<int>; forward=push_back,pop_back,size,empty; ==, no-constexpr
+)";
+
+        auto test_code = R"(
+#include <cassert>
+
+int main() {
+    test::IntVector vec{std::vector<int>{}};
+
+    assert(vec.empty());
+    assert(vec.size() == 0);
+
+    // Test push_back forwarding
+    vec.push_back(10);
+    vec.push_back(20);
+    vec.push_back(30);
+
+    assert(!vec.empty());
+    assert(vec.size() == 3);
+
+    // Test pop_back forwarding
+    vec.pop_back();
+    assert(vec.size() == 2);
+
+    return 0;
+}
+)";
+        auto test_code_with_includes = R"(
+#include <vector>
+)" + std::string(test_code);
+
+        auto result = tester.compile_and_run(
+            description,
+            test_code_with_includes);
+
+        CHECK(result.success);
+        if (not result.success) {
+            INFO("Container memfn forwarding test failed:");
+            INFO(result.output);
+        }
+    }
+
+    TEST_CASE("Smart pointer memfn forwarding works")
+    {
+        CompilationTester tester;
+
+        auto description = R"([type]
+kind=struct
+namespace=test
+name=IntPtr
+description=std::unique_ptr<int>; forward=get,reset; ->, @, bool, no-constexpr
+)";
+
+        auto test_code = R"(
+#include <cassert>
+#include <memory>
+
+int main() {
+    test::IntPtr ptr{std::make_unique<int>(42)};
+
+    // Test get() forwarding
+    assert(ptr.get() != nullptr);
+    assert(*ptr.get() == 42);
+
+    // Test arrow operator
+    assert(*ptr == 42);
+
+    // Test bool operator
+    assert(static_cast<bool>(ptr));
+
+    // Test reset() forwarding
+    ptr.reset();
+    assert(!static_cast<bool>(ptr));
+    assert(ptr.get() == nullptr);
+
+    return 0;
+}
+)";
+        auto result = tester.compile_and_run(description, test_code);
+
+        CHECK(result.success);
+        if (not result.success) {
+            INFO("Smart pointer memfn forwarding test failed:");
+            INFO(result.output);
+        }
+    }
+
+    TEST_CASE(
+        "C++23 deducing this forwarding works" *
+        doctest::skip(
+            not CompilationTester::is_cpp_standard_supported("c++23")))
+    {
+        CompilationTester tester;
+
+        auto description = R"([type]
+kind=struct
+namespace=test
+name=StringCpp23
+description=std::string; forward=size,empty; c++23; ==, no-constexpr
+)";
+
+        auto test_code = R"(
+#include <cassert>
+
+int main() {
+    test::StringCpp23 str{"hello"};
+
+    // Test that forwarded memfns work with C++23 deducing this
+    assert(str.size() == 5);
+    assert(!str.empty());
+
+    // Test with const object
+    test::StringCpp23 const const_str{"world"};
+    assert(const_str.size() == 5);
+    assert(!const_str.empty());
+
+    return 0;
+}
+)";
+        // Test with C++23 to verify deducing this path works
+        auto result = tester.compile_and_run(description, test_code, "c++23");
+
+        INFO("C++23 deducing this forwarding - result output:");
+        INFO(result.output);
+        CHECK(result.success);
+    }
+
+    TEST_CASE("Multiple forward lines work")
+    {
+        CompilationTester tester;
+
+        auto description = R"([type]
+kind=struct
+namespace=test
+name=MultiForward
+description=std::string; ==, no-constexpr
+forward=size,empty
+forward=clear
+)";
+
+        auto test_code = R"(
+#include <cassert>
+
+int main() {
+    test::MultiForward str{"test"};
+
+    // Memfns from first forward= line
+    assert(str.size() == 4);
+    assert(!str.empty());
+
+    // Memfn from second forward= line
+    str.clear();
+    assert(str.empty());
+
+    return 0;
+}
+)";
+        auto result = tester.compile_and_run(description, test_code);
+
+        CHECK(result.success);
+        if (not result.success) {
+            INFO("Multiple forward lines test failed:");
             INFO(result.output);
         }
     }

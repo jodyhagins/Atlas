@@ -696,9 +696,8 @@ TEST_CASE("ProfileSystem basic functionality")
     ps.clear(); // Start fresh
 
     SUBCASE("register and query profiles") {
-        std::vector<std::string> numeric_features =
-            {"+", "-", "*", "/", "==", "!="};
-        ps.register_profile("NUMERIC", numeric_features);
+        auto numeric_spec = parse_specification("NUMERIC; +, -, *, /, ==, !=");
+        ps.register_profile("NUMERIC", numeric_spec);
 
         CHECK(ps.has_profile("NUMERIC"));
         CHECK_FALSE(ps.has_profile("NONEXISTENT"));
@@ -710,79 +709,72 @@ TEST_CASE("ProfileSystem basic functionality")
 
     SUBCASE("profile name validation") {
         // Valid names
-        CHECK_NOTHROW(ps.register_profile("valid_name", {"+"}));
-        CHECK_NOTHROW(ps.register_profile("Valid123", {"+"}));
-        CHECK_NOTHROW(ps.register_profile("name-with-dash", {"+"}));
+        CHECK_NOTHROW(ps.register_profile(
+            "valid_name",
+            parse_specification("valid_name; +")));
+        CHECK_NOTHROW(ps.register_profile(
+            "Valid123",
+            parse_specification("Valid123; +")));
+        CHECK_NOTHROW(ps.register_profile(
+            "name-with-dash",
+            parse_specification("name-with-dash; +")));
 
         // Invalid names
-        CHECK_THROWS(ps.register_profile("", {"+"}));
-        CHECK_THROWS(ps.register_profile("name with space", {"+"}));
-        CHECK_THROWS(ps.register_profile("name$symbol", {"+"}));
+        CHECK_THROWS(ps.register_profile("", parse_specification("; +")));
+        CHECK_THROWS(ps.register_profile(
+            "name with space",
+            parse_specification("name with space; +")));
+        CHECK_THROWS(ps.register_profile(
+            "name$symbol",
+            parse_specification("name$symbol; +")));
     }
 
     SUBCASE("duplicate profile registration") {
-        ps.register_profile("TEST", {"+", "-"});
-        CHECK_THROWS(ps.register_profile("TEST", {"*", "/"}));
+        ps.register_profile("TEST", parse_specification("TEST; +, -"));
+        CHECK_THROWS(
+            ps.register_profile("TEST", parse_specification("TEST; *, /")));
     }
 
-    SUBCASE("expand simple profile") {
-        ps.register_profile("MATH", {"+", "-", "*", "/"});
+    SUBCASE("get profile spec") {
+        ps.register_profile("MATH", parse_specification("MATH; +, -, *, /"));
 
-        std::vector<std::string> input = {"{MATH}", "=="};
-        auto result = ps.expand_features(input);
-
-        CHECK(result.size() == 5);
-        CHECK(std::find(result.begin(), result.end(), "+") != result.end());
-        CHECK(std::find(result.begin(), result.end(), "-") != result.end());
-        CHECK(std::find(result.begin(), result.end(), "*") != result.end());
-        CHECK(std::find(result.begin(), result.end(), "/") != result.end());
-        CHECK(std::find(result.begin(), result.end(), "==") != result.end());
+        // Profile expansion is now done in AtlasCommandLine, not in
+        // ProfileSystem Just verify the profile can be retrieved
+        auto const & math_profile = ps.get_profile("MATH");
+        CHECK(math_profile.operators.size() == 4);
+        CHECK(math_profile.operators.count("+") == 1);
+        CHECK(math_profile.operators.count("-") == 1);
+        CHECK(math_profile.operators.count("*") == 1);
+        CHECK(math_profile.operators.count("/") == 1);
     }
 
-    SUBCASE("expand multiple profiles") {
-        ps.register_profile("ARITH", {"+", "-", "*", "/"});
-        ps.register_profile("CMP", {"==", "!=", "<", ">"});
+    SUBCASE("profile with forward=") {
+        ps.register_profile(
+            "STRING_LIKE",
+            parse_specification("STRING_LIKE; forward=size,empty; ==, !="));
 
-        std::vector<std::string> input = {"{ARITH}", "{CMP}", "hash"};
-        auto result = ps.expand_features(input);
-
-        CHECK(result.size() == 9);
-        CHECK(std::find(result.begin(), result.end(), "+") != result.end());
-        CHECK(std::find(result.begin(), result.end(), "==") != result.end());
-        CHECK(std::find(result.begin(), result.end(), "hash") != result.end());
-    }
-
-    SUBCASE("deduplication") {
-        ps.register_profile("MATH", {"+", "-", "*"});
-
-        // Request + directly and also through profile
-        std::vector<std::string> input = {"+", "{MATH}", "=="};
-        auto result = ps.expand_features(input);
-
-        // + should appear only once
-        int plus_count = std::count(result.begin(), result.end(), "+");
-        CHECK(plus_count == 1);
+        auto const & profile = ps.get_profile("STRING_LIKE");
+        CHECK(profile.forwards.size() == 2);
+        CHECK(profile.forwards[0] == "size");
+        CHECK(profile.forwards[1] == "empty");
+        CHECK(profile.operators.size() == 2);
+        CHECK(profile.operators.count("==") == 1);
+        CHECK(profile.operators.count("!=") == 1);
     }
 
     SUBCASE("unknown profile throws") {
-        std::vector<std::string> input = {"{UNKNOWN}"};
-        CHECK_THROWS(ps.expand_features(input));
+        CHECK_THROWS(ps.get_profile("UNKNOWN"));
     }
 
-    SUBCASE("non-profile features pass through") {
-        std::vector<std::string> input = {"+", "-", "cast<bool>", "assign"};
-        auto result = ps.expand_features(input);
-
-        CHECK(result.size() == 4);
-        // Result is sorted, so verify elements are present
-        CHECK(std::find(result.begin(), result.end(), "+") != result.end());
-        CHECK(std::find(result.begin(), result.end(), "-") != result.end());
-        CHECK(
-            std::find(result.begin(), result.end(), "cast<bool>") !=
-            result.end());
-        CHECK(
-            std::find(result.begin(), result.end(), "assign") != result.end());
-    }
+    // TODO: Add integration tests for profile expansion in descriptions
+    // These tests should be in atlas_command_line_ut.cpp or a similar
+    // integration test file since profile expansion now happens during
+    // description parsing in AtlasCommandLine
 }
+
+// Note: expand_features() was removed from ProfileSystem
+// Profile expansion is now done in AtlasCommandLine.cpp during description
+// parsing Integration tests should be added to verify profile expansion works
+// correctly with forward=
 
 } // anonymous namespace

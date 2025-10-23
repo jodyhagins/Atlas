@@ -33,9 +33,7 @@ is_valid_profile_name(std::string const & name)
 
 void
 ProfileSystem::
-register_profile(
-    std::string const & name,
-    std::vector<std::string> const & features)
+register_profile(std::string const & name, ParsedSpecification const & spec)
 {
     if (not is_valid_profile_name(name)) {
         throw std::runtime_error(
@@ -49,52 +47,7 @@ register_profile(
             "Profile '" + name + "' is already registered");
     }
 
-    profiles_[name] = features;
-}
-
-std::vector<std::string>
-ProfileSystem::
-expand_features(std::vector<std::string> const & input_features) const
-{
-    std::unordered_set<std::string> result_set;
-    std::vector<std::string> result;
-
-    for (auto const & feature : input_features) {
-        // Check if this is a profile reference: {NAME}
-        if (feature.length() > 2 && feature[0] == '{' &&
-            feature[feature.length() - 1] == '}')
-        {
-            // Extract profile name
-            std::string profile_name = feature.substr(1, feature.length() - 2);
-
-            // Look up profile
-            auto it = profiles_.find(profile_name);
-            if (it == profiles_.end()) {
-                throw std::runtime_error(
-                    "Unknown profile: '{" + profile_name +
-                    "}'. "
-                    "Profile must be defined with 'profile=" +
-                    profile_name + "; ...' before use");
-            }
-
-            // Add all features from profile (text substitution)
-            for (auto const & profile_feature : it->second) {
-                if (result_set.insert(profile_feature).second) {
-                    result.push_back(profile_feature);
-                }
-            }
-        } else {
-            // Regular feature
-            if (result_set.insert(feature).second) {
-                result.push_back(feature);
-            }
-        }
-    }
-
-    // Sort for deterministic output (makes diffs easier)
-    std::sort(result.begin(), result.end());
-
-    return result;
+    profiles_[name] = spec;
 }
 
 bool
@@ -102,6 +55,20 @@ ProfileSystem::
 has_profile(std::string const & name) const
 {
     return profiles_.find(name) != profiles_.end();
+}
+
+ParsedSpecification const &
+ProfileSystem::
+get_profile(std::string const & name) const
+{
+    auto it = profiles_.find(name);
+    if (it == profiles_.end()) {
+        throw std::runtime_error(
+            "Unknown profile: '" + name +
+            "'. "
+            "Profile must be defined before use");
+    }
+    return it->second;
 }
 
 std::vector<std::string>

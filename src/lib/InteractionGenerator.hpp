@@ -111,21 +111,21 @@ struct InteractionDescription
     std::string interaction_namespace = "";
 
     /**
-     * Method to access underlying value for LHS type
+     * How to access underlying value for LHS type
      * Examples: "atlas::value", ".value", "get_value"
      * If empty, falls back to value_access
      */
     std::string lhs_value_access = "";
 
     /**
-     * Method to access underlying value for RHS type
+     * How to access underlying value for RHS type
      * Examples: "atlas::value", ".value", "get_value"
      * If empty, falls back to value_access
      */
     std::string rhs_value_access = "";
 
     /**
-     * Default method to access underlying value of types
+     * Default way to access underlying value of types
      * Used when lhs_value_access or rhs_value_access is not specified
      * Examples: "atlas::value", ".value", "get_value"
      * If empty, uses atlas::value
@@ -202,8 +202,8 @@ struct InteractionGenerator
      * @note The generated header guard is based on the guard_prefix and
      *       a SHA1 digest of the generated code.
      *
-     * @note The generator assumes that the value_access method specified
-     *       will successfully extract the underlying value from strong types.
+     * @note The generator assumes that the specified value_access will
+     *       successfully extract the underlying value from strong types.
      *       For built-in types, the value is used directly.
      */
     std::string operator () (InteractionFileDescription const & desc) const;

@@ -54,6 +54,7 @@ split_features(std::string const & features_str)
 }
 
 // Normalize description by sorting features for deterministic output
+// Handles: type; [forward=...;] operators
 std::string
 normalize_description(std::string const & description)
 {
@@ -63,16 +64,38 @@ normalize_description(std::string const & description)
     }
 
     std::string type_part = description.substr(0, semicolon_pos + 1);
-    std::string features_str = trim(description.substr(semicolon_pos + 1));
+    std::string rest = trim(description.substr(semicolon_pos + 1));
 
-    if (features_str.empty()) {
+    if (rest.empty()) {
         return type_part;
+    }
+
+    // Check if there's a forward= section
+    std::string forward_part;
+    std::string features_str = rest;
+
+    auto next_semicolon = rest.find(';');
+    if (next_semicolon != std::string::npos) {
+        auto first_segment = trim(rest.substr(0, next_semicolon));
+        if (first_segment.find("forward=") == 0) {
+            // This is a forward= section
+            forward_part = first_segment + ";";
+            features_str = trim(rest.substr(next_semicolon + 1));
+        }
+    }
+
+    // Sort operator features only (not forward=)
+    if (features_str.empty()) {
+        return type_part + " " + forward_part;
     }
 
     auto features = split_features(features_str);
     std::sort(features.begin(), features.end());
 
     std::string result = type_part + " ";
+    if (not forward_part.empty()) {
+        result += forward_part + " ";
+    }
     for (size_t i = 0; i < features.size(); ++i) {
         if (i > 0) {
             result += ", ";
@@ -320,6 +343,9 @@ parse_impl(std::vector<std::string> const & args)
         } else if (key == "constants") {
             result.constants.push_back(
                 value); // Accumulate multiple --constants flags
+        } else if (key == "forward") {
+            result.forwarded_memfns.push_back(
+                value); // Accumulate multiple --forward flags
         } else if (key == "guard-prefix") {
             result.guard_prefix = value;
         } else if (key == "guard-separator") {
@@ -454,7 +480,8 @@ to_description(Arguments const & args)
         .guard_prefix = args.guard_prefix,
         .guard_separator = args.guard_separator,
         .upcase_guard = args.upcase_guard,
-        .cpp_standard = cpp_standard};
+        .cpp_standard = cpp_standard,
+        .forwarded_memfns = args.forwarded_memfns};
 }
 
 AtlasCommandLine::FileGenerationResult
@@ -493,6 +520,8 @@ parse_input_file(Arguments const & args)
     std::string current_default_value;
     std::vector<std::string>
         current_constants; // Accumulate multiple constants= lines
+    std::vector<std::string>
+        current_forward; // Accumulate multiple forward= lines
 
     // Section-derived kind, namespace and name from [struct ns::Type] syntax
     std::string section_derived_kind;
@@ -538,41 +567,76 @@ parse_input_file(Arguments const & args)
                     std::to_string(line_number) + " in " + args.input_file);
             }
 
-            // Expand profile tokens and normalize description
-            std::string expanded_description = current_description;
-            auto semicolon_pos = expanded_description.find(';');
-            if (semicolon_pos != std::string::npos) {
-                std::string type_part = expanded_description.substr(
-                    0,
-                    semicolon_pos + 1);
-                std::string features_str = trim(
-                    expanded_description.substr(semicolon_pos + 1));
+            // Parse description and expand profile tokens using unified parsing
+            std::string expanded_description;
+            try {
+                auto parsed = parse_specification(current_description);
 
-                // Split features by comma
-                auto features = split_features(features_str);
+                // Expand {PROFILE} tokens in operators by merging profile specs
+                for (auto const & op : parsed.operators) {
+                    // Check if this is a profile reference: {NAME}
+                    if (op.length() > 2 && op[0] == '{' &&
+                        op[op.length() - 1] == '}')
+                    {
+                        // Extract profile name
+                        std::string profile_name = op.substr(
+                            1,
+                            op.length() - 2);
 
-                // Expand profile tokens (which also sorts)
-                try {
-                    features = profile_system.expand_features(features);
-                } catch (std::exception const & e) {
-                    throw AtlasCommandLineError(
-                        "Error expanding profile in description near line " +
-                        std::to_string(line_number) + " in " + args.input_file +
-                        ": " + e.what());
+                        // Look up and merge profile
+                        auto const & profile_spec = profile_system.get_profile(
+                            profile_name);
+                        parsed.merge(profile_spec);
+                    }
                 }
 
-                // Reconstruct description
-                if (not features.empty()) {
-                    expanded_description = type_part + " ";
-                    for (size_t i = 0; i < features.size(); ++i) {
+                // Remove {PROFILE} tokens from operators after merging
+                std::set<std::string> final_operators;
+                for (auto const & op : parsed.operators) {
+                    if (not (
+                            op.length() > 2 && op[0] == '{' &&
+                            op[op.length() - 1] == '}'))
+                    {
+                        final_operators.insert(op);
+                    }
+                }
+
+                // Reconstruct description: [strong] type; [forward=...;]
+                // operators Only add "strong" if it was in the original
+                expanded_description = parsed.had_strong_keyword
+                    ? "strong " + parsed.first_part + ";"
+                    : parsed.first_part + ";";
+                if (not parsed.forwards.empty()) {
+                    expanded_description += " forward=";
+                    for (size_t i = 0; i < parsed.forwards.size(); ++i) {
                         if (i > 0) {
+                            expanded_description += ",";
+                        }
+                        expanded_description += parsed.forwards[i];
+                    }
+                    expanded_description += ";";
+                }
+                if (not final_operators.empty()) {
+                    expanded_description += " ";
+                    bool first = true;
+                    // Sort operators for deterministic output
+                    std::vector<std::string> sorted_ops(
+                        final_operators.begin(),
+                        final_operators.end());
+                    std::sort(sorted_ops.begin(), sorted_ops.end());
+                    for (auto const & op : sorted_ops) {
+                        if (not first) {
                             expanded_description += ", ";
                         }
-                        expanded_description += features[i];
+                        first = false;
+                        expanded_description += op;
                     }
-                } else {
-                    expanded_description = type_part;
                 }
+            } catch (std::exception const & e) {
+                throw AtlasCommandLineError(
+                    "Error parsing/expanding description near line " +
+                    std::to_string(line_number) + " in " + args.input_file +
+                    ": " + e.what());
             }
 
             // Merge all constants from multiple constants= lines
@@ -591,7 +655,8 @@ parse_input_file(Arguments const & args)
                 .guard_prefix = result.guard_prefix,
                 .guard_separator = result.guard_separator,
                 .upcase_guard = result.upcase_guard,
-                .cpp_standard = result.file_level_cpp_standard});
+                .cpp_standard = result.file_level_cpp_standard,
+                .forwarded_memfns = current_forward});
 
             current_kind.clear();
             current_namespace.clear();
@@ -599,6 +664,7 @@ parse_input_file(Arguments const & args)
             current_description.clear();
             current_default_value.clear();
             current_constants.clear();
+            current_forward.clear();
             section_derived_kind.clear();
             section_derived_namespace.clear();
             section_derived_name.clear();
@@ -749,27 +815,17 @@ parse_input_file(Arguments const & args)
                 }
             } else if (key == "profile") {
                 // Parse profile=NAME; features...
-                // value contains everything after the = sign
-                auto semicolon_pos = value.find(';');
-                if (semicolon_pos == std::string::npos) {
-                    throw AtlasCommandLineError(
-                        "Invalid profile definition at line " +
-                        std::to_string(line_number) + " in " + args.input_file +
-                        ": expected 'profile=NAME; features...'");
-                }
-
-                std::string profile_name = trim(value.substr(0, semicolon_pos));
-                std::string features_str = trim(
-                    value.substr(semicolon_pos + 1));
-
-                // Split features by comma
-                auto features = split_features(features_str);
-
+                // value contains everything after the = sign (e.g.,
+                // "STRING_LIKE; forward=size,empty; ==, !=")
                 try {
-                    profile_system.register_profile(profile_name, features);
+                    // Use parse_specification to parse the entire profile
+                    // definition
+                    auto parsed = parse_specification(value);
+                    // The first_part is the profile name
+                    profile_system.register_profile(parsed.first_part, parsed);
                 } catch (std::exception const & e) {
                     throw AtlasCommandLineError(
-                        "Error registering profile at line " +
+                        "Error parsing/registering profile at line " +
                         std::to_string(line_number) + " in " + args.input_file +
                         ": " + e.what());
                 }
@@ -826,6 +882,9 @@ parse_input_file(Arguments const & args)
             } else if (key == "constants") {
                 current_constants.push_back(
                     value); // Accumulate multiple constants= lines
+            } else if (key == "forward") {
+                current_forward.push_back(
+                    value); // Accumulate multiple forward= lines
             } else {
                 throw AtlasCommandLineError(
                     "Unknown type property at line " +
@@ -896,6 +955,12 @@ OPTIONAL ARGUMENTS:
                                 "name:value; name2:value2"
                                 Can be specified multiple times to accumulate
                                 constants.
+    --forward=<memfns>          Forward member functions from underlying type.
+                                Format: "memfn1,memfn2,memfn3" or
+                                "const,memfn1,memfn2" for const-only, or
+                                "memfn:alias" for aliasing.
+                                Can be specified multiple times to accumulate
+                                forwarded member functions.
     --guard-prefix=<prefix>     Custom prefix for header guards
                                 (default: namespace-based)
     --guard-separator=<sep>     Separator for header guard components

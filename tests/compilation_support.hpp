@@ -14,6 +14,7 @@
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
+#include <map>
 #include <sstream>
 #include <string>
 #include <system_error>
@@ -71,6 +72,64 @@ class CompilationTester
     int counter_ = 0;
 
 public:
+    // Check if a C++ standard is supported by the compiler
+    // Uses static cache so each standard is only checked once
+    static bool is_cpp_standard_supported(std::string const & cpp_standard)
+    {
+        static std::map<std::string, bool> cache;
+
+        auto it = cache.find(cpp_standard);
+        if (it != cache.end()) {
+            return it->second;
+        }
+
+        // Create minimal test file
+        auto temp_dir = fs::temp_directory_path() /
+            ("atlas_std_check_" + std::to_string(::getpid()));
+        fs::create_directories(temp_dir);
+
+        auto test_file = temp_dir / "test.cpp";
+        std::ofstream out(test_file);
+        // Check that __cplusplus is actually set to the expected value
+        // not just that the compiler accepts the flag
+        if (cpp_standard == "c++23" || cpp_standard == "c++2b") {
+            out << "static_assert(__cplusplus >= 202302L, \"C++23 "
+                   "required\");\n";
+        } else if (cpp_standard == "c++20" || cpp_standard == "c++2a") {
+            out << "static_assert(__cplusplus >= 202002L, \"C++20 "
+                   "required\");\n";
+        } else if (cpp_standard == "c++17") {
+            out << "static_assert(__cplusplus >= 201703L, \"C++17 "
+                   "required\");\n";
+        } else if (cpp_standard == "c++14") {
+            out << "static_assert(__cplusplus >= 201402L, \"C++14 "
+                   "required\");\n";
+        } else if (cpp_standard == "c++11") {
+            out << "static_assert(__cplusplus >= 201103L, \"C++11 "
+                   "required\");\n";
+        }
+        out << "int main() { return 0; }\n";
+        out.close();
+
+        // Try to compile with the requested standard
+        auto exe_path = temp_dir / "test";
+        std::ostringstream cmd;
+        cmd << wjh::atlas::test::find_working_compiler()
+            << " -std=" << cpp_standard << " " << test_file.string() << " -o "
+            << exe_path.string() << " 2>&1";
+
+        auto result = exec_command(cmd.str());
+
+        // Clean up
+        std::error_code ec;
+        fs::remove_all(temp_dir, ec);
+
+        // Cache and return result
+        bool supported = (result.exit_code == 0);
+        cache[cpp_standard] = supported;
+        return supported;
+    }
+
     CompilationTester()
     {
         temp_dir_ = fs::temp_directory_path() /

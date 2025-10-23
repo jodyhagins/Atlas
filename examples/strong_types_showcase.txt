@@ -235,3 +235,49 @@ description=unsigned int; ++, --, ==, <=>
 [struct SessionTimeout]
 namespace=demo::inline_syntax
 description=std::chrono::seconds; ==, !=, <=>
+
+# Member Function Forwarding - expose member functions from wrapped types
+
+# Basic forwarding - string wrapper with query member functions
+[type]
+kind=struct
+namespace=demo::forwarding
+name=SafeString
+description=std::string; forward=size,empty,length; ==, !=, hash
+
+# Member Function aliasing - rename forwarded member functions
+[type]
+kind=struct
+namespace=demo::forwarding
+name=DistanceValue
+description=double; forward=abs:magnitude; +, -, *, /, <=>
+
+# Const-only forwarding - prevent modification
+[type]
+kind=struct
+namespace=demo::forwarding
+name=ImmutableConfig
+description=std::map<std::string, std::string>; forward=const,at,find,size,empty; ==
+
+# Container forwarding with custom names
+[type]
+kind=struct
+namespace=demo::forwarding
+name=TaskQueue
+description=std::deque<std::string>; forward=push_back:enqueue,pop_front:dequeue,size,empty; ==, iterable
+
+# Smart pointer forwarding
+[type]
+kind=struct
+namespace=demo::forwarding
+name=ResourceHandle
+description=std::unique_ptr<int>; forward=get,reset; ->, @, bool
+
+# Multiple forward lines for organization
+[type]
+kind=struct
+namespace=demo::forwarding
+name=ManagedString
+description=std::string; ==, !=, hash
+forward=size:length,empty:is_empty
+forward=clear,append
