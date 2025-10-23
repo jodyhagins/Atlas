@@ -49,6 +49,12 @@ atlas_main(int argc, char ** argv)
             // Parse as interaction file and generate interactions
             auto interaction_desc = AtlasCommandLine::parse_interaction_file(
                 args.input_file);
+
+            // CLI override for cpp_standard if specified
+            if (args.cpp_standard > 0) {
+                interaction_desc.cpp_standard = args.cpp_standard;
+            }
+
             output = generate_interactions(interaction_desc);
         } else {
             // Parse as type file and generate strong types

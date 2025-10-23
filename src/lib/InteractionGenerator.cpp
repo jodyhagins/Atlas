@@ -748,6 +748,14 @@ namespace atlas {
     };
     output << "#ifndef " << guard << "\n";
     output << "#define " << guard << "\n\n";
+
+    // Insert C++ standard assertion if needed
+    auto cpp_standard_assertion = generate_cpp_standard_assertion(
+        desc.cpp_standard);
+    if (not cpp_standard_assertion.empty()) {
+        output << cpp_standard_assertion;
+    }
+
     output << banner();
     output << R"(
 #if __has_include(<version>)
