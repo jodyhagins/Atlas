@@ -683,4 +683,331 @@ description=unsigned short; ==, !=, <=>
     }
 }
 
+TEST_SUITE("Error Handling: Memfn Forwarding Errors")
+{
+    TEST_CASE("Forward= must not be empty string")
+    {
+        auto result = test_input_content_error(R"(
+[type]
+kind=struct
+namespace=test
+name=TestType
+description=std::string; forward=; ==, !=
+)");
+
+        CHECK(result.had_error());
+    }
+
+    TEST_CASE("Empty forward= specification in description")
+    {
+        auto result = test_input_content_error(R"(
+[type]
+kind=struct
+namespace=test
+name=TestType
+description=std::string; forward=; ==, !=
+)");
+
+        CHECK(result.had_error());
+        auto error_msg = result.stderr_output + result.stdout_output;
+        CHECK(error_msg.find("forward") != std::string::npos);
+    }
+
+    TEST_CASE("Empty forward= specification on separate line")
+    {
+        auto result = test_input_content_error(R"(
+[type]
+kind=struct
+namespace=test
+name=TestType
+description=std::string; ==, !=
+forward=
+)");
+
+        CHECK(result.had_error());
+        auto error_msg = result.stderr_output + result.stdout_output;
+        CHECK(error_msg.find("forward") != std::string::npos);
+    }
+
+    TEST_CASE("Invalid alias syntax - missing memfn name")
+    {
+        auto result = test_input_content_error(R"(
+[type]
+kind=struct
+namespace=test
+name=TestType
+description=std::string; forward=:alias; ==, !=
+)");
+
+        CHECK(result.had_error());
+        auto error_msg = result.stderr_output + result.stdout_output;
+        CHECK(
+            (error_msg.find("forward") != std::string::npos ||
+             error_msg.find("memfn") != std::string::npos ||
+             error_msg.find("alias") != std::string::npos));
+    }
+
+    TEST_CASE("Invalid alias syntax - missing alias name")
+    {
+        auto result = test_input_content_error(R"(
+[type]
+kind=struct
+namespace=test
+name=TestType
+description=std::string; forward=memfn:; ==, !=
+)");
+
+        CHECK(result.had_error());
+        auto error_msg = result.stderr_output + result.stdout_output;
+        CHECK(
+            (error_msg.find("forward") != std::string::npos ||
+             error_msg.find("memfn") != std::string::npos ||
+             error_msg.find("alias") != std::string::npos));
+    }
+
+    TEST_CASE("Invalid alias syntax - multiple colons")
+    {
+        auto result = test_input_content_error(R"(
+[type]
+kind=struct
+namespace=test
+name=TestType
+description=std::string; forward=memfn:alias:extra; ==, !=
+)");
+
+        CHECK(result.had_error());
+        auto error_msg = result.stderr_output + result.stdout_output;
+        CHECK(
+            (error_msg.find("forward") != std::string::npos ||
+             error_msg.find("colon") != std::string::npos ||
+             error_msg.find("alias") != std::string::npos));
+    }
+
+    TEST_CASE("Forward with only whitespace fails")
+    {
+        auto result = test_input_content_error(R"(
+[type]
+kind=struct
+namespace=test
+name=TestType
+description=std::string; forward=   ; ==, !=
+)");
+
+        CHECK(result.had_error());
+        auto error_msg = result.stderr_output + result.stdout_output;
+        CHECK(error_msg.find("forward") != std::string::npos);
+    }
+
+    TEST_CASE("Forward with empty alias after colon fails")
+    {
+        auto result = test_input_content_error(R"(
+[type]
+kind=struct
+namespace=test
+name=TestType
+description=std::string; forward=size:   ; ==, !=
+)");
+
+        CHECK(result.had_error());
+        auto error_msg = result.stderr_output + result.stdout_output;
+        CHECK(
+            (error_msg.find("forward") != std::string::npos ||
+             error_msg.find("alias") != std::string::npos));
+    }
+
+    TEST_CASE("Forward with empty memfn before colon fails")
+    {
+        auto result = test_input_content_error(R"(
+[type]
+kind=struct
+namespace=test
+name=TestType
+description=std::string; forward=   :alias; ==, !=
+)");
+
+        CHECK(result.had_error());
+        auto error_msg = result.stderr_output + result.stdout_output;
+        CHECK(
+            (error_msg.find("forward") != std::string::npos ||
+             error_msg.find("alias") != std::string::npos));
+    }
+
+    TEST_CASE(
+        "Forward with const at end works (const applies to following line)")
+    {
+        auto result = test_input_content_error(R"(
+[type]
+kind=struct
+namespace=test
+name=TestType
+description=std::string; ==, !=
+forward=size,empty,const
+forward=clear
+)");
+
+        // This should succeed - const on first line doesn't affect second line
+        CHECK(not result.had_error());
+    }
+
+    TEST_CASE(
+        "Forward with const in middle applies to remaining items on same line")
+    {
+        auto result = test_input_content_error(R"(
+[type]
+kind=struct
+namespace=test
+name=TestType
+description=std::string; forward=size,const,empty,clear; ==, !=
+)");
+
+        // Should succeed - size is non-const, empty and clear are const-only
+        CHECK(not result.had_error());
+        auto output = result.stderr_output + result.stdout_output;
+        CHECK(output.find("TestType") != std::string::npos);
+    }
+}
+
+TEST_SUITE("Error Handling: Return Type Transformation")
+{
+    TEST_CASE("Return type transformation - missing memfn before arrow")
+    {
+        auto result = test_input_content_error(R"(
+[type]
+kind=struct
+namespace=test
+name=TestType
+description=std::string; forward=->Type; ==, !=
+)");
+
+        CHECK(result.had_error());
+        auto error_msg = result.stderr_output + result.stdout_output;
+        CHECK(
+            (error_msg.find("forward") != std::string::npos ||
+             error_msg.find("memfn") != std::string::npos ||
+             error_msg.find("->") != std::string::npos));
+    }
+
+    TEST_CASE("Return type transformation - missing type after arrow")
+    {
+        auto result = test_input_content_error(R"(
+[type]
+kind=struct
+namespace=test
+name=TestType
+description=std::string; forward=substr->; ==, !=
+)");
+
+        CHECK(result.had_error());
+        auto error_msg = result.stderr_output + result.stdout_output;
+        CHECK(
+            (error_msg.find("forward") != std::string::npos ||
+             error_msg.find("return") != std::string::npos ||
+             error_msg.find("->") != std::string::npos));
+    }
+
+    TEST_CASE("Return type transformation - multiple arrows")
+    {
+        auto result = test_input_content_error(R"(
+[type]
+kind=struct
+namespace=test
+name=TestType
+description=std::string; forward=substr->Type->Other; ==, !=
+)");
+
+        CHECK(result.had_error());
+        auto error_msg = result.stderr_output + result.stdout_output;
+        CHECK(
+            (error_msg.find("->") != std::string::npos ||
+             error_msg.find("arrow") != std::string::npos));
+    }
+
+    TEST_CASE("Alias + Return type - missing memfn name")
+    {
+        auto result = test_input_content_error(R"(
+[type]
+kind=struct
+namespace=test
+name=TestType
+description=std::string; forward=:alias->TestType; ==, !=
+)");
+
+        CHECK(result.had_error());
+        auto error_msg = result.stderr_output + result.stdout_output;
+        CHECK(
+            (error_msg.find("forward") != std::string::npos ||
+             error_msg.find("alias") != std::string::npos ||
+             error_msg.find("memfn") != std::string::npos));
+    }
+
+    TEST_CASE("Alias + Return type - missing alias name")
+    {
+        auto result = test_input_content_error(R"(
+[type]
+kind=struct
+namespace=test
+name=TestType
+description=std::string; forward=substr:->TestType; ==, !=
+)");
+
+        CHECK(result.had_error());
+        auto error_msg = result.stderr_output + result.stdout_output;
+        CHECK(
+            (error_msg.find("forward") != std::string::npos ||
+             error_msg.find("alias") != std::string::npos));
+    }
+
+    TEST_CASE("Alias + Return type - missing return type")
+    {
+        auto result = test_input_content_error(R"(
+[type]
+kind=struct
+namespace=test
+name=TestType
+description=std::string; forward=substr:substring->; ==, !=
+)");
+
+        CHECK(result.had_error());
+        auto error_msg = result.stderr_output + result.stdout_output;
+        CHECK(
+            (error_msg.find("forward") != std::string::npos ||
+             error_msg.find("return") != std::string::npos ||
+             error_msg.find("->") != std::string::npos));
+    }
+
+    TEST_CASE("Alias + Return type - multiple colons")
+    {
+        auto result = test_input_content_error(R"(
+[type]
+kind=struct
+namespace=test
+name=TestType
+description=std::string; forward=substr:foo:bar->TestType; ==, !=
+)");
+
+        CHECK(result.had_error());
+        auto error_msg = result.stderr_output + result.stdout_output;
+        CHECK(
+            (error_msg.find("colon") != std::string::npos ||
+             error_msg.find("alias") != std::string::npos));
+    }
+
+    TEST_CASE("Alias + Return type - multiple arrows")
+    {
+        auto result = test_input_content_error(R"(
+[type]
+kind=struct
+namespace=test
+name=TestType
+description=std::string; forward=substr:substring->Foo->Bar; ==, !=
+)");
+
+        CHECK(result.had_error());
+        auto error_msg = result.stderr_output + result.stdout_output;
+        CHECK(
+            (error_msg.find("->") != std::string::npos ||
+             error_msg.find("arrow") != std::string::npos));
+    }
+}
+
 } // anonymous namespace

@@ -1,0 +1,9 @@
+# Test: C++23 deducing this
+# Feature: Use deducing this for memfn forwarding in C++23
+# Expected: Single template function using deducing this
+
+[type]
+kind=struct
+namespace=test
+name=ModernString
+description=std::string; forward=size,empty; ==, !=; c++23

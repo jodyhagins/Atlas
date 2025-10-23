@@ -266,6 +266,21 @@ struct StrongTypeDescription
      * correct standard.
      */
     int cpp_standard = 11;
+
+    /**
+     * List of forwarded memfns from the underlying type.
+     * Each string can contain comma-separated memfn names, optionally with:
+     * - The "const" keyword to generate only const overloads
+     * - Alias syntax "memfn:alias" to forward memfn with a different name
+     *
+     * Examples:
+     *   - "size,empty,clear" forwards three memfns
+     *   - "const,size,empty" forwards size and empty as const-only
+     *   - "size:length,empty:is_empty" forwards with aliases
+     *
+     * Multiple forward= lines are accumulated and merged.
+     */
+    std::vector<std::string> forwarded_memfns = {};
 };
 
 struct StrongTypeGenerator

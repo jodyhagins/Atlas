@@ -1,0 +1,56 @@
+# Test profiles with forward= support
+# This tests that profiles can define forward= and merge correctly with descriptions
+
+guard_prefix=TEST
+namespace=test
+
+# Profile with forward= only
+profile=STRING_LIKE; forward=size,empty,clear
+
+# Profile with forward= and operators
+profile=CONTAINER; forward=size,empty,begin,end; ==, !=, iterable
+
+# Profile with operators only (no forward=)
+profile=COMPARABLE; ==, !=, <, <=, >, >=
+
+# Profile with forward= using aliases
+profile=ALIASED; forward=size:length,empty:is_empty; ==
+
+# Profile with const marker in forward=
+profile=IMMUTABLE; forward=const,size,empty; ==
+
+# Test 1: Description uses profile with forward= only
+[struct StringWrapper]
+description=std::string; {STRING_LIKE}, hash
+
+# Test 2: Description uses profile with forward= and operators
+[struct VectorWrapper]
+description=std::vector<int>; {CONTAINER}
+
+# Test 3: Description has its own forward= and uses profile with forward=
+[struct StringWithExtra]
+description=std::string; forward=length; {STRING_LIKE}, ==
+
+# Test 4: Description uses multiple profiles
+[struct ContainerWithComparison]
+description=std::vector<int>; {CONTAINER}, {COMPARABLE}
+
+# Test 5: Description uses profile without forward=
+[struct ComparisonOnly]
+description=int; {COMPARABLE}
+
+# Test 6: Description uses profile with forward= aliases
+[struct AliasedWrapper]
+description=std::string; {ALIASED}
+
+# Test 7: Description uses profile with const marker in forward=
+[struct ImmutableWrapper]
+description=std::string; {IMMUTABLE}
+
+# Test 8: Mix profile forward= with description forward=
+[struct MixedForwarding]
+description=std::string; forward=substr:substring; {STRING_LIKE}, {ALIASED}, ==, !=
+
+# Test 9: Mix profile forward= with description forward= with const
+[struct MixedForwardingConst]
+description=std::string; forward=substr:substring,const; {STRING_LIKE}, {ALIASED}, ==, !=

@@ -23,6 +23,146 @@
 
 namespace wjh::atlas { inline namespace v1 {
 
+// ============================================================================
+// String parsing utilities
+// ============================================================================
+
+// Default predicate for strip - checks if character is whitespace
+struct IsSpacePred
+{
+    bool operator () (unsigned char u) const
+    {
+        return std::isspace(static_cast<int>(u));
+    }
+};
+
+template <typename PredT = IsSpacePred>
+std::string_view
+strip(std::string_view sv, PredT pred = PredT{})
+{
+    auto result = sv;
+    while (not result.empty() &&
+           pred(static_cast<unsigned char>(result.front())))
+    {
+        result.remove_prefix(1);
+    }
+    while (not result.empty() &&
+           pred(static_cast<unsigned char>(result.back())))
+    {
+        result.remove_suffix(1);
+    }
+    return result;
+}
+
+std::vector<std::string_view>
+split(std::string_view sv, char sep)
+{
+    std::vector<std::string_view> components;
+    while (not sv.empty()) {
+        while (not sv.empty() && std::isspace(sv.front())) {
+            sv.remove_prefix(1);
+        }
+        auto n = std::min(sv.find(sep), sv.size());
+        components.push_back(strip(sv.substr(0, n)));
+        sv.remove_prefix(std::min(n + 1, sv.size()));
+    }
+    return components;
+}
+
+// ============================================================================
+// ParsedSpecification
+// ============================================================================
+
+void
+ParsedSpecification::
+merge(ParsedSpecification const & other)
+{
+    // first_part from 'this' takes precedence (descriptions override profiles)
+    // Only update if our first_part is empty
+    if (first_part.empty()) {
+        first_part = other.first_part;
+    }
+
+    // Merge forwards (append, preserving order)
+    forwards.insert(
+        forwards.end(),
+        other.forwards.begin(),
+        other.forwards.end());
+
+    // Merge operators (union)
+    operators.insert(other.operators.begin(), other.operators.end());
+}
+
+ParsedSpecification
+parse_specification(std::string_view spec)
+{
+    ParsedSpecification result;
+
+    auto segments = split(spec, ';');
+    if (segments.empty()) {
+        throw std::invalid_argument("Empty specification");
+    }
+
+    // First segment is always the "first part" (type or profile name)
+    result.first_part = std::string(strip(segments[0]));
+
+    // Remove "strong" prefix if present (for descriptions) but remember we had
+    // it
+    if (result.first_part.starts_with("strong ")) {
+        result.had_strong_keyword = true;
+        result.first_part = std::string(
+            strip(std::string_view(result.first_part).substr(7)));
+    }
+
+    if (result.first_part.empty()) {
+        throw std::invalid_argument("Empty type specification in description");
+    }
+
+    // Process remaining segments
+    for (size_t i = 1; i < segments.size(); ++i) {
+        auto segment = strip(segments[i]);
+
+        if (segment.empty()) {
+            continue; // Skip empty segments
+        }
+
+        // Check if it's a forward= specification
+        if (segment.starts_with("forward=")) {
+            auto memfn_str = segment.substr(8);
+            if (memfn_str.empty()) {
+                throw std::invalid_argument(
+                    "Empty forward= specification (forward= must be followed "
+                    "by member function names)");
+            }
+
+            // Split by comma and add to forwards vector (preserving order!)
+            for (auto memfn : split(memfn_str, ',')) {
+                auto trimmed = std::string(strip(memfn));
+                if (not trimmed.empty()) {
+                    result.forwards.push_back(trimmed);
+                }
+            }
+        } else {
+            // It's an operators segment - split by comma
+            for (auto op : split(segment, ',')) {
+                auto trimmed_view = strip(op);
+                // MUST create a std::string copy because op is a string_view
+                // that will be invalidated when we return from this function
+                std::string trimmed_str(trimmed_view);
+                if (not trimmed_str.empty()) {
+                    result.operators.insert(std::move(trimmed_str));
+                }
+            }
+        }
+    }
+
+    return result;
+}
+
+// ============================================================================
+// End of string parsing utilities
+// ============================================================================
+
 std::string
 get_sha1(std::string const & s)
 {

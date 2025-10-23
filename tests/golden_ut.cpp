@@ -181,7 +181,7 @@ test_golden_file(fs::path const & test_file_path)
     INFO("Testing: " << test_file_path.string());
 
     // Generate code using atlas_main (captures stdout)
-    // Choose generation method based on file extension
+    // Choose generation memfn based on file extension
     auto [exit_code, generated] = (test_file_path.extension() == ".cmdline")
         ? generate_from_cmdline_file(test_file_path)
         : generate_from_input_file(test_file_path);

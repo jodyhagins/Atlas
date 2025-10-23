@@ -202,6 +202,149 @@ description=strong int; {ARITH}, {CMP}, hash
 # Expands to: +, -, *, /, +=, -=, *=, /=, ==, !=, <, <=, >, >=, hash
 ```
 
+## Member Function Forwarding
+
+Member function forwarding allows strong types to selectively expose member functions from their wrapped type, maintaining type safety while providing convenient access to underlying functionality.
+
+### Basic Syntax
+
+**Inline in description:**
+```
+[type]
+kind=struct
+namespace=util
+name=SafeString
+description=std::string; forward=size,empty,clear; ==, !=
+```
+
+**Separate line:**
+```
+[type]
+kind=struct
+namespace=util
+name=SafeString
+description=std::string; ==, !=
+forward=size,empty,clear
+```
+
+Both syntaxes are equivalent and can be used interchangeably.
+
+### Member Function Aliasing
+
+Rename forwarded member functions using `memfn` syntax:
+
+```
+[type]
+kind=struct
+namespace=util
+name=StringWrapper
+description=std::string; forward=size:length,empty:is_empty; ==, !=
+```
+
+Generated code:
+```cpp
+// Forwards std::string::size() as length()
+auto length() const & noexcept(...) -> decltype(...);
+
+// Forwards std::string::empty() as is_empty()
+auto is_empty() const & noexcept(...) -> decltype(...);
+```
+
+### Const-Only Forwarding
+
+Use the `const` keyword to forward only const overloads:
+
+```
+[type]
+kind=struct
+namespace=util
+name=ImmutableString
+description=std::string; forward=const,size,empty; ==, !=
+```
+
+This generates only const-qualified overloads, preventing modification of the underlying value through forwarded member functions.
+
+### Multiple Forward Lines
+
+You can specify multiple `forward=` lines to organize member function groups:
+
+```
+[type]
+kind=struct
+namespace=util
+name=MyString
+description=std::string; ==, !=
+forward=size,empty,length
+forward=clear,append
+```
+
+### Generated Code
+
+Atlas generates perfect forwarding wrappers with:
+- **Four ref-qualified overloads** (C++11-20): `const &`, `const &&`, `&`, `&&`
+- **Single deducing this overload** (C++23+): `template<typename Self> ... (this Self&&)`
+- **Preserved noexcept specifications**: Automatically matches underlying member function
+- **SFINAE-friendly return types**: Uses `decltype` for return type deduction
+
+Example for C++20:
+```cpp
+template <typename... Args>
+constexpr auto size(Args&&... args) const &
+    noexcept(noexcept(value.size(std::forward<Args>(args)...)))
+    -> decltype(value.size(std::forward<Args>(args)...))
+{
+    return value.size(std::forward<Args>(args)...);
+}
+
+// ... 3 more overloads for const &&, &, &&
+```
+
+Example for C++23:
+```cpp
+template <typename Self, typename... Args>
+constexpr auto size(this Self&& self, Args&&... args)
+    noexcept(noexcept(std::forward<Self>(self).value.size(std::forward<Args>(args)...)))
+    -> decltype(std::forward<Self>(self).value.size(std::forward<Args>(args)...))
+{
+    return std::forward<Self>(self).value.size(std::forward<Args>(args)...);
+}
+```
+
+### Common Use Cases
+
+**Container wrappers:**
+```
+description=std::vector<int>; forward=push_back,pop_back,size,empty; ==, iterable
+```
+
+**Smart pointer wrappers:**
+```
+description=std::unique_ptr<Data>; forward=get,reset; ->, @, bool
+```
+
+**String wrappers:**
+```
+description=std::string; forward=size:length,const,empty:is_empty,clear; ==, !=, hash
+```
+
+### Command-Line Support
+
+Member function forwarding also works with the `--forward` flag:
+
+```bash
+atlas --kind=struct --namespace=util --name=SafeString \
+      --description="std::string; ==, !=" \
+      --forward="size,empty,clear"
+```
+
+Multiple `--forward` flags accumulate:
+```bash
+atlas --kind=struct --namespace=util --name=MyString \
+      --description="std::string; ==, !=" \
+      --forward="size,empty" \
+      --forward="clear"
+```
+
 ## Options
 
 ### Operators

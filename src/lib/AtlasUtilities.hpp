@@ -7,10 +7,52 @@
 #ifndef WJH_ATLAS_8651ABC1F7E740D3960747B1195C51A7
 #define WJH_ATLAS_8651ABC1F7E740D3960747B1195C51A7
 
+#include <set>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace wjh::atlas { inline namespace v1 {
+
+/**
+ * @brief Unified structure for parsed specifications (descriptions and
+ * profiles)
+ *
+ * This structure can represent either:
+ * - A description: first_part is the type name (e.g., "std::string")
+ * - A profile: first_part is the profile name (e.g., "STRING_LIKE")
+ */
+struct ParsedSpecification
+{
+    std::string first_part; // Type name (for descriptions) or profile name (for
+                            // profiles)
+    std::vector<std::string>
+        forwards; // Raw forward specifications ("size", "size:length", "const")
+                  // - ORDER MATTERS!
+    std::set<std::string> operators; // All operator/feature tokens
+    bool had_strong_keyword =
+        false; // True if original spec had "strong" prefix
+
+    /**
+     * @brief Merge another ParsedSpecification into this one
+     *
+     * Used to combine profiles with descriptions. The description's first_part
+     * takes precedence, while forwards and operators are merged (unioned).
+     */
+    void merge(ParsedSpecification const & other);
+};
+
+/**
+ * @brief Parse a specification string (description or profile definition)
+ *
+ * Format: "first_part; [forward=memfns;] operators"
+ *
+ * Examples:
+ *   "std::string; forward=size,empty; ==, !="
+ *   "STRING_LIKE; forward=size,empty,clear; ==, !=, hash"
+ *   "int; +, -, *"
+ */
+ParsedSpecification parse_specification(std::string_view spec);
 
 /**
  * @brief Generate SHA1 hash of a string
