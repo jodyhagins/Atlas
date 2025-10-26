@@ -24,7 +24,8 @@
 
 #include <iostream>
 
-namespace wjh::atlas { inline namespace v1 {
+namespace wjh::atlas {
+inline namespace v1 {
 
 
 BOOST_DESCRIBE_STRUCT(
@@ -347,6 +348,199 @@ constexpr char arithmetic_binary_operators[] = R"(
     noexcept(noexcept(lhs {{{op}}}= rhs))
     {
         lhs {{{op}}}= rhs;
+        return lhs;
+    }
+)";
+
+constexpr char checked_addition[] = R"(
+    /**
+     * @brief Checked addition - throws on overflow
+     * @throws atlas::CheckedOverflowError if result would overflow
+     * @throws atlas::CheckedUnderflowError if result would underflow (signed only)
+     */
+    friend {{{class_name}}} operator + (
+        {{{class_name}}} lhs,
+        {{{class_name}}} const & rhs)
+    {
+        lhs.value = atlas::atlas_detail::checked_add(
+            lhs.value,
+            rhs.value,
+            "{{{full_qualified_name}}}: addition overflow",
+            "{{{full_qualified_name}}}: addition underflow");
+        return lhs;
+    }
+)";
+
+constexpr char checked_subtraction[] = R"(
+    /**
+     * @brief Checked subtraction - throws on overflow/underflow
+     * @throws atlas::CheckedOverflowError if result would overflow
+     * @throws atlas::CheckedUnderflowError if result would underflow
+     */
+    friend {{{class_name}}} operator - (
+        {{{class_name}}} lhs,
+        {{{class_name}}} const & rhs)
+    {
+        lhs.value = atlas::atlas_detail::checked_sub(
+            lhs.value,
+            rhs.value,
+            "{{{full_qualified_name}}}: subtraction overflow",
+            "{{{full_qualified_name}}}: subtraction underflow");
+        return lhs;
+    }
+)";
+
+constexpr char checked_multiplication[] = R"(
+    /**
+     * @brief Checked multiplication - throws on overflow
+     * @throws atlas::CheckedOverflowError if result would overflow
+     * @throws atlas::CheckedUnderflowError if result would underflow (signed only)
+     */
+    friend {{{class_name}}} operator * (
+        {{{class_name}}} lhs,
+        {{{class_name}}} const & rhs)
+    {
+        lhs.value = atlas::atlas_detail::checked_mul(
+            lhs.value,
+            rhs.value,
+            "{{{full_qualified_name}}}: multiplication overflow",
+            "{{{full_qualified_name}}}: multiplication underflow");
+        return lhs;
+    }
+)";
+
+constexpr char checked_division[] = R"_(
+    /**
+     * @brief Checked division - throws on division by zero and overflow
+     * @throws atlas::CheckedDivisionByZeroError if divisor is zero
+     * @throws atlas::CheckedOverflowError if result would overflow (INT_MIN / -1)
+     */
+    friend {{{class_name}}} operator / (
+        {{{class_name}}} lhs,
+        {{{class_name}}} const & rhs)
+    {
+        lhs.value = atlas::atlas_detail::checked_div(
+            lhs.value,
+            rhs.value,
+            "{{{full_qualified_name}}}: division by zero",
+            "{{{full_qualified_name}}}: division overflow (INT_MIN / -1)");
+        return lhs;
+    }
+)_";
+
+constexpr char checked_modulo[] = R"(
+    /**
+     * @brief Checked modulo - throws on division by zero
+     * @throws atlas::CheckedDivisionByZeroError if divisor is zero
+     * @note Modulo is only defined for integral types
+     */
+    friend {{{class_name}}} operator % (
+        {{{class_name}}} lhs,
+        {{{class_name}}} const & rhs)
+    {
+        lhs.value = atlas::atlas_detail::checked_mod(
+            lhs.value,
+            rhs.value,
+            "{{{full_qualified_name}}}: modulo by zero");
+        return lhs;
+    }
+)";
+
+constexpr char saturating_addition[] = R"(
+    /**
+     * @brief Saturating addition - clamps to type limits
+     * @note noexcept - overflow/underflow clamps to limits instead of throwing
+     */
+    friend {{{class_name}}} operator + (
+        {{{class_name}}} lhs,
+        {{{class_name}}} const & rhs)
+    noexcept
+    {
+        lhs.value = atlas::atlas_detail::saturating_add(lhs.value, rhs.value);
+        return lhs;
+    }
+)";
+
+constexpr char saturating_subtraction[] = R"(
+    /**
+     * @brief Saturating subtraction - clamps to type limits
+     * @note noexcept - overflow/underflow clamps to limits instead of throwing
+     */
+    friend {{{class_name}}} operator - (
+        {{{class_name}}} lhs,
+        {{{class_name}}} const & rhs)
+    noexcept
+    {
+        lhs.value = atlas::atlas_detail::saturating_sub(lhs.value, rhs.value);
+        return lhs;
+    }
+)";
+
+constexpr char saturating_multiplication[] = R"(
+    /**
+     * @brief Saturating multiplication - clamps to type limits
+     * @note noexcept - overflow/underflow clamps to limits instead of throwing
+     */
+    friend {{{class_name}}} operator * (
+        {{{class_name}}} lhs,
+        {{{class_name}}} const & rhs)
+    noexcept
+    {
+        lhs.value = atlas::atlas_detail::saturating_mul(lhs.value, rhs.value);
+        return lhs;
+    }
+)";
+
+constexpr char saturating_division[] = R"(
+    /**
+     * @brief Saturating division - clamps to type limits
+     * @note noexcept - overflow/underflow clamps to limits instead of throwing
+     */
+    friend {{{class_name}}} operator / (
+        {{{class_name}}} lhs,
+        {{{class_name}}} const & rhs)
+    noexcept
+    {
+        lhs.value = atlas::atlas_detail::saturating_div(lhs.value, rhs.value);
+        return lhs;
+    }
+)";
+
+constexpr char saturating_remainder[] = R"(
+    /**
+     * @brief Saturating remainder - returns 0 for undefined operations
+     * @note noexcept - modulo by zero returns 0 instead of throwing
+     * @note Modulo is only defined for integral types
+     */
+    friend {{{class_name}}} operator % (
+        {{{class_name}}} lhs,
+        {{{class_name}}} const & rhs)
+    noexcept
+    {
+        lhs.value = atlas::atlas_detail::saturating_rem(lhs.value, rhs.value);
+        return lhs;
+    }
+)";
+
+constexpr char wrapping_arithmetic[] = R"(
+    /**
+     * @brief Wrapping arithmetic - explicit, well-defined overflow
+     * @note Marked noexcept - overflow is intentional and well-defined
+     * @note Uses unsigned arithmetic to avoid UB for signed integer overflow
+     * @note Only available for integral types
+     */
+    friend {{{class_name}}} operator {{{op}}} (
+        {{{class_name}}} lhs,
+        {{{class_name}}} const & rhs)
+    noexcept
+    {
+        static_assert(std::is_integral<{{{underlying_type}}}>::value,
+                      "Wrapping arithmetic is only supported for integral types");
+        using unsigned_type = typename std::make_unsigned<{{{underlying_type}}}>::type;
+        lhs.value = static_cast<{{{underlying_type}}}>(
+            static_cast<unsigned_type>(lhs.value) {{{op}}}
+            static_cast<unsigned_type>(rhs.value)
+        );
         return lhs;
     }
 )";
@@ -979,6 +1173,15 @@ BOOST_DESCRIBE_STRUCT(
      generate_nonconst_lvalue,
      generate_nonconst_rvalue))
 
+enum class ArithmeticMode
+{
+    Default, // Normal unchecked arithmetic
+    Checked, // Throw on overflow
+    Saturating, // Clamp to bounds
+    Wrapping // Explicit wraparound
+};
+BOOST_DESCRIBE_ENUM(ArithmeticMode, Default, Checked, Saturating, Wrapping)
+
 struct ClassInfo
 {
     std::string class_namespace;
@@ -1022,6 +1225,7 @@ struct ClassInfo
     std::vector<ForwardedMemfn> forwarded_memfns;
     std::string const_qualifier = "constexpr ";
     int cpp_standard = 11;
+    ArithmeticMode arithmetic_mode = ArithmeticMode::Default;
     StrongTypeDescription desc;
 };
 BOOST_DESCRIBE_STRUCT(
@@ -1066,6 +1270,7 @@ BOOST_DESCRIBE_STRUCT(
      forwarded_memfns,
      const_qualifier,
      cpp_standard,
+     arithmetic_mode,
      desc))
 
 constexpr auto arithmetic_binary_op_tags = std::to_array<std::string_view>(
@@ -1522,6 +1727,11 @@ parse(
     // forward= lines in file) are already in desc.forwarded_memfns, so they'll
     // be processed later in process_forwarded_memfns
 
+    // Track arithmetic modes to ensure mutual exclusion
+    bool has_checked = false;
+    bool has_saturating = false;
+    bool has_wrapping = false;
+
     // Process all operators from the parsed specification
     for (auto const & op_str : parsed_spec.operators) {
         // Use string_view for compatibility with existing operator checking
@@ -1637,6 +1847,27 @@ parse(
             recognized = true;
             info.const_expr = "";
             info.hash_const_expr = "";
+        } else if (sv == "checked") {
+            recognized = true;
+            has_checked = true;
+            info.arithmetic_mode = ArithmeticMode::Checked;
+            info.includes_vec.push_back("<limits>");
+            info.includes_vec.push_back("<stdexcept>");
+            // Note: <cmath> reserved for future checked arithmetic
+            // implementation
+            info.includes_vec.push_back("<cmath>");
+        } else if (sv == "saturating") {
+            recognized = true;
+            has_saturating = true;
+            info.arithmetic_mode = ArithmeticMode::Saturating;
+            info.includes_vec.push_back("<limits>");
+            // Note: <cmath> reserved for future saturating arithmetic
+            // implementation
+            info.includes_vec.push_back("<cmath>");
+        } else if (sv == "wrapping") {
+            recognized = true;
+            has_wrapping = true;
+            info.arithmetic_mode = ArithmeticMode::Wrapping;
         } else if (sv.starts_with('#')) {
             recognized = true;
             auto str = std::string(strip(sv.substr(1)));
@@ -1678,6 +1909,12 @@ parse(
                 "Unrecognized operator or option in description: '" +
                 std::string(sv) + "'");
         }
+    }
+
+    // Validate arithmetic mode mutual exclusion
+    if (has_checked + has_saturating + has_wrapping > 1) {
+        throw std::invalid_argument("Cannot specify multiple arithmetic modes "
+                                    "(checked, saturating, wrapping)");
     }
 
     // Check for redundant operators with spaceship
@@ -1828,10 +2065,11 @@ parse(
         std::sort(c->begin(), c->end());
     }
 
-    // Build fully qualified name for hash, formatter specializations, and
-    // constants
+    // Build fully qualified name for hash, formatter specializations,
+    // constants, and checked arithmetic
     if (info.hash_specialization || info.desc.generate_formatter ||
-        not info.desc.constants.empty())
+        not info.desc.constants.empty() ||
+        info.arithmetic_mode == ArithmeticMode::Checked)
     {
         if (not info.class_namespace.empty()) {
             info.full_qualified_name = info.class_namespace +
@@ -1892,9 +2130,185 @@ parse(
     return info;
 }
 
+// Helper struct for rendering arithmetic operators with specific op value
+// This struct contains all ClassInfo fields plus the op field for mustache
+// rendering
+struct ClassInfoWithOp
+{
+    std::string class_namespace;
+    std::string namespace_open;
+    std::string namespace_close;
+    std::string full_class_name;
+    std::string class_name;
+    std::string underlying_type;
+    std::string full_qualified_name;
+    std::string const_expr;
+    std::string op; // The operator being rendered
+
+    explicit ClassInfoWithOp(ClassInfo const & info, std::string op_)
+    : class_namespace(info.class_namespace)
+    , namespace_open(info.namespace_open)
+    , namespace_close(info.namespace_close)
+    , full_class_name(info.full_class_name)
+    , class_name(info.class_name)
+    , underlying_type(info.underlying_type)
+    , full_qualified_name(info.full_qualified_name)
+    , const_expr(info.const_expr)
+    , op(std::move(op_))
+    { }
+};
+BOOST_DESCRIBE_STRUCT(
+    ClassInfoWithOp,
+    (),
+    (class_namespace,
+     namespace_open,
+     namespace_close,
+     full_class_name,
+     class_name,
+     underlying_type,
+     full_qualified_name,
+     const_expr,
+     op))
+
+// Helper function to select arithmetic template based on mode and operator
+std::string_view
+select_arithmetic_template(ArithmeticMode mode, std::string const & op)
+{
+    if (mode == ArithmeticMode::Checked) {
+        if (op == "+") {
+            return checked_addition;
+        }
+        if (op == "-") {
+            return checked_subtraction;
+        }
+        if (op == "*") {
+            return checked_multiplication;
+        }
+        if (op == "/") {
+            return checked_division;
+        }
+        if (op == "%") {
+            return checked_modulo;
+        }
+    } else if (mode == ArithmeticMode::Saturating) {
+        if (op == "+") {
+            return saturating_addition;
+        }
+        if (op == "-") {
+            return saturating_subtraction;
+        }
+        if (op == "*") {
+            return saturating_multiplication;
+        }
+        if (op == "/") {
+            return saturating_division;
+        }
+        if (op == "%") {
+            return saturating_remainder;
+        }
+    } else if (mode == ArithmeticMode::Wrapping) {
+        // Wrapping doesn't make sense for division/modulo
+        if (op == "/" || op == "%") {
+            // Fall back to default (which will likely error or be rejected)
+            return arithmetic_binary_operators;
+        }
+        // All other operators use the same wrapping template
+        return wrapping_arithmetic;
+    }
+
+    // Default: use standard arithmetic_binary_operators template
+    return arithmetic_binary_operators;
+}
+
 std::string
 render_code(ClassInfo const & info)
 {
+    // For checked, saturating, and wrapping arithmetic modes, we need to render
+    // each operator separately with its specific template. For other modes, use
+    // the standard rendering.
+    if ((info.arithmetic_mode == ArithmeticMode::Checked ||
+         info.arithmetic_mode == ArithmeticMode::Saturating ||
+         info.arithmetic_mode == ArithmeticMode::Wrapping) &&
+        not info.arithmetic_binary_operators.empty())
+    {
+        // Render arithmetic operators separately with mode-specific templates
+        std::stringstream arithmetic_ops_strm;
+
+        for (auto const & op : info.arithmetic_binary_operators) {
+            auto template_str = select_arithmetic_template(
+                info.arithmetic_mode,
+                op.op);
+            ClassInfoWithOp context{info, op.op};
+            boost::mustache::render(
+                std::string(template_str),
+                arithmetic_ops_strm,
+                context,
+                {});
+        }
+
+        // Create modified info without arithmetic operators for main template
+        ClassInfo info_modified = info;
+        info_modified.arithmetic_binary_operators.clear();
+
+        // Render main template
+        std::stringstream main_strm;
+        boost::mustache::render(
+            strong_template,
+            main_strm,
+            info_modified,
+            {{"arithmetic_binary_operators", arithmetic_binary_operators},
+             {"unary_operators", unary_operators},
+             {"addressof_operators", addressof_operators},
+             {"arrow_operator", arrow_operator_template},
+             {"relational_operator", relational_operator},
+             {"logical_operator", logical_operator},
+             {"bool_operator", bool_operator_template},
+             {"explicit_cast_operator", explicit_cast_operator_template},
+             {"implicit_cast_operator", implicit_cast_operator_template},
+             {"indirection_operator", indirection_operator_template},
+             {"nullary", nullary_template},
+             {"callable", callable_template},
+             {"subscript_operator", subscript_operator_template},
+             {"iterator_support_member", iterator_support_template},
+             {"template_assignment_operator",
+              template_assignment_operator_template},
+             {"logical_not_operator", logical_not_template},
+             {"spaceship_operator", spaceship_operator_template},
+             {"defaulted_equality_operator",
+              defaulted_equality_operator_template},
+             {"ostream_operator", ostream_operator_template},
+             {"istream_operator", istream_operator_template},
+             {"increment_operator", increment_operator},
+             {"hash_specialization", hash_specialization_template},
+             {"formatter_specialization", formatter_specialization_template},
+             {"constant_declarations", constant_declarations_template},
+             {"constants", constants_template + 1},
+             {"forwarded_memfn", forwarded_memfn_template}});
+
+        // Insert arithmetic operators code into the class body
+        std::string result = main_strm.str();
+        std::string arith_ops_code = arithmetic_ops_strm.str();
+
+        // Find insertion point: look for the increment_operators section marker
+        // or logical operators, or unary operators, or the class closing
+        size_t insert_pos = std::string::npos;
+
+        // Try to find increment operators section
+        insert_pos = result.find("    friend");
+
+        if (insert_pos == std::string::npos) {
+            // No friend functions yet, insert before closing brace
+            insert_pos = result.find("};\n");
+        }
+
+        if (insert_pos != std::string::npos) {
+            result.insert(insert_pos, arith_ops_code);
+        }
+
+        return result;
+    }
+
+    // Standard rendering for non-checked modes
     std::stringstream strm;
     boost::mustache::render(
         strong_template,
@@ -1980,7 +2394,11 @@ operator () (StrongTypeDescription const & desc)
     // Collect all includes: user includes + preamble includes
     PreambleOptions preamble_opts{
         .include_arrow_operator_traits = info.arrow_operator,
-        .include_dereference_operator_traits = info.indirection_operator};
+        .include_dereference_operator_traits = info.indirection_operator,
+        .include_checked_helpers =
+            (info.arithmetic_mode == ArithmeticMode::Checked),
+        .include_saturating_helpers =
+            (info.arithmetic_mode == ArithmeticMode::Saturating)};
 
     auto preamble_includes = get_preamble_includes(preamble_opts);
 
@@ -2034,6 +2452,8 @@ generate_strong_types_file(
     std::vector<StrongTypeGenerator::Warning> warnings;
     bool any_arrow_operator = false;
     bool any_indirection_operator = false;
+    bool any_checked_arithmetic = false;
+    bool any_saturating_arithmetic = false;
     int max_cpp_standard = 11;
 
     // Generate each type WITHOUT preamble, and collect includes
@@ -2053,6 +2473,16 @@ generate_strong_types_file(
         // Check if this type uses indirection operator
         if (info.indirection_operator) {
             any_indirection_operator = true;
+        }
+
+        // Check if any type uses checked arithmetic
+        if (info.arithmetic_mode == ArithmeticMode::Checked) {
+            any_checked_arithmetic = true;
+        }
+
+        // Check if any type uses saturating arithmetic
+        if (info.arithmetic_mode == ArithmeticMode::Saturating) {
+            any_saturating_arithmetic = true;
         }
 
         // Collect includes and guards from this type
@@ -2088,7 +2518,9 @@ generate_strong_types_file(
     // Add preamble includes to the collected includes
     PreambleOptions preamble_opts{
         .include_arrow_operator_traits = any_arrow_operator,
-        .include_dereference_operator_traits = any_indirection_operator};
+        .include_dereference_operator_traits = any_indirection_operator,
+        .include_checked_helpers = any_checked_arithmetic,
+        .include_saturating_helpers = any_saturating_arithmetic};
     auto preamble_includes = get_preamble_includes(preamble_opts);
     for (auto const & include : preamble_includes) {
         all_includes.insert(include);
@@ -2134,4 +2566,5 @@ generate_strong_types_file(
     return output.str();
 }
 
-}} // namespace wjh::atlas::v1
+}
+} // namespace wjh::atlas::v1

@@ -1,0 +1,58 @@
+# Comprehensive arithmetic modes test input file
+# Tests all operations, all modes, all type categories
+
+guard_prefix=ARITHMETIC_TEST
+guard_separator=_
+upcase_guard=true
+namespace=test
+profile=ASM; +, -, *
+profile=ASMD; {ASM}, /
+profile=ASMDR; {ASMD}, %
+
+[CheckedInt8]
+description=std::int8_t; #<cstdint>, {ASMDR}, checked
+
+[CheckedInt]
+description=int; {ASMDR}, checked
+
+[CheckedUInt8]
+description=std::uint8_t; {ASMDR}, checked
+
+[CheckedUInt]
+description=unsigned int; {ASMDR}, checked
+
+[CheckedFloat]
+description=float; {ASMD}, checked
+
+[CheckedDouble]
+description=double; {ASMD}, checked
+
+[SaturatingInt8]
+description=std::int8_t; {ASMDR}, saturating
+
+[SaturatingInt]
+description=int; {ASMDR}, saturating
+
+[SaturatingUInt8]
+description=std::uint8_t; {ASMDR}, saturating
+
+[SaturatingUInt]
+description=unsigned int; {ASMDR}, saturating
+
+[SaturatingFloat]
+description=float; {ASMD}, saturating
+
+[SaturatingDouble]
+description=double; {ASMD}, saturating
+
+[WrappingInt8]
+description=std::int8_t; {ASM}, wrapping
+
+[WrappingInt]
+description=int; {ASM}, wrapping
+
+[WrappingUInt8]
+description=std::uint8_t; {ASM}, wrapping
+
+[WrappingUInt]
+description=unsigned int; {ASM}, wrapping

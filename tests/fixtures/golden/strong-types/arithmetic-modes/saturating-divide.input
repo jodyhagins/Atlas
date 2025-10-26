@@ -1,0 +1,21 @@
+# Test: Saturating division
+# Feature: Division operator clamps to type limits on overflow
+# Expected: noexcept operator/, calls saturating_div helper
+
+[type]
+kind=struct
+namespace=test
+name=Distance
+description=strong int; /, saturating
+
+[type]
+kind=struct
+namespace=test
+name=Count
+description=strong unsigned int; /, saturating
+
+[type]
+kind=struct
+namespace=test
+name=Ratio
+description=strong double; /, saturating

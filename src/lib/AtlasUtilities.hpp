@@ -92,6 +92,8 @@ struct PreambleOptions
 {
     bool include_arrow_operator_traits = false;
     bool include_dereference_operator_traits = false;
+    bool include_checked_helpers = false;
+    bool include_saturating_helpers = false;
 };
 
 /**

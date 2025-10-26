@@ -106,3 +106,34 @@ target_compile_definitions(atlas_tool_ut
 add_test(NAME AtlasToolTests COMMAND atlas_tool_ut)
 # Ensure the atlas executable is built before running the test
 add_dependencies(atlas_tool_ut atlas)
+
+# Arithmetic modes runtime tests - comprehensive test of all arithmetic modes
+# Generate types for arithmetic modes runtime test
+set(ARITHMETIC_MODES_INPUT "${CMAKE_CURRENT_SOURCE_DIR}/arithmetic_modes_test_input.txt")
+set(ARITHMETIC_MODES_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/arithmetic_modes_test_types.hpp")
+
+add_custom_command(
+    OUTPUT ${ARITHMETIC_MODES_OUTPUT}
+    COMMAND atlas --input=${ARITHMETIC_MODES_INPUT} --output=${ARITHMETIC_MODES_OUTPUT}
+    DEPENDS atlas ${ARITHMETIC_MODES_INPUT}
+    COMMENT "Generating arithmetic modes test types"
+)
+
+add_executable(arithmetic_modes_runtime_ut
+    arithmetic_modes_runtime_ut.cpp
+    ${ARITHMETIC_MODES_OUTPUT}
+)
+
+target_include_directories(arithmetic_modes_runtime_ut
+    PRIVATE
+        ${CMAKE_CURRENT_BINARY_DIR}
+)
+
+target_link_libraries(arithmetic_modes_runtime_ut
+    PRIVATE
+        doctest::doctest
+)
+
+add_test(NAME ArithmeticModesRuntimeTests COMMAND arithmetic_modes_runtime_ut)
+# Ensure types are generated before building the test
+add_dependencies(arithmetic_modes_runtime_ut atlas)

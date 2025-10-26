@@ -1,0 +1,9 @@
+# Test: Saturating arithmetic with signed integer
+# Feature: Clamp to min/max for both positive and negative overflow
+# Expected: Different saturation behavior for signed types
+
+[type]
+kind=struct
+namespace=test
+name=SaturatingInt
+description=strong int; +, -, saturating

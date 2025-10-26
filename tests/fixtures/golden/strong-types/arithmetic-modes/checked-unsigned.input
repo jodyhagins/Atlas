@@ -1,0 +1,9 @@
+# Test: Checked arithmetic with unsigned integer
+# Feature: Overflow-only detection (no underflow for unsigned)
+# Expected: Different runtime behavior for unsigned vs signed
+
+[type]
+kind=struct
+namespace=test
+name=CheckedUInt
+description=strong uint32_t; +, -, *, /, %, checked

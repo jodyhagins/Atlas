@@ -1087,6 +1087,7 @@ OPERATOR REFERENCE:
                     no-constexpr-hash (hash without constexpr)
     Subscript:      [] (supports C++23 multidimensional subscripts)
     Custom:         #<header> or #"header" for custom includes
+    Modes:          checked, saturating, or wrapping
 
 CONSTEXPR BEHAVIOR:
     By default, all operations are marked constexpr for use in constant
