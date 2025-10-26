@@ -1227,6 +1227,13 @@ struct ClassInfo
     int cpp_standard = 11;
     ArithmeticMode arithmetic_mode = ArithmeticMode::Default;
     StrongTypeDescription desc;
+
+    // Constraint fields
+    bool has_constraint = false;
+    std::string constraint_type;
+    std::map<std::string, std::string> constraint_params;
+    std::string constraint_message;         // Human-readable constraint description
+    std::string constraint_template_args;   // Template arguments for constraint typedef
 };
 BOOST_DESCRIBE_STRUCT(
     ClassInfo,
@@ -1271,7 +1278,12 @@ BOOST_DESCRIBE_STRUCT(
      const_qualifier,
      cpp_standard,
      arithmetic_mode,
-     desc))
+     desc,
+     has_constraint,
+     constraint_type,
+     constraint_params,
+     constraint_message,
+     constraint_template_args))
 
 constexpr auto arithmetic_binary_op_tags = std::to_array<std::string_view>(
     {"+", "-", "*", "/", "%", "&", "|", "^", "<<", ">>", "+*", "-*"});
