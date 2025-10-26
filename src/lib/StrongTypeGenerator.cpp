@@ -140,6 +140,9 @@ auto strong_template = R"(
 {{{.}}}
 {{/public_specifier}}
     using atlas_value_type = {{{underlying_type}}};
+{{#has_constraint}}
+    using atlas_constraint = atlas::constraints::{{{constraint_type}}}{{{constraint_template_args}}};
+{{/has_constraint}}
 {{#constants}}
 {{>constant_declarations}}
 {{/constants}}
@@ -157,8 +160,14 @@ auto strong_template = R"(
             std::is_constructible<{{{underlying_type}}}, ArgTs...>::value,
             bool>::type = true>
     {{{const_expr}}}explicit {{{class_name}}}(ArgTs && ... args)
-    : value(std::forward<ArgTs>(args)...)
-    { }
+    : value(std::forward<ArgTs>(args)...){{#has_constraint}}
+    {
+        if (!atlas_constraint::check(value)) {
+            throw atlas::ConstraintError(
+                "{{{class_name}}}: {{{constraint_message}}}");
+        }
+    }{{/has_constraint}}{{^has_constraint}}
+    { }{{/has_constraint}}
     {{#template_assignment_operator}}
     {{>template_assignment_operator}}
     {{/template_assignment_operator}}
@@ -320,7 +329,7 @@ constexpr char relational_operator[] = R"(
     }
 )";
 
-constexpr char arithmetic_binary_operators[] = R"(
+constexpr char arithmetic_binary_operators[] = R"__(
     /**
      * Apply {{{op}}} assignment to the wrapped objects.
      */
@@ -337,6 +346,12 @@ constexpr char arithmetic_binary_operators[] = R"(
 #endif
     {
         lhs.value {{{op}}}= rhs.value;
+{{#has_constraint}}
+        if (!atlas_constraint::check(lhs.value)) {
+            throw atlas::ConstraintError(
+                "{{{class_name}}}: arithmetic result violates constraint ({{{constraint_message}}})");
+        }
+{{/has_constraint}}
         return lhs;
     }
     /**
@@ -350,9 +365,9 @@ constexpr char arithmetic_binary_operators[] = R"(
         lhs {{{op}}}= rhs;
         return lhs;
     }
-)";
+)__";
 
-constexpr char checked_addition[] = R"(
+constexpr char checked_addition[] = R"__(
     /**
      * @brief Checked addition - throws on overflow
      * @throws atlas::CheckedOverflowError if result would overflow
@@ -367,11 +382,17 @@ constexpr char checked_addition[] = R"(
             rhs.value,
             "{{{full_qualified_name}}}: addition overflow",
             "{{{full_qualified_name}}}: addition underflow");
+{{#has_constraint}}
+        if (!atlas_constraint::check(lhs.value)) {
+            throw atlas::ConstraintError(
+                "{{{class_name}}}: arithmetic result violates constraint ({{{constraint_message}}})");
+        }
+{{/has_constraint}}
         return lhs;
     }
-)";
+)__";
 
-constexpr char checked_subtraction[] = R"(
+constexpr char checked_subtraction[] = R"__(
     /**
      * @brief Checked subtraction - throws on overflow/underflow
      * @throws atlas::CheckedOverflowError if result would overflow
@@ -386,11 +407,17 @@ constexpr char checked_subtraction[] = R"(
             rhs.value,
             "{{{full_qualified_name}}}: subtraction overflow",
             "{{{full_qualified_name}}}: subtraction underflow");
+{{#has_constraint}}
+        if (!atlas_constraint::check(lhs.value)) {
+            throw atlas::ConstraintError(
+                "{{{class_name}}}: arithmetic result violates constraint ({{{constraint_message}}})");
+        }
+{{/has_constraint}}
         return lhs;
     }
-)";
+)__";
 
-constexpr char checked_multiplication[] = R"(
+constexpr char checked_multiplication[] = R"__(
     /**
      * @brief Checked multiplication - throws on overflow
      * @throws atlas::CheckedOverflowError if result would overflow
@@ -405,11 +432,17 @@ constexpr char checked_multiplication[] = R"(
             rhs.value,
             "{{{full_qualified_name}}}: multiplication overflow",
             "{{{full_qualified_name}}}: multiplication underflow");
+{{#has_constraint}}
+        if (!atlas_constraint::check(lhs.value)) {
+            throw atlas::ConstraintError(
+                "{{{class_name}}}: arithmetic result violates constraint ({{{constraint_message}}})");
+        }
+{{/has_constraint}}
         return lhs;
     }
-)";
+)__";
 
-constexpr char checked_division[] = R"_(
+constexpr char checked_division[] = R"__(
     /**
      * @brief Checked division - throws on division by zero and overflow
      * @throws atlas::CheckedDivisionByZeroError if divisor is zero
@@ -424,11 +457,17 @@ constexpr char checked_division[] = R"_(
             rhs.value,
             "{{{full_qualified_name}}}: division by zero",
             "{{{full_qualified_name}}}: division overflow (INT_MIN / -1)");
+{{#has_constraint}}
+        if (!atlas_constraint::check(lhs.value)) {
+            throw atlas::ConstraintError(
+                "{{{class_name}}}: arithmetic result violates constraint ({{{constraint_message}}})");
+        }
+{{/has_constraint}}
         return lhs;
     }
-)_";
+)__";
 
-constexpr char checked_modulo[] = R"(
+constexpr char checked_modulo[] = R"__(
     /**
      * @brief Checked modulo - throws on division by zero
      * @throws atlas::CheckedDivisionByZeroError if divisor is zero
@@ -442,11 +481,17 @@ constexpr char checked_modulo[] = R"(
             lhs.value,
             rhs.value,
             "{{{full_qualified_name}}}: modulo by zero");
+{{#has_constraint}}
+        if (!atlas_constraint::check(lhs.value)) {
+            throw atlas::ConstraintError(
+                "{{{class_name}}}: arithmetic result violates constraint ({{{constraint_message}}})");
+        }
+{{/has_constraint}}
         return lhs;
     }
-)";
+)__";
 
-constexpr char saturating_addition[] = R"(
+constexpr char saturating_addition[] = R"__(
     /**
      * @brief Saturating addition - clamps to type limits
      * @note noexcept - overflow/underflow clamps to limits instead of throwing
@@ -454,14 +499,22 @@ constexpr char saturating_addition[] = R"(
     friend {{{class_name}}} operator + (
         {{{class_name}}} lhs,
         {{{class_name}}} const & rhs)
+{{^has_constraint}}
     noexcept
+{{/has_constraint}}
     {
         lhs.value = atlas::atlas_detail::saturating_add(lhs.value, rhs.value);
+{{#has_constraint}}
+        if (!atlas_constraint::check(lhs.value)) {
+            throw atlas::ConstraintError(
+                "{{{class_name}}}: arithmetic result violates constraint ({{{constraint_message}}})");
+        }
+{{/has_constraint}}
         return lhs;
     }
-)";
+)__";
 
-constexpr char saturating_subtraction[] = R"(
+constexpr char saturating_subtraction[] = R"__(
     /**
      * @brief Saturating subtraction - clamps to type limits
      * @note noexcept - overflow/underflow clamps to limits instead of throwing
@@ -469,14 +522,22 @@ constexpr char saturating_subtraction[] = R"(
     friend {{{class_name}}} operator - (
         {{{class_name}}} lhs,
         {{{class_name}}} const & rhs)
+{{^has_constraint}}
     noexcept
+{{/has_constraint}}
     {
         lhs.value = atlas::atlas_detail::saturating_sub(lhs.value, rhs.value);
+{{#has_constraint}}
+        if (!atlas_constraint::check(lhs.value)) {
+            throw atlas::ConstraintError(
+                "{{{class_name}}}: arithmetic result violates constraint ({{{constraint_message}}})");
+        }
+{{/has_constraint}}
         return lhs;
     }
-)";
+)__";
 
-constexpr char saturating_multiplication[] = R"(
+constexpr char saturating_multiplication[] = R"__(
     /**
      * @brief Saturating multiplication - clamps to type limits
      * @note noexcept - overflow/underflow clamps to limits instead of throwing
@@ -484,14 +545,22 @@ constexpr char saturating_multiplication[] = R"(
     friend {{{class_name}}} operator * (
         {{{class_name}}} lhs,
         {{{class_name}}} const & rhs)
+{{^has_constraint}}
     noexcept
+{{/has_constraint}}
     {
         lhs.value = atlas::atlas_detail::saturating_mul(lhs.value, rhs.value);
+{{#has_constraint}}
+        if (!atlas_constraint::check(lhs.value)) {
+            throw atlas::ConstraintError(
+                "{{{class_name}}}: arithmetic result violates constraint ({{{constraint_message}}})");
+        }
+{{/has_constraint}}
         return lhs;
     }
-)";
+)__";
 
-constexpr char saturating_division[] = R"(
+constexpr char saturating_division[] = R"__(
     /**
      * @brief Saturating division - clamps to type limits
      * @note noexcept - overflow/underflow clamps to limits instead of throwing
@@ -499,14 +568,22 @@ constexpr char saturating_division[] = R"(
     friend {{{class_name}}} operator / (
         {{{class_name}}} lhs,
         {{{class_name}}} const & rhs)
+{{^has_constraint}}
     noexcept
+{{/has_constraint}}
     {
         lhs.value = atlas::atlas_detail::saturating_div(lhs.value, rhs.value);
+{{#has_constraint}}
+        if (!atlas_constraint::check(lhs.value)) {
+            throw atlas::ConstraintError(
+                "{{{class_name}}}: arithmetic result violates constraint ({{{constraint_message}}})");
+        }
+{{/has_constraint}}
         return lhs;
     }
-)";
+)__";
 
-constexpr char saturating_remainder[] = R"(
+constexpr char saturating_remainder[] = R"__(
     /**
      * @brief Saturating remainder - returns 0 for undefined operations
      * @note noexcept - modulo by zero returns 0 instead of throwing
@@ -515,14 +592,22 @@ constexpr char saturating_remainder[] = R"(
     friend {{{class_name}}} operator % (
         {{{class_name}}} lhs,
         {{{class_name}}} const & rhs)
+{{^has_constraint}}
     noexcept
+{{/has_constraint}}
     {
         lhs.value = atlas::atlas_detail::saturating_rem(lhs.value, rhs.value);
+{{#has_constraint}}
+        if (!atlas_constraint::check(lhs.value)) {
+            throw atlas::ConstraintError(
+                "{{{class_name}}}: arithmetic result violates constraint ({{{constraint_message}}})");
+        }
+{{/has_constraint}}
         return lhs;
     }
-)";
+)__";
 
-constexpr char wrapping_arithmetic[] = R"(
+constexpr char wrapping_arithmetic[] = R"__(
     /**
      * @brief Wrapping arithmetic - explicit, well-defined overflow
      * @note Marked noexcept - overflow is intentional and well-defined
@@ -532,7 +617,9 @@ constexpr char wrapping_arithmetic[] = R"(
     friend {{{class_name}}} operator {{{op}}} (
         {{{class_name}}} lhs,
         {{{class_name}}} const & rhs)
+{{^has_constraint}}
     noexcept
+{{/has_constraint}}
     {
         static_assert(std::is_integral<{{{underlying_type}}}>::value,
                       "Wrapping arithmetic is only supported for integral types");
@@ -541,9 +628,15 @@ constexpr char wrapping_arithmetic[] = R"(
             static_cast<unsigned_type>(lhs.value) {{{op}}}
             static_cast<unsigned_type>(rhs.value)
         );
+{{#has_constraint}}
+        if (!atlas_constraint::check(lhs.value)) {
+            throw atlas::ConstraintError(
+                "{{{class_name}}}: arithmetic result violates constraint ({{{constraint_message}}})");
+        }
+{{/has_constraint}}
         return lhs;
     }
-)";
+)__";
 
 constexpr char logical_operator[] = R"(
     /**
@@ -1880,6 +1973,11 @@ parse(
             recognized = true;
             has_wrapping = true;
             info.arithmetic_mode = ArithmeticMode::Wrapping;
+        } else if (sv == "positive") {
+            recognized = true;
+            info.has_constraint = true;
+            info.constraint_type = "positive";
+            info.constraint_message = "value must be positive (> 0)";
         } else if (sv.starts_with('#')) {
             recognized = true;
             auto str = std::string(strip(sv.substr(1)));
@@ -1927,6 +2025,11 @@ parse(
     if (has_checked + has_saturating + has_wrapping > 1) {
         throw std::invalid_argument("Cannot specify multiple arithmetic modes "
                                     "(checked, saturating, wrapping)");
+    }
+
+    // Set constraint template arguments if constraint is present
+    if (info.has_constraint && !info.constraint_type.empty()) {
+        info.constraint_template_args = "<" + info.underlying_type + ">";
     }
 
     // Check for redundant operators with spaceship
@@ -2156,6 +2259,10 @@ struct ClassInfoWithOp
     std::string full_qualified_name;
     std::string const_expr;
     std::string op; // The operator being rendered
+    bool has_constraint = false;
+    std::string constraint_type;
+    std::string constraint_message;
+    std::string constraint_template_args;
 
     explicit ClassInfoWithOp(ClassInfo const & info, std::string op_)
     : class_namespace(info.class_namespace)
@@ -2167,6 +2274,10 @@ struct ClassInfoWithOp
     , full_qualified_name(info.full_qualified_name)
     , const_expr(info.const_expr)
     , op(std::move(op_))
+    , has_constraint(info.has_constraint)
+    , constraint_type(info.constraint_type)
+    , constraint_message(info.constraint_message)
+    , constraint_template_args(info.constraint_template_args)
     { }
 };
 BOOST_DESCRIBE_STRUCT(
@@ -2180,7 +2291,11 @@ BOOST_DESCRIBE_STRUCT(
      underlying_type,
      full_qualified_name,
      const_expr,
-     op))
+     op,
+     has_constraint,
+     constraint_type,
+     constraint_message,
+     constraint_template_args))
 
 // Helper function to select arithmetic template based on mode and operator
 std::string_view
@@ -2410,7 +2525,8 @@ operator () (StrongTypeDescription const & desc)
         .include_checked_helpers =
             (info.arithmetic_mode == ArithmeticMode::Checked),
         .include_saturating_helpers =
-            (info.arithmetic_mode == ArithmeticMode::Saturating)};
+            (info.arithmetic_mode == ArithmeticMode::Saturating),
+        .include_constraints = info.has_constraint};
 
     auto preamble_includes = get_preamble_includes(preamble_opts);
 
@@ -2466,6 +2582,7 @@ generate_strong_types_file(
     bool any_indirection_operator = false;
     bool any_checked_arithmetic = false;
     bool any_saturating_arithmetic = false;
+    bool any_constraints = false;
     int max_cpp_standard = 11;
 
     // Generate each type WITHOUT preamble, and collect includes
@@ -2495,6 +2612,11 @@ generate_strong_types_file(
         // Check if any type uses saturating arithmetic
         if (info.arithmetic_mode == ArithmeticMode::Saturating) {
             any_saturating_arithmetic = true;
+        }
+
+        // Check if any type uses constraints
+        if (info.has_constraint) {
+            any_constraints = true;
         }
 
         // Collect includes and guards from this type
@@ -2532,7 +2654,8 @@ generate_strong_types_file(
         .include_arrow_operator_traits = any_arrow_operator,
         .include_dereference_operator_traits = any_indirection_operator,
         .include_checked_helpers = any_checked_arithmetic,
-        .include_saturating_helpers = any_saturating_arithmetic};
+        .include_saturating_helpers = any_saturating_arithmetic,
+        .include_constraints = any_constraints};
     auto preamble_includes = get_preamble_includes(preamble_opts);
     for (auto const & include : preamble_includes) {
         all_includes.insert(include);

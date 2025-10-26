@@ -137,3 +137,22 @@ target_link_libraries(arithmetic_modes_runtime_ut
 add_test(NAME ArithmeticModesRuntimeTests COMMAND arithmetic_modes_runtime_ut)
 # Ensure types are generated before building the test
 add_dependencies(arithmetic_modes_runtime_ut atlas)
+
+# Positive constraint tests
+set(INPUT "${CMAKE_CURRENT_SOURCE_DIR}/positive_constraint.txt")
+set(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/constraints-positive.hpp")
+add_custom_command(
+    OUTPUT ${OUTPUT}
+    COMMAND atlas --input=${INPUT} --output=${OUTPUT}
+    DEPENDS atlas ${INPUT}
+    COMMENT "Generating arithmetic modes test types"
+)
+add_executable(positive_constraint_ut positive_constraint_ut.cpp ${OUTPUT})
+target_link_libraries(positive_constraint_ut PRIVATE
+    doctest::doctest
+)
+add_test(NAME PositiveConstraintTests COMMAND positive_constraint_ut)
+target_include_directories(positive_constraint_ut
+    PRIVATE
+        ${CMAKE_CURRENT_BINARY_DIR}
+)
