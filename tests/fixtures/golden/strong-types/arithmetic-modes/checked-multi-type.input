@@ -1,0 +1,14 @@
+# Test: Multiple types in one file with checked mode
+# Feature: Ensure exception classes only appear once in preamble
+
+[type]
+kind=struct
+namespace=test
+name=CheckedInt
+description=strong int; +, -, checked
+
+[type]
+kind=struct
+namespace=test
+name=CheckedLong
+description=strong long; +, -, checked

@@ -1,0 +1,9 @@
+# Test: Saturating multiplication and division together
+# Feature: Both operators clamp to type limits
+# Expected: noexcept operator* and operator/, both helpers called
+
+[type]
+kind=struct
+namespace=test
+name=Value
+description=strong int; *, /, saturating

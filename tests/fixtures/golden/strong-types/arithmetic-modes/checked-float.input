@@ -1,0 +1,9 @@
+# Test: Checked arithmetic with floating-point
+# Feature: Infinity and NaN detection
+# Expected: std::isinf() and std::isnan() checks
+
+[type]
+kind=struct
+namespace=test
+name=CheckedFloat
+description=strong double; +, -, *, /, checked

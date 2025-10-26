@@ -1,0 +1,9 @@
+# Test: Basic wrapping arithmetic
+# Feature: Explicit, well-defined wraparound
+# Expected: noexcept operators, simple pass-through to underlying type
+
+[type]
+kind=struct
+namespace=test
+name=WrappingHash
+description=strong uint32_t; +, -, *, wrapping

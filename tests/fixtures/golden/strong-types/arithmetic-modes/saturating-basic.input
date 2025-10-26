@@ -1,0 +1,9 @@
+# Test: Basic saturating arithmetic
+# Feature: Addition and subtraction clamp to type limits
+# Expected: noexcept operators, std::numeric_limits checks
+
+[type]
+kind=struct
+namespace=test
+name=SaturatingByte
+description=strong uint8_t; +, -, saturating

@@ -1,0 +1,9 @@
+# Test: Basic checked arithmetic
+# Feature: Checked overflow detection for signed integers
+# Expected: Exception classes in preamble, runtime type checking in operators
+
+[type]
+kind=struct
+namespace=test
+name=CheckedInt
+description=strong int; +, -, *, /, %, checked
