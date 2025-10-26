@@ -94,7 +94,7 @@ struct PreambleOptions
     bool include_dereference_operator_traits = false;
     bool include_checked_helpers = false;
     bool include_saturating_helpers = false;
-    bool include_constraints = false;  // Include constraint error and predicates
+    bool include_constraints = false; // Include constraint error and predicates
 };
 
 /**

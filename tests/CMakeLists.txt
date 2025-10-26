@@ -156,3 +156,22 @@ target_include_directories(positive_constraint_ut
     PRIVATE
         ${CMAKE_CURRENT_BINARY_DIR}
 )
+
+# Non-negative constraint tests
+set(INPUT "${CMAKE_CURRENT_SOURCE_DIR}/non_negative_constraint.txt")
+set(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/constraints-non-negative.hpp")
+add_custom_command(
+    OUTPUT ${OUTPUT}
+    COMMAND atlas --input=${INPUT} --output=${OUTPUT}
+    DEPENDS atlas ${INPUT}
+    COMMENT "Generating non-negative constraint test types"
+)
+add_executable(non_negative_constraint_ut non_negative_constraint_ut.cpp ${OUTPUT})
+target_link_libraries(non_negative_constraint_ut PRIVATE
+    doctest::doctest
+)
+add_test(NAME NonNegativeConstraintTests COMMAND non_negative_constraint_ut)
+target_include_directories(non_negative_constraint_ut
+    PRIVATE
+        ${CMAKE_CURRENT_BINARY_DIR}
+)

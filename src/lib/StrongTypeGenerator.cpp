@@ -24,8 +24,7 @@
 
 #include <iostream>
 
-namespace wjh::atlas {
-inline namespace v1 {
+namespace wjh::atlas { inline namespace v1 {
 
 
 BOOST_DESCRIBE_STRUCT(
@@ -336,6 +335,7 @@ constexpr char arithmetic_binary_operators[] = R"__(
     friend {{{const_expr}}}{{{class_name}}} & operator {{{op}}}= (
         {{{class_name}}} & lhs,
         {{{class_name}}} const & rhs)
+{{^has_constraint}}
 #if defined(__clang__)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
@@ -344,6 +344,7 @@ constexpr char arithmetic_binary_operators[] = R"__(
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
+{{/has_constraint}}
     {
         lhs.value {{{op}}}= rhs.value;
 {{#has_constraint}}
@@ -1325,8 +1326,8 @@ struct ClassInfo
     bool has_constraint = false;
     std::string constraint_type;
     std::map<std::string, std::string> constraint_params;
-    std::string constraint_message;         // Human-readable constraint description
-    std::string constraint_template_args;   // Template arguments for constraint typedef
+    std::string constraint_message;
+    std::string constraint_template_args;
 };
 BOOST_DESCRIBE_STRUCT(
     ClassInfo,
@@ -1978,6 +1979,11 @@ parse(
             info.has_constraint = true;
             info.constraint_type = "positive";
             info.constraint_message = "value must be positive (> 0)";
+        } else if (sv == "non_negative") {
+            recognized = true;
+            info.has_constraint = true;
+            info.constraint_type = "non_negative";
+            info.constraint_message = "value must be non-negative (>= 0)";
         } else if (sv.starts_with('#')) {
             recognized = true;
             auto str = std::string(strip(sv.substr(1)));
@@ -2028,7 +2034,7 @@ parse(
     }
 
     // Set constraint template arguments if constraint is present
-    if (info.has_constraint && !info.constraint_type.empty()) {
+    if (info.has_constraint && not info.constraint_type.empty()) {
         info.constraint_template_args = "<" + info.underlying_type + ">";
     }
 
@@ -2701,5 +2707,4 @@ generate_strong_types_file(
     return output.str();
 }
 
-}
-} // namespace wjh::atlas::v1
+}} // namespace wjh::atlas::v1

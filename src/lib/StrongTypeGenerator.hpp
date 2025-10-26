@@ -283,8 +283,8 @@ struct StrongTypeDescription
     std::vector<std::string> forwarded_memfns = {};
 
     /**
-     * Type of constraint to apply (e.g., "positive", "non_negative", "bounded").
-     * Empty string means no constraint.
+     * Type of constraint to apply (e.g., "positive", "non_negative",
+     * "bounded"). Empty string means no constraint.
      */
     std::string constraint_type = "";
 
