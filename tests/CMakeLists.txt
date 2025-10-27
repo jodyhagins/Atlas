@@ -194,3 +194,22 @@ target_include_directories(non_zero_constraint_ut
     PRIVATE
         ${CMAKE_CURRENT_BINARY_DIR}
 )
+
+# Bounded constraint tests
+set(INPUT "${CMAKE_CURRENT_SOURCE_DIR}/bounded_constraint.txt")
+set(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/constraints-bounded.hpp")
+add_custom_command(
+    OUTPUT ${OUTPUT}
+    COMMAND atlas --input=${INPUT} --output=${OUTPUT}
+    DEPENDS atlas ${INPUT}
+    COMMENT "Generating bounded constraint test types"
+)
+add_executable(bounded_constraint_ut bounded_constraint_ut.cpp ${OUTPUT})
+target_link_libraries(bounded_constraint_ut PRIVATE
+    doctest::doctest
+)
+add_test(NAME BoundedConstraintTests COMMAND bounded_constraint_ut)
+target_include_directories(bounded_constraint_ut
+    PRIVATE
+        ${CMAKE_CURRENT_BINARY_DIR}
+)

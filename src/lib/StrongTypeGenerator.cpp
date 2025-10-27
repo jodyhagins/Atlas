@@ -140,6 +140,21 @@ auto strong_template = R"(
 {{/public_specifier}}
     using atlas_value_type = {{{underlying_type}}};
 {{#has_constraint}}
+{{#is_bounded}}
+    struct atlas_bounds
+    {
+        using value_type = atlas_value_type;
+        static constexpr value_type min() noexcept {
+            return value_type({{{bounded_min}}});
+        }
+        static constexpr value_type max() noexcept {
+            return value_type({{{bounded_max}}});
+        }
+        static constexpr char const * message() noexcept {
+            return "{{{constraint_message}}}";
+        }
+    };
+{{/is_bounded}}
     using atlas_constraint = atlas::constraints::{{{constraint_type}}}{{{constraint_template_args}}};
 {{/has_constraint}}
 {{#constants}}
@@ -161,9 +176,10 @@ auto strong_template = R"(
     {{{const_expr}}}explicit {{{class_name}}}(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...){{#has_constraint}}
     {
-        if (!atlas_constraint::check(value)) {
+        if (not atlas_constraint::check(value)) {
             throw atlas::ConstraintError(
-                "{{{class_name}}}: {{{constraint_message}}}");
+                "{{{class_name}}}: " + atlas::atlas_detail::format_value(value) +
+                " violates constraint: {{{constraint_message}}}");
         }
     }{{/has_constraint}}{{^has_constraint}}
     { }{{/has_constraint}}
@@ -348,7 +364,7 @@ constexpr char arithmetic_binary_operators[] = R"__(
     {
         lhs.value {{{op}}}= rhs.value;
 {{#has_constraint}}
-        if (!atlas_constraint::check(lhs.value)) {
+        if (not atlas_constraint::check(lhs.value)) {
             throw atlas::ConstraintError(
                 "{{{class_name}}}: arithmetic result violates constraint ({{{constraint_message}}})");
         }
@@ -384,7 +400,7 @@ constexpr char checked_addition[] = R"__(
             "{{{full_qualified_name}}}: addition overflow",
             "{{{full_qualified_name}}}: addition underflow");
 {{#has_constraint}}
-        if (!atlas_constraint::check(lhs.value)) {
+        if (not atlas_constraint::check(lhs.value)) {
             throw atlas::ConstraintError(
                 "{{{class_name}}}: arithmetic result violates constraint ({{{constraint_message}}})");
         }
@@ -409,7 +425,7 @@ constexpr char checked_subtraction[] = R"__(
             "{{{full_qualified_name}}}: subtraction overflow",
             "{{{full_qualified_name}}}: subtraction underflow");
 {{#has_constraint}}
-        if (!atlas_constraint::check(lhs.value)) {
+        if (not atlas_constraint::check(lhs.value)) {
             throw atlas::ConstraintError(
                 "{{{class_name}}}: arithmetic result violates constraint ({{{constraint_message}}})");
         }
@@ -434,7 +450,7 @@ constexpr char checked_multiplication[] = R"__(
             "{{{full_qualified_name}}}: multiplication overflow",
             "{{{full_qualified_name}}}: multiplication underflow");
 {{#has_constraint}}
-        if (!atlas_constraint::check(lhs.value)) {
+        if (not atlas_constraint::check(lhs.value)) {
             throw atlas::ConstraintError(
                 "{{{class_name}}}: arithmetic result violates constraint ({{{constraint_message}}})");
         }
@@ -459,7 +475,7 @@ constexpr char checked_division[] = R"__(
             "{{{full_qualified_name}}}: division by zero",
             "{{{full_qualified_name}}}: division overflow (INT_MIN / -1)");
 {{#has_constraint}}
-        if (!atlas_constraint::check(lhs.value)) {
+        if (not atlas_constraint::check(lhs.value)) {
             throw atlas::ConstraintError(
                 "{{{class_name}}}: arithmetic result violates constraint ({{{constraint_message}}})");
         }
@@ -483,7 +499,7 @@ constexpr char checked_modulo[] = R"__(
             rhs.value,
             "{{{full_qualified_name}}}: modulo by zero");
 {{#has_constraint}}
-        if (!atlas_constraint::check(lhs.value)) {
+        if (not atlas_constraint::check(lhs.value)) {
             throw atlas::ConstraintError(
                 "{{{class_name}}}: arithmetic result violates constraint ({{{constraint_message}}})");
         }
@@ -506,7 +522,7 @@ constexpr char saturating_addition[] = R"__(
     {
         lhs.value = atlas::atlas_detail::saturating_add(lhs.value, rhs.value);
 {{#has_constraint}}
-        if (!atlas_constraint::check(lhs.value)) {
+        if (not atlas_constraint::check(lhs.value)) {
             throw atlas::ConstraintError(
                 "{{{class_name}}}: arithmetic result violates constraint ({{{constraint_message}}})");
         }
@@ -529,7 +545,7 @@ constexpr char saturating_subtraction[] = R"__(
     {
         lhs.value = atlas::atlas_detail::saturating_sub(lhs.value, rhs.value);
 {{#has_constraint}}
-        if (!atlas_constraint::check(lhs.value)) {
+        if (not atlas_constraint::check(lhs.value)) {
             throw atlas::ConstraintError(
                 "{{{class_name}}}: arithmetic result violates constraint ({{{constraint_message}}})");
         }
@@ -552,7 +568,7 @@ constexpr char saturating_multiplication[] = R"__(
     {
         lhs.value = atlas::atlas_detail::saturating_mul(lhs.value, rhs.value);
 {{#has_constraint}}
-        if (!atlas_constraint::check(lhs.value)) {
+        if (not atlas_constraint::check(lhs.value)) {
             throw atlas::ConstraintError(
                 "{{{class_name}}}: arithmetic result violates constraint ({{{constraint_message}}})");
         }
@@ -575,7 +591,7 @@ constexpr char saturating_division[] = R"__(
     {
         lhs.value = atlas::atlas_detail::saturating_div(lhs.value, rhs.value);
 {{#has_constraint}}
-        if (!atlas_constraint::check(lhs.value)) {
+        if (not atlas_constraint::check(lhs.value)) {
             throw atlas::ConstraintError(
                 "{{{class_name}}}: arithmetic result violates constraint ({{{constraint_message}}})");
         }
@@ -599,7 +615,7 @@ constexpr char saturating_remainder[] = R"__(
     {
         lhs.value = atlas::atlas_detail::saturating_rem(lhs.value, rhs.value);
 {{#has_constraint}}
-        if (!atlas_constraint::check(lhs.value)) {
+        if (not atlas_constraint::check(lhs.value)) {
             throw atlas::ConstraintError(
                 "{{{class_name}}}: arithmetic result violates constraint ({{{constraint_message}}})");
         }
@@ -630,7 +646,7 @@ constexpr char wrapping_arithmetic[] = R"__(
             static_cast<unsigned_type>(rhs.value)
         );
 {{#has_constraint}}
-        if (!atlas_constraint::check(lhs.value)) {
+        if (not atlas_constraint::check(lhs.value)) {
             throw atlas::ConstraintError(
                 "{{{class_name}}}: arithmetic result violates constraint ({{{constraint_message}}})");
         }
@@ -1328,6 +1344,9 @@ struct ClassInfo
     std::map<std::string, std::string> constraint_params;
     std::string constraint_message;
     std::string constraint_template_args;
+    bool is_bounded = false;
+    std::string bounded_min;
+    std::string bounded_max;
 };
 BOOST_DESCRIBE_STRUCT(
     ClassInfo,
@@ -1377,7 +1396,10 @@ BOOST_DESCRIBE_STRUCT(
      constraint_type,
      constraint_params,
      constraint_message,
-     constraint_template_args))
+     constraint_template_args,
+     is_bounded,
+     bounded_min,
+     bounded_max))
 
 constexpr auto arithmetic_binary_op_tags = std::to_array<std::string_view>(
     {"+", "-", "*", "/", "%", "&", "|", "^", "<<", ">>", "+*", "-*"});
@@ -1778,6 +1800,51 @@ process_forwarded_memfns(ClassInfo & info)
         });
 }
 
+/**
+ * @brief Parse bounded<min,max> syntax and extract parameters as strings
+ * @param token The token string (e.g., "bounded<0,100>")
+ * @return Map with "min" and "max" keys containing literal strings
+ * @throws std::invalid_argument if syntax is invalid
+ *
+ * Note: This parser simply extracts the min/max values as strings.
+ * The compiler will validate the values when compiling the generated trait.
+ */
+std::map<std::string, std::string>
+parse_bounded_params(std::string_view token)
+{
+    // Expected format: bounded<min,max>
+    auto start = token.find('<');
+    auto end = token.rfind('>');
+
+    if (start == std::string_view::npos || end == std::string_view::npos ||
+        end <= start)
+    {
+        throw std::invalid_argument(
+            "Invalid bounded syntax: expected 'bounded<min,max>', got: " +
+            std::string(token));
+    }
+
+    auto params_str = token.substr(start + 1, end - start - 1);
+    auto comma = params_str.find(',');
+
+    if (comma == std::string_view::npos) {
+        throw std::invalid_argument(
+            "bounded requires two parameters: bounded<min,max>, got: " +
+            std::string(token));
+    }
+
+    std::map<std::string, std::string> result;
+    result["min"] = trim(std::string(params_str.substr(0, comma)));
+    result["max"] = trim(std::string(params_str.substr(comma + 1)));
+
+    if (result["min"].empty() || result["max"].empty()) {
+        throw std::invalid_argument(
+            "bounded parameters cannot be empty: " + std::string(token));
+    }
+
+    return result;
+}
+
 ClassInfo
 parse(
     StrongTypeDescription const & desc,
@@ -1989,6 +2056,31 @@ parse(
             info.has_constraint = true;
             info.constraint_type = "non_zero";
             info.constraint_message = "value must be non-zero (!= 0)";
+        } else if (sv.starts_with("bounded<") || sv.starts_with("bounded <")) {
+            recognized = true;
+            info.has_constraint = true;
+            info.constraint_type = "bounded";
+            info.is_bounded = true;
+            info.constraint_params = parse_bounded_params(sv);
+
+            // Store min/max for template generation
+            info.bounded_min = info.constraint_params["min"];
+            info.bounded_max = info.constraint_params["max"];
+
+            // Build human-readable message
+            auto escaped = [](std::string const s) {
+                std::string result;
+                for (auto c : s) {
+                    if (c == '"') {
+                        result += '\\';
+                    }
+                    result += c;
+                }
+                return result;
+            };
+            info.constraint_message = "value must be in [" +
+                escaped(info.bounded_min) + ", " + escaped(info.bounded_max) +
+                "]";
         } else if (sv.starts_with('#')) {
             recognized = true;
             auto str = std::string(strip(sv.substr(1)));
@@ -2040,7 +2132,16 @@ parse(
 
     // Set constraint template arguments if constraint is present
     if (info.has_constraint && not info.constraint_type.empty()) {
-        info.constraint_template_args = "<" + info.underlying_type + ">";
+        if (info.constraint_type == "bounded") {
+            // For bounded constraints, we use the trait-based design:
+            // atlas::constraints::bounded<atlas_bounds>
+            // The atlas_bounds trait will be generated with
+            // min()/max()/message()
+            info.constraint_template_args = "<atlas_bounds>";
+        } else {
+            // Other constraints just need the type
+            info.constraint_template_args = "<" + info.underlying_type + ">";
+        }
     }
 
     // Check for redundant operators with spaceship
@@ -2431,12 +2532,29 @@ render_code(ClassInfo const & info)
         // or logical operators, or unary operators, or the class closing
         size_t insert_pos = std::string::npos;
 
-        // Try to find increment operators section
-        insert_pos = result.find("    friend");
+        // If there's a bounded constraint, skip past the atlas_bounds struct
+        size_t search_start = 0;
+        if (info.is_bounded) {
+            // Look for "using atlas_constraint" which comes right after
+            // atlas_bounds
+            size_t constraint_decl = result.find("using atlas_constraint =");
+            if (constraint_decl != std::string::npos) {
+                // Skip to the end of this line
+                size_t line_end = result.find('\n', constraint_decl);
+                if (line_end != std::string::npos) {
+                    search_start = line_end + 1;
+                }
+            }
+        }
+
+        // Try to find increment operators section (starting after atlas_bounds
+        // if present)
+        insert_pos = result.find("    friend", search_start);
 
         if (insert_pos == std::string::npos) {
             // No friend functions yet, insert before closing brace
-            insert_pos = result.find("};\n");
+            // Start search after atlas_bounds if present
+            insert_pos = result.find("};\n", search_start);
         }
 
         if (insert_pos != std::string::npos) {

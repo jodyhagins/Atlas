@@ -62,7 +62,24 @@ split(std::string_view sv, char sep)
         while (not sv.empty() && std::isspace(sv.front())) {
             sv.remove_prefix(1);
         }
-        auto n = std::min(sv.find(sep), sv.size());
+        // Find the next separator, respecting angle bracket nesting
+        // Only count brackets when they're part of identifiers (like bounded<0,100>)
+        // not standalone comparison operators (like <, <=, >, >=)
+        int bracket_depth = 0;
+        size_t n = 0;
+        while (n < sv.size()) {
+            char c = sv[n];
+            if (c == '<' && n > 0 && std::isalnum(static_cast<unsigned char>(sv[n-1]))) {
+                // This looks like a template parameter (e.g., bounded<...)
+                // Only increase depth if preceded directly by alphanumeric (no space)
+                ++bracket_depth;
+            } else if (c == '>' && bracket_depth > 0) {
+                --bracket_depth;
+            } else if (c == sep && bracket_depth == 0) {
+                break;
+            }
+            ++n;
+        }
         components.push_back(strip(sv.substr(0, n)));
         sv.remove_prefix(std::min(n + 1, sv.size()));
     }
@@ -221,13 +238,10 @@ get_preamble_includes(PreambleOptions options)
     includes.push_back("<type_traits>");
     includes.push_back("<utility>");
 
-    // Conditionally add <compare> if three-way comparison is supported
-    // This is handled separately in the generated code via #if directive,
-    // so we don't include it in the unconditional list
-
-    // Add <stdexcept> for ConstraintError
     if (options.include_constraints) {
+        includes.push_back("<sstream>");
         includes.push_back("<stdexcept>");
+        includes.push_back("<string>");
     }
 
     return includes;
@@ -1412,6 +1426,8 @@ saturating_rem(T a, T b) noexcept
 #ifndef WJH_ATLAS_173D2C4FC9AA46929AD14C8BDF75D829
 #define WJH_ATLAS_173D2C4FC9AA46929AD14C8BDF75D829
 
+#include <sstream>
+
 namespace atlas {
 
 /**
@@ -1425,6 +1441,42 @@ public:
     virtual ~ConstraintError() noexcept = default;
 };
 
+namespace atlas_detail {
+
+template <typename T>
+std::string
+format_value_impl(T const &, PriorityTag<0>)
+{
+    return "unknown value";
+}
+
+template <typename T>
+auto
+format_value_impl(T const & value, PriorityTag<1>)
+-> decltype(std::declval<std::ostringstream &>() << value, std::string())
+{
+    std::ostringstream oss;
+    oss << value;
+    return oss.str();
+}
+
+template <typename T>
+auto
+format_value_impl(T const & value, PriorityTag<2>)
+-> decltype(std::to_string(value))
+{
+    return std::to_string(value);
+}
+
+template <typename T>
+std::string
+format_value(T const & value)
+{
+    return format_value_impl(value, PriorityTag<2>{});
+}
+
+} // namespace atlas_detail
+
 namespace constraints {
 
 /**
@@ -1433,7 +1485,9 @@ namespace constraints {
 template <typename T>
 struct positive
 {
-    static constexpr bool check(T value) noexcept {
+    static constexpr bool check(T value)
+        noexcept(noexcept(value > T{0}))
+    {
         return value > T{0};
     }
 
@@ -1448,7 +1502,9 @@ struct positive
 template <typename T>
 struct non_negative
 {
-    static constexpr bool check(T value) noexcept {
+    static constexpr bool check(T value)
+        noexcept(noexcept(value >= T{0}))
+    {
         return value >= T{0};
     }
 
@@ -1463,12 +1519,31 @@ struct non_negative
 template <typename T>
 struct non_zero
 {
-    static constexpr bool check(T value) noexcept {
+    static constexpr bool check(T value)
+        noexcept(noexcept(value != T{0}))
+    {
         return value != T{0};
     }
 
     static constexpr char const * message() noexcept {
         return "value must be non-zero (!= 0)";
+    }
+};
+
+/**
+ * Constraint: value must be in [Min, Max]
+ */
+template <typename T>
+struct bounded
+{
+    static constexpr bool check(typename T::value_type const & value)
+    noexcept(noexcept(value >= T::min()) && noexcept(value <= T::max()))
+    {
+        return value >= T::min() && value <= T::max();
+    }
+
+    static constexpr char const * message() noexcept {
+        return T::message();
     }
 };
 

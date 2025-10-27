@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_10F8EF02994A8F043E3BF0E5B66E37791AC85CFF
-#define FOO_BAR_10F8EF02994A8F043E3BF0E5B66E37791AC85CFF
+#ifndef FOO_BAR_E5DD1EF9C2A9B5B302D67AA4BE2FF348AB4A5F3E
+#define FOO_BAR_E5DD1EF9C2A9B5B302D67AA4BE2FF348AB4A5F3E
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -21,7 +21,9 @@
 #endif
 #include <cmath>
 #include <limits>
+#include <sstream>
 #include <stdexcept>
+#include <string>
 #include <type_traits>
 #include <utility>
 
@@ -1095,6 +1097,8 @@ saturating_rem(T a, T b) noexcept
 #ifndef WJH_ATLAS_173D2C4FC9AA46929AD14C8BDF75D829
 #define WJH_ATLAS_173D2C4FC9AA46929AD14C8BDF75D829
 
+#include <sstream>
+
 namespace atlas {
 
 /**
@@ -1108,6 +1112,42 @@ public:
     virtual ~ConstraintError() noexcept = default;
 };
 
+namespace atlas_detail {
+
+template <typename T>
+std::string
+format_value_impl(T const &, PriorityTag<0>)
+{
+    return "unknown value";
+}
+
+template <typename T>
+auto
+format_value_impl(T const & value, PriorityTag<1>)
+-> decltype(std::declval<std::ostringstream &>() << value, std::string())
+{
+    std::ostringstream oss;
+    oss << value;
+    return oss.str();
+}
+
+template <typename T>
+auto
+format_value_impl(T const & value, PriorityTag<2>)
+-> decltype(std::to_string(value))
+{
+    return std::to_string(value);
+}
+
+template <typename T>
+std::string
+format_value(T const & value)
+{
+    return format_value_impl(value, PriorityTag<2>{});
+}
+
+} // namespace atlas_detail
+
 namespace constraints {
 
 /**
@@ -1116,7 +1156,9 @@ namespace constraints {
 template <typename T>
 struct positive
 {
-    static constexpr bool check(T value) noexcept {
+    static constexpr bool check(T value)
+        noexcept(noexcept(value > T{0}))
+    {
         return value > T{0};
     }
 
@@ -1131,7 +1173,9 @@ struct positive
 template <typename T>
 struct non_negative
 {
-    static constexpr bool check(T value) noexcept {
+    static constexpr bool check(T value)
+        noexcept(noexcept(value >= T{0}))
+    {
         return value >= T{0};
     }
 
@@ -1146,12 +1190,31 @@ struct non_negative
 template <typename T>
 struct non_zero
 {
-    static constexpr bool check(T value) noexcept {
+    static constexpr bool check(T value)
+        noexcept(noexcept(value != T{0}))
+    {
         return value != T{0};
     }
 
     static constexpr char const * message() noexcept {
         return "value must be non-zero (!= 0)";
+    }
+};
+
+/**
+ * Constraint: value must be in [Min, Max]
+ */
+template <typename T>
+struct bounded
+{
+    static constexpr bool check(typename T::value_type const & value)
+    noexcept(noexcept(value >= T::min()) && noexcept(value <= T::max()))
+    {
+        return value >= T::min() && value <= T::max();
+    }
+
+    static constexpr char const * message() noexcept {
+        return T::message();
     }
 };
 
@@ -1204,9 +1267,10 @@ struct NonNegativeInt
     constexpr explicit NonNegativeInt(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     {
-        if (!atlas_constraint::check(value)) {
+        if (not atlas_constraint::check(value)) {
             throw atlas::ConstraintError(
-                "NonNegativeInt: value must be non-negative (>= 0)");
+                "NonNegativeInt: " + atlas::atlas_detail::format_value(value) +
+                " violates constraint: value must be non-negative (>= 0)");
         }
     }
 
@@ -1224,7 +1288,7 @@ struct NonNegativeInt
         NonNegativeInt const & rhs)
     {
         lhs.value += rhs.value;
-        if (!atlas_constraint::check(lhs.value)) {
+        if (not atlas_constraint::check(lhs.value)) {
             throw atlas::ConstraintError(
                 "NonNegativeInt: arithmetic result violates constraint (value must be non-negative (>= 0))");
         }
@@ -1250,7 +1314,7 @@ struct NonNegativeInt
         NonNegativeInt const & rhs)
     {
         lhs.value -= rhs.value;
-        if (!atlas_constraint::check(lhs.value)) {
+        if (not atlas_constraint::check(lhs.value)) {
             throw atlas::ConstraintError(
                 "NonNegativeInt: arithmetic result violates constraint (value must be non-negative (>= 0))");
         }
@@ -1390,9 +1454,10 @@ struct NonNegativeChecked
     constexpr explicit NonNegativeChecked(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     {
-        if (!atlas_constraint::check(value)) {
+        if (not atlas_constraint::check(value)) {
             throw atlas::ConstraintError(
-                "NonNegativeChecked: value must be non-negative (>= 0)");
+                "NonNegativeChecked: " + atlas::atlas_detail::format_value(value) +
+                " violates constraint: value must be non-negative (>= 0)");
         }
     }
 
@@ -1416,7 +1481,7 @@ struct NonNegativeChecked
             rhs.value,
             "test::NonNegativeChecked: addition overflow",
             "test::NonNegativeChecked: addition underflow");
-        if (!atlas_constraint::check(lhs.value)) {
+        if (not atlas_constraint::check(lhs.value)) {
             throw atlas::ConstraintError(
                 "NonNegativeChecked: arithmetic result violates constraint (value must be non-negative (>= 0))");
         }
@@ -1437,7 +1502,7 @@ struct NonNegativeChecked
             rhs.value,
             "test::NonNegativeChecked: subtraction overflow",
             "test::NonNegativeChecked: subtraction underflow");
-        if (!atlas_constraint::check(lhs.value)) {
+        if (not atlas_constraint::check(lhs.value)) {
             throw atlas::ConstraintError(
                 "NonNegativeChecked: arithmetic result violates constraint (value must be non-negative (>= 0))");
         }
@@ -1483,9 +1548,10 @@ struct NonNegativeSaturating
     constexpr explicit NonNegativeSaturating(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     {
-        if (!atlas_constraint::check(value)) {
+        if (not atlas_constraint::check(value)) {
             throw atlas::ConstraintError(
-                "NonNegativeSaturating: value must be non-negative (>= 0)");
+                "NonNegativeSaturating: " + atlas::atlas_detail::format_value(value) +
+                " violates constraint: value must be non-negative (>= 0)");
         }
     }
 
@@ -1504,7 +1570,7 @@ struct NonNegativeSaturating
         NonNegativeSaturating const & rhs)
     {
         lhs.value = atlas::atlas_detail::saturating_add(lhs.value, rhs.value);
-        if (!atlas_constraint::check(lhs.value)) {
+        if (not atlas_constraint::check(lhs.value)) {
             throw atlas::ConstraintError(
                 "NonNegativeSaturating: arithmetic result violates constraint (value must be non-negative (>= 0))");
         }
@@ -1520,7 +1586,7 @@ struct NonNegativeSaturating
         NonNegativeSaturating const & rhs)
     {
         lhs.value = atlas::atlas_detail::saturating_sub(lhs.value, rhs.value);
-        if (!atlas_constraint::check(lhs.value)) {
+        if (not atlas_constraint::check(lhs.value)) {
             throw atlas::ConstraintError(
                 "NonNegativeSaturating: arithmetic result violates constraint (value must be non-negative (>= 0))");
         }
@@ -1529,5 +1595,5 @@ struct NonNegativeSaturating
 };
 } // namespace test
 
-#endif // FOO_BAR_10F8EF02994A8F043E3BF0E5B66E37791AC85CFF
+#endif // FOO_BAR_E5DD1EF9C2A9B5B302D67AA4BE2FF348AB4A5F3E
 
