@@ -1984,6 +1984,11 @@ parse(
             info.has_constraint = true;
             info.constraint_type = "non_negative";
             info.constraint_message = "value must be non-negative (>= 0)";
+        } else if (sv == "non_zero") {
+            recognized = true;
+            info.has_constraint = true;
+            info.constraint_type = "non_zero";
+            info.constraint_message = "value must be non-zero (!= 0)";
         } else if (sv.starts_with('#')) {
             recognized = true;
             auto str = std::string(strip(sv.substr(1)));

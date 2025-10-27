@@ -175,3 +175,22 @@ target_include_directories(non_negative_constraint_ut
     PRIVATE
         ${CMAKE_CURRENT_BINARY_DIR}
 )
+
+# Non-zero constraint tests
+set(INPUT "${CMAKE_CURRENT_SOURCE_DIR}/non_zero_constraint.txt")
+set(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/constraints-non-zero.hpp")
+add_custom_command(
+    OUTPUT ${OUTPUT}
+    COMMAND atlas --input=${INPUT} --output=${OUTPUT}
+    DEPENDS atlas ${INPUT}
+    COMMENT "Generating non-zero constraint test types"
+)
+add_executable(non_zero_constraint_ut non_zero_constraint_ut.cpp ${OUTPUT})
+target_link_libraries(non_zero_constraint_ut PRIVATE
+    doctest::doctest
+)
+add_test(NAME NonZeroConstraintTests COMMAND non_zero_constraint_ut)
+target_include_directories(non_zero_constraint_ut
+    PRIVATE
+        ${CMAKE_CURRENT_BINARY_DIR}
+)

@@ -1140,6 +1140,21 @@ struct non_negative
     }
 };
 
+/**
+ * @brief Constraint: value must be != 0
+ */
+template <typename T>
+struct non_zero
+{
+    static constexpr bool check(T value) noexcept {
+        return value != T{0};
+    }
+
+    static constexpr char const * message() noexcept {
+        return "value must be non-zero (!= 0)";
+    }
+};
+
 } // namespace constraints
 } // namespace atlas
 
