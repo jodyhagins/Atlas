@@ -213,3 +213,22 @@ target_include_directories(bounded_constraint_ut
     PRIVATE
         ${CMAKE_CURRENT_BINARY_DIR}
 )
+
+# Bounded range constraint tests (half-open range semantics)
+set(INPUT "${CMAKE_CURRENT_SOURCE_DIR}/fixtures/golden/strong-types/constraints/bounded_range.input")
+set(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/constraints-bounded_range.hpp")
+add_custom_command(
+    OUTPUT ${OUTPUT}
+    COMMAND atlas --input=${INPUT} --output=${OUTPUT}
+    DEPENDS atlas ${INPUT}
+    COMMENT "Generating bounded_range constraint test types"
+)
+add_executable(bounded_range_constraint_ut bounded_range_constraint_ut.cpp ${OUTPUT})
+target_link_libraries(bounded_range_constraint_ut PRIVATE
+    doctest::doctest
+)
+add_test(NAME BoundedRangeConstraintTests COMMAND bounded_range_constraint_ut)
+target_include_directories(bounded_range_constraint_ut
+    PRIVATE
+        ${CMAKE_CURRENT_BINARY_DIR}
+)

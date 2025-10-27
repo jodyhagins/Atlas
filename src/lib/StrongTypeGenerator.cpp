@@ -1801,18 +1801,21 @@ process_forwarded_memfns(ClassInfo & info)
 }
 
 /**
- * @brief Parse bounded<min,max> syntax and extract parameters as strings
- * @param token The token string (e.g., "bounded<0,100>")
+ * @brief Parse bounded-style constraint syntax and extract parameters as strings
+ * @param token The token string (e.g., "bounded<0,100>" or "bounded_range<0,100>")
  * @return Map with "min" and "max" keys containing literal strings
  * @throws std::invalid_argument if syntax is invalid
  *
  * Note: This parser simply extracts the min/max values as strings.
  * The compiler will validate the values when compiling the generated trait.
+ *
+ * This function is used for both bounded<min,max> and bounded_range<min,max>
+ * constraints, as they share identical parsing logic.
  */
 std::map<std::string, std::string>
 parse_bounded_params(std::string_view token)
 {
-    // Expected format: bounded<min,max>
+    // Expected format: constraint_name<min,max>
     auto start = token.find('<');
     auto end = token.rfind('>');
 
@@ -1820,7 +1823,7 @@ parse_bounded_params(std::string_view token)
         end <= start)
     {
         throw std::invalid_argument(
-            "Invalid bounded syntax: expected 'bounded<min,max>', got: " +
+            "Invalid bounded constraint syntax: expected 'constraint<min,max>', got: " +
             std::string(token));
     }
 
@@ -1829,7 +1832,7 @@ parse_bounded_params(std::string_view token)
 
     if (comma == std::string_view::npos) {
         throw std::invalid_argument(
-            "bounded requires two parameters: bounded<min,max>, got: " +
+            "Bounded constraint requires two parameters: constraint<min,max>, got: " +
             std::string(token));
     }
 
@@ -1839,7 +1842,7 @@ parse_bounded_params(std::string_view token)
 
     if (result["min"].empty() || result["max"].empty()) {
         throw std::invalid_argument(
-            "bounded parameters cannot be empty: " + std::string(token));
+            "Bounded constraint parameters cannot be empty: " + std::string(token));
     }
 
     return result;
@@ -2056,18 +2059,23 @@ parse(
             info.has_constraint = true;
             info.constraint_type = "non_zero";
             info.constraint_message = "value must be non-zero (!= 0)";
-        } else if (sv.starts_with("bounded<") || sv.starts_with("bounded <")) {
+        } else if (sv.starts_with("bounded<") || sv.starts_with("bounded <") ||
+                   sv.starts_with("bounded_range<") || sv.starts_with("bounded_range <")) {
             recognized = true;
             info.has_constraint = true;
-            info.constraint_type = "bounded";
             info.is_bounded = true;
+
+            // Determine constraint type and bracket style
+            bool is_half_open = sv.starts_with("bounded_range");
+            info.constraint_type = is_half_open ? "bounded_range" : "bounded";
+
             info.constraint_params = parse_bounded_params(sv);
 
             // Store min/max for template generation
             info.bounded_min = info.constraint_params["min"];
             info.bounded_max = info.constraint_params["max"];
 
-            // Build human-readable message
+            // Build human-readable message (note: [min, max) for half-open range)
             auto escaped = [](std::string const s) {
                 std::string result;
                 for (auto c : s) {
@@ -2080,7 +2088,7 @@ parse(
             };
             info.constraint_message = "value must be in [" +
                 escaped(info.bounded_min) + ", " + escaped(info.bounded_max) +
-                "]";
+                (is_half_open ? ")" : "]");
         } else if (sv.starts_with('#')) {
             recognized = true;
             auto str = std::string(strip(sv.substr(1)));
@@ -2132,9 +2140,10 @@ parse(
 
     // Set constraint template arguments if constraint is present
     if (info.has_constraint && not info.constraint_type.empty()) {
-        if (info.constraint_type == "bounded") {
-            // For bounded constraints, we use the trait-based design:
+        if (info.constraint_type == "bounded" || info.constraint_type == "bounded_range") {
+            // For bounded and bounded_range constraints, we use the trait-based design:
             // atlas::constraints::bounded<atlas_bounds>
+            // atlas::constraints::bounded_range<atlas_bounds>
             // The atlas_bounds trait will be generated with
             // min()/max()/message()
             info.constraint_template_args = "<atlas_bounds>";

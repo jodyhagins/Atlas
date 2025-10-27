@@ -1,0 +1,29 @@
+
+# Test: Half-open integer range (0 to 100)
+# Feature: Value must be in [0, 100) - allows 0-99, rejects 100
+[test::HalfOpenPercentage]
+description=int; bounded_range<0,100>, <=>
+
+# Test: Half-open floating point range
+# Feature: Temperature range [0.0, 100.0) in Celsius
+[physics::CelsiusRange]
+description=double; bounded_range<0.0,100.0>, +, -, *, /, c++20
+
+# Test: Half-open range with checked arithmetic
+# Feature: Range with overflow checking
+[test::BoundedRangeChecked]
+description=std::uint8_t; bounded_range<0,100>, +, -, checked, #<cstdint>
+
+# Test: Narrow half-open range (edge case)
+# Feature: Only two valid values: 42 and 43
+[test::TinyRange]
+description=int; bounded_range<42,44>, ==
+
+# Test: Negative bounds with half-open range
+# Feature: Range [-10, 10) allows -10 to 9
+[test::NegativeRange]
+description=int; bounded_range<-10,10>, +, -, <=>
+
+# Test: String half-open range
+[test::BoundedRangeString]
+description=std::string; bounded_range<"A", "AAAA">, <=>

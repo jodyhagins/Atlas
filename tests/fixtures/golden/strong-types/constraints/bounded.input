@@ -2,7 +2,7 @@
 # Test: Bounded integer (percentage 0-100)
 # Feature: Value must be in [0, 100]
 [test::Percentage]
-description=int; bounded<0,100>, ==, <=>
+description=int; bounded<0,100>, <=>
 
 # Test: Bounded floating point (temperature)
 # Feature: Absolute zero to sun's core

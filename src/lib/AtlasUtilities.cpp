@@ -1547,6 +1547,23 @@ struct bounded
     }
 };
 
+/**
+ * Constraint: value must be in [Min, Max) (half-open range)
+ */
+template <typename T>
+struct bounded_range
+{
+    static constexpr bool check(typename T::value_type const & value)
+    noexcept(noexcept(value >= T::min()) && noexcept(value < T::max()))
+    {
+        return value >= T::min() && value < T::max();
+    }
+
+    static constexpr char const * message() noexcept {
+        return T::message();
+    }
+};
+
 } // namespace constraints
 } // namespace atlas
 

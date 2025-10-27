@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_E5DD1EF9C2A9B5B302D67AA4BE2FF348AB4A5F3E
-#define FOO_BAR_E5DD1EF9C2A9B5B302D67AA4BE2FF348AB4A5F3E
+#ifndef FOO_BAR_0EA6C2439DB41CB9936F6731CB14EAB9CD485B9C
+#define FOO_BAR_0EA6C2439DB41CB9936F6731CB14EAB9CD485B9C
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -1218,6 +1218,23 @@ struct bounded
     }
 };
 
+/**
+ * Constraint: value must be in [Min, Max) (half-open range)
+ */
+template <typename T>
+struct bounded_range
+{
+    static constexpr bool check(typename T::value_type const & value)
+    noexcept(noexcept(value >= T::min()) && noexcept(value < T::max()))
+    {
+        return value >= T::min() && value < T::max();
+    }
+
+    static constexpr char const * message() noexcept {
+        return T::message();
+    }
+};
+
 } // namespace constraints
 } // namespace atlas
 
@@ -1241,7 +1258,7 @@ namespace test {
  * - kind: struct
  * - type_namespace: test
  * - type_name: NonNegativeInt
- * - description: int; +, -, <=>, ==, non_negative
+ * - description: int; +, -, <=>, non_negative
  * - default_value: ""
  */
 struct NonNegativeInt
@@ -1595,5 +1612,5 @@ struct NonNegativeSaturating
 };
 } // namespace test
 
-#endif // FOO_BAR_E5DD1EF9C2A9B5B302D67AA4BE2FF348AB4A5F3E
+#endif // FOO_BAR_0EA6C2439DB41CB9936F6731CB14EAB9CD485B9C
 
