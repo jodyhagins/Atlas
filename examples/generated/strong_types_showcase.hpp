@@ -1,5 +1,5 @@
-#ifndef EXAMPLE_80661E8475FE080CD634A296BD33EF55B5E24304
-#define EXAMPLE_80661E8475FE080CD634A296BD33EF55B5E24304
+#ifndef EXAMPLE_0C57C67C46F41E8D357F7FF0C34D7BF351925616
+#define EXAMPLE_0C57C67C46F41E8D357F7FF0C34D7BF351925616
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -20,6 +20,7 @@
 #include <version>
 #endif
 #include <chrono>
+#include <cmath>
 #if defined(__cpp_concepts) && __cpp_concepts >= 201907L
 #include <concepts>
 #endif
@@ -29,9 +30,12 @@
 #endif
 #include <functional>
 #include <istream>
+#include <limits>
 #include <map>
 #include <memory>
 #include <ostream>
+#include <sstream>
+#include <stdexcept>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -328,6 +332,1160 @@ U & star_impl(U & u, PriorityTag<0>)
 } // namespace atlas
 
 #endif // WJH_ATLAS_05F39F486A854621A7A80EA8B40E7665
+
+#ifndef WJH_ATLAS_8BF8485B2F9D45ACAD473DC5B3274DDF
+#define WJH_ATLAS_8BF8485B2F9D45ACAD473DC5B3274DDF
+
+namespace atlas {
+
+/**
+ * Base class for arithmetic-related errors in checked arithmetic mode.
+ *
+ * This serves as the base class for all arithmetic exceptions thrown by
+ * checked arithmetic operations on Atlas strong types.
+ *
+ * @see CheckedOverflowError
+ * @see CheckedUnderflowError
+ * @see CheckedDivisionByZeroError
+ * @see CheckedInvalidOperationError
+ */
+class ArithmeticError
+: public std::runtime_error
+{
+public:
+    using std::runtime_error::runtime_error;
+    virtual ~ArithmeticError() noexcept = default;
+};
+
+/**
+ * Thrown when an arithmetic operation goes above the maximum representable
+ * value.
+ *
+ * This exception is thrown by checked arithmetic operations when the result
+ * would exceed std::numeric_limits<T>::max() for the underlying type.
+ *
+ * @note This is distinct from std::overflow_error, which represents
+ * floating-point overflow. This exception represents integer and
+ * floating-point range violations in checked arithmetic operations.
+ *
+ * Examples:
+ * - CheckedInt8{127} + CheckedInt8{1}
+ * - CheckedInt{INT_MAX} + CheckedInt{1}
+ * - CheckedDouble{DBL_MAX} + CheckedDouble{DBL_MAX}
+ *
+ * @see CheckedUnderflowError for negative range violations
+ * @see std::overflow_error (different semantics!)
+ */
+class CheckedOverflowError
+: public ArithmeticError
+{
+public:
+    using ArithmeticError::ArithmeticError;
+    virtual ~CheckedOverflowError() noexcept = default;
+};
+
+/**
+ * Thrown when an arithmetic operation goes below the minimum representable
+ * value.
+ *
+ * This exception is thrown by checked arithmetic operations when the result
+ * would be less than std::numeric_limits<T>::min() for signed types, or less
+ * than zero for unsigned types during subtraction.
+ *
+ * @note This is NOT the same as std::underflow_error, which represents
+ * floating-point gradual underflow. This represents integer and
+ * floating-point range violations in checked arithmetic operations.
+ *
+ * Examples:
+ * - CheckedInt8{-128} - CheckedInt8{1}
+ * - CheckedInt{INT_MIN} - CheckedInt{1}
+ * - CheckedUInt{0} - CheckedUInt{1}
+ *
+ * @see CheckedOverflowError for positive range violations
+ * @see std::underflow_error (different semantics!)
+ */
+class CheckedUnderflowError
+: public ArithmeticError
+{
+public:
+    using ArithmeticError::ArithmeticError;
+    virtual ~CheckedUnderflowError() noexcept = default;
+};
+
+/**
+ * Thrown when dividing or taking modulo by zero in checked arithmetic mode.
+ *
+ * This exception is thrown by checked arithmetic operations when attempting
+ * to divide or compute modulo with a zero divisor, which is undefined behavior
+ * in C++.
+ *
+ * Examples:
+ * - CheckedInt{5} / CheckedInt{0}
+ * - CheckedInt{10} % CheckedInt{0}
+ * - CheckedDouble{3.14} / CheckedDouble{0.0}
+ *
+ * @see CheckedInvalidOperationError for NaN-producing operations
+ */
+class CheckedDivisionByZeroError
+: public ArithmeticError
+{
+public:
+    using ArithmeticError::ArithmeticError;
+    virtual ~CheckedDivisionByZeroError() noexcept = default;
+};
+
+/**
+ * Thrown when a floating-point operation produces an invalid result (NaN).
+ *
+ * This exception is thrown by checked arithmetic operations when a floating-point
+ * operation would produce NaN (Not-a-Number) according to IEEE 754 semantics.
+ *
+ * @note This is distinct from IEEE 754 invalid operation exceptions and
+ * represents NaN detection in checked arithmetic mode, not hardware exception
+ * handling.
+ *
+ * Examples:
+ * - CheckedDouble{0.0} / CheckedDouble{0.0}  // 0/0 -> NaN
+ * - CheckedDouble{INFINITY} - CheckedDouble{INFINITY}  // inf-inf -> NaN
+ * - CheckedDouble{-1.0}.sqrt()  // sqrt(-1) -> NaN (if sqrt method exists)
+ *
+ * @see CheckedDivisionByZeroError for division by zero
+ * @see CheckedOverflowError for overflow to infinity
+ */
+class CheckedInvalidOperationError
+: public ArithmeticError
+{
+public:
+    using ArithmeticError::ArithmeticError;
+    virtual ~CheckedInvalidOperationError() noexcept = default;
+};
+
+namespace atlas_detail {
+
+template <typename T>
+using EnableFloatingPoint = typename std::enable_if<
+    std::is_floating_point<T>::value,
+    T>::type;
+
+template <typename T>
+using EnableSigned = typename std::enable_if<
+    std::is_signed<T>::value && std::is_integral<T>::value,
+    T>::type;
+
+template <typename T>
+using EnableUnsigned = typename std::enable_if<
+    std::is_unsigned<T>::value && std::is_integral<T>::value,
+    T>::type;
+
+template <typename T>
+EnableFloatingPoint<T>
+checked_add(T a, T b, char const * overflow, char const * underflow)
+{
+    T result = a + b;
+    if (std::isinf(result)) {
+        if (result > 0) {
+            throw CheckedOverflowError(overflow);
+        } else {
+            throw CheckedUnderflowError(underflow);
+        }
+    }
+    if (std::isnan(result)) {
+        throw CheckedInvalidOperationError("Invalid operation: NaN result");
+    }
+    return result;
+}
+
+template <typename T>
+EnableUnsigned<T>
+checked_add(T a, T b, char const * error_msg, char const * = "")
+{
+#if defined(__GNUC__) || defined(__clang__)
+    T result;
+    if (__builtin_add_overflow(a, b, &result)) {
+        throw CheckedOverflowError(error_msg);
+    }
+    return result;
+#else
+    if (a > std::numeric_limits<T>::max() - b) {
+        throw CheckedOverflowError(error_msg);
+    }
+    return a + b;
+#endif
+}
+
+template <typename T>
+EnableSigned<T>
+checked_add(T a, T b, char const * overflow, char const * underflow)
+{
+#if defined(__GNUC__) || defined(__clang__)
+    T result;
+    if (__builtin_add_overflow(a, b, &result)) {
+        if (b < 0) {
+            throw CheckedUnderflowError(underflow);
+        } else {
+            throw CheckedOverflowError(overflow);
+        }
+    }
+    return result;
+#else
+    if (b > 0 && a > std::numeric_limits<T>::max() - b) {
+        throw CheckedOverflowError(overflow);
+    } else if (b < 0 && a < std::numeric_limits<T>::lowest() - b) {
+        throw CheckedUnderflowError(underflow);
+    }
+    return a + b;
+#endif
+}
+
+template <typename T>
+EnableFloatingPoint<T>
+checked_sub(T a, T b, char const * overflow, char const * underflow)
+{
+    a -= b;
+    if (std::isinf(a)) {
+        if (a > 0) {
+            throw CheckedOverflowError(overflow);
+        } else {
+            throw CheckedUnderflowError(underflow);
+        }
+    } else if (std::isnan(a)) {
+        throw CheckedInvalidOperationError("Invalid operation: NaN result");
+    }
+    return a;
+}
+
+template <typename T>
+EnableUnsigned<T>
+checked_sub(T a, T b, char const *, char const * underflow)
+{
+#if defined(__GNUC__) || defined(__clang__)
+    T result;
+    if (__builtin_sub_overflow(a, b, &result)) {
+        throw CheckedUnderflowError(underflow);
+    }
+    return result;
+#else
+    if (a < b) {
+        throw CheckedUnderflowError(underflow);
+    }
+    return a - b;
+#endif
+}
+
+template <typename T>
+EnableSigned<T>
+checked_sub(T a, T b, char const * overflow, char const * underflow)
+{
+#if defined(__GNUC__) || defined(__clang__)
+    T result;
+    if (__builtin_sub_overflow(a, b, &result)) {
+        if (b > 0) {
+            throw CheckedUnderflowError(underflow);
+        } else {
+            throw CheckedOverflowError(overflow);
+        }
+    }
+    return result;
+#else
+    if (b < 0 && a > std::numeric_limits<T>::max() + b) {
+        throw CheckedOverflowError(overflow);
+    } else if (b > 0 && a < std::numeric_limits<T>::lowest() + b) {
+        throw CheckedUnderflowError(underflow);
+    }
+    return a - b;
+#endif
+}
+
+template <typename T>
+EnableFloatingPoint<T>
+checked_mul(T a, T b, char const * overflow, char const *)
+{
+    // Check for multiplication that would produce NaN (inf * 0 or 0 * inf)
+    if ((std::isinf(a) && b == static_cast<T>(0.0)) ||
+        (a == static_cast<T>(0.0) && std::isinf(b))) {
+        throw CheckedInvalidOperationError(overflow);
+    }
+
+    a *= b;
+    if (std::isinf(a)) {
+        throw CheckedOverflowError(overflow);
+    } else if (std::isnan(a)) {
+        throw CheckedInvalidOperationError(overflow);
+    }
+    return a;
+}
+
+template <typename T>
+EnableUnsigned<T>
+checked_mul(T a, T b, char const * overflow, char const *)
+{
+#if defined(__GNUC__) || defined(__clang__)
+    T result;
+    if (__builtin_mul_overflow(a, b, &result)) {
+        throw CheckedOverflowError(overflow);
+    }
+    return result;
+#else
+    if (b != 0 && a > std::numeric_limits<T>::max() / b) {
+        throw CheckedOverflowError(overflow);
+    }
+    return a * b;
+#endif
+}
+
+template <typename T>
+EnableSigned<T>
+checked_mul(T a, T b, char const * overflow, char const * underflow)
+{
+#if defined(__GNUC__) || defined(__clang__)
+    T result;
+    if (__builtin_mul_overflow(a, b, &result)) {
+        // Determine if overflow or underflow based on operand signs
+        bool same_sign = (a > 0) == (b > 0);
+        if (same_sign) {
+            throw CheckedOverflowError(overflow);
+        } else {
+            throw CheckedUnderflowError(underflow);
+        }
+    }
+    return result;
+#else
+    // Handle zero cases
+    if (a == 0 || b == 0) {
+        return 0;
+    }
+
+    // Check for __int128 support (GCC/Clang on 64-bit platforms)
+#if defined(__SIZEOF_INT128__) && (sizeof(T) < 16)
+    // Use __int128 for widening (works for all types up to 64-bit)
+    __int128 result = static_cast<__int128>(a) * static_cast<__int128>(b);
+    if (result < static_cast<__int128>(std::numeric_limits<T>::lowest()) ||
+        result > static_cast<__int128>(std::numeric_limits<T>::max()))
+    {
+        throw CheckedOverflowError(overflow);
+    }
+    return static_cast<T>(result);
+#else
+    // Fallback: widening for small types, division checks for long long
+    if (sizeof(T) < sizeof(long long)) {
+        auto result = static_cast<long long>(a) * static_cast<long long>(b);
+        if (result < static_cast<long long>(std::numeric_limits<T>::lowest()) ||
+            result > static_cast<long long>(std::numeric_limits<T>::max()))
+        {
+            throw CheckedOverflowError(overflow);
+        }
+        return static_cast<T>(result);
+    } else {
+        // For long long itself (or __int128 if that's T), use division checks
+        // Check all four sign combinations
+        if (a > 0) {
+            if (b > 0) {
+                if (a > std::numeric_limits<T>::max() / b) {
+                    throw CheckedOverflowError(overflow);
+                }
+            } else {
+                if (b < std::numeric_limits<T>::lowest() / a) {
+                    throw CheckedOverflowError(overflow);
+                }
+            }
+        } else {
+            if (b > 0) {
+                if (a < std::numeric_limits<T>::lowest() / b) {
+                    throw CheckedOverflowError(overflow);
+                }
+            } else {
+                if (a != 0 && b < std::numeric_limits<T>::max() / a) {
+                    throw CheckedOverflowError(overflow);
+                }
+            }
+        }
+        return a * b;
+    }
+#endif
+#endif
+}
+
+template <typename T>
+EnableFloatingPoint<T>
+checked_div(T a, T b, char const * div_by_zero, char const *)
+{
+    // Division by zero: throw exception (including 0.0/0.0 which produces NaN)
+    if (b == T(0)) {
+        throw CheckedDivisionByZeroError(div_by_zero);
+    }
+    // Check for inf / inf which produces NaN
+    if (std::isinf(a) && std::isinf(b)) {
+        throw CheckedInvalidOperationError(div_by_zero);
+    }
+    a /= b;
+    if (std::isinf(a)) {
+        throw CheckedOverflowError(div_by_zero);
+    } else if (std::isnan(a)) {
+        throw CheckedInvalidOperationError(div_by_zero);
+    }
+    return a;
+}
+
+template <typename T>
+EnableUnsigned<T>
+checked_div(T a, T b, char const * div_by_zero, char const *)
+{
+    if (b == T(0)) {
+        throw CheckedDivisionByZeroError(div_by_zero);
+    }
+    return a / b;
+}
+
+template <typename T>
+EnableSigned<T>
+checked_div(T a, T b, char const * div_by_zero, char const * overflow)
+{
+    if (b == T(0)) {
+        throw CheckedDivisionByZeroError(div_by_zero);
+    }
+    // Check for special case: INT_MIN / -1 overflows
+    if (a == std::numeric_limits<T>::lowest() && b == T(-1)) {
+        throw CheckedOverflowError(overflow);
+    }
+    return a / b;
+}
+
+template <typename T>
+typename std::enable_if<std::is_integral<T>::value, T>::type
+checked_mod(T a, T b, char const * div_by_zero)
+{
+    if (b == T(0)) {
+        throw CheckedDivisionByZeroError(div_by_zero);
+    }
+    // INT_MIN % -1 is UB - throw for consistency with INT_MIN / -1
+    if (std::is_signed<T>::value &&
+        a == std::numeric_limits<T>::lowest() &&
+        b == static_cast<T>(-1)) {
+        throw CheckedOverflowError(div_by_zero);  // Consistent with division
+    }
+    return a % b;
+}
+
+// Modulo for floating-point - not provided (use static_assert in caller)
+
+} // namespace atlas_detail
+} // namespace atlas
+
+#endif // WJH_ATLAS_8BF8485B2F9D45ACAD473DC5B3274DDF
+
+#ifndef WJH_ATLAS_64A9A0E1C2564622BBEAE087A98B793D
+#define WJH_ATLAS_64A9A0E1C2564622BBEAE087A98B793D
+
+namespace atlas {
+namespace atlas_detail {
+
+template <typename T>
+using EnableFloatingPoint = typename std::enable_if<
+    std::is_floating_point<T>::value,
+    T>::type;
+
+template <typename T>
+using EnableSigned = typename std::enable_if<
+    std::is_signed<T>::value && std::is_integral<T>::value,
+    T>::type;
+
+template <typename T>
+using EnableUnsigned = typename std::enable_if<
+    std::is_unsigned<T>::value && std::is_integral<T>::value,
+    T>::type;
+
+template <typename T>
+EnableFloatingPoint<T>
+saturating_add(T a, T b) noexcept
+{
+    T result = a + b;
+    if (std::isinf(result) || result > std::numeric_limits<T>::max()) {
+        return std::numeric_limits<T>::max();
+    }
+    if (result < std::numeric_limits<T>::lowest()) {
+        return std::numeric_limits<T>::lowest();
+    }
+    // Saturate NaN to max for consistency
+    if (std::isnan(result)) {
+        return std::numeric_limits<T>::max();
+    }
+    return result;
+}
+
+template <typename T>
+EnableUnsigned<T>
+saturating_add(T a, T b) noexcept
+{
+    if (a > std::numeric_limits<T>::max() - b) {
+        return std::numeric_limits<T>::max();
+    }
+    return a + b;
+}
+
+template <typename T>
+EnableSigned<T>
+saturating_add(T a, T b) noexcept
+{
+    if (b > 0 && a > std::numeric_limits<T>::max() - b) {
+        return std::numeric_limits<T>::max();
+    }
+    if (b < 0 && a < std::numeric_limits<T>::lowest() - b) {
+        return std::numeric_limits<T>::lowest();
+    }
+    return a + b;
+}
+
+template <typename T>
+EnableFloatingPoint<T>
+saturating_sub(T a, T b) noexcept
+{
+    T result = a - b;
+    if (std::isinf(result) || result > std::numeric_limits<T>::max()) {
+        return std::numeric_limits<T>::max();
+    }
+    if (result < std::numeric_limits<T>::lowest()) {
+        return std::numeric_limits<T>::lowest();
+    }
+    // Saturate NaN to max for consistency
+    if (std::isnan(result)) {
+        return std::numeric_limits<T>::max();
+    }
+    return result;
+}
+
+template <typename T>
+EnableUnsigned<T>
+saturating_sub(T a, T b) noexcept
+{
+    if (a < b) {
+        return std::numeric_limits<T>::min(); // 0 for unsigned
+    }
+    return a - b;
+}
+
+template <typename T>
+EnableSigned<T>
+saturating_sub(T a, T b) noexcept
+{
+    if (b < 0 && a > std::numeric_limits<T>::max() + b) {
+        return std::numeric_limits<T>::max();
+    }
+    if (b > 0 && a < std::numeric_limits<T>::lowest() + b) {
+        return std::numeric_limits<T>::lowest();
+    }
+    return a - b;
+}
+
+/**
+ * Saturating multiplication for floating-point types
+ *
+ * Multiplies two floating-point values and clamps the result to the
+ * representable range if overflow or underflow occurs.
+ *
+ * @tparam T Floating-point type (float, double, long double)
+ * @param a First operand
+ * @param b Second operand
+ * @return Product of a and b, clamped to [lowest, max]
+ */
+template <typename T>
+EnableFloatingPoint<T>
+saturating_mul(T a, T b) noexcept
+{
+    T result = a * b;
+    if (std::isinf(result) || result > std::numeric_limits<T>::max()) {
+        return std::numeric_limits<T>::max();
+    }
+    if (result < std::numeric_limits<T>::lowest()) {
+        return std::numeric_limits<T>::lowest();
+    }
+    // NaN case: saturate to max for consistency
+    if (std::isnan(result)) {
+        return std::numeric_limits<T>::max();
+    }
+    return result;
+}
+
+/**
+ * Saturating multiplication for unsigned integer types
+ *
+ * Multiplies two unsigned integers and clamps the result to the maximum
+ * representable value if overflow occurs.
+ *
+ * @tparam T Unsigned integer type
+ * @param a First operand
+ * @param b Second operand
+ * @return Product of a and b, clamped to max on overflow
+ */
+template <typename T>
+EnableUnsigned<T>
+saturating_mul(T a, T b) noexcept
+{
+#if defined(__GNUC__) || defined(__clang__)
+    T result;
+    if (__builtin_mul_overflow(a, b, &result)) {
+        return std::numeric_limits<T>::max();
+    }
+    return result;
+#else
+    if (b != 0 && a > std::numeric_limits<T>::max() / b) {
+        return std::numeric_limits<T>::max();
+    }
+    return a * b;
+#endif
+}
+
+/**
+ * Saturating multiplication for signed integer types
+ *
+ * Multiplies two signed integers and clamps the result to the representable
+ * range if overflow or underflow occurs.
+ *
+ * @tparam T Signed integer type
+ * @param a First operand
+ * @param b Second operand
+ * @return Product of a and b, clamped to [min, max]
+ */
+template <typename T>
+EnableSigned<T>
+saturating_mul(T a, T b) noexcept
+{
+#if defined(__GNUC__) || defined(__clang__)
+    T result;
+    if (__builtin_mul_overflow(a, b, &result)) {
+        // Determine if overflow or underflow based on signs
+        bool const same_sign = (a > 0) == (b > 0);
+        if (same_sign) {
+            return std::numeric_limits<T>::max();
+        } else {
+            return std::numeric_limits<T>::lowest();
+        }
+    }
+    return result;
+#else
+    // Handle zero cases
+    if (a == 0 || b == 0) {
+        return 0;
+    }
+
+    // Check for __int128 support (GCC/Clang on 64-bit platforms)
+#if defined(__SIZEOF_INT128__) && (sizeof(T) < 16)
+    // Use __int128 for widening (works for all types up to 64-bit)
+    __int128 result = static_cast<__int128>(a) * static_cast<__int128>(b);
+    if (result < static_cast<__int128>(std::numeric_limits<T>::lowest())) {
+        return std::numeric_limits<T>::lowest();
+    } else if (result > static_cast<__int128>(std::numeric_limits<T>::max())) {
+        return std::numeric_limits<T>::max();
+    }
+    return static_cast<T>(result);
+#else
+    // Fallback: widening for small types, division checks for long long
+    if (sizeof(T) < sizeof(long long)) {
+        auto result = static_cast<long long>(a) * static_cast<long long>(b);
+        if (result < static_cast<long long>(std::numeric_limits<T>::lowest())) {
+            return std::numeric_limits<T>::lowest();
+        } else if (result > static_cast<long long>(std::numeric_limits<T>::max())) {
+            return std::numeric_limits<T>::max();
+        }
+        return static_cast<T>(result);
+    } else {
+        // For long long itself (or __int128 if that's T), use division checks
+        // Check all four sign combinations
+        if (a > 0) {
+            if (b > 0) {
+                if (a > std::numeric_limits<T>::max() / b) {
+                    return std::numeric_limits<T>::max();
+                }
+            } else {
+                if (b < std::numeric_limits<T>::lowest() / a) {
+                    return std::numeric_limits<T>::lowest();
+                }
+            }
+        } else {
+            if (b > 0) {
+                if (a < std::numeric_limits<T>::lowest() / b) {
+                    return std::numeric_limits<T>::lowest();
+                }
+            } else {
+                if (a < std::numeric_limits<T>::max() / b) {
+                    return std::numeric_limits<T>::max();
+                }
+            }
+        }
+        return a * b;
+    }
+#endif
+#endif
+}
+
+/**
+ * Saturating division for floating-point types
+ *
+ * Divides two floating-point values and clamps the result to the
+ * representable range if overflow or underflow occurs.
+ *
+ * Division by zero uses sign-aware saturation (matches MATLAB's approach):
+ * - positive / 0 → max (matches limit as divisor approaches 0+)
+ * - negative / 0 → lowest (matches limit as divisor approaches 0+)
+ * - 0 / 0 → 0 (neutral value for indeterminate form)
+ * - NaN result → 0 (neutral value for invalid operations)
+ *
+ * @tparam T Floating-point type (float, double, long double)
+ * @param a Dividend
+ * @param b Divisor
+ * @return Quotient of a and b, clamped to [lowest, max]
+ */
+template <typename T>
+EnableFloatingPoint<T>
+saturating_div(T a, T b) noexcept
+{
+    // Division by zero: sign-aware saturation
+    // Use std::signbit() to handle negative zero correctly
+    if (b == static_cast<T>(0.0)) {
+        bool divisor_negative = std::signbit(b);
+        if (a > static_cast<T>(0.0)) {
+            return divisor_negative ?
+                std::numeric_limits<T>::lowest() :
+                std::numeric_limits<T>::max();
+        } else if (a < static_cast<T>(0.0)) {
+            return divisor_negative ?
+                std::numeric_limits<T>::max() :
+                std::numeric_limits<T>::lowest();
+        } else {
+            // 0.0 / 0.0 is indeterminate: return neutral value (0)
+            return static_cast<T>(0.0);
+        }
+    }
+
+    T result = a / b;
+    if (std::isinf(result) || result > std::numeric_limits<T>::max()) {
+        return std::numeric_limits<T>::max();
+    }
+    if (result < std::numeric_limits<T>::lowest()) {
+        return std::numeric_limits<T>::lowest();
+    }
+    // NaN indicates invalid operation: return neutral value (0)
+    if (std::isnan(result)) {
+        return static_cast<T>(0.0);
+    }
+    return result;
+}
+
+/**
+ * Saturating division for unsigned integer types
+ *
+ * Divides two unsigned integers. Division never overflows for unsigned types.
+ *
+ * @tparam T Unsigned integer type
+ * @param a Dividend
+ * @param b Divisor
+ * @return Quotient of a and b
+ */
+template <typename T>
+EnableUnsigned<T>
+saturating_div(T a, T b) noexcept
+{
+    // Division by zero: saturate to max for consistency with overflow behavior
+    if (b == 0) {
+        if (a == 0) {
+            return 0;  // Match signed/float behavior for 0/0
+        }
+        return std::numeric_limits<T>::max();
+    }
+    // Division never overflows for unsigned (when divisor is non-zero)
+    return a / b;
+}
+
+/**
+ * Saturating division for signed integer types
+ *
+ * Divides two signed integers and clamps the result to the maximum
+ * representable value if overflow occurs (INT_MIN / -1).
+ *
+ * Division by zero uses sign-aware saturation (matches MATLAB's approach):
+ * - positive / 0 → max (matches limit as divisor approaches 0+)
+ * - negative / 0 → lowest (matches limit as divisor approaches 0+)
+ * - 0 / 0 → 0 (neutral value for indeterminate form)
+ *
+ * @tparam T Signed integer type
+ * @param a Dividend
+ * @param b Divisor
+ * @return Quotient of a and b, clamped to max on overflow
+ */
+template <typename T>
+EnableSigned<T>
+saturating_div(T a, T b) noexcept
+{
+    // Division by zero: sign-aware saturation
+    // Matches limit behavior as divisor approaches zero
+    if (b == 0) {
+        if (a > 0) {
+            return std::numeric_limits<T>::max();
+        } else if (a < 0) {
+            return std::numeric_limits<T>::lowest();
+        } else {
+            // 0 / 0 is indeterminate: return neutral value (0)
+            return 0;
+        }
+    }
+    // Only overflow case: INT_MIN / -1
+    if (a == std::numeric_limits<T>::lowest() && b == static_cast<T>(-1)) {
+        return std::numeric_limits<T>::max();
+    }
+    return a / b;
+}
+
+/**
+ * Saturating remainder for unsigned integer types
+ *
+ * Computes the remainder of two unsigned integers. Remainder never overflows
+ * for unsigned types, but we handle modulo by zero.
+ *
+ * Remainder by zero behavior:
+ * - a % 0 → 0 (neutral value for undefined operation)
+ *
+ * @tparam T Unsigned integer type
+ * @param a Dividend
+ * @param b Divisor (modulus)
+ * @return Remainder of a and b
+ */
+template <typename T>
+EnableUnsigned<T>
+saturating_rem(T a, T b) noexcept
+{
+    // Remainder by zero: return neutral value (0)
+    if (b == 0) {
+        return 0;
+    }
+    // Remainder never overflows for unsigned (when divisor is non-zero)
+    return a % b;
+}
+
+/**
+ * Saturating remainder for signed integer types
+ *
+ * Computes the remainder of two signed integers. Handles the edge case
+ * of INT_MIN % -1, which on some architectures can trigger overflow
+ * (though mathematically the result is 0).
+ *
+ * Remainder by zero behavior:
+ * - a % 0 → 0 (neutral value for undefined operation)
+ *
+ * Special cases:
+ * - INT_MIN % -1 → 0 (mathematical result, avoiding potential overflow)
+ *
+ * @tparam T Signed integer type
+ * @param a Dividend
+ * @param b Divisor (modulus)
+ * @return Remainder of a and b
+ */
+template <typename T>
+EnableSigned<T>
+saturating_rem(T a, T b) noexcept
+{
+    // Remainder by zero: return neutral value (0)
+    if (b == 0) {
+        return 0;
+    }
+    // Edge case: INT_MIN % -1 can overflow on some architectures
+    // Mathematically, the result is 0
+    if (a == std::numeric_limits<T>::lowest() && b == static_cast<T>(-1)) {
+        return 0;
+    }
+    return a % b;
+}
+
+// Modulo for floating-point - not provided (modulo is only defined for integral types)
+
+} // namespace atlas_detail
+} // namespace atlas
+
+#endif // WJH_ATLAS_64A9A0E1C2564622BBEAE087A98B793D
+
+#ifndef WJH_ATLAS_173D2C4FC9AA46929AD14C8BDF75D829
+#define WJH_ATLAS_173D2C4FC9AA46929AD14C8BDF75D829
+
+#include <sstream>
+
+namespace atlas {
+
+/**
+ * @brief Exception thrown when a constraint is violated
+ */
+class ConstraintError
+: public std::logic_error
+{
+public:
+    using std::logic_error::logic_error;
+    virtual ~ConstraintError() noexcept = default;
+};
+
+namespace constraints {
+
+namespace detail {
+
+template <typename T>
+std::string
+format_value_impl(T const &, atlas_detail::PriorityTag<0>)
+{
+    return "unknown value";
+}
+
+template <typename T>
+auto
+format_value_impl(T const & value, atlas_detail::PriorityTag<1>)
+-> decltype(std::declval<std::ostringstream &>() << value, std::string())
+{
+    std::ostringstream oss;
+    oss << value;
+    return oss.str();
+}
+
+template <typename T>
+auto
+format_value_impl(T const & value, atlas_detail::PriorityTag<2>)
+-> decltype(std::to_string(value))
+{
+    return std::to_string(value);
+}
+
+template <typename T>
+std::string
+format_value(T const & value)
+{
+    return format_value_impl(value, atlas_detail::PriorityTag<2>{});
+}
+
+inline int uncaught_exceptions() noexcept
+{
+#if defined(__cpp_lib_uncaught_exceptions) && \
+    __cpp_lib_uncaught_exceptions >= 201411L
+    return std::uncaught_exceptions();
+#elif defined(_MSC_VER)
+    return __uncaught_exceptions();  // MSVC extension available since VS2015
+#elif defined(__GLIBCXX__)
+    // libstdc++ has __cxa_get_globals which tracks uncaught exceptions
+    return __cxxabiv1::__cxa_get_globals()->uncaughtExceptions;
+#elif defined(_LIBCPP_VERSION)
+    // libc++ has std::uncaught_exceptions even in C++11 mode as extension
+    return std::uncaught_exceptions();
+#else
+    // Fallback: use old uncaught_exception() (singular) - less safe but works
+    // This will return 1 during any exception, 0 otherwise
+    // Can't distinguish between multiple exceptions, but better than nothing
+    return std::uncaught_exception() ? 1 : 0;
+#endif
+}
+
+/**
+ * @brief RAII guard for validating constraints after mutating operations
+ *
+ * This guard validates constraints in its destructor, ensuring that the
+ * constraint is checked after the operation completes. The guard checks
+ * uncaught_exceptions() to avoid throwing during stack unwinding.
+ *
+ * Only validates non-const operations - const operations cannot violate
+ * constraints by definition.
+ *
+ * @tparam T The value type being constrained (may be const)
+ * @tparam ConstraintT The constraint type with static check() and message()
+ */
+template <typename T, typename ConstraintT, typename = void>
+struct ConstraintGuard
+{
+    using value_type = typename std::remove_const<T>::type;
+
+    T const & value;
+    char const * operation_name;
+    int uncaught_at_entry;
+
+    /**
+     * @brief Construct guard, capturing current exception state
+     */
+    constexpr ConstraintGuard(T const & v, char const * op) noexcept
+    : value(v)
+    , operation_name(op)
+    , uncaught_at_entry(uncaught_exceptions())
+    { }
+
+    /**
+     * @brief Destructor validates constraint if no new exceptions
+     *
+     * Only throws if the constraint is violated AND no exceptions are
+     * currently unwinding (to avoid std::terminate).
+     *
+     * Only validates non-const operations - uses std::is_const to check.
+     */
+    constexpr ~ConstraintGuard() noexcept(false)
+    {
+        if (uncaught_exceptions() == uncaught_at_entry) {
+            if (not ConstraintT::check(value)) {
+                throw atlas::ConstraintError(
+                    std::string(operation_name) +
+                    ": operation violates constraint (" +
+                    ConstraintT::message() + ")");
+            }
+        }
+    }
+};
+
+template <typename T, typename ConstraintT>
+struct ConstraintGuard<
+    T,
+    ConstraintT,
+    typename std::enable_if<std::is_const<T>::value>::type>
+{
+    constexpr ConstraintGuard(T const &, char const *) noexcept
+    { }
+};
+
+} // namespace detail
+
+template <typename ConstraintT, typename T>
+auto constraint_guard(T & t, char const * op) noexcept
+{
+    return detail::ConstraintGuard<T, ConstraintT>(t, op);
+}
+
+/**
+ * @brief Constraint: value must be > 0
+ */
+template <typename T>
+struct positive
+{
+    static constexpr bool check(T const & value)
+    noexcept(noexcept(value > T{0}))
+    {
+        return value > T{0};
+    }
+
+    static constexpr char const * message() noexcept
+    {
+        return "value must be positive (> 0)";
+    }
+};
+
+/**
+ * @brief Constraint: value must be >= 0
+ */
+template <typename T>
+struct non_negative
+{
+    static constexpr bool check(T const & value)
+    noexcept(noexcept(value >= T{0}))
+    {
+        return value >= T{0};
+    }
+
+    static constexpr char const * message() noexcept
+    {
+        return "value must be non-negative (>= 0)";
+    }
+};
+
+/**
+ * @brief Constraint: value must be != 0
+ */
+template <typename T>
+struct non_zero
+{
+    static constexpr bool check(T const & value)
+    noexcept(noexcept(value != T{0}))
+    {
+        return value != T{0};
+    }
+
+    static constexpr char const * message() noexcept
+    {
+        return "value must be non-zero (!= 0)";
+    }
+};
+
+/**
+ * Constraint: value must be in [Min, Max]
+ */
+template <typename T>
+struct bounded
+{
+    static constexpr bool check(typename T::value_type const & value)
+    noexcept(noexcept(value >= T::min()) && noexcept(value <= T::max()))
+    {
+        return value >= T::min() && value <= T::max();
+    }
+
+    static constexpr char const * message() noexcept
+    {
+        return T::message();
+    }
+};
+
+/**
+ * Constraint: value must be in [Min, Max) (half-open range)
+ */
+template <typename T>
+struct bounded_range
+{
+    static constexpr bool check(typename T::value_type const & value)
+    noexcept(noexcept(value >= T::min()) && noexcept(value < T::max()))
+    {
+        return value >= T::min() && value < T::max();
+    }
+
+    static constexpr char const * message() noexcept
+    {
+        return T::message();
+    }
+};
+
+/**
+ * @brief Constraint: container/string must not be empty
+ */
+template <typename T>
+struct non_empty
+{
+    static constexpr bool check(T const & value)
+    noexcept(noexcept(value.empty()))
+    {
+        return not value.empty();
+    }
+
+    static constexpr char const * message() noexcept
+    {
+        return "value must not be empty";
+    }
+};
+
+/**
+ * @brief Constraint: pointer must not be null
+ *
+ * Works with raw pointers, smart pointers (unique_ptr, shared_ptr), and
+ * std::optional by using explicit bool conversion (operator bool()).
+ *
+ * Note: weak_ptr requires C++23 for operator bool() support.
+ */
+template <typename T>
+struct non_null
+{
+    static constexpr bool check(T const & value)
+    noexcept(noexcept(static_cast<bool>(value)))
+    {
+        // Use explicit bool conversion - works for:
+        // - Raw pointers (void*, int*, etc.)
+        // - Smart pointers (unique_ptr, shared_ptr)
+        // - std::optional
+        // - Any type with explicit operator bool()
+        return static_cast<bool>(value);
+    }
+
+    static constexpr char const * message() noexcept
+    {
+        return "pointer must not be null";
+    }
+};
+
+} // namespace constraints
+} // namespace atlas
+
+#endif // WJH_ATLAS_173D2C4FC9AA46929AD14C8BDF75D829
 
 
 //////////////////////////////////////////////////////////////////////
@@ -1178,7 +2336,7 @@ namespace v1 {
  * - kind: class
  * - type_namespace: ids::v1
  * - type_name: UserId
- * - description: strong unsigned long; !=, <=>, ==, hash, no-constexpr-hash
+ * - description: strong unsigned long; <=>, hash, no-constexpr-hash
  * - default_value: "0"
  */
 class UserId
@@ -1323,7 +2481,7 @@ namespace units {
  * - kind: struct
  * - type_namespace: physics::units
  * - type_name: Meters
- * - description: strong double; !=, *, +, -, /, <=>, ==, u-
+ * - description: strong double; *, +, -, /, <=>, u-
  * - default_value: ""
  */
 struct Meters
@@ -1583,7 +2741,7 @@ namespace units {
  * - kind: struct
  * - type_namespace: physics::units
  * - type_name: Seconds
- * - description: strong double; !=, *, +, -, /, <=>, ==, u-
+ * - description: strong double; *, +, -, /, <=>, u-
  * - default_value: ""
  */
 struct Seconds
@@ -1843,7 +3001,7 @@ namespace units {
  * - kind: struct
  * - type_namespace: physics::units
  * - type_name: MetersPerSecond
- * - description: strong double; !=, *, +, -, /, <=>, ==, u-
+ * - description: strong double; *, +, -, /, <=>, u-
  * - default_value: ""
  */
 struct MetersPerSecond
@@ -2437,7 +3595,7 @@ namespace color {
  * - kind: struct
  * - type_namespace: graphics::color
  * - type_name: RedChannel
- * - description: strong uint8_t; !=, &, *, +, -, /, <=>, ==, ^, |, ~
+ * - description: strong uint8_t; &, *, +, -, /, <=>, ^, |, ~
  * - default_value: "0"
  */
 struct RedChannel
@@ -3312,7 +4470,7 @@ namespace rational {
  * - kind: struct
  * - type_namespace: math::rational
  * - type_name: Numerator
- * - description: strong long; !=, *, +, -, <=>, ==
+ * - description: strong long; *, +, -, <=>
  * - default_value: ""
  */
 struct Numerator
@@ -3527,7 +4685,7 @@ namespace rational {
  * - kind: struct
  * - type_namespace: math::rational
  * - type_name: Denominator
- * - description: strong long; !=, *, /, <=>, ==
+ * - description: strong long; *, /, <=>
  * - default_value: "1"
  */
 struct Denominator
@@ -5121,7 +6279,7 @@ namespace optional_strong {
  * - kind: struct
  * - type_namespace: demo::optional_strong
  * - type_name: Temperature
- * - description: double; +, -, <=>, ==
+ * - description: double; +, -, <=>
  * - default_value: "20.0"
  */
 struct Temperature
@@ -5385,7 +6543,7 @@ namespace constants {
  * - kind: struct
  * - type_namespace: demo::constants
  * - type_name: HttpStatusCode
- * - description: unsigned short; !=, <=>, ==
+ * - description: unsigned short; <=>
  * - default_value: ""
  */
 struct HttpStatusCode
@@ -5654,7 +6812,7 @@ namespace inline_syntax {
  * - kind: struct
  * - type_namespace: demo::inline_syntax
  * - type_name: RequestCount
- * - description: unsigned int; ++, --, <=>, ==
+ * - description: unsigned int; ++, --, <=>
  * - default_value: ""
  */
 struct RequestCount
@@ -5827,7 +6985,7 @@ namespace inline_syntax {
  * - kind: struct
  * - type_namespace: demo::inline_syntax
  * - type_name: SessionTimeout
- * - description: std::chrono::seconds; !=, <=>, ==
+ * - description: std::chrono::seconds; <=>
  * - default_value: ""
  */
 struct SessionTimeout
@@ -7425,4 +8583,4205 @@ struct std::hash<demo::forwarding::ManagedString>
             static_cast<std::string const &>(t));
     }
 };
-#endif // EXAMPLE_80661E8475FE080CD634A296BD33EF55B5E24304
+
+namespace finance {
+namespace pricing {
+
+/**
+ * @brief Strong type wrapper for double
+ *
+ * Generated by Atlas Strong Type Generator.
+ * Generation parameters:
+ * - kind: struct
+ * - type_namespace: finance::pricing
+ * - type_name: Price
+ * - description: double; *, +, -, /, <=>, positive
+ * - default_value: "1.0"
+ */
+struct Price
+: private atlas::strong_type_tag
+{
+    double value{1.0};
+
+    using atlas_value_type = double;
+    using atlas_constraint = atlas::constraints::positive<double>;
+
+    constexpr explicit Price() = default;
+
+    template <
+        typename... ArgTs,
+        typename std::enable_if<
+            std::is_constructible<double, ArgTs...>::value,
+            bool>::type = true>
+    constexpr explicit Price(ArgTs && ... args)
+    : value(std::forward<ArgTs>(args)...)
+    {
+        if (not atlas_constraint::check(value)) {
+            throw atlas::ConstraintError(
+                "Price: " +
+                atlas::constraints::detail::format_value(value) +
+                " violates constraint: value must be positive (> 0)");
+        }
+    }
+
+    /**
+     * The explicit cast operator provides a reference to the wrapped object.
+     */
+    constexpr explicit operator double const & () const { return value; }
+    constexpr explicit operator double & () { return value; }
+
+    /**
+     * Apply * assignment to the wrapped objects.
+     */
+    friend constexpr Price & operator *= (
+        Price & lhs,
+        Price const & rhs)
+    {
+        lhs.value *= rhs.value;
+        if (not atlas_constraint::check(lhs.value)) {
+            throw atlas::ConstraintError(
+                "Price: arithmetic result violates constraint"
+                " (value must be positive (> 0))");
+        }
+        return lhs;
+    }
+    /**
+     * Apply the binary operator * to the wrapped object.
+     */
+    friend constexpr Price operator * (
+        Price lhs,
+        Price const & rhs)
+    noexcept(noexcept(lhs *= rhs))
+    {
+        lhs *= rhs;
+        return lhs;
+    }
+
+    /**
+     * Apply + assignment to the wrapped objects.
+     */
+    friend constexpr Price & operator += (
+        Price & lhs,
+        Price const & rhs)
+    {
+        lhs.value += rhs.value;
+        if (not atlas_constraint::check(lhs.value)) {
+            throw atlas::ConstraintError(
+                "Price: arithmetic result violates constraint"
+                " (value must be positive (> 0))");
+        }
+        return lhs;
+    }
+    /**
+     * Apply the binary operator + to the wrapped object.
+     */
+    friend constexpr Price operator + (
+        Price lhs,
+        Price const & rhs)
+    noexcept(noexcept(lhs += rhs))
+    {
+        lhs += rhs;
+        return lhs;
+    }
+
+    /**
+     * Apply - assignment to the wrapped objects.
+     */
+    friend constexpr Price & operator -= (
+        Price & lhs,
+        Price const & rhs)
+    {
+        lhs.value -= rhs.value;
+        if (not atlas_constraint::check(lhs.value)) {
+            throw atlas::ConstraintError(
+                "Price: arithmetic result violates constraint"
+                " (value must be positive (> 0))");
+        }
+        return lhs;
+    }
+    /**
+     * Apply the binary operator - to the wrapped object.
+     */
+    friend constexpr Price operator - (
+        Price lhs,
+        Price const & rhs)
+    noexcept(noexcept(lhs -= rhs))
+    {
+        lhs -= rhs;
+        return lhs;
+    }
+
+    /**
+     * Apply / assignment to the wrapped objects.
+     */
+    friend constexpr Price & operator /= (
+        Price & lhs,
+        Price const & rhs)
+    {
+        lhs.value /= rhs.value;
+        if (not atlas_constraint::check(lhs.value)) {
+            throw atlas::ConstraintError(
+                "Price: arithmetic result violates constraint"
+                " (value must be positive (> 0))");
+        }
+        return lhs;
+    }
+    /**
+     * Apply the binary operator / to the wrapped object.
+     */
+    friend constexpr Price operator / (
+        Price lhs,
+        Price const & rhs)
+    noexcept(noexcept(lhs /= rhs))
+    {
+        lhs /= rhs;
+        return lhs;
+    }
+
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
+    /**
+     * The default three-way comparison (spaceship) operator.
+     */
+    friend constexpr auto operator <=> (
+        Price const &,
+        Price const &) = default;
+#else
+    /**
+     * Comparison operators (C++17 fallback for spaceship operator).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend constexpr bool operator < (
+        Price const & lhs,
+        Price const & rhs)
+    noexcept(noexcept(std::declval<double const &>() <
+        std::declval<double const &>()))
+    {
+        return lhs.value < rhs.value;
+    }
+
+    friend constexpr bool operator <= (
+        Price const & lhs,
+        Price const & rhs)
+    noexcept(noexcept(std::declval<double const &>() <=
+        std::declval<double const &>()))
+    {
+        return lhs.value <= rhs.value;
+    }
+
+    friend constexpr bool operator > (
+        Price const & lhs,
+        Price const & rhs)
+    noexcept(noexcept(std::declval<double const &>() >
+        std::declval<double const &>()))
+    {
+        return lhs.value > rhs.value;
+    }
+
+    friend constexpr bool operator >= (
+        Price const & lhs,
+        Price const & rhs)
+    noexcept(noexcept(std::declval<double const &>() >=
+        std::declval<double const &>()))
+    {
+        return lhs.value >= rhs.value;
+    }
+#endif
+
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
+    /**
+     * The default equality comparison operator.
+     * Provided with spaceship operator for optimal performance.
+     */
+    friend constexpr bool operator == (
+        Price const &,
+        Price const &) = default;
+#else
+    /**
+     * Equality comparison operators (C++17 fallback).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend constexpr bool operator == (
+        Price const & lhs,
+        Price const & rhs)
+    noexcept(noexcept(std::declval<double const &>() ==
+        std::declval<double const &>()))
+    {
+        return lhs.value == rhs.value;
+    }
+
+    friend constexpr bool operator != (
+        Price const & lhs,
+        Price const & rhs)
+    noexcept(noexcept(std::declval<double const &>() !=
+        std::declval<double const &>()))
+    {
+        return lhs.value != rhs.value;
+    }
+#endif
+};
+} // namespace pricing
+} // namespace finance
+
+
+namespace physics {
+namespace measurements {
+
+/**
+ * @brief Strong type wrapper for double
+ *
+ * Generated by Atlas Strong Type Generator.
+ * Generation parameters:
+ * - kind: struct
+ * - type_namespace: physics::measurements
+ * - type_name: Distance
+ * - description: double; +, -, <=>, non_negative
+ * - default_value: "0.0"
+ */
+struct Distance
+: private atlas::strong_type_tag
+{
+    double value{0.0};
+
+    using atlas_value_type = double;
+    using atlas_constraint = atlas::constraints::non_negative<double>;
+
+    constexpr explicit Distance() = default;
+
+    template <
+        typename... ArgTs,
+        typename std::enable_if<
+            std::is_constructible<double, ArgTs...>::value,
+            bool>::type = true>
+    constexpr explicit Distance(ArgTs && ... args)
+    : value(std::forward<ArgTs>(args)...)
+    {
+        if (not atlas_constraint::check(value)) {
+            throw atlas::ConstraintError(
+                "Distance: " +
+                atlas::constraints::detail::format_value(value) +
+                " violates constraint: value must be non-negative (>= 0)");
+        }
+    }
+
+    /**
+     * The explicit cast operator provides a reference to the wrapped object.
+     */
+    constexpr explicit operator double const & () const { return value; }
+    constexpr explicit operator double & () { return value; }
+
+    /**
+     * Apply + assignment to the wrapped objects.
+     */
+    friend constexpr Distance & operator += (
+        Distance & lhs,
+        Distance const & rhs)
+    {
+        lhs.value += rhs.value;
+        if (not atlas_constraint::check(lhs.value)) {
+            throw atlas::ConstraintError(
+                "Distance: arithmetic result violates constraint"
+                " (value must be non-negative (>= 0))");
+        }
+        return lhs;
+    }
+    /**
+     * Apply the binary operator + to the wrapped object.
+     */
+    friend constexpr Distance operator + (
+        Distance lhs,
+        Distance const & rhs)
+    noexcept(noexcept(lhs += rhs))
+    {
+        lhs += rhs;
+        return lhs;
+    }
+
+    /**
+     * Apply - assignment to the wrapped objects.
+     */
+    friend constexpr Distance & operator -= (
+        Distance & lhs,
+        Distance const & rhs)
+    {
+        lhs.value -= rhs.value;
+        if (not atlas_constraint::check(lhs.value)) {
+            throw atlas::ConstraintError(
+                "Distance: arithmetic result violates constraint"
+                " (value must be non-negative (>= 0))");
+        }
+        return lhs;
+    }
+    /**
+     * Apply the binary operator - to the wrapped object.
+     */
+    friend constexpr Distance operator - (
+        Distance lhs,
+        Distance const & rhs)
+    noexcept(noexcept(lhs -= rhs))
+    {
+        lhs -= rhs;
+        return lhs;
+    }
+
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
+    /**
+     * The default three-way comparison (spaceship) operator.
+     */
+    friend constexpr auto operator <=> (
+        Distance const &,
+        Distance const &) = default;
+#else
+    /**
+     * Comparison operators (C++17 fallback for spaceship operator).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend constexpr bool operator < (
+        Distance const & lhs,
+        Distance const & rhs)
+    noexcept(noexcept(std::declval<double const &>() <
+        std::declval<double const &>()))
+    {
+        return lhs.value < rhs.value;
+    }
+
+    friend constexpr bool operator <= (
+        Distance const & lhs,
+        Distance const & rhs)
+    noexcept(noexcept(std::declval<double const &>() <=
+        std::declval<double const &>()))
+    {
+        return lhs.value <= rhs.value;
+    }
+
+    friend constexpr bool operator > (
+        Distance const & lhs,
+        Distance const & rhs)
+    noexcept(noexcept(std::declval<double const &>() >
+        std::declval<double const &>()))
+    {
+        return lhs.value > rhs.value;
+    }
+
+    friend constexpr bool operator >= (
+        Distance const & lhs,
+        Distance const & rhs)
+    noexcept(noexcept(std::declval<double const &>() >=
+        std::declval<double const &>()))
+    {
+        return lhs.value >= rhs.value;
+    }
+#endif
+
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
+    /**
+     * The default equality comparison operator.
+     * Provided with spaceship operator for optimal performance.
+     */
+    friend constexpr bool operator == (
+        Distance const &,
+        Distance const &) = default;
+#else
+    /**
+     * Equality comparison operators (C++17 fallback).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend constexpr bool operator == (
+        Distance const & lhs,
+        Distance const & rhs)
+    noexcept(noexcept(std::declval<double const &>() ==
+        std::declval<double const &>()))
+    {
+        return lhs.value == rhs.value;
+    }
+
+    friend constexpr bool operator != (
+        Distance const & lhs,
+        Distance const & rhs)
+    noexcept(noexcept(std::declval<double const &>() !=
+        std::declval<double const &>()))
+    {
+        return lhs.value != rhs.value;
+    }
+#endif
+};
+} // namespace measurements
+} // namespace physics
+
+
+namespace math {
+namespace rational {
+
+/**
+ * @brief Strong type wrapper for int
+ *
+ * Generated by Atlas Strong Type Generator.
+ * Generation parameters:
+ * - kind: struct
+ * - type_namespace: math::rational
+ * - type_name: Divisor
+ * - description: int; !=, *, /, ==, non_zero
+ * - default_value: "1"
+ */
+struct Divisor
+: private atlas::strong_type_tag
+{
+    int value{1};
+
+    using atlas_value_type = int;
+    using atlas_constraint = atlas::constraints::non_zero<int>;
+
+    constexpr explicit Divisor() = default;
+
+    template <
+        typename... ArgTs,
+        typename std::enable_if<
+            std::is_constructible<int, ArgTs...>::value,
+            bool>::type = true>
+    constexpr explicit Divisor(ArgTs && ... args)
+    : value(std::forward<ArgTs>(args)...)
+    {
+        if (not atlas_constraint::check(value)) {
+            throw atlas::ConstraintError(
+                "Divisor: " +
+                atlas::constraints::detail::format_value(value) +
+                " violates constraint: value must be non-zero (!= 0)");
+        }
+    }
+
+    /**
+     * The explicit cast operator provides a reference to the wrapped object.
+     */
+    constexpr explicit operator int const & () const { return value; }
+    constexpr explicit operator int & () { return value; }
+
+    /**
+     * Apply * assignment to the wrapped objects.
+     */
+    friend constexpr Divisor & operator *= (
+        Divisor & lhs,
+        Divisor const & rhs)
+    {
+        lhs.value *= rhs.value;
+        if (not atlas_constraint::check(lhs.value)) {
+            throw atlas::ConstraintError(
+                "Divisor: arithmetic result violates constraint"
+                " (value must be non-zero (!= 0))");
+        }
+        return lhs;
+    }
+    /**
+     * Apply the binary operator * to the wrapped object.
+     */
+    friend constexpr Divisor operator * (
+        Divisor lhs,
+        Divisor const & rhs)
+    noexcept(noexcept(lhs *= rhs))
+    {
+        lhs *= rhs;
+        return lhs;
+    }
+
+    /**
+     * Apply / assignment to the wrapped objects.
+     */
+    friend constexpr Divisor & operator /= (
+        Divisor & lhs,
+        Divisor const & rhs)
+    {
+        lhs.value /= rhs.value;
+        if (not atlas_constraint::check(lhs.value)) {
+            throw atlas::ConstraintError(
+                "Divisor: arithmetic result violates constraint"
+                " (value must be non-zero (!= 0))");
+        }
+        return lhs;
+    }
+    /**
+     * Apply the binary operator / to the wrapped object.
+     */
+    friend constexpr Divisor operator / (
+        Divisor lhs,
+        Divisor const & rhs)
+    noexcept(noexcept(lhs /= rhs))
+    {
+        lhs /= rhs;
+        return lhs;
+    }
+
+    /**
+     * Is @p lhs.value != @p rhs.value?
+     */
+    friend constexpr bool operator != (
+        Divisor const & lhs,
+        Divisor const & rhs)
+    noexcept(noexcept(std::declval<int const&>() != std::declval<int const&>()))
+    {
+        return lhs.value != rhs.value;
+    }
+
+    /**
+     * Is @p lhs.value == @p rhs.value?
+     */
+    friend constexpr bool operator == (
+        Divisor const & lhs,
+        Divisor const & rhs)
+    noexcept(noexcept(std::declval<int const&>() == std::declval<int const&>()))
+    {
+        return lhs.value == rhs.value;
+    }
+};
+} // namespace rational
+} // namespace math
+
+
+namespace audio {
+namespace controls {
+
+/**
+ * @brief Strong type wrapper for int
+ *
+ * Generated by Atlas Strong Type Generator.
+ * Generation parameters:
+ * - kind: struct
+ * - type_namespace: audio::controls
+ * - type_name: Volume
+ * - description: int; +, -, <=>, bounded<0,100>
+ * - default_value: "50"
+ */
+struct Volume
+: private atlas::strong_type_tag
+{
+    int value{50};
+
+    using atlas_value_type = int;
+    struct atlas_bounds
+    {
+        using value_type = atlas_value_type;
+        static constexpr value_type min() noexcept {
+            return value_type(0);
+        }
+        static constexpr value_type max() noexcept {
+            return value_type(100);
+        }
+        static constexpr char const * message() noexcept {
+            return "value must be in [0, 100]";
+        }
+    };
+    using atlas_constraint = atlas::constraints::bounded<atlas_bounds>;
+
+    constexpr explicit Volume() = default;
+
+    template <
+        typename... ArgTs,
+        typename std::enable_if<
+            std::is_constructible<int, ArgTs...>::value,
+            bool>::type = true>
+    constexpr explicit Volume(ArgTs && ... args)
+    : value(std::forward<ArgTs>(args)...)
+    {
+        if (not atlas_constraint::check(value)) {
+            throw atlas::ConstraintError(
+                "Volume: " +
+                atlas::constraints::detail::format_value(value) +
+                " violates constraint: value must be in [0, 100]");
+        }
+    }
+
+    /**
+     * The explicit cast operator provides a reference to the wrapped object.
+     */
+    constexpr explicit operator int const & () const { return value; }
+    constexpr explicit operator int & () { return value; }
+
+    /**
+     * Apply + assignment to the wrapped objects.
+     */
+    friend constexpr Volume & operator += (
+        Volume & lhs,
+        Volume const & rhs)
+    {
+        lhs.value += rhs.value;
+        if (not atlas_constraint::check(lhs.value)) {
+            throw atlas::ConstraintError(
+                "Volume: arithmetic result violates constraint"
+                " (value must be in [0, 100])");
+        }
+        return lhs;
+    }
+    /**
+     * Apply the binary operator + to the wrapped object.
+     */
+    friend constexpr Volume operator + (
+        Volume lhs,
+        Volume const & rhs)
+    noexcept(noexcept(lhs += rhs))
+    {
+        lhs += rhs;
+        return lhs;
+    }
+
+    /**
+     * Apply - assignment to the wrapped objects.
+     */
+    friend constexpr Volume & operator -= (
+        Volume & lhs,
+        Volume const & rhs)
+    {
+        lhs.value -= rhs.value;
+        if (not atlas_constraint::check(lhs.value)) {
+            throw atlas::ConstraintError(
+                "Volume: arithmetic result violates constraint"
+                " (value must be in [0, 100])");
+        }
+        return lhs;
+    }
+    /**
+     * Apply the binary operator - to the wrapped object.
+     */
+    friend constexpr Volume operator - (
+        Volume lhs,
+        Volume const & rhs)
+    noexcept(noexcept(lhs -= rhs))
+    {
+        lhs -= rhs;
+        return lhs;
+    }
+
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
+    /**
+     * The default three-way comparison (spaceship) operator.
+     */
+    friend constexpr auto operator <=> (
+        Volume const &,
+        Volume const &) = default;
+#else
+    /**
+     * Comparison operators (C++17 fallback for spaceship operator).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend constexpr bool operator < (
+        Volume const & lhs,
+        Volume const & rhs)
+    noexcept(noexcept(std::declval<int const &>() <
+        std::declval<int const &>()))
+    {
+        return lhs.value < rhs.value;
+    }
+
+    friend constexpr bool operator <= (
+        Volume const & lhs,
+        Volume const & rhs)
+    noexcept(noexcept(std::declval<int const &>() <=
+        std::declval<int const &>()))
+    {
+        return lhs.value <= rhs.value;
+    }
+
+    friend constexpr bool operator > (
+        Volume const & lhs,
+        Volume const & rhs)
+    noexcept(noexcept(std::declval<int const &>() >
+        std::declval<int const &>()))
+    {
+        return lhs.value > rhs.value;
+    }
+
+    friend constexpr bool operator >= (
+        Volume const & lhs,
+        Volume const & rhs)
+    noexcept(noexcept(std::declval<int const &>() >=
+        std::declval<int const &>()))
+    {
+        return lhs.value >= rhs.value;
+    }
+#endif
+
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
+    /**
+     * The default equality comparison operator.
+     * Provided with spaceship operator for optimal performance.
+     */
+    friend constexpr bool operator == (
+        Volume const &,
+        Volume const &) = default;
+#else
+    /**
+     * Equality comparison operators (C++17 fallback).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend constexpr bool operator == (
+        Volume const & lhs,
+        Volume const & rhs)
+    noexcept(noexcept(std::declval<int const &>() ==
+        std::declval<int const &>()))
+    {
+        return lhs.value == rhs.value;
+    }
+
+    friend constexpr bool operator != (
+        Volume const & lhs,
+        Volume const & rhs)
+    noexcept(noexcept(std::declval<int const &>() !=
+        std::declval<int const &>()))
+    {
+        return lhs.value != rhs.value;
+    }
+#endif
+};
+} // namespace controls
+} // namespace audio
+
+
+namespace net {
+namespace config {
+
+/**
+ * @brief Strong type wrapper for uint16_t
+ *
+ * Generated by Atlas Strong Type Generator.
+ * Generation parameters:
+ * - kind: struct
+ * - type_namespace: net::config
+ * - type_name: ServerPort
+ * - description: uint16_t; <=>, bounded<1024,65535>
+ * - default_value: "8080"
+ */
+struct ServerPort
+: private atlas::strong_type_tag
+{
+    uint16_t value{8080};
+
+    using atlas_value_type = uint16_t;
+    struct atlas_bounds
+    {
+        using value_type = atlas_value_type;
+        static constexpr value_type min() noexcept {
+            return value_type(1024);
+        }
+        static constexpr value_type max() noexcept {
+            return value_type(65535);
+        }
+        static constexpr char const * message() noexcept {
+            return "value must be in [1024, 65535]";
+        }
+    };
+    using atlas_constraint = atlas::constraints::bounded<atlas_bounds>;
+
+    constexpr explicit ServerPort() = default;
+
+    template <
+        typename... ArgTs,
+        typename std::enable_if<
+            std::is_constructible<uint16_t, ArgTs...>::value,
+            bool>::type = true>
+    constexpr explicit ServerPort(ArgTs && ... args)
+    : value(std::forward<ArgTs>(args)...)
+    {
+        if (not atlas_constraint::check(value)) {
+            throw atlas::ConstraintError(
+                "ServerPort: " +
+                atlas::constraints::detail::format_value(value) +
+                " violates constraint: value must be in [1024, 65535]");
+        }
+    }
+
+    /**
+     * The explicit cast operator provides a reference to the wrapped object.
+     */
+    constexpr explicit operator uint16_t const & () const { return value; }
+    constexpr explicit operator uint16_t & () { return value; }
+
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
+    /**
+     * The default three-way comparison (spaceship) operator.
+     */
+    friend constexpr auto operator <=> (
+        ServerPort const &,
+        ServerPort const &) = default;
+#else
+    /**
+     * Comparison operators (C++17 fallback for spaceship operator).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend constexpr bool operator < (
+        ServerPort const & lhs,
+        ServerPort const & rhs)
+    noexcept(noexcept(std::declval<uint16_t const &>() <
+        std::declval<uint16_t const &>()))
+    {
+        return lhs.value < rhs.value;
+    }
+
+    friend constexpr bool operator <= (
+        ServerPort const & lhs,
+        ServerPort const & rhs)
+    noexcept(noexcept(std::declval<uint16_t const &>() <=
+        std::declval<uint16_t const &>()))
+    {
+        return lhs.value <= rhs.value;
+    }
+
+    friend constexpr bool operator > (
+        ServerPort const & lhs,
+        ServerPort const & rhs)
+    noexcept(noexcept(std::declval<uint16_t const &>() >
+        std::declval<uint16_t const &>()))
+    {
+        return lhs.value > rhs.value;
+    }
+
+    friend constexpr bool operator >= (
+        ServerPort const & lhs,
+        ServerPort const & rhs)
+    noexcept(noexcept(std::declval<uint16_t const &>() >=
+        std::declval<uint16_t const &>()))
+    {
+        return lhs.value >= rhs.value;
+    }
+#endif
+
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
+    /**
+     * The default equality comparison operator.
+     * Provided with spaceship operator for optimal performance.
+     */
+    friend constexpr bool operator == (
+        ServerPort const &,
+        ServerPort const &) = default;
+#else
+    /**
+     * Equality comparison operators (C++17 fallback).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend constexpr bool operator == (
+        ServerPort const & lhs,
+        ServerPort const & rhs)
+    noexcept(noexcept(std::declval<uint16_t const &>() ==
+        std::declval<uint16_t const &>()))
+    {
+        return lhs.value == rhs.value;
+    }
+
+    friend constexpr bool operator != (
+        ServerPort const & lhs,
+        ServerPort const & rhs)
+    noexcept(noexcept(std::declval<uint16_t const &>() !=
+        std::declval<uint16_t const &>()))
+    {
+        return lhs.value != rhs.value;
+    }
+#endif
+};
+} // namespace config
+} // namespace net
+
+
+namespace math {
+namespace stats {
+
+/**
+ * @brief Strong type wrapper for int
+ *
+ * Generated by Atlas Strong Type Generator.
+ * Generation parameters:
+ * - kind: struct
+ * - type_namespace: math::stats
+ * - type_name: Percentage
+ * - description: int; +, -, <=>, bounded<0,100>
+ * - default_value: "0"
+ */
+struct Percentage
+: private atlas::strong_type_tag
+{
+    int value{0};
+
+    using atlas_value_type = int;
+    struct atlas_bounds
+    {
+        using value_type = atlas_value_type;
+        static constexpr value_type min() noexcept {
+            return value_type(0);
+        }
+        static constexpr value_type max() noexcept {
+            return value_type(100);
+        }
+        static constexpr char const * message() noexcept {
+            return "value must be in [0, 100]";
+        }
+    };
+    using atlas_constraint = atlas::constraints::bounded<atlas_bounds>;
+
+    constexpr explicit Percentage() = default;
+
+    template <
+        typename... ArgTs,
+        typename std::enable_if<
+            std::is_constructible<int, ArgTs...>::value,
+            bool>::type = true>
+    constexpr explicit Percentage(ArgTs && ... args)
+    : value(std::forward<ArgTs>(args)...)
+    {
+        if (not atlas_constraint::check(value)) {
+            throw atlas::ConstraintError(
+                "Percentage: " +
+                atlas::constraints::detail::format_value(value) +
+                " violates constraint: value must be in [0, 100]");
+        }
+    }
+
+    /**
+     * The explicit cast operator provides a reference to the wrapped object.
+     */
+    constexpr explicit operator int const & () const { return value; }
+    constexpr explicit operator int & () { return value; }
+
+    /**
+     * Apply + assignment to the wrapped objects.
+     */
+    friend constexpr Percentage & operator += (
+        Percentage & lhs,
+        Percentage const & rhs)
+    {
+        lhs.value += rhs.value;
+        if (not atlas_constraint::check(lhs.value)) {
+            throw atlas::ConstraintError(
+                "Percentage: arithmetic result violates constraint"
+                " (value must be in [0, 100])");
+        }
+        return lhs;
+    }
+    /**
+     * Apply the binary operator + to the wrapped object.
+     */
+    friend constexpr Percentage operator + (
+        Percentage lhs,
+        Percentage const & rhs)
+    noexcept(noexcept(lhs += rhs))
+    {
+        lhs += rhs;
+        return lhs;
+    }
+
+    /**
+     * Apply - assignment to the wrapped objects.
+     */
+    friend constexpr Percentage & operator -= (
+        Percentage & lhs,
+        Percentage const & rhs)
+    {
+        lhs.value -= rhs.value;
+        if (not atlas_constraint::check(lhs.value)) {
+            throw atlas::ConstraintError(
+                "Percentage: arithmetic result violates constraint"
+                " (value must be in [0, 100])");
+        }
+        return lhs;
+    }
+    /**
+     * Apply the binary operator - to the wrapped object.
+     */
+    friend constexpr Percentage operator - (
+        Percentage lhs,
+        Percentage const & rhs)
+    noexcept(noexcept(lhs -= rhs))
+    {
+        lhs -= rhs;
+        return lhs;
+    }
+
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
+    /**
+     * The default three-way comparison (spaceship) operator.
+     */
+    friend constexpr auto operator <=> (
+        Percentage const &,
+        Percentage const &) = default;
+#else
+    /**
+     * Comparison operators (C++17 fallback for spaceship operator).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend constexpr bool operator < (
+        Percentage const & lhs,
+        Percentage const & rhs)
+    noexcept(noexcept(std::declval<int const &>() <
+        std::declval<int const &>()))
+    {
+        return lhs.value < rhs.value;
+    }
+
+    friend constexpr bool operator <= (
+        Percentage const & lhs,
+        Percentage const & rhs)
+    noexcept(noexcept(std::declval<int const &>() <=
+        std::declval<int const &>()))
+    {
+        return lhs.value <= rhs.value;
+    }
+
+    friend constexpr bool operator > (
+        Percentage const & lhs,
+        Percentage const & rhs)
+    noexcept(noexcept(std::declval<int const &>() >
+        std::declval<int const &>()))
+    {
+        return lhs.value > rhs.value;
+    }
+
+    friend constexpr bool operator >= (
+        Percentage const & lhs,
+        Percentage const & rhs)
+    noexcept(noexcept(std::declval<int const &>() >=
+        std::declval<int const &>()))
+    {
+        return lhs.value >= rhs.value;
+    }
+#endif
+
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
+    /**
+     * The default equality comparison operator.
+     * Provided with spaceship operator for optimal performance.
+     */
+    friend constexpr bool operator == (
+        Percentage const &,
+        Percentage const &) = default;
+#else
+    /**
+     * Equality comparison operators (C++17 fallback).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend constexpr bool operator == (
+        Percentage const & lhs,
+        Percentage const & rhs)
+    noexcept(noexcept(std::declval<int const &>() ==
+        std::declval<int const &>()))
+    {
+        return lhs.value == rhs.value;
+    }
+
+    friend constexpr bool operator != (
+        Percentage const & lhs,
+        Percentage const & rhs)
+    noexcept(noexcept(std::declval<int const &>() !=
+        std::declval<int const &>()))
+    {
+        return lhs.value != rhs.value;
+    }
+#endif
+};
+} // namespace stats
+} // namespace math
+
+
+namespace auth {
+namespace credentials {
+
+/**
+ * @brief Strong type wrapper for std::string
+ *
+ * Generated by Atlas Strong Type Generator.
+ * Generation parameters:
+ * - kind: struct
+ * - type_namespace: auth::credentials
+ * - type_name: Username
+ * - description: std::string; !=, <, <<, ==, hash, non_empty
+ * - default_value: ""
+ */
+struct Username
+: private atlas::strong_type_tag
+{
+    std::string value;
+
+    using atlas_value_type = std::string;
+    using atlas_constraint = atlas::constraints::non_empty<std::string>;
+
+    Username() = delete;
+
+    template <
+        typename... ArgTs,
+        typename std::enable_if<
+            std::is_constructible<std::string, ArgTs...>::value,
+            bool>::type = true>
+    constexpr explicit Username(ArgTs && ... args)
+    : value(std::forward<ArgTs>(args)...)
+    {
+        if (not atlas_constraint::check(value)) {
+            throw atlas::ConstraintError(
+                "Username: " +
+                atlas::constraints::detail::format_value(value) +
+                " violates constraint: value must not be empty");
+        }
+    }
+
+    /**
+     * The explicit cast operator provides a reference to the wrapped object.
+     */
+    constexpr explicit operator std::string const & () const { return value; }
+    constexpr explicit operator std::string & () { return value; }
+
+    /**
+     * Apply << assignment to the wrapped objects.
+     */
+    friend constexpr Username & operator <<= (
+        Username & lhs,
+        Username const & rhs)
+    {
+        lhs.value <<= rhs.value;
+        if (not atlas_constraint::check(lhs.value)) {
+            throw atlas::ConstraintError(
+                "Username: arithmetic result violates constraint"
+                " (value must not be empty)");
+        }
+        return lhs;
+    }
+    /**
+     * Apply the binary operator << to the wrapped object.
+     */
+    friend constexpr Username operator << (
+        Username lhs,
+        Username const & rhs)
+    noexcept(noexcept(lhs <<= rhs))
+    {
+        lhs <<= rhs;
+        return lhs;
+    }
+
+    /**
+     * Is @p lhs.value != @p rhs.value?
+     */
+    friend constexpr bool operator != (
+        Username const & lhs,
+        Username const & rhs)
+    noexcept(noexcept(std::declval<std::string const&>() != std::declval<std::string const&>()))
+    {
+        return lhs.value != rhs.value;
+    }
+
+    /**
+     * Is @p lhs.value < @p rhs.value?
+     */
+    friend constexpr bool operator < (
+        Username const & lhs,
+        Username const & rhs)
+    noexcept(noexcept(std::declval<std::string const&>() < std::declval<std::string const&>()))
+    {
+        return lhs.value < rhs.value;
+    }
+
+    /**
+     * Is @p lhs.value == @p rhs.value?
+     */
+    friend constexpr bool operator == (
+        Username const & lhs,
+        Username const & rhs)
+    noexcept(noexcept(std::declval<std::string const&>() == std::declval<std::string const&>()))
+    {
+        return lhs.value == rhs.value;
+    }
+};
+} // namespace credentials
+} // namespace auth
+
+
+/**
+ * @brief std::hash specialization for auth::credentials::Username
+ *
+ * Delegates to std::hash of the underlying type std::string
+ */
+template <>
+struct std::hash<auth::credentials::Username>
+{
+    ATLAS_NODISCARD
+    constexpr std::size_t operator () (auth::credentials::Username const & t) const
+    noexcept(
+        noexcept(std::hash<std::string>{}(
+            std::declval<std::string const &>())))
+    {
+        return std::hash<std::string>{}(
+            static_cast<std::string const &>(t));
+    }
+};
+
+namespace data {
+namespace collections {
+
+/**
+ * @brief Strong type wrapper for std::vector<int>
+ *
+ * Generated by Atlas Strong Type Generator.
+ * Generation parameters:
+ * - kind: struct
+ * - type_namespace: data::collections
+ * - type_name: NonEmptyList
+ * - description: std::vector<int>; ==, [], iterable, non_empty
+ * - default_value: ""
+ */
+struct NonEmptyList
+: private atlas::strong_type_tag
+{
+    std::vector<int> value;
+
+    using atlas_value_type = std::vector<int>;
+    using atlas_constraint = atlas::constraints::non_empty<std::vector<int>>;
+
+    NonEmptyList() = delete;
+
+    template <
+        typename... ArgTs,
+        typename std::enable_if<
+            std::is_constructible<std::vector<int>, ArgTs...>::value,
+            bool>::type = true>
+    constexpr explicit NonEmptyList(ArgTs && ... args)
+    : value(std::forward<ArgTs>(args)...)
+    {
+        if (not atlas_constraint::check(value)) {
+            throw atlas::ConstraintError(
+                "NonEmptyList: " +
+                atlas::constraints::detail::format_value(value) +
+                " violates constraint: value must not be empty");
+        }
+    }
+
+    /**
+     * The explicit cast operator provides a reference to the wrapped object.
+     */
+    constexpr explicit operator std::vector<int> const & () const { return value; }
+    constexpr explicit operator std::vector<int> & () { return value; }
+
+    /**
+     * Subscript operator that forwards to the wrapped object.
+     */
+#if __cpp_multidimensional_subscript >= 202110L
+    template <typename ArgT, typename... ArgTs>
+    constexpr decltype(auto) operator [] (ArgT && arg, ArgTs && ... args)
+    noexcept(noexcept(value[std::forward<ArgT>(arg), std::forward<ArgTs>(args)...]))
+    {
+        return value[std::forward<ArgT>(arg), std::forward<ArgTs>(args)...];
+    }
+    template <typename ArgT, typename... ArgTs>
+    constexpr decltype(auto) operator [] (ArgT && arg, ArgTs && ... args) const
+    noexcept(noexcept(value[std::forward<ArgT>(arg), std::forward<ArgTs>(args)...]))
+    {
+        return value[std::forward<ArgT>(arg), std::forward<ArgTs>(args)...];
+    }
+#else
+    template <typename ArgT>
+    constexpr auto operator [] (ArgT && arg)
+    noexcept(noexcept(value[std::forward<ArgT>(arg)]))
+    -> decltype(value[std::forward<ArgT>(arg)])
+    {
+        return value[std::forward<ArgT>(arg)];
+    }
+    template <typename ArgT>
+    constexpr auto operator [] (ArgT && arg) const
+    noexcept(noexcept(value[std::forward<ArgT>(arg)]))
+    -> decltype(value[std::forward<ArgT>(arg)])
+    {
+        return value[std::forward<ArgT>(arg)];
+    }
+#endif
+
+    /**
+     * Iterator type aliases for container-like interface.
+     */
+    using iterator = decltype(atlas::atlas_detail::begin_(
+        std::declval<std::vector<int>&>()));
+    using const_iterator = decltype(atlas::atlas_detail::begin_(
+        std::declval<std::vector<int> const&>()));
+    using value_type = typename std::remove_reference<decltype(
+        *atlas::atlas_detail::begin_(
+            std::declval<std::vector<int>&>()))>::type;
+
+    /**
+     * Member functions for iterator access.
+     * Enables both explicit calls (e.g., s.begin()) and range-based for loops.
+     * Uses ADL-enabled helpers that work in decltype/noexcept contexts.
+     */
+    constexpr auto begin()
+    noexcept(noexcept(atlas::atlas_detail::begin_(value)))
+    -> decltype(atlas::atlas_detail::begin_(value))
+    {
+        return atlas::atlas_detail::begin_(value);
+    }
+
+    constexpr auto end()
+    noexcept(noexcept(atlas::atlas_detail::end_(value)))
+    -> decltype(atlas::atlas_detail::end_(value))
+    {
+        return atlas::atlas_detail::end_(value);
+    }
+
+    constexpr auto begin() const
+    noexcept(noexcept(atlas::atlas_detail::begin_(value)))
+    -> decltype(atlas::atlas_detail::begin_(value))
+    {
+        return atlas::atlas_detail::begin_(value);
+    }
+
+    constexpr auto end() const
+    noexcept(noexcept(atlas::atlas_detail::end_(value)))
+    -> decltype(atlas::atlas_detail::end_(value))
+    {
+        return atlas::atlas_detail::end_(value);
+    }
+
+    /**
+     * Is @p lhs.value == @p rhs.value?
+     */
+    friend constexpr bool operator == (
+        NonEmptyList const & lhs,
+        NonEmptyList const & rhs)
+    noexcept(noexcept(std::declval<std::vector<int> const&>() == std::declval<std::vector<int> const&>()))
+    {
+        return lhs.value == rhs.value;
+    }
+};
+} // namespace collections
+} // namespace data
+
+
+namespace sys {
+namespace resources {
+
+/**
+ * @brief Strong type wrapper for void*
+ *
+ * Generated by Atlas Strong Type Generator.
+ * Generation parameters:
+ * - kind: struct
+ * - type_namespace: sys::resources
+ * - type_name: ResourceHandle
+ * - description: void*; !=, ==, non_null
+ * - default_value: ""
+ */
+struct ResourceHandle
+: private atlas::strong_type_tag
+{
+    void* value;
+
+    using atlas_value_type = void*;
+    using atlas_constraint = atlas::constraints::non_null<void*>;
+
+    ResourceHandle() = delete;
+
+    template <
+        typename... ArgTs,
+        typename std::enable_if<
+            std::is_constructible<void*, ArgTs...>::value,
+            bool>::type = true>
+    constexpr explicit ResourceHandle(ArgTs && ... args)
+    : value(std::forward<ArgTs>(args)...)
+    {
+        if (not atlas_constraint::check(value)) {
+            throw atlas::ConstraintError(
+                "ResourceHandle: " +
+                atlas::constraints::detail::format_value(value) +
+                " violates constraint: pointer must not be null");
+        }
+    }
+
+    /**
+     * The explicit cast operator provides a reference to the wrapped object.
+     */
+    constexpr explicit operator void* const & () const { return value; }
+    constexpr explicit operator void* & () { return value; }
+
+    /**
+     * Is @p lhs.value != @p rhs.value?
+     */
+    friend constexpr bool operator != (
+        ResourceHandle const & lhs,
+        ResourceHandle const & rhs)
+    noexcept(noexcept(std::declval<void* const&>() != std::declval<void* const&>()))
+    {
+        return lhs.value != rhs.value;
+    }
+
+    /**
+     * Is @p lhs.value == @p rhs.value?
+     */
+    friend constexpr bool operator == (
+        ResourceHandle const & lhs,
+        ResourceHandle const & rhs)
+    noexcept(noexcept(std::declval<void* const&>() == std::declval<void* const&>()))
+    {
+        return lhs.value == rhs.value;
+    }
+};
+} // namespace resources
+} // namespace sys
+
+
+namespace audio {
+namespace dsp {
+
+/**
+ * @brief Strong type wrapper for uint8_t
+ *
+ * Generated by Atlas Strong Type Generator.
+ * Generation parameters:
+ * - kind: struct
+ * - type_namespace: audio::dsp
+ * - type_name: BoundedChecked
+ * - description: uint8_t; *, +, -, bounded<0,100>, checked
+ * - default_value: ""
+ */
+struct BoundedChecked
+: private atlas::strong_type_tag
+{
+    uint8_t value;
+
+    using atlas_value_type = uint8_t;
+    struct atlas_bounds
+    {
+        using value_type = atlas_value_type;
+        static constexpr value_type min() noexcept {
+            return value_type(0);
+        }
+        static constexpr value_type max() noexcept {
+            return value_type(100);
+        }
+        static constexpr char const * message() noexcept {
+            return "value must be in [0, 100]";
+        }
+    };
+    using atlas_constraint = atlas::constraints::bounded<atlas_bounds>;
+
+    constexpr explicit BoundedChecked() = default;
+
+    template <
+        typename... ArgTs,
+        typename std::enable_if<
+            std::is_constructible<uint8_t, ArgTs...>::value,
+            bool>::type = true>
+    constexpr explicit BoundedChecked(ArgTs && ... args)
+    : value(std::forward<ArgTs>(args)...)
+    {
+        if (not atlas_constraint::check(value)) {
+            throw atlas::ConstraintError(
+                "BoundedChecked: " +
+                atlas::constraints::detail::format_value(value) +
+                " violates constraint: value must be in [0, 100]");
+        }
+    }
+
+    /**
+     * The explicit cast operator provides a reference to the wrapped object.
+     */
+    constexpr explicit operator uint8_t const & () const { return value; }
+    constexpr explicit operator uint8_t & () { return value; }
+
+    /**
+     * @brief Checked multiplication - throws on overflow
+     * @throws atlas::CheckedOverflowError if result would overflow
+     * @throws atlas::CheckedUnderflowError if result would underflow (signed only)
+     */
+    friend BoundedChecked operator * (
+        BoundedChecked lhs,
+        BoundedChecked const & rhs)
+    {
+        lhs.value = atlas::atlas_detail::checked_mul(
+            lhs.value,
+            rhs.value,
+            "audio::dsp::BoundedChecked: multiplication overflow",
+            "audio::dsp::BoundedChecked: multiplication underflow");
+        if (not atlas_constraint::check(lhs.value)) {
+            throw atlas::ConstraintError(
+                "BoundedChecked: arithmetic result violates constraint"
+                "(value must be in [0, 100])");
+        }
+        return lhs;
+    }
+
+    /**
+     * @brief Checked addition - throws on overflow
+     * @throws atlas::CheckedOverflowError if result would overflow
+     * @throws atlas::CheckedUnderflowError if result would underflow (signed only)
+     */
+    friend BoundedChecked operator + (
+        BoundedChecked lhs,
+        BoundedChecked const & rhs)
+    {
+        lhs.value = atlas::atlas_detail::checked_add(
+            lhs.value,
+            rhs.value,
+            "audio::dsp::BoundedChecked: addition overflow",
+            "audio::dsp::BoundedChecked: addition underflow");
+        if (not atlas_constraint::check(lhs.value)) {
+            throw atlas::ConstraintError(
+                "BoundedChecked: arithmetic result violates constraint"
+                " (value must be in [0, 100])");
+        }
+        return lhs;
+    }
+
+    /**
+     * @brief Checked subtraction - throws on overflow/underflow
+     * @throws atlas::CheckedOverflowError if result would overflow
+     * @throws atlas::CheckedUnderflowError if result would underflow
+     */
+    friend BoundedChecked operator - (
+        BoundedChecked lhs,
+        BoundedChecked const & rhs)
+    {
+        lhs.value = atlas::atlas_detail::checked_sub(
+            lhs.value,
+            rhs.value,
+            "audio::dsp::BoundedChecked: subtraction overflow",
+            "audio::dsp::BoundedChecked: subtraction underflow");
+        if (not atlas_constraint::check(lhs.value)) {
+            throw atlas::ConstraintError(
+                "BoundedChecked: arithmetic result violates constraint"
+                "(value must be in [0, 100])");
+        }
+        return lhs;
+    }
+};
+} // namespace dsp
+} // namespace audio
+
+
+namespace graphics {
+namespace color {
+
+/**
+ * @brief Strong type wrapper for uint8_t
+ *
+ * Generated by Atlas Strong Type Generator.
+ * Generation parameters:
+ * - kind: struct
+ * - type_namespace: graphics::color
+ * - type_name: PositiveSaturating
+ * - description: uint8_t; +, -, positive, saturating
+ * - default_value: "1"
+ */
+struct PositiveSaturating
+: private atlas::strong_type_tag
+{
+    uint8_t value{1
+    /**
+     * @brief Saturating addition - clamps to type limits
+     * @note noexcept - overflow/underflow clamps to limits instead of throwing
+     */
+    friend PositiveSaturating operator + (
+        PositiveSaturating lhs,
+        PositiveSaturating const & rhs)
+    {
+        lhs.value = atlas::atlas_detail::saturating_add(lhs.value, rhs.value);
+        if (not atlas_constraint::check(lhs.value)) {
+            throw atlas::ConstraintError(
+                "PositiveSaturating: arithmetic result violates constraint"
+                " (value must be positive (> 0))");
+        }
+        return lhs;
+    }
+
+    /**
+     * @brief Saturating subtraction - clamps to type limits
+     * @note noexcept - overflow/underflow clamps to limits instead of throwing
+     */
+    friend PositiveSaturating operator - (
+        PositiveSaturating lhs,
+        PositiveSaturating const & rhs)
+    {
+        lhs.value = atlas::atlas_detail::saturating_sub(lhs.value, rhs.value);
+        if (not atlas_constraint::check(lhs.value)) {
+            throw atlas::ConstraintError(
+                "PositiveSaturating: arithmetic result violates constraint"
+                " (value must be positive (> 0))");
+        }
+        return lhs;
+    }
+};
+
+    using atlas_value_type = uint8_t;
+    using atlas_constraint = atlas::constraints::positive<uint8_t>;
+
+    constexpr explicit PositiveSaturating() = default;
+
+    template <
+        typename... ArgTs,
+        typename std::enable_if<
+            std::is_constructible<uint8_t, ArgTs...>::value,
+            bool>::type = true>
+    constexpr explicit PositiveSaturating(ArgTs && ... args)
+    : value(std::forward<ArgTs>(args)...)
+    {
+        if (not atlas_constraint::check(value)) {
+            throw atlas::ConstraintError(
+                "PositiveSaturating: " +
+                atlas::constraints::detail::format_value(value) +
+                " violates constraint: value must be positive (> 0)");
+        }
+    }
+
+    /**
+     * The explicit cast operator provides a reference to the wrapped object.
+     */
+    constexpr explicit operator uint8_t const & () const { return value; }
+    constexpr explicit operator uint8_t & () { return value; }
+};
+} // namespace color
+} // namespace graphics
+
+
+namespace counter {
+namespace metrics {
+
+/**
+ * @brief Strong type wrapper for uint8_t
+ *
+ * Generated by Atlas Strong Type Generator.
+ * Generation parameters:
+ * - kind: struct
+ * - type_namespace: counter::metrics
+ * - type_name: NonNegativeWrapping
+ * - description: uint8_t; +, -, non_negative, wrapping
+ * - default_value: "0"
+ */
+struct NonNegativeWrapping
+: private atlas::strong_type_tag
+{
+    uint8_t value{0
+    /**
+     * @brief Wrapping arithmetic - explicit, well-defined overflow
+     * @note Marked noexcept - overflow is intentional and well-defined
+     * @note Uses unsigned arithmetic to avoid UB for signed integer overflow
+     * @note Only available for integral types
+     */
+    friend NonNegativeWrapping operator + (
+        NonNegativeWrapping lhs,
+        NonNegativeWrapping const & rhs)
+    {
+        static_assert(std::is_integral<uint8_t>::value,
+                      "Wrapping arithmetic is only supported for integral types");
+        using unsigned_type = typename std::make_unsigned<uint8_t>::type;
+        lhs.value = static_cast<uint8_t>(
+            static_cast<unsigned_type>(lhs.value) +
+            static_cast<unsigned_type>(rhs.value)
+        );
+        if (not atlas_constraint::check(lhs.value)) {
+            throw atlas::ConstraintError(
+                "NonNegativeWrapping: arithmetic result violates constraint"
+                " (value must be non-negative (>= 0))");
+        }
+        return lhs;
+    }
+
+    /**
+     * @brief Wrapping arithmetic - explicit, well-defined overflow
+     * @note Marked noexcept - overflow is intentional and well-defined
+     * @note Uses unsigned arithmetic to avoid UB for signed integer overflow
+     * @note Only available for integral types
+     */
+    friend NonNegativeWrapping operator - (
+        NonNegativeWrapping lhs,
+        NonNegativeWrapping const & rhs)
+    {
+        static_assert(std::is_integral<uint8_t>::value,
+                      "Wrapping arithmetic is only supported for integral types");
+        using unsigned_type = typename std::make_unsigned<uint8_t>::type;
+        lhs.value = static_cast<uint8_t>(
+            static_cast<unsigned_type>(lhs.value) -
+            static_cast<unsigned_type>(rhs.value)
+        );
+        if (not atlas_constraint::check(lhs.value)) {
+            throw atlas::ConstraintError(
+                "NonNegativeWrapping: arithmetic result violates constraint"
+                " (value must be non-negative (>= 0))");
+        }
+        return lhs;
+    }
+};
+
+    using atlas_value_type = uint8_t;
+    using atlas_constraint = atlas::constraints::non_negative<uint8_t>;
+
+    constexpr explicit NonNegativeWrapping() = default;
+
+    template <
+        typename... ArgTs,
+        typename std::enable_if<
+            std::is_constructible<uint8_t, ArgTs...>::value,
+            bool>::type = true>
+    constexpr explicit NonNegativeWrapping(ArgTs && ... args)
+    : value(std::forward<ArgTs>(args)...)
+    {
+        if (not atlas_constraint::check(value)) {
+            throw atlas::ConstraintError(
+                "NonNegativeWrapping: " +
+                atlas::constraints::detail::format_value(value) +
+                " violates constraint: value must be non-negative (>= 0)");
+        }
+    }
+
+    /**
+     * The explicit cast operator provides a reference to the wrapped object.
+     */
+    constexpr explicit operator uint8_t const & () const { return value; }
+    constexpr explicit operator uint8_t & () { return value; }
+};
+} // namespace metrics
+} // namespace counter
+
+
+namespace game {
+namespace stats {
+
+/**
+ * @brief Strong type wrapper for uint16_t
+ *
+ * Generated by Atlas Strong Type Generator.
+ * Generation parameters:
+ * - kind: struct
+ * - type_namespace: game::stats
+ * - type_name: HealthPoints
+ * - description: uint16_t; +, -, bounded<0,1000>, saturating
+ * - default_value: "100"
+ */
+struct HealthPoints
+: private atlas::strong_type_tag
+{
+    uint16_t value{100};
+
+    using atlas_value_type = uint16_t;
+    struct atlas_bounds
+    {
+        using value_type = atlas_value_type;
+        static constexpr value_type min() noexcept {
+            return value_type(0);
+        }
+        static constexpr value_type max() noexcept {
+            return value_type(1000);
+        }
+        static constexpr char const * message() noexcept {
+            return "value must be in [0, 1000]";
+        }
+    };
+    using atlas_constraint = atlas::constraints::bounded<atlas_bounds>;
+
+    constexpr explicit HealthPoints() = default;
+
+    template <
+        typename... ArgTs,
+        typename std::enable_if<
+            std::is_constructible<uint16_t, ArgTs...>::value,
+            bool>::type = true>
+    constexpr explicit HealthPoints(ArgTs && ... args)
+    : value(std::forward<ArgTs>(args)...)
+    {
+        if (not atlas_constraint::check(value)) {
+            throw atlas::ConstraintError(
+                "HealthPoints: " +
+                atlas::constraints::detail::format_value(value) +
+                " violates constraint: value must be in [0, 1000]");
+        }
+    }
+
+    /**
+     * The explicit cast operator provides a reference to the wrapped object.
+     */
+    constexpr explicit operator uint16_t const & () const { return value; }
+    constexpr explicit operator uint16_t & () { return value; }
+
+    /**
+     * @brief Saturating addition - clamps to type limits
+     * @note noexcept - overflow/underflow clamps to limits instead of throwing
+     */
+    friend HealthPoints operator + (
+        HealthPoints lhs,
+        HealthPoints const & rhs)
+    {
+        lhs.value = atlas::atlas_detail::saturating_add(lhs.value, rhs.value);
+        if (not atlas_constraint::check(lhs.value)) {
+            throw atlas::ConstraintError(
+                "HealthPoints: arithmetic result violates constraint"
+                " (value must be in [0, 1000])");
+        }
+        return lhs;
+    }
+
+    /**
+     * @brief Saturating subtraction - clamps to type limits
+     * @note noexcept - overflow/underflow clamps to limits instead of throwing
+     */
+    friend HealthPoints operator - (
+        HealthPoints lhs,
+        HealthPoints const & rhs)
+    {
+        lhs.value = atlas::atlas_detail::saturating_sub(lhs.value, rhs.value);
+        if (not atlas_constraint::check(lhs.value)) {
+            throw atlas::ConstraintError(
+                "HealthPoints: arithmetic result violates constraint"
+                " (value must be in [0, 1000])");
+        }
+        return lhs;
+    }
+};
+} // namespace stats
+} // namespace game
+
+
+namespace weather {
+namespace sensors {
+
+/**
+ * @brief Strong type wrapper for int
+ *
+ * Generated by Atlas Strong Type Generator.
+ * Generation parameters:
+ * - kind: struct
+ * - type_namespace: weather::sensors
+ * - type_name: CelsiusTemp
+ * - description: int; <=>, bounded<-50,50>
+ * - default_value: "20"
+ */
+struct CelsiusTemp
+: private atlas::strong_type_tag
+{
+    int value{20};
+
+    using atlas_value_type = int;
+    struct atlas_bounds
+    {
+        using value_type = atlas_value_type;
+        static constexpr value_type min() noexcept {
+            return value_type(-50);
+        }
+        static constexpr value_type max() noexcept {
+            return value_type(50);
+        }
+        static constexpr char const * message() noexcept {
+            return "value must be in [-50, 50]";
+        }
+    };
+    using atlas_constraint = atlas::constraints::bounded<atlas_bounds>;
+
+    constexpr explicit CelsiusTemp() = default;
+
+    template <
+        typename... ArgTs,
+        typename std::enable_if<
+            std::is_constructible<int, ArgTs...>::value,
+            bool>::type = true>
+    constexpr explicit CelsiusTemp(ArgTs && ... args)
+    : value(std::forward<ArgTs>(args)...)
+    {
+        if (not atlas_constraint::check(value)) {
+            throw atlas::ConstraintError(
+                "CelsiusTemp: " +
+                atlas::constraints::detail::format_value(value) +
+                " violates constraint: value must be in [-50, 50]");
+        }
+    }
+
+    /**
+     * The explicit cast operator provides a reference to the wrapped object.
+     */
+    constexpr explicit operator int const & () const { return value; }
+    constexpr explicit operator int & () { return value; }
+
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
+    /**
+     * The default three-way comparison (spaceship) operator.
+     */
+    friend constexpr auto operator <=> (
+        CelsiusTemp const &,
+        CelsiusTemp const &) = default;
+#else
+    /**
+     * Comparison operators (C++17 fallback for spaceship operator).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend constexpr bool operator < (
+        CelsiusTemp const & lhs,
+        CelsiusTemp const & rhs)
+    noexcept(noexcept(std::declval<int const &>() <
+        std::declval<int const &>()))
+    {
+        return lhs.value < rhs.value;
+    }
+
+    friend constexpr bool operator <= (
+        CelsiusTemp const & lhs,
+        CelsiusTemp const & rhs)
+    noexcept(noexcept(std::declval<int const &>() <=
+        std::declval<int const &>()))
+    {
+        return lhs.value <= rhs.value;
+    }
+
+    friend constexpr bool operator > (
+        CelsiusTemp const & lhs,
+        CelsiusTemp const & rhs)
+    noexcept(noexcept(std::declval<int const &>() >
+        std::declval<int const &>()))
+    {
+        return lhs.value > rhs.value;
+    }
+
+    friend constexpr bool operator >= (
+        CelsiusTemp const & lhs,
+        CelsiusTemp const & rhs)
+    noexcept(noexcept(std::declval<int const &>() >=
+        std::declval<int const &>()))
+    {
+        return lhs.value >= rhs.value;
+    }
+#endif
+
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
+    /**
+     * The default equality comparison operator.
+     * Provided with spaceship operator for optimal performance.
+     */
+    friend constexpr bool operator == (
+        CelsiusTemp const &,
+        CelsiusTemp const &) = default;
+#else
+    /**
+     * Equality comparison operators (C++17 fallback).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend constexpr bool operator == (
+        CelsiusTemp const & lhs,
+        CelsiusTemp const & rhs)
+    noexcept(noexcept(std::declval<int const &>() ==
+        std::declval<int const &>()))
+    {
+        return lhs.value == rhs.value;
+    }
+
+    friend constexpr bool operator != (
+        CelsiusTemp const & lhs,
+        CelsiusTemp const & rhs)
+    noexcept(noexcept(std::declval<int const &>() !=
+        std::declval<int const &>()))
+    {
+        return lhs.value != rhs.value;
+    }
+#endif
+};
+} // namespace sensors
+} // namespace weather
+
+
+namespace demographics {
+namespace data {
+
+/**
+ * @brief Strong type wrapper for unsigned int
+ *
+ * Generated by Atlas Strong Type Generator.
+ * Generation parameters:
+ * - kind: struct
+ * - type_namespace: demographics::data
+ * - type_name: Age
+ * - description: unsigned int; !=, <, <<, ==, positive
+ * - default_value: "1"
+ */
+struct Age
+: private atlas::strong_type_tag
+{
+    unsigned int value{1};
+
+    using atlas_value_type = unsigned int;
+    using atlas_constraint = atlas::constraints::positive<unsigned int>;
+
+    constexpr explicit Age() = default;
+
+    template <
+        typename... ArgTs,
+        typename std::enable_if<
+            std::is_constructible<unsigned int, ArgTs...>::value,
+            bool>::type = true>
+    constexpr explicit Age(ArgTs && ... args)
+    : value(std::forward<ArgTs>(args)...)
+    {
+        if (not atlas_constraint::check(value)) {
+            throw atlas::ConstraintError(
+                "Age: " +
+                atlas::constraints::detail::format_value(value) +
+                " violates constraint: value must be positive (> 0)");
+        }
+    }
+
+    /**
+     * The explicit cast operator provides a reference to the wrapped object.
+     */
+    constexpr explicit operator unsigned int const & () const { return value; }
+    constexpr explicit operator unsigned int & () { return value; }
+
+    /**
+     * Apply << assignment to the wrapped objects.
+     */
+    friend constexpr Age & operator <<= (
+        Age & lhs,
+        Age const & rhs)
+    {
+        lhs.value <<= rhs.value;
+        if (not atlas_constraint::check(lhs.value)) {
+            throw atlas::ConstraintError(
+                "Age: arithmetic result violates constraint"
+                " (value must be positive (> 0))");
+        }
+        return lhs;
+    }
+    /**
+     * Apply the binary operator << to the wrapped object.
+     */
+    friend constexpr Age operator << (
+        Age lhs,
+        Age const & rhs)
+    noexcept(noexcept(lhs <<= rhs))
+    {
+        lhs <<= rhs;
+        return lhs;
+    }
+
+    /**
+     * Is @p lhs.value != @p rhs.value?
+     */
+    friend constexpr bool operator != (
+        Age const & lhs,
+        Age const & rhs)
+    noexcept(noexcept(std::declval<unsigned int const&>() != std::declval<unsigned int const&>()))
+    {
+        return lhs.value != rhs.value;
+    }
+
+    /**
+     * Is @p lhs.value < @p rhs.value?
+     */
+    friend constexpr bool operator < (
+        Age const & lhs,
+        Age const & rhs)
+    noexcept(noexcept(std::declval<unsigned int const&>() < std::declval<unsigned int const&>()))
+    {
+        return lhs.value < rhs.value;
+    }
+
+    /**
+     * Is @p lhs.value == @p rhs.value?
+     */
+    friend constexpr bool operator == (
+        Age const & lhs,
+        Age const & rhs)
+    noexcept(noexcept(std::declval<unsigned int const&>() == std::declval<unsigned int const&>()))
+    {
+        return lhs.value == rhs.value;
+    }
+};
+} // namespace data
+} // namespace demographics
+
+
+namespace graphics {
+namespace rendering {
+
+/**
+ * @brief Strong type wrapper for uint8_t
+ *
+ * Generated by Atlas Strong Type Generator.
+ * Generation parameters:
+ * - kind: struct
+ * - type_namespace: graphics::rendering
+ * - type_name: ColorChannel
+ * - description: uint8_t; +, -, <=>, bounded<0,255>
+ * - default_value: "0"
+ */
+struct ColorChannel
+: private atlas::strong_type_tag
+{
+    uint8_t value{0};
+
+    using atlas_value_type = uint8_t;
+    struct atlas_bounds
+    {
+        using value_type = atlas_value_type;
+        static constexpr value_type min() noexcept {
+            return value_type(0);
+        }
+        static constexpr value_type max() noexcept {
+            return value_type(255);
+        }
+        static constexpr char const * message() noexcept {
+            return "value must be in [0, 255]";
+        }
+    };
+    using atlas_constraint = atlas::constraints::bounded<atlas_bounds>;
+
+    constexpr explicit ColorChannel() = default;
+
+    template <
+        typename... ArgTs,
+        typename std::enable_if<
+            std::is_constructible<uint8_t, ArgTs...>::value,
+            bool>::type = true>
+    constexpr explicit ColorChannel(ArgTs && ... args)
+    : value(std::forward<ArgTs>(args)...)
+    {
+        if (not atlas_constraint::check(value)) {
+            throw atlas::ConstraintError(
+                "ColorChannel: " +
+                atlas::constraints::detail::format_value(value) +
+                " violates constraint: value must be in [0, 255]");
+        }
+    }
+
+    /**
+     * The explicit cast operator provides a reference to the wrapped object.
+     */
+    constexpr explicit operator uint8_t const & () const { return value; }
+    constexpr explicit operator uint8_t & () { return value; }
+
+    /**
+     * Apply + assignment to the wrapped objects.
+     */
+    friend constexpr ColorChannel & operator += (
+        ColorChannel & lhs,
+        ColorChannel const & rhs)
+    {
+        lhs.value += rhs.value;
+        if (not atlas_constraint::check(lhs.value)) {
+            throw atlas::ConstraintError(
+                "ColorChannel: arithmetic result violates constraint"
+                " (value must be in [0, 255])");
+        }
+        return lhs;
+    }
+    /**
+     * Apply the binary operator + to the wrapped object.
+     */
+    friend constexpr ColorChannel operator + (
+        ColorChannel lhs,
+        ColorChannel const & rhs)
+    noexcept(noexcept(lhs += rhs))
+    {
+        lhs += rhs;
+        return lhs;
+    }
+
+    /**
+     * Apply - assignment to the wrapped objects.
+     */
+    friend constexpr ColorChannel & operator -= (
+        ColorChannel & lhs,
+        ColorChannel const & rhs)
+    {
+        lhs.value -= rhs.value;
+        if (not atlas_constraint::check(lhs.value)) {
+            throw atlas::ConstraintError(
+                "ColorChannel: arithmetic result violates constraint"
+                " (value must be in [0, 255])");
+        }
+        return lhs;
+    }
+    /**
+     * Apply the binary operator - to the wrapped object.
+     */
+    friend constexpr ColorChannel operator - (
+        ColorChannel lhs,
+        ColorChannel const & rhs)
+    noexcept(noexcept(lhs -= rhs))
+    {
+        lhs -= rhs;
+        return lhs;
+    }
+
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
+    /**
+     * The default three-way comparison (spaceship) operator.
+     */
+    friend constexpr auto operator <=> (
+        ColorChannel const &,
+        ColorChannel const &) = default;
+#else
+    /**
+     * Comparison operators (C++17 fallback for spaceship operator).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend constexpr bool operator < (
+        ColorChannel const & lhs,
+        ColorChannel const & rhs)
+    noexcept(noexcept(std::declval<uint8_t const &>() <
+        std::declval<uint8_t const &>()))
+    {
+        return lhs.value < rhs.value;
+    }
+
+    friend constexpr bool operator <= (
+        ColorChannel const & lhs,
+        ColorChannel const & rhs)
+    noexcept(noexcept(std::declval<uint8_t const &>() <=
+        std::declval<uint8_t const &>()))
+    {
+        return lhs.value <= rhs.value;
+    }
+
+    friend constexpr bool operator > (
+        ColorChannel const & lhs,
+        ColorChannel const & rhs)
+    noexcept(noexcept(std::declval<uint8_t const &>() >
+        std::declval<uint8_t const &>()))
+    {
+        return lhs.value > rhs.value;
+    }
+
+    friend constexpr bool operator >= (
+        ColorChannel const & lhs,
+        ColorChannel const & rhs)
+    noexcept(noexcept(std::declval<uint8_t const &>() >=
+        std::declval<uint8_t const &>()))
+    {
+        return lhs.value >= rhs.value;
+    }
+#endif
+
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
+    /**
+     * The default equality comparison operator.
+     * Provided with spaceship operator for optimal performance.
+     */
+    friend constexpr bool operator == (
+        ColorChannel const &,
+        ColorChannel const &) = default;
+#else
+    /**
+     * Equality comparison operators (C++17 fallback).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend constexpr bool operator == (
+        ColorChannel const & lhs,
+        ColorChannel const & rhs)
+    noexcept(noexcept(std::declval<uint8_t const &>() ==
+        std::declval<uint8_t const &>()))
+    {
+        return lhs.value == rhs.value;
+    }
+
+    friend constexpr bool operator != (
+        ColorChannel const & lhs,
+        ColorChannel const & rhs)
+    noexcept(noexcept(std::declval<uint8_t const &>() !=
+        std::declval<uint8_t const &>()))
+    {
+        return lhs.value != rhs.value;
+    }
+#endif
+};
+} // namespace rendering
+} // namespace graphics
+
+
+namespace mobile {
+namespace power {
+
+/**
+ * @brief Strong type wrapper for uint8_t
+ *
+ * Generated by Atlas Strong Type Generator.
+ * Generation parameters:
+ * - kind: struct
+ * - type_namespace: mobile::power
+ * - type_name: BatteryLevel
+ * - description: uint8_t; -, <, <=, ==, >, >=, bounded<0,100>
+ * - default_value: "100"
+ */
+struct BatteryLevel
+: private atlas::strong_type_tag
+{
+    uint8_t value{100};
+
+    using atlas_value_type = uint8_t;
+    struct atlas_bounds
+    {
+        using value_type = atlas_value_type;
+        static constexpr value_type min() noexcept {
+            return value_type(0);
+        }
+        static constexpr value_type max() noexcept {
+            return value_type(100);
+        }
+        static constexpr char const * message() noexcept {
+            return "value must be in [0, 100]";
+        }
+    };
+    using atlas_constraint = atlas::constraints::bounded<atlas_bounds>;
+
+    constexpr explicit BatteryLevel() = default;
+
+    template <
+        typename... ArgTs,
+        typename std::enable_if<
+            std::is_constructible<uint8_t, ArgTs...>::value,
+            bool>::type = true>
+    constexpr explicit BatteryLevel(ArgTs && ... args)
+    : value(std::forward<ArgTs>(args)...)
+    {
+        if (not atlas_constraint::check(value)) {
+            throw atlas::ConstraintError(
+                "BatteryLevel: " +
+                atlas::constraints::detail::format_value(value) +
+                " violates constraint: value must be in [0, 100]");
+        }
+    }
+
+    /**
+     * The explicit cast operator provides a reference to the wrapped object.
+     */
+    constexpr explicit operator uint8_t const & () const { return value; }
+    constexpr explicit operator uint8_t & () { return value; }
+
+    /**
+     * Apply - assignment to the wrapped objects.
+     */
+    friend constexpr BatteryLevel & operator -= (
+        BatteryLevel & lhs,
+        BatteryLevel const & rhs)
+    {
+        lhs.value -= rhs.value;
+        if (not atlas_constraint::check(lhs.value)) {
+            throw atlas::ConstraintError(
+                "BatteryLevel: arithmetic result violates constraint"
+                " (value must be in [0, 100])");
+        }
+        return lhs;
+    }
+    /**
+     * Apply the binary operator - to the wrapped object.
+     */
+    friend constexpr BatteryLevel operator - (
+        BatteryLevel lhs,
+        BatteryLevel const & rhs)
+    noexcept(noexcept(lhs -= rhs))
+    {
+        lhs -= rhs;
+        return lhs;
+    }
+
+    /**
+     * Is @p lhs.value < @p rhs.value?
+     */
+    friend constexpr bool operator < (
+        BatteryLevel const & lhs,
+        BatteryLevel const & rhs)
+    noexcept(noexcept(std::declval<uint8_t const&>() < std::declval<uint8_t const&>()))
+    {
+        return lhs.value < rhs.value;
+    }
+
+    /**
+     * Is @p lhs.value <= @p rhs.value?
+     */
+    friend constexpr bool operator <= (
+        BatteryLevel const & lhs,
+        BatteryLevel const & rhs)
+    noexcept(noexcept(std::declval<uint8_t const&>() <= std::declval<uint8_t const&>()))
+    {
+        return lhs.value <= rhs.value;
+    }
+
+    /**
+     * Is @p lhs.value == @p rhs.value?
+     */
+    friend constexpr bool operator == (
+        BatteryLevel const & lhs,
+        BatteryLevel const & rhs)
+    noexcept(noexcept(std::declval<uint8_t const&>() == std::declval<uint8_t const&>()))
+    {
+        return lhs.value == rhs.value;
+    }
+
+    /**
+     * Is @p lhs.value > @p rhs.value?
+     */
+    friend constexpr bool operator > (
+        BatteryLevel const & lhs,
+        BatteryLevel const & rhs)
+    noexcept(noexcept(std::declval<uint8_t const&>() > std::declval<uint8_t const&>()))
+    {
+        return lhs.value > rhs.value;
+    }
+
+    /**
+     * Is @p lhs.value >= @p rhs.value?
+     */
+    friend constexpr bool operator >= (
+        BatteryLevel const & lhs,
+        BatteryLevel const & rhs)
+    noexcept(noexcept(std::declval<uint8_t const&>() >= std::declval<uint8_t const&>()))
+    {
+        return lhs.value >= rhs.value;
+    }
+};
+} // namespace power
+} // namespace mobile
+
+
+namespace db {
+namespace config {
+
+/**
+ * @brief Strong type wrapper for unsigned int
+ *
+ * Generated by Atlas Strong Type Generator.
+ * Generation parameters:
+ * - kind: struct
+ * - type_namespace: db::config
+ * - type_name: TimeoutSeconds
+ * - description: unsigned int; <=>, positive
+ * - default_value: "30"
+ */
+struct TimeoutSeconds
+: private atlas::strong_type_tag
+{
+    unsigned int value{30};
+
+    using atlas_value_type = unsigned int;
+    using atlas_constraint = atlas::constraints::positive<unsigned int>;
+
+    constexpr explicit TimeoutSeconds() = default;
+
+    template <
+        typename... ArgTs,
+        typename std::enable_if<
+            std::is_constructible<unsigned int, ArgTs...>::value,
+            bool>::type = true>
+    constexpr explicit TimeoutSeconds(ArgTs && ... args)
+    : value(std::forward<ArgTs>(args)...)
+    {
+        if (not atlas_constraint::check(value)) {
+            throw atlas::ConstraintError(
+                "TimeoutSeconds: " +
+                atlas::constraints::detail::format_value(value) +
+                " violates constraint: value must be positive (> 0)");
+        }
+    }
+
+    /**
+     * The explicit cast operator provides a reference to the wrapped object.
+     */
+    constexpr explicit operator unsigned int const & () const { return value; }
+    constexpr explicit operator unsigned int & () { return value; }
+
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
+    /**
+     * The default three-way comparison (spaceship) operator.
+     */
+    friend constexpr auto operator <=> (
+        TimeoutSeconds const &,
+        TimeoutSeconds const &) = default;
+#else
+    /**
+     * Comparison operators (C++17 fallback for spaceship operator).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend constexpr bool operator < (
+        TimeoutSeconds const & lhs,
+        TimeoutSeconds const & rhs)
+    noexcept(noexcept(std::declval<unsigned int const &>() <
+        std::declval<unsigned int const &>()))
+    {
+        return lhs.value < rhs.value;
+    }
+
+    friend constexpr bool operator <= (
+        TimeoutSeconds const & lhs,
+        TimeoutSeconds const & rhs)
+    noexcept(noexcept(std::declval<unsigned int const &>() <=
+        std::declval<unsigned int const &>()))
+    {
+        return lhs.value <= rhs.value;
+    }
+
+    friend constexpr bool operator > (
+        TimeoutSeconds const & lhs,
+        TimeoutSeconds const & rhs)
+    noexcept(noexcept(std::declval<unsigned int const &>() >
+        std::declval<unsigned int const &>()))
+    {
+        return lhs.value > rhs.value;
+    }
+
+    friend constexpr bool operator >= (
+        TimeoutSeconds const & lhs,
+        TimeoutSeconds const & rhs)
+    noexcept(noexcept(std::declval<unsigned int const &>() >=
+        std::declval<unsigned int const &>()))
+    {
+        return lhs.value >= rhs.value;
+    }
+#endif
+
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
+    /**
+     * The default equality comparison operator.
+     * Provided with spaceship operator for optimal performance.
+     */
+    friend constexpr bool operator == (
+        TimeoutSeconds const &,
+        TimeoutSeconds const &) = default;
+#else
+    /**
+     * Equality comparison operators (C++17 fallback).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend constexpr bool operator == (
+        TimeoutSeconds const & lhs,
+        TimeoutSeconds const & rhs)
+    noexcept(noexcept(std::declval<unsigned int const &>() ==
+        std::declval<unsigned int const &>()))
+    {
+        return lhs.value == rhs.value;
+    }
+
+    friend constexpr bool operator != (
+        TimeoutSeconds const & lhs,
+        TimeoutSeconds const & rhs)
+    noexcept(noexcept(std::declval<unsigned int const &>() !=
+        std::declval<unsigned int const &>()))
+    {
+        return lhs.value != rhs.value;
+    }
+#endif
+};
+} // namespace config
+} // namespace db
+
+
+namespace api {
+namespace security {
+
+/**
+ * @brief Strong type wrapper for std::string
+ *
+ * Generated by Atlas Strong Type Generator.
+ * Generation parameters:
+ * - kind: class
+ * - type_namespace: api::security
+ * - type_name: ApiKey
+ * - description: std::string; !=, ==, hash, non_empty
+ * - default_value: ""
+ */
+class ApiKey
+: private atlas::strong_type_tag
+{
+    std::string value;
+
+public:
+    using atlas_value_type = std::string;
+    using atlas_constraint = atlas::constraints::non_empty<std::string>;
+
+    ApiKey() = delete;
+
+    template <
+        typename... ArgTs,
+        typename std::enable_if<
+            std::is_constructible<std::string, ArgTs...>::value,
+            bool>::type = true>
+    constexpr explicit ApiKey(ArgTs && ... args)
+    : value(std::forward<ArgTs>(args)...)
+    {
+        if (not atlas_constraint::check(value)) {
+            throw atlas::ConstraintError(
+                "ApiKey: " +
+                atlas::constraints::detail::format_value(value) +
+                " violates constraint: value must not be empty");
+        }
+    }
+
+    /**
+     * The explicit cast operator provides a reference to the wrapped object.
+     */
+    constexpr explicit operator std::string const & () const { return value; }
+    constexpr explicit operator std::string & () { return value; }
+
+    /**
+     * Is @p lhs.value != @p rhs.value?
+     */
+    friend constexpr bool operator != (
+        ApiKey const & lhs,
+        ApiKey const & rhs)
+    noexcept(noexcept(std::declval<std::string const&>() != std::declval<std::string const&>()))
+    {
+        return lhs.value != rhs.value;
+    }
+
+    /**
+     * Is @p lhs.value == @p rhs.value?
+     */
+    friend constexpr bool operator == (
+        ApiKey const & lhs,
+        ApiKey const & rhs)
+    noexcept(noexcept(std::declval<std::string const&>() == std::declval<std::string const&>()))
+    {
+        return lhs.value == rhs.value;
+    }
+};
+} // namespace security
+} // namespace api
+
+
+/**
+ * @brief std::hash specialization for api::security::ApiKey
+ *
+ * Delegates to std::hash of the underlying type std::string
+ */
+template <>
+struct std::hash<api::security::ApiKey>
+{
+    ATLAS_NODISCARD
+    constexpr std::size_t operator () (api::security::ApiKey const & t) const
+    noexcept(
+        noexcept(std::hash<std::string>{}(
+            std::declval<std::string const &>())))
+    {
+        return std::hash<std::string>{}(
+            static_cast<std::string const &>(t));
+    }
+};
+
+namespace sys {
+namespace scheduling {
+
+/**
+ * @brief Strong type wrapper for int
+ *
+ * Generated by Atlas Strong Type Generator.
+ * Generation parameters:
+ * - kind: struct
+ * - type_namespace: sys::scheduling
+ * - type_name: ThreadPriority
+ * - description: int; <=>, bounded<-20,19>
+ * - default_value: "0"
+ */
+struct ThreadPriority
+: private atlas::strong_type_tag
+{
+    int value{0};
+
+    using atlas_value_type = int;
+    struct atlas_bounds
+    {
+        using value_type = atlas_value_type;
+        static constexpr value_type min() noexcept {
+            return value_type(-20);
+        }
+        static constexpr value_type max() noexcept {
+            return value_type(19);
+        }
+        static constexpr char const * message() noexcept {
+            return "value must be in [-20, 19]";
+        }
+    };
+    using atlas_constraint = atlas::constraints::bounded<atlas_bounds>;
+
+    constexpr explicit ThreadPriority() = default;
+
+    template <
+        typename... ArgTs,
+        typename std::enable_if<
+            std::is_constructible<int, ArgTs...>::value,
+            bool>::type = true>
+    constexpr explicit ThreadPriority(ArgTs && ... args)
+    : value(std::forward<ArgTs>(args)...)
+    {
+        if (not atlas_constraint::check(value)) {
+            throw atlas::ConstraintError(
+                "ThreadPriority: " +
+                atlas::constraints::detail::format_value(value) +
+                " violates constraint: value must be in [-20, 19]");
+        }
+    }
+
+    /**
+     * The explicit cast operator provides a reference to the wrapped object.
+     */
+    constexpr explicit operator int const & () const { return value; }
+    constexpr explicit operator int & () { return value; }
+
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
+    /**
+     * The default three-way comparison (spaceship) operator.
+     */
+    friend constexpr auto operator <=> (
+        ThreadPriority const &,
+        ThreadPriority const &) = default;
+#else
+    /**
+     * Comparison operators (C++17 fallback for spaceship operator).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend constexpr bool operator < (
+        ThreadPriority const & lhs,
+        ThreadPriority const & rhs)
+    noexcept(noexcept(std::declval<int const &>() <
+        std::declval<int const &>()))
+    {
+        return lhs.value < rhs.value;
+    }
+
+    friend constexpr bool operator <= (
+        ThreadPriority const & lhs,
+        ThreadPriority const & rhs)
+    noexcept(noexcept(std::declval<int const &>() <=
+        std::declval<int const &>()))
+    {
+        return lhs.value <= rhs.value;
+    }
+
+    friend constexpr bool operator > (
+        ThreadPriority const & lhs,
+        ThreadPriority const & rhs)
+    noexcept(noexcept(std::declval<int const &>() >
+        std::declval<int const &>()))
+    {
+        return lhs.value > rhs.value;
+    }
+
+    friend constexpr bool operator >= (
+        ThreadPriority const & lhs,
+        ThreadPriority const & rhs)
+    noexcept(noexcept(std::declval<int const &>() >=
+        std::declval<int const &>()))
+    {
+        return lhs.value >= rhs.value;
+    }
+#endif
+
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
+    /**
+     * The default equality comparison operator.
+     * Provided with spaceship operator for optimal performance.
+     */
+    friend constexpr bool operator == (
+        ThreadPriority const &,
+        ThreadPriority const &) = default;
+#else
+    /**
+     * Equality comparison operators (C++17 fallback).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend constexpr bool operator == (
+        ThreadPriority const & lhs,
+        ThreadPriority const & rhs)
+    noexcept(noexcept(std::declval<int const &>() ==
+        std::declval<int const &>()))
+    {
+        return lhs.value == rhs.value;
+    }
+
+    friend constexpr bool operator != (
+        ThreadPriority const & lhs,
+        ThreadPriority const & rhs)
+    noexcept(noexcept(std::declval<int const &>() !=
+        std::declval<int const &>()))
+    {
+        return lhs.value != rhs.value;
+    }
+#endif
+};
+} // namespace scheduling
+} // namespace sys
+
+
+namespace net {
+namespace resilience {
+
+/**
+ * @brief Strong type wrapper for unsigned int
+ *
+ * Generated by Atlas Strong Type Generator.
+ * Generation parameters:
+ * - kind: struct
+ * - type_namespace: net::resilience
+ * - type_name: RetryCount
+ * - description: unsigned int; ++, --, ==, non_negative
+ * - default_value: "0"
+ */
+struct RetryCount
+: private atlas::strong_type_tag
+{
+    unsigned int value{0};
+
+    using atlas_value_type = unsigned int;
+    using atlas_constraint = atlas::constraints::non_negative<unsigned int>;
+
+    constexpr explicit RetryCount() = default;
+
+    template <
+        typename... ArgTs,
+        typename std::enable_if<
+            std::is_constructible<unsigned int, ArgTs...>::value,
+            bool>::type = true>
+    constexpr explicit RetryCount(ArgTs && ... args)
+    : value(std::forward<ArgTs>(args)...)
+    {
+        if (not atlas_constraint::check(value)) {
+            throw atlas::ConstraintError(
+                "RetryCount: " +
+                atlas::constraints::detail::format_value(value) +
+                " violates constraint: value must be non-negative (>= 0)");
+        }
+    }
+
+    /**
+     * The explicit cast operator provides a reference to the wrapped object.
+     */
+    constexpr explicit operator unsigned int const & () const { return value; }
+    constexpr explicit operator unsigned int & () { return value; }
+
+    /**
+     * Apply the prefix ++ operator to the wrapped object.
+     */
+    friend constexpr RetryCount &
+    operator ++ (RetryCount & t)
+    noexcept(noexcept(++std::declval<unsigned int&>()))
+    {
+        ++t.value;
+        return t;
+    }
+    /**
+     * Apply the postfix ++ operator to the wrapped object.
+     */
+    friend constexpr RetryCount
+    operator ++ (RetryCount & t, int)
+    noexcept(
+        std::is_nothrow_copy_constructible<unsigned int>::value &&
+        noexcept(++std::declval<unsigned int&>()))
+    {
+        auto result = t;
+        ++t.value;
+        return result;
+    }
+
+    /**
+     * Apply the prefix -- operator to the wrapped object.
+     */
+    friend constexpr RetryCount &
+    operator -- (RetryCount & t)
+    noexcept(noexcept(--std::declval<unsigned int&>()))
+    {
+        --t.value;
+        return t;
+    }
+    /**
+     * Apply the postfix -- operator to the wrapped object.
+     */
+    friend constexpr RetryCount
+    operator -- (RetryCount & t, int)
+    noexcept(
+        std::is_nothrow_copy_constructible<unsigned int>::value &&
+        noexcept(--std::declval<unsigned int&>()))
+    {
+        auto result = t;
+        --t.value;
+        return result;
+    }
+
+    /**
+     * Is @p lhs.value == @p rhs.value?
+     */
+    friend constexpr bool operator == (
+        RetryCount const & lhs,
+        RetryCount const & rhs)
+    noexcept(noexcept(std::declval<unsigned int const&>() == std::declval<unsigned int const&>()))
+    {
+        return lhs.value == rhs.value;
+    }
+};
+} // namespace resilience
+} // namespace net
+
+
+namespace geo {
+namespace coordinates {
+
+/**
+ * @brief Strong type wrapper for double
+ *
+ * Generated by Atlas Strong Type Generator.
+ * Generation parameters:
+ * - kind: struct
+ * - type_namespace: geo::coordinates
+ * - type_name: Latitude
+ * - description: double; <=>, bounded<-90,90>
+ * - default_value: "0.0"
+ */
+struct Latitude
+: private atlas::strong_type_tag
+{
+    double value{0.0};
+
+    using atlas_value_type = double;
+    struct atlas_bounds
+    {
+        using value_type = atlas_value_type;
+        static constexpr value_type min() noexcept {
+            return value_type(-90);
+        }
+        static constexpr value_type max() noexcept {
+            return value_type(90);
+        }
+        static constexpr char const * message() noexcept {
+            return "value must be in [-90, 90]";
+        }
+    };
+    using atlas_constraint = atlas::constraints::bounded<atlas_bounds>;
+
+    constexpr explicit Latitude() = default;
+
+    template <
+        typename... ArgTs,
+        typename std::enable_if<
+            std::is_constructible<double, ArgTs...>::value,
+            bool>::type = true>
+    constexpr explicit Latitude(ArgTs && ... args)
+    : value(std::forward<ArgTs>(args)...)
+    {
+        if (not atlas_constraint::check(value)) {
+            throw atlas::ConstraintError(
+                "Latitude: " +
+                atlas::constraints::detail::format_value(value) +
+                " violates constraint: value must be in [-90, 90]");
+        }
+    }
+
+    /**
+     * The explicit cast operator provides a reference to the wrapped object.
+     */
+    constexpr explicit operator double const & () const { return value; }
+    constexpr explicit operator double & () { return value; }
+
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
+    /**
+     * The default three-way comparison (spaceship) operator.
+     */
+    friend constexpr auto operator <=> (
+        Latitude const &,
+        Latitude const &) = default;
+#else
+    /**
+     * Comparison operators (C++17 fallback for spaceship operator).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend constexpr bool operator < (
+        Latitude const & lhs,
+        Latitude const & rhs)
+    noexcept(noexcept(std::declval<double const &>() <
+        std::declval<double const &>()))
+    {
+        return lhs.value < rhs.value;
+    }
+
+    friend constexpr bool operator <= (
+        Latitude const & lhs,
+        Latitude const & rhs)
+    noexcept(noexcept(std::declval<double const &>() <=
+        std::declval<double const &>()))
+    {
+        return lhs.value <= rhs.value;
+    }
+
+    friend constexpr bool operator > (
+        Latitude const & lhs,
+        Latitude const & rhs)
+    noexcept(noexcept(std::declval<double const &>() >
+        std::declval<double const &>()))
+    {
+        return lhs.value > rhs.value;
+    }
+
+    friend constexpr bool operator >= (
+        Latitude const & lhs,
+        Latitude const & rhs)
+    noexcept(noexcept(std::declval<double const &>() >=
+        std::declval<double const &>()))
+    {
+        return lhs.value >= rhs.value;
+    }
+#endif
+
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
+    /**
+     * The default equality comparison operator.
+     * Provided with spaceship operator for optimal performance.
+     */
+    friend constexpr bool operator == (
+        Latitude const &,
+        Latitude const &) = default;
+#else
+    /**
+     * Equality comparison operators (C++17 fallback).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend constexpr bool operator == (
+        Latitude const & lhs,
+        Latitude const & rhs)
+    noexcept(noexcept(std::declval<double const &>() ==
+        std::declval<double const &>()))
+    {
+        return lhs.value == rhs.value;
+    }
+
+    friend constexpr bool operator != (
+        Latitude const & lhs,
+        Latitude const & rhs)
+    noexcept(noexcept(std::declval<double const &>() !=
+        std::declval<double const &>()))
+    {
+        return lhs.value != rhs.value;
+    }
+#endif
+};
+} // namespace coordinates
+} // namespace geo
+
+
+namespace geo {
+namespace coordinates {
+
+/**
+ * @brief Strong type wrapper for double
+ *
+ * Generated by Atlas Strong Type Generator.
+ * Generation parameters:
+ * - kind: struct
+ * - type_namespace: geo::coordinates
+ * - type_name: Longitude
+ * - description: double; <=>, bounded<-180,180>
+ * - default_value: "0.0"
+ */
+struct Longitude
+: private atlas::strong_type_tag
+{
+    double value{0.0};
+
+    using atlas_value_type = double;
+    struct atlas_bounds
+    {
+        using value_type = atlas_value_type;
+        static constexpr value_type min() noexcept {
+            return value_type(-180);
+        }
+        static constexpr value_type max() noexcept {
+            return value_type(180);
+        }
+        static constexpr char const * message() noexcept {
+            return "value must be in [-180, 180]";
+        }
+    };
+    using atlas_constraint = atlas::constraints::bounded<atlas_bounds>;
+
+    constexpr explicit Longitude() = default;
+
+    template <
+        typename... ArgTs,
+        typename std::enable_if<
+            std::is_constructible<double, ArgTs...>::value,
+            bool>::type = true>
+    constexpr explicit Longitude(ArgTs && ... args)
+    : value(std::forward<ArgTs>(args)...)
+    {
+        if (not atlas_constraint::check(value)) {
+            throw atlas::ConstraintError(
+                "Longitude: " +
+                atlas::constraints::detail::format_value(value) +
+                " violates constraint: value must be in [-180, 180]");
+        }
+    }
+
+    /**
+     * The explicit cast operator provides a reference to the wrapped object.
+     */
+    constexpr explicit operator double const & () const { return value; }
+    constexpr explicit operator double & () { return value; }
+
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
+    /**
+     * The default three-way comparison (spaceship) operator.
+     */
+    friend constexpr auto operator <=> (
+        Longitude const &,
+        Longitude const &) = default;
+#else
+    /**
+     * Comparison operators (C++17 fallback for spaceship operator).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend constexpr bool operator < (
+        Longitude const & lhs,
+        Longitude const & rhs)
+    noexcept(noexcept(std::declval<double const &>() <
+        std::declval<double const &>()))
+    {
+        return lhs.value < rhs.value;
+    }
+
+    friend constexpr bool operator <= (
+        Longitude const & lhs,
+        Longitude const & rhs)
+    noexcept(noexcept(std::declval<double const &>() <=
+        std::declval<double const &>()))
+    {
+        return lhs.value <= rhs.value;
+    }
+
+    friend constexpr bool operator > (
+        Longitude const & lhs,
+        Longitude const & rhs)
+    noexcept(noexcept(std::declval<double const &>() >
+        std::declval<double const &>()))
+    {
+        return lhs.value > rhs.value;
+    }
+
+    friend constexpr bool operator >= (
+        Longitude const & lhs,
+        Longitude const & rhs)
+    noexcept(noexcept(std::declval<double const &>() >=
+        std::declval<double const &>()))
+    {
+        return lhs.value >= rhs.value;
+    }
+#endif
+
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
+    /**
+     * The default equality comparison operator.
+     * Provided with spaceship operator for optimal performance.
+     */
+    friend constexpr bool operator == (
+        Longitude const &,
+        Longitude const &) = default;
+#else
+    /**
+     * Equality comparison operators (C++17 fallback).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend constexpr bool operator == (
+        Longitude const & lhs,
+        Longitude const & rhs)
+    noexcept(noexcept(std::declval<double const &>() ==
+        std::declval<double const &>()))
+    {
+        return lhs.value == rhs.value;
+    }
+
+    friend constexpr bool operator != (
+        Longitude const & lhs,
+        Longitude const & rhs)
+    noexcept(noexcept(std::declval<double const &>() !=
+        std::declval<double const &>()))
+    {
+        return lhs.value != rhs.value;
+    }
+#endif
+};
+} // namespace coordinates
+} // namespace geo
+
+
+namespace net {
+namespace qos {
+
+/**
+ * @brief Strong type wrapper for uint8_t
+ *
+ * Generated by Atlas Strong Type Generator.
+ * Generation parameters:
+ * - kind: struct
+ * - type_namespace: net::qos
+ * - type_name: QoSLevel
+ * - description: uint8_t; <=>, bounded<0,9>
+ * - default_value: "0"
+ */
+struct QoSLevel
+: private atlas::strong_type_tag
+{
+    uint8_t value{0};
+
+    using atlas_value_type = uint8_t;
+    struct atlas_bounds
+    {
+        using value_type = atlas_value_type;
+        static constexpr value_type min() noexcept {
+            return value_type(0);
+        }
+        static constexpr value_type max() noexcept {
+            return value_type(9);
+        }
+        static constexpr char const * message() noexcept {
+            return "value must be in [0, 9]";
+        }
+    };
+    using atlas_constraint = atlas::constraints::bounded<atlas_bounds>;
+
+    constexpr explicit QoSLevel() = default;
+
+    template <
+        typename... ArgTs,
+        typename std::enable_if<
+            std::is_constructible<uint8_t, ArgTs...>::value,
+            bool>::type = true>
+    constexpr explicit QoSLevel(ArgTs && ... args)
+    : value(std::forward<ArgTs>(args)...)
+    {
+        if (not atlas_constraint::check(value)) {
+            throw atlas::ConstraintError(
+                "QoSLevel: " +
+                atlas::constraints::detail::format_value(value) +
+                " violates constraint: value must be in [0, 9]");
+        }
+    }
+
+    /**
+     * The explicit cast operator provides a reference to the wrapped object.
+     */
+    constexpr explicit operator uint8_t const & () const { return value; }
+    constexpr explicit operator uint8_t & () { return value; }
+
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
+    /**
+     * The default three-way comparison (spaceship) operator.
+     */
+    friend constexpr auto operator <=> (
+        QoSLevel const &,
+        QoSLevel const &) = default;
+#else
+    /**
+     * Comparison operators (C++17 fallback for spaceship operator).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend constexpr bool operator < (
+        QoSLevel const & lhs,
+        QoSLevel const & rhs)
+    noexcept(noexcept(std::declval<uint8_t const &>() <
+        std::declval<uint8_t const &>()))
+    {
+        return lhs.value < rhs.value;
+    }
+
+    friend constexpr bool operator <= (
+        QoSLevel const & lhs,
+        QoSLevel const & rhs)
+    noexcept(noexcept(std::declval<uint8_t const &>() <=
+        std::declval<uint8_t const &>()))
+    {
+        return lhs.value <= rhs.value;
+    }
+
+    friend constexpr bool operator > (
+        QoSLevel const & lhs,
+        QoSLevel const & rhs)
+    noexcept(noexcept(std::declval<uint8_t const &>() >
+        std::declval<uint8_t const &>()))
+    {
+        return lhs.value > rhs.value;
+    }
+
+    friend constexpr bool operator >= (
+        QoSLevel const & lhs,
+        QoSLevel const & rhs)
+    noexcept(noexcept(std::declval<uint8_t const &>() >=
+        std::declval<uint8_t const &>()))
+    {
+        return lhs.value >= rhs.value;
+    }
+#endif
+
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
+    /**
+     * The default equality comparison operator.
+     * Provided with spaceship operator for optimal performance.
+     */
+    friend constexpr bool operator == (
+        QoSLevel const &,
+        QoSLevel const &) = default;
+#else
+    /**
+     * Equality comparison operators (C++17 fallback).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend constexpr bool operator == (
+        QoSLevel const & lhs,
+        QoSLevel const & rhs)
+    noexcept(noexcept(std::declval<uint8_t const &>() ==
+        std::declval<uint8_t const &>()))
+    {
+        return lhs.value == rhs.value;
+    }
+
+    friend constexpr bool operator != (
+        QoSLevel const & lhs,
+        QoSLevel const & rhs)
+    noexcept(noexcept(std::declval<uint8_t const &>() !=
+        std::declval<uint8_t const &>()))
+    {
+        return lhs.value != rhs.value;
+    }
+#endif
+};
+} // namespace qos
+} // namespace net
+
+
+namespace maps {
+namespace display {
+
+/**
+ * @brief Strong type wrapper for uint8_t
+ *
+ * Generated by Atlas Strong Type Generator.
+ * Generation parameters:
+ * - kind: struct
+ * - type_namespace: maps::display
+ * - type_name: ZoomLevel
+ * - description: uint8_t; ++, --, <=>, bounded<0,20>
+ * - default_value: "10"
+ */
+struct ZoomLevel
+: private atlas::strong_type_tag
+{
+    uint8_t value{10};
+
+    using atlas_value_type = uint8_t;
+    struct atlas_bounds
+    {
+        using value_type = atlas_value_type;
+        static constexpr value_type min() noexcept {
+            return value_type(0);
+        }
+        static constexpr value_type max() noexcept {
+            return value_type(20);
+        }
+        static constexpr char const * message() noexcept {
+            return "value must be in [0, 20]";
+        }
+    };
+    using atlas_constraint = atlas::constraints::bounded<atlas_bounds>;
+
+    constexpr explicit ZoomLevel() = default;
+
+    template <
+        typename... ArgTs,
+        typename std::enable_if<
+            std::is_constructible<uint8_t, ArgTs...>::value,
+            bool>::type = true>
+    constexpr explicit ZoomLevel(ArgTs && ... args)
+    : value(std::forward<ArgTs>(args)...)
+    {
+        if (not atlas_constraint::check(value)) {
+            throw atlas::ConstraintError(
+                "ZoomLevel: " +
+                atlas::constraints::detail::format_value(value) +
+                " violates constraint: value must be in [0, 20]");
+        }
+    }
+
+    /**
+     * The explicit cast operator provides a reference to the wrapped object.
+     */
+    constexpr explicit operator uint8_t const & () const { return value; }
+    constexpr explicit operator uint8_t & () { return value; }
+
+    /**
+     * Apply the prefix ++ operator to the wrapped object.
+     */
+    friend constexpr ZoomLevel &
+    operator ++ (ZoomLevel & t)
+    noexcept(noexcept(++std::declval<uint8_t&>()))
+    {
+        ++t.value;
+        return t;
+    }
+    /**
+     * Apply the postfix ++ operator to the wrapped object.
+     */
+    friend constexpr ZoomLevel
+    operator ++ (ZoomLevel & t, int)
+    noexcept(
+        std::is_nothrow_copy_constructible<uint8_t>::value &&
+        noexcept(++std::declval<uint8_t&>()))
+    {
+        auto result = t;
+        ++t.value;
+        return result;
+    }
+
+    /**
+     * Apply the prefix -- operator to the wrapped object.
+     */
+    friend constexpr ZoomLevel &
+    operator -- (ZoomLevel & t)
+    noexcept(noexcept(--std::declval<uint8_t&>()))
+    {
+        --t.value;
+        return t;
+    }
+    /**
+     * Apply the postfix -- operator to the wrapped object.
+     */
+    friend constexpr ZoomLevel
+    operator -- (ZoomLevel & t, int)
+    noexcept(
+        std::is_nothrow_copy_constructible<uint8_t>::value &&
+        noexcept(--std::declval<uint8_t&>()))
+    {
+        auto result = t;
+        --t.value;
+        return result;
+    }
+
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
+    /**
+     * The default three-way comparison (spaceship) operator.
+     */
+    friend constexpr auto operator <=> (
+        ZoomLevel const &,
+        ZoomLevel const &) = default;
+#else
+    /**
+     * Comparison operators (C++17 fallback for spaceship operator).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend constexpr bool operator < (
+        ZoomLevel const & lhs,
+        ZoomLevel const & rhs)
+    noexcept(noexcept(std::declval<uint8_t const &>() <
+        std::declval<uint8_t const &>()))
+    {
+        return lhs.value < rhs.value;
+    }
+
+    friend constexpr bool operator <= (
+        ZoomLevel const & lhs,
+        ZoomLevel const & rhs)
+    noexcept(noexcept(std::declval<uint8_t const &>() <=
+        std::declval<uint8_t const &>()))
+    {
+        return lhs.value <= rhs.value;
+    }
+
+    friend constexpr bool operator > (
+        ZoomLevel const & lhs,
+        ZoomLevel const & rhs)
+    noexcept(noexcept(std::declval<uint8_t const &>() >
+        std::declval<uint8_t const &>()))
+    {
+        return lhs.value > rhs.value;
+    }
+
+    friend constexpr bool operator >= (
+        ZoomLevel const & lhs,
+        ZoomLevel const & rhs)
+    noexcept(noexcept(std::declval<uint8_t const &>() >=
+        std::declval<uint8_t const &>()))
+    {
+        return lhs.value >= rhs.value;
+    }
+#endif
+
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
+    /**
+     * The default equality comparison operator.
+     * Provided with spaceship operator for optimal performance.
+     */
+    friend constexpr bool operator == (
+        ZoomLevel const &,
+        ZoomLevel const &) = default;
+#else
+    /**
+     * Equality comparison operators (C++17 fallback).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend constexpr bool operator == (
+        ZoomLevel const & lhs,
+        ZoomLevel const & rhs)
+    noexcept(noexcept(std::declval<uint8_t const &>() ==
+        std::declval<uint8_t const &>()))
+    {
+        return lhs.value == rhs.value;
+    }
+
+    friend constexpr bool operator != (
+        ZoomLevel const & lhs,
+        ZoomLevel const & rhs)
+    noexcept(noexcept(std::declval<uint8_t const &>() !=
+        std::declval<uint8_t const &>()))
+    {
+        return lhs.value != rhs.value;
+    }
+#endif
+};
+} // namespace display
+} // namespace maps
+
+
+namespace math {
+namespace calculations {
+
+/**
+ * @brief Strong type wrapper for double
+ *
+ * Generated by Atlas Strong Type Generator.
+ * Generation parameters:
+ * - kind: struct
+ * - type_namespace: math::calculations
+ * - type_name: SafeDivisor
+ * - description: double; !=, *, /, ==, non_zero
+ * - default_value: "1.0"
+ */
+struct SafeDivisor
+: private atlas::strong_type_tag
+{
+    double value{1.0};
+
+    using atlas_value_type = double;
+    using atlas_constraint = atlas::constraints::non_zero<double>;
+
+    constexpr explicit SafeDivisor() = default;
+
+    template <
+        typename... ArgTs,
+        typename std::enable_if<
+            std::is_constructible<double, ArgTs...>::value,
+            bool>::type = true>
+    constexpr explicit SafeDivisor(ArgTs && ... args)
+    : value(std::forward<ArgTs>(args)...)
+    {
+        if (not atlas_constraint::check(value)) {
+            throw atlas::ConstraintError(
+                "SafeDivisor: " +
+                atlas::constraints::detail::format_value(value) +
+                " violates constraint: value must be non-zero (!= 0)");
+        }
+    }
+
+    /**
+     * The explicit cast operator provides a reference to the wrapped object.
+     */
+    constexpr explicit operator double const & () const { return value; }
+    constexpr explicit operator double & () { return value; }
+
+    /**
+     * Apply * assignment to the wrapped objects.
+     */
+    friend constexpr SafeDivisor & operator *= (
+        SafeDivisor & lhs,
+        SafeDivisor const & rhs)
+    {
+        lhs.value *= rhs.value;
+        if (not atlas_constraint::check(lhs.value)) {
+            throw atlas::ConstraintError(
+                "SafeDivisor: arithmetic result violates constraint"
+                " (value must be non-zero (!= 0))");
+        }
+        return lhs;
+    }
+    /**
+     * Apply the binary operator * to the wrapped object.
+     */
+    friend constexpr SafeDivisor operator * (
+        SafeDivisor lhs,
+        SafeDivisor const & rhs)
+    noexcept(noexcept(lhs *= rhs))
+    {
+        lhs *= rhs;
+        return lhs;
+    }
+
+    /**
+     * Apply / assignment to the wrapped objects.
+     */
+    friend constexpr SafeDivisor & operator /= (
+        SafeDivisor & lhs,
+        SafeDivisor const & rhs)
+    {
+        lhs.value /= rhs.value;
+        if (not atlas_constraint::check(lhs.value)) {
+            throw atlas::ConstraintError(
+                "SafeDivisor: arithmetic result violates constraint"
+                " (value must be non-zero (!= 0))");
+        }
+        return lhs;
+    }
+    /**
+     * Apply the binary operator / to the wrapped object.
+     */
+    friend constexpr SafeDivisor operator / (
+        SafeDivisor lhs,
+        SafeDivisor const & rhs)
+    noexcept(noexcept(lhs /= rhs))
+    {
+        lhs /= rhs;
+        return lhs;
+    }
+
+    /**
+     * Is @p lhs.value != @p rhs.value?
+     */
+    friend constexpr bool operator != (
+        SafeDivisor const & lhs,
+        SafeDivisor const & rhs)
+    noexcept(noexcept(std::declval<double const&>() != std::declval<double const&>()))
+    {
+        return lhs.value != rhs.value;
+    }
+
+    /**
+     * Is @p lhs.value == @p rhs.value?
+     */
+    friend constexpr bool operator == (
+        SafeDivisor const & lhs,
+        SafeDivisor const & rhs)
+    noexcept(noexcept(std::declval<double const&>() == std::declval<double const&>()))
+    {
+        return lhs.value == rhs.value;
+    }
+};
+} // namespace calculations
+} // namespace math
+
+
+namespace physics {
+namespace kinematics {
+
+/**
+ * @brief Strong type wrapper for double
+ *
+ * Generated by Atlas Strong Type Generator.
+ * Generation parameters:
+ * - kind: struct
+ * - type_namespace: physics::kinematics
+ * - type_name: Speed
+ * - description: double; *, +, -, /, <=>, positive
+ * - default_value: "1.0"
+ */
+struct Speed
+: private atlas::strong_type_tag
+{
+    double value{1.0};
+
+    using atlas_value_type = double;
+    using atlas_constraint = atlas::constraints::positive<double>;
+
+    constexpr explicit Speed() = default;
+
+    template <
+        typename... ArgTs,
+        typename std::enable_if<
+            std::is_constructible<double, ArgTs...>::value,
+            bool>::type = true>
+    constexpr explicit Speed(ArgTs && ... args)
+    : value(std::forward<ArgTs>(args)...)
+    {
+        if (not atlas_constraint::check(value)) {
+            throw atlas::ConstraintError(
+                "Speed: " +
+                atlas::constraints::detail::format_value(value) +
+                " violates constraint: value must be positive (> 0)");
+        }
+    }
+
+    /**
+     * The explicit cast operator provides a reference to the wrapped object.
+     */
+    constexpr explicit operator double const & () const { return value; }
+    constexpr explicit operator double & () { return value; }
+
+    /**
+     * Apply * assignment to the wrapped objects.
+     */
+    friend constexpr Speed & operator *= (
+        Speed & lhs,
+        Speed const & rhs)
+    {
+        lhs.value *= rhs.value;
+        if (not atlas_constraint::check(lhs.value)) {
+            throw atlas::ConstraintError(
+                "Speed: arithmetic result violates constraint"
+                " (value must be positive (> 0))");
+        }
+        return lhs;
+    }
+    /**
+     * Apply the binary operator * to the wrapped object.
+     */
+    friend constexpr Speed operator * (
+        Speed lhs,
+        Speed const & rhs)
+    noexcept(noexcept(lhs *= rhs))
+    {
+        lhs *= rhs;
+        return lhs;
+    }
+
+    /**
+     * Apply + assignment to the wrapped objects.
+     */
+    friend constexpr Speed & operator += (
+        Speed & lhs,
+        Speed const & rhs)
+    {
+        lhs.value += rhs.value;
+        if (not atlas_constraint::check(lhs.value)) {
+            throw atlas::ConstraintError(
+                "Speed: arithmetic result violates constraint"
+                " (value must be positive (> 0))");
+        }
+        return lhs;
+    }
+    /**
+     * Apply the binary operator + to the wrapped object.
+     */
+    friend constexpr Speed operator + (
+        Speed lhs,
+        Speed const & rhs)
+    noexcept(noexcept(lhs += rhs))
+    {
+        lhs += rhs;
+        return lhs;
+    }
+
+    /**
+     * Apply - assignment to the wrapped objects.
+     */
+    friend constexpr Speed & operator -= (
+        Speed & lhs,
+        Speed const & rhs)
+    {
+        lhs.value -= rhs.value;
+        if (not atlas_constraint::check(lhs.value)) {
+            throw atlas::ConstraintError(
+                "Speed: arithmetic result violates constraint"
+                " (value must be positive (> 0))");
+        }
+        return lhs;
+    }
+    /**
+     * Apply the binary operator - to the wrapped object.
+     */
+    friend constexpr Speed operator - (
+        Speed lhs,
+        Speed const & rhs)
+    noexcept(noexcept(lhs -= rhs))
+    {
+        lhs -= rhs;
+        return lhs;
+    }
+
+    /**
+     * Apply / assignment to the wrapped objects.
+     */
+    friend constexpr Speed & operator /= (
+        Speed & lhs,
+        Speed const & rhs)
+    {
+        lhs.value /= rhs.value;
+        if (not atlas_constraint::check(lhs.value)) {
+            throw atlas::ConstraintError(
+                "Speed: arithmetic result violates constraint"
+                " (value must be positive (> 0))");
+        }
+        return lhs;
+    }
+    /**
+     * Apply the binary operator / to the wrapped object.
+     */
+    friend constexpr Speed operator / (
+        Speed lhs,
+        Speed const & rhs)
+    noexcept(noexcept(lhs /= rhs))
+    {
+        lhs /= rhs;
+        return lhs;
+    }
+
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
+    /**
+     * The default three-way comparison (spaceship) operator.
+     */
+    friend constexpr auto operator <=> (
+        Speed const &,
+        Speed const &) = default;
+#else
+    /**
+     * Comparison operators (C++17 fallback for spaceship operator).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend constexpr bool operator < (
+        Speed const & lhs,
+        Speed const & rhs)
+    noexcept(noexcept(std::declval<double const &>() <
+        std::declval<double const &>()))
+    {
+        return lhs.value < rhs.value;
+    }
+
+    friend constexpr bool operator <= (
+        Speed const & lhs,
+        Speed const & rhs)
+    noexcept(noexcept(std::declval<double const &>() <=
+        std::declval<double const &>()))
+    {
+        return lhs.value <= rhs.value;
+    }
+
+    friend constexpr bool operator > (
+        Speed const & lhs,
+        Speed const & rhs)
+    noexcept(noexcept(std::declval<double const &>() >
+        std::declval<double const &>()))
+    {
+        return lhs.value > rhs.value;
+    }
+
+    friend constexpr bool operator >= (
+        Speed const & lhs,
+        Speed const & rhs)
+    noexcept(noexcept(std::declval<double const &>() >=
+        std::declval<double const &>()))
+    {
+        return lhs.value >= rhs.value;
+    }
+#endif
+
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
+    /**
+     * The default equality comparison operator.
+     * Provided with spaceship operator for optimal performance.
+     */
+    friend constexpr bool operator == (
+        Speed const &,
+        Speed const &) = default;
+#else
+    /**
+     * Equality comparison operators (C++17 fallback).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend constexpr bool operator == (
+        Speed const & lhs,
+        Speed const & rhs)
+    noexcept(noexcept(std::declval<double const &>() ==
+        std::declval<double const &>()))
+    {
+        return lhs.value == rhs.value;
+    }
+
+    friend constexpr bool operator != (
+        Speed const & lhs,
+        Speed const & rhs)
+    noexcept(noexcept(std::declval<double const &>() !=
+        std::declval<double const &>()))
+    {
+        return lhs.value != rhs.value;
+    }
+#endif
+};
+} // namespace kinematics
+} // namespace physics
+
+
+namespace fs {
+namespace paths {
+
+/**
+ * @brief Strong type wrapper for std::string
+ *
+ * Generated by Atlas Strong Type Generator.
+ * Generation parameters:
+ * - kind: struct
+ * - type_namespace: fs::paths
+ * - type_name: Filename
+ * - description: std::string; !=, +, <<, ==, non_empty
+ * - default_value: ""
+ */
+struct Filename
+: private atlas::strong_type_tag
+{
+    std::string value;
+
+    using atlas_value_type = std::string;
+    using atlas_constraint = atlas::constraints::non_empty<std::string>;
+
+    Filename() = delete;
+
+    template <
+        typename... ArgTs,
+        typename std::enable_if<
+            std::is_constructible<std::string, ArgTs...>::value,
+            bool>::type = true>
+    constexpr explicit Filename(ArgTs && ... args)
+    : value(std::forward<ArgTs>(args)...)
+    {
+        if (not atlas_constraint::check(value)) {
+            throw atlas::ConstraintError(
+                "Filename: " +
+                atlas::constraints::detail::format_value(value) +
+                " violates constraint: value must not be empty");
+        }
+    }
+
+    /**
+     * The explicit cast operator provides a reference to the wrapped object.
+     */
+    constexpr explicit operator std::string const & () const { return value; }
+    constexpr explicit operator std::string & () { return value; }
+
+    /**
+     * Apply + assignment to the wrapped objects.
+     */
+    friend constexpr Filename & operator += (
+        Filename & lhs,
+        Filename const & rhs)
+    {
+        lhs.value += rhs.value;
+        if (not atlas_constraint::check(lhs.value)) {
+            throw atlas::ConstraintError(
+                "Filename: arithmetic result violates constraint"
+                " (value must not be empty)");
+        }
+        return lhs;
+    }
+    /**
+     * Apply the binary operator + to the wrapped object.
+     */
+    friend constexpr Filename operator + (
+        Filename lhs,
+        Filename const & rhs)
+    noexcept(noexcept(lhs += rhs))
+    {
+        lhs += rhs;
+        return lhs;
+    }
+
+    /**
+     * Apply << assignment to the wrapped objects.
+     */
+    friend constexpr Filename & operator <<= (
+        Filename & lhs,
+        Filename const & rhs)
+    {
+        lhs.value <<= rhs.value;
+        if (not atlas_constraint::check(lhs.value)) {
+            throw atlas::ConstraintError(
+                "Filename: arithmetic result violates constraint"
+                " (value must not be empty)");
+        }
+        return lhs;
+    }
+    /**
+     * Apply the binary operator << to the wrapped object.
+     */
+    friend constexpr Filename operator << (
+        Filename lhs,
+        Filename const & rhs)
+    noexcept(noexcept(lhs <<= rhs))
+    {
+        lhs <<= rhs;
+        return lhs;
+    }
+
+    /**
+     * Is @p lhs.value != @p rhs.value?
+     */
+    friend constexpr bool operator != (
+        Filename const & lhs,
+        Filename const & rhs)
+    noexcept(noexcept(std::declval<std::string const&>() != std::declval<std::string const&>()))
+    {
+        return lhs.value != rhs.value;
+    }
+
+    /**
+     * Is @p lhs.value == @p rhs.value?
+     */
+    friend constexpr bool operator == (
+        Filename const & lhs,
+        Filename const & rhs)
+    noexcept(noexcept(std::declval<std::string const&>() == std::declval<std::string const&>()))
+    {
+        return lhs.value == rhs.value;
+    }
+};
+} // namespace paths
+} // namespace fs
+
+
+namespace http {
+namespace protocol {
+
+/**
+ * @brief Strong type wrapper for uint16_t
+ *
+ * Generated by Atlas Strong Type Generator.
+ * Generation parameters:
+ * - kind: struct
+ * - type_namespace: http::protocol
+ * - type_name: StatusCode
+ * - description: uint16_t; <=>, bounded<100,599>
+ * - default_value: "200"
+ */
+struct StatusCode
+: private atlas::strong_type_tag
+{
+    uint16_t value{200};
+
+    using atlas_value_type = uint16_t;
+    struct atlas_bounds
+    {
+        using value_type = atlas_value_type;
+        static constexpr value_type min() noexcept {
+            return value_type(100);
+        }
+        static constexpr value_type max() noexcept {
+            return value_type(599);
+        }
+        static constexpr char const * message() noexcept {
+            return "value must be in [100, 599]";
+        }
+    };
+    using atlas_constraint = atlas::constraints::bounded<atlas_bounds>;
+
+    constexpr explicit StatusCode() = default;
+
+    template <
+        typename... ArgTs,
+        typename std::enable_if<
+            std::is_constructible<uint16_t, ArgTs...>::value,
+            bool>::type = true>
+    constexpr explicit StatusCode(ArgTs && ... args)
+    : value(std::forward<ArgTs>(args)...)
+    {
+        if (not atlas_constraint::check(value)) {
+            throw atlas::ConstraintError(
+                "StatusCode: " +
+                atlas::constraints::detail::format_value(value) +
+                " violates constraint: value must be in [100, 599]");
+        }
+    }
+
+    /**
+     * The explicit cast operator provides a reference to the wrapped object.
+     */
+    constexpr explicit operator uint16_t const & () const { return value; }
+    constexpr explicit operator uint16_t & () { return value; }
+
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
+    /**
+     * The default three-way comparison (spaceship) operator.
+     */
+    friend constexpr auto operator <=> (
+        StatusCode const &,
+        StatusCode const &) = default;
+#else
+    /**
+     * Comparison operators (C++17 fallback for spaceship operator).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend constexpr bool operator < (
+        StatusCode const & lhs,
+        StatusCode const & rhs)
+    noexcept(noexcept(std::declval<uint16_t const &>() <
+        std::declval<uint16_t const &>()))
+    {
+        return lhs.value < rhs.value;
+    }
+
+    friend constexpr bool operator <= (
+        StatusCode const & lhs,
+        StatusCode const & rhs)
+    noexcept(noexcept(std::declval<uint16_t const &>() <=
+        std::declval<uint16_t const &>()))
+    {
+        return lhs.value <= rhs.value;
+    }
+
+    friend constexpr bool operator > (
+        StatusCode const & lhs,
+        StatusCode const & rhs)
+    noexcept(noexcept(std::declval<uint16_t const &>() >
+        std::declval<uint16_t const &>()))
+    {
+        return lhs.value > rhs.value;
+    }
+
+    friend constexpr bool operator >= (
+        StatusCode const & lhs,
+        StatusCode const & rhs)
+    noexcept(noexcept(std::declval<uint16_t const &>() >=
+        std::declval<uint16_t const &>()))
+    {
+        return lhs.value >= rhs.value;
+    }
+#endif
+
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
+    /**
+     * The default equality comparison operator.
+     * Provided with spaceship operator for optimal performance.
+     */
+    friend constexpr bool operator == (
+        StatusCode const &,
+        StatusCode const &) = default;
+#else
+    /**
+     * Equality comparison operators (C++17 fallback).
+     * In C++20+, these are synthesized from operator<=>.
+     */
+    friend constexpr bool operator == (
+        StatusCode const & lhs,
+        StatusCode const & rhs)
+    noexcept(noexcept(std::declval<uint16_t const &>() ==
+        std::declval<uint16_t const &>()))
+    {
+        return lhs.value == rhs.value;
+    }
+
+    friend constexpr bool operator != (
+        StatusCode const & lhs,
+        StatusCode const & rhs)
+    noexcept(noexcept(std::declval<uint16_t const &>() !=
+        std::declval<uint16_t const &>()))
+    {
+        return lhs.value != rhs.value;
+    }
+#endif
+};
+} // namespace protocol
+} // namespace http
+
+#endif // EXAMPLE_0C57C67C46F41E8D357F7FF0C34D7BF351925616

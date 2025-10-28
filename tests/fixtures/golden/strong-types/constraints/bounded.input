@@ -21,4 +21,4 @@ description=int; bounded<42,42>, ==
 
 # Test: String bounds
 [test::BoundedString]
-description=std::string; bounded<"A", "AAAA">, <=>
+description=std::string; bounded<"A", "AAAA">, <=>, no-constexpr

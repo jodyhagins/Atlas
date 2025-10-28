@@ -144,13 +144,13 @@ auto strong_template = R"(
     struct atlas_bounds
     {
         using value_type = atlas_value_type;
-        static constexpr value_type min() noexcept {
+        static {{{const_expr}}}value_type min() noexcept {
             return value_type({{{bounded_min}}});
         }
-        static constexpr value_type max() noexcept {
+        static {{{const_expr}}}value_type max() noexcept {
             return value_type({{{bounded_max}}});
         }
-        static constexpr char const * message() noexcept {
+        static {{{const_expr}}}char const * message() noexcept {
             return "{{{constraint_message}}}";
         }
     };

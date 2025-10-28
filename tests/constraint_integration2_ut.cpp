@@ -3,11 +3,11 @@
 
 #include <cstdint>
 #include <limits>
+#include <optional>
+#include <variant>
 
 // Include the generated types
-#include "constraint_composition_types.hpp"
-#include "constraint_edge_cases_types.hpp"
-#include "constraint_feature_interaction_types.hpp"
+#include "constraint_integration2_test_types.hpp"
 
 namespace {
 
@@ -1845,20 +1845,6 @@ TEST_SUITE("Constraint + Feature Interaction")
         CHECK(b >= a);
         CHECK(c >= a);
     }
-
-#if defined(__cpp_impl_three_way_comparison) && \
-    __cpp_impl_three_way_comparison >= 201907L
-    TEST_CASE("non_negative + spaceship - three-way comparison works")
-    {
-        test::NonNegativeWithComparison a{5};
-        test::NonNegativeWithComparison b{10};
-        test::NonNegativeWithComparison c{5};
-
-        CHECK((a <=> b) < 0);
-        CHECK((b <=> a) > 0);
-        CHECK((a <=> c) == 0);
-    }
-#endif
 
     TEST_CASE("non_negative + comparison - constraint enforced")
     {

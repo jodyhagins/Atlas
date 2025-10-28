@@ -479,6 +479,460 @@ description=int; +, -, <=>
 description=int; +, -, <=>, ==, <
 ```
 
+## Arithmetic Modes
+
+Atlas supports three arithmetic overflow handling modes for integer types:
+
+### checked (Overflow Detection)
+
+Arithmetic operations that would overflow throw `atlas::OverflowError`:
+
+```
+[struct math::SafeCounter]
+description=int; +, -, *, checked
+```
+
+Generated code checks for overflow before performing operations:
+
+```cpp
+SafeCounter a{INT_MAX};
+SafeCounter b{1};
+auto c = a + b;  // Throws atlas::OverflowError
+```
+
+### saturating (Clamp to Limits)
+
+Arithmetic operations that would overflow saturate to type limits:
+
+```
+[struct audio::Volume]
+description=uint8_t; +, -, saturating
+```
+
+Generated code clamps results to min/max values:
+
+```cpp
+Volume a{255};
+Volume b{10};
+auto c = a + b;  // Result is 255 (saturated at max)
+```
+
+### wrapping (Modular Arithmetic)
+
+Arithmetic operations that overflow wrap around (two's complement):
+
+```
+[struct crypto::Counter]
+description=uint32_t; +, -, wrapping
+```
+
+Generated code performs modular arithmetic:
+
+```cpp
+Counter a{UINT32_MAX};
+Counter b{1};
+auto c = a + b;  // Result is 0 (wrapped around)
+```
+
+### Mode Comparison
+
+| Mode | Overflow Behavior | Use Case |
+|------|------------------|----------|
+| **checked** | Throws exception | Financial calculations, safety-critical code |
+| **saturating** | Clamps to limits | Audio/video processing, UI controls |
+| **wrapping** | Wraps around | Hash functions, cryptography, intentional modular arithmetic |
+
+### Default Behavior
+
+Without a mode specified, arithmetic uses unchecked operations (standard C++ behavior):
+
+```
+description=int; +, -, *  # No checking, standard overflow behavior
+```
+
+## Constrained Types
+
+Constrained types enforce invariants at construction time and after operations, preventing invalid states from ever existing.
+
+### Built-in Constraints
+
+Atlas provides seven built-in constraint types:
+
+| Constraint | Syntax | Meaning | Example Use Case |
+|------------|--------|---------|------------------|
+| `positive` | `positive` | value > 0 | Prices, speeds, counts that must be positive |
+| `non_negative` | `non_negative` | value >= 0 | Distances, ages, quantities that can be zero |
+| `non_zero` | `non_zero` | value != 0 | Denominators, divisors, non-zero factors |
+| `bounded<Min,Max>` | `bounded<0,100>` | Min <= value <= Max (closed interval) | Percentages, volume levels, bounded ranges |
+| `bounded_range<Min,Max>` | `bounded_range<0,100>` | Min <= value < Max (half-open interval) | Array indices, iterator-like values |
+| `non_empty` | `non_empty` | !value.empty() | Required usernames, non-empty collections |
+| `non_null` | `non_null` | value != nullptr (or bool conversion) | Required pointers, handles that must be valid |
+
+### Constraint Syntax
+
+Add constraint keywords to your type description:
+
+```
+[struct audio::Volume]
+description=int; bounded<0,100>, ==, <=>
+
+[struct physics::Speed]
+description=double; positive, +, -, *, /
+
+[struct auth::Username]
+description=std::string; non_empty, ==, !=
+
+[struct sys::Handle]
+description=void*; non_null, ==, !=
+
+[struct math::Percentage]
+description=int; bounded<0,100>, +, -, <=>, checked
+```
+
+### Constraint Checking
+
+**Compile-time checking**: When values are `constexpr`, constraint violations cause compilation errors:
+
+```cpp
+// In generated code
+constexpr Volume max_volume{100};     // OK
+constexpr Volume invalid_volume{101}; // Compilation error: constraint violated
+```
+
+**Runtime checking**: For non-constant values, violations throw `atlas::ConstraintError`:
+
+```cpp
+int user_input = get_user_input();
+try {
+    Volume v{user_input};  // Validates at construction
+    // Use v safely - guaranteed to be in [0, 100]
+} catch (atlas::ConstraintError const & e) {
+    std::cerr << "Invalid input: " << e.what() << '\n';
+    // Output: "Volume: 150 violates constraint: value must be in [0, 100]"
+}
+```
+
+### Constraints with Arithmetic Operations
+
+Constrained types re-validate after arithmetic operations:
+
+```cpp
+Volume a{50};
+Volume b{60};
+auto c = a + b;  // Throws atlas::ConstraintError - result is 110, exceeds max of 100
+```
+
+This prevents invalid states from being created through operations:
+
+```cpp
+// All operations maintain the constraint
+Volume v{50};
+v += Volume{30};  // OK, result is 80
+v += Volume{30};  // Throws - result would be 110
+```
+
+### Composing Constraints with Arithmetic Modes
+
+Constraints work with all arithmetic modes (`checked`, `saturating`, `wrapping`):
+
+```
+[struct BoundedChecked]
+description=uint8_t; bounded<0,100>, +, -, checked
+
+[struct BoundedSaturating]
+description=uint8_t; bounded<0,100>, +, -, saturating
+
+[struct BoundedWrapping]
+description=uint8_t; bounded<0,100>, +, -, wrapping
+```
+
+**Interaction behavior**:
+
+- **checked + constraint**: Overflow check happens first, then constraint check
+  ```cpp
+  BoundedChecked a{50};
+  BoundedChecked b{60};
+  auto c = a + b;  // Throws on overflow OR constraint violation
+  ```
+
+- **saturating + constraint**: Saturation happens first, then constraint check on saturated result
+  ```cpp
+  BoundedSaturating a{255};  // Throws - 255 > 100
+  BoundedSaturating b{90};
+  auto c = b + b;            // Saturates to 100, passes constraint
+  ```
+
+- **wrapping + constraint**: Wrapping happens first, then constraint check on wrapped result
+  ```cpp
+  BoundedWrapping a{90};
+  BoundedWrapping b{20};
+  auto c = a + b;  // Wraps to 110, then throws - violates bounded<0,100>
+  ```
+
+### The `non_empty` Constraint
+
+Types with `non_empty` constraint cannot be default-constructed (an empty value would violate the constraint):
+
+```
+[struct auth::Username]
+description=std::string; non_empty, ==, !=
+```
+
+Generated code:
+
+```cpp
+struct Username {
+    // Default constructor is DELETED
+    Username() = delete;
+
+    // Must construct with a value
+    explicit constexpr Username(std::string const & v) : value(v) {
+        if (!atlas::constraints::non_empty<std::string>::check(value)) {
+            throw atlas::ConstraintError(
+                "Username: violates constraint: value must not be empty");
+        }
+    }
+
+    std::string value;
+};
+```
+
+Usage:
+
+```cpp
+Username u;              // ERROR - won't compile (default ctor deleted)
+Username u{""};          // Throws atlas::ConstraintError
+Username u{"alice"};     // OK
+```
+
+### The `non_null` Constraint
+
+Types with `non_null` constraint also delete the default constructor and work with any type that has `operator bool`:
+
+```
+[struct sys::ResourceHandle]
+description=void*; non_null, ==, !=
+
+[struct util::RequiredPtr]
+description=std::shared_ptr<Data>; non_null, ->, @
+```
+
+Generated code validates using the type's boolean conversion:
+
+```cpp
+struct ResourceHandle {
+    ResourceHandle() = delete;  // Cannot default-construct
+
+    explicit constexpr ResourceHandle(void* v) : value(v) {
+        if (!atlas::constraints::non_null<void*>::check(value)) {
+            throw atlas::ConstraintError(
+                "ResourceHandle: violates constraint: value must not be null");
+        }
+    }
+
+    void* value;
+};
+```
+
+Usage:
+
+```cpp
+ResourceHandle h;            // ERROR - won't compile
+ResourceHandle h{nullptr};   // Throws atlas::ConstraintError
+int x = 42;
+ResourceHandle h{&x};        // OK
+```
+
+### Bounded Constraints: Closed vs Half-Open Intervals
+
+Atlas provides two bounded constraint types:
+
+**`bounded<Min,Max>`** - Closed interval [Min, Max]:
+```
+[struct Percentage]
+description=int; bounded<0,100>, <=>
+```
+Accepts values where: `Min <= value <= Max`
+
+**`bounded_range<Min,Max>`** - Half-open interval [Min, Max):
+```
+[struct ArrayIndex]
+description=size_t; bounded_range<0,100>, <=>
+```
+Accepts values where: `Min <= value < Max`
+
+Use `bounded_range` for iterator-like semantics where the upper bound is exclusive:
+
+```cpp
+// Container with 100 elements, valid indices are [0, 100)
+ArrayIndex idx{0};    // OK
+ArrayIndex idx{99};   // OK
+ArrayIndex idx{100};  // Throws - out of range
+```
+
+### Error Messages
+
+All constraints throw `atlas::ConstraintError` (inherits from `std::logic_error`) with descriptive messages:
+
+```cpp
+try {
+    Volume v{150};
+} catch (atlas::ConstraintError const & e) {
+    std::cerr << e.what() << '\n';
+    // Output: "Volume: 150 violates constraint: value must be in [0, 100]"
+}
+
+try {
+    Username u{""};
+} catch (atlas::ConstraintError const & e) {
+    std::cerr << e.what() << '\n';
+    // Output: "Username: violates constraint: value must not be empty"
+}
+```
+
+**Error Message Formats**:
+
+The error message format varies by context:
+
+1. **Constructor violations**: `"{TypeName}: {value} violates constraint: {message}"`
+2. **Arithmetic violations**: `"{TypeName}: arithmetic result violates constraint ({message})"`
+3. **Forwarded function violations**: `"{TypeName}::{function}: operation violates constraint ({message})"`
+
+Note: The implementation has minor formatting inconsistencies - most arithmetic operations include a space before the parenthesis, but a few do not. Do not rely on exact message formatting for error parsing.
+
+### Constraints with Forwarded Member Functions
+
+When using member function forwarding with constrained types, Atlas generates RAII-based constraint guards for non-const member functions to perform post-condition checking:
+
+```cpp
+// For a non_empty type with forwarded member functions:
+template <typename... Args>
+constexpr auto clear(Args&&... args) &
+{
+    using atlas::constraints::constraint_guard;
+    [[maybe_unused]] auto guard = constraint_guard<atlas_constraint>(
+        value,
+        "Username::clear");
+    return value.clear(std::forward<Args>(args)...);
+}
+```
+
+**Key behaviors**:
+- The guard validates the constraint in its **destructor** (after the operation completes)
+- Uses `std::uncaught_exceptions()` to avoid throwing during stack unwinding (exception-safe)
+- Const member functions do not include guards (cannot violate constraints by definition)
+- If the operation would violate the constraint, throws `atlas::ConstraintError` with the forwarded function format
+
+This enables safe forwarding of mutating operations while maintaining constraint guarantees. For more details, see the [API Reference](api-reference.md#constraint-guard).
+
+### Constraint Predicates Reference
+
+All constraint predicates are in the `atlas::constraints` namespace and generated types include a typedef:
+
+```cpp
+struct Volume {
+    using atlas_constraint = atlas::constraints::bounded<int, 0, 100>;
+    // ...
+};
+
+struct Speed {
+    using atlas_constraint = atlas::constraints::positive<double>;
+    // ...
+};
+
+struct Username {
+    using atlas_constraint = atlas::constraints::non_empty<std::string>;
+    // ...
+};
+```
+
+Available predicates:
+- `atlas::constraints::positive<T>`
+- `atlas::constraints::non_negative<T>`
+- `atlas::constraints::non_zero<T>`
+- `atlas::constraints::bounded<T, Min, Max>`
+- `atlas::constraints::bounded_range<T, Min, Max>`
+- `atlas::constraints::non_empty<T>`
+- `atlas::constraints::non_null<T>`
+
+### Practical Examples
+
+**Audio volume control (0-100 with saturation)**:
+```
+[struct audio::Volume]
+description=uint8_t; bounded<0,100>, +, -, <=>, saturating
+```
+
+**Financial price (must be positive)**:
+```
+[struct finance::Price]
+description=double; positive, +, -, *, /, <=>
+```
+
+**Network port (1024-65535 for user ports)**:
+```
+[struct net::ServerPort]
+description=uint16_t; bounded<1024,65535>, ==, <=>
+```
+
+**Safe division (non-zero denominator)**:
+```
+[struct math::Denominator]
+description=int; non_zero, *, /
+```
+
+**Required configuration string**:
+```
+[struct config::ApiKey]
+description=std::string; non_empty, ==, hash
+```
+
+**Temperature with absolute zero limit**:
+```
+[struct physics::Temperature]
+description=double; bounded<-273.15,1000000>, +, -, <=>
+```
+
+**Checked and bounded (double safety)**:
+```
+[struct SafePercentage]
+description=uint8_t; bounded<0,100>, +, -, checked
+```
+
+### Best Practices
+
+1. **Choose the right constraint**: `positive` vs `non_negative` matters - be precise
+2. **Validate at boundaries**: Construct constrained types at API entry points
+3. **Use with arithmetic modes**: Combine constraints with `checked`/`saturating` for enhanced safety
+4. **Handle exceptions appropriately**: Catch `atlas::ConstraintError` at API boundaries
+5. **Prefer `constexpr`**: When possible, use constexpr construction for compile-time validation
+6. **Document behavior**: Note which operations might violate constraints in your API docs
+
+### Common Pitfalls
+
+**Pitfall 1: Arithmetic producing invalid values**
+```cpp
+Percentage a{50};
+Percentage b{60};
+auto c = a + b;  // THROWS - result is 110, exceeds max of 100
+```
+Solution: Use saturating arithmetic or validate operation results.
+
+**Pitfall 2: Confusing positive with non_negative**
+```cpp
+// WRONG - allows zero
+struct PositiveCount : non_negative<int> {};
+
+// CORRECT
+struct PositiveCount : positive<int> {};
+```
+
+**Pitfall 3: Forgetting deleted default constructor**
+```cpp
+Username u;  // ERROR - won't compile (non_empty deletes default ctor)
+Username u{"alice"};  // Correct
+```
+
 ## C++ Standard for Interaction Files
 
 Interaction files also support C++ standard specification, working identically to strong type files.

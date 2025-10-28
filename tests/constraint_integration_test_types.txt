@@ -66,7 +66,7 @@ description=std::uint8_t; bounded<0,100>, +, -, checked, #<cstdint>
 description=int; bounded<42,42>, ==
 
 [test::constraints::BoundedString]
-description=std::string; bounded<"A", "AAAA">, <=>
+description=std::string; bounded<"A", "AAAA">, <=>, no-constexpr
 
 # ======================================================================
 # TASK 5.5: BOUNDED_RANGE CONSTRAINT
@@ -89,7 +89,7 @@ description=int; bounded_range<42,44>, ==
 description=int; bounded_range<-10,10>, +, -, <=>
 
 [test::constraints::BoundedRangeString]
-description=std::string; bounded_range<"A", "AAAA">, <=>
+description=std::string; bounded_range<"A", "AAAA">, <=>, no-constexpr
 
 # ======================================================================
 # TASK 6: NON-EMPTY CONSTRAINT
@@ -97,10 +97,10 @@ description=std::string; bounded_range<"A", "AAAA">, <=>
 # ======================================================================
 
 [test::constraints::Username]
-description=std::string; non_empty, ==, !=
+description=std::string; non_empty, ==, !=, no-constexpr
 
 [test::constraints::NonEmptyVector]
-description=std::vector<int>; non_empty, ==, !=, #<vector>
+description=std::vector<int>; non_empty, ==, !=, #<vector>, no-constexpr
 forward=size, empty, push_back, pop_back, clear
 
 # ======================================================================
@@ -115,10 +115,10 @@ description=void*; non_null, ==, !=
 description=int*; non_null, ==, !=, ->
 
 [test::constraints::SharedPointer]
-description=std::shared_ptr<int>; non_null, no-constexpr, ==, !=, #<memory>
+description=std::shared_ptr<int>; non_null, no-constexpr, ==, !=, #<memory>, no-constexpr
 
 [test::constraints::UniquePointer]
-description=std::unique_ptr<int>; non_null, no-constexpr, ==, !=, #<memory>
+description=std::unique_ptr<int>; non_null, no-constexpr, ==, !=, #<memory>, no-constexpr
 
 [test::constraints::Optional]
 description=std::optional<int>; non_null, no-constexpr, ==, !=
@@ -187,27 +187,27 @@ description=std::uint8_t; bounded<10,200>, +, -, wrapping, #<cstdint>
 # === Feature Interaction Types ===
 
 [test::features::NonEmptyWithForwarding]
-description=std::string; non_empty, <=>
+description=std::string; non_empty, <=>, no-constexpr
 forward=size, empty, clear, length
 
 [test::features::PositiveWithCast]
 description=int; positive, cast<double>, cast<long>
 
 [test::features::BoundedWithHash]
-description=int; bounded<0,100>, ==, hash
+description=int; bounded<0,100>, ==, hash, no-constexpr-hash
 
 [test::features::NonNegativeWithComparison]
 description=int; non_negative, ==, !=, <, <=, >, >=
 
 [test::features::ComplexComposition]
-description=std::uint16_t; bounded<1024,65535>, +, -, checked, <=>, hash, #<cstdint>
+description=std::uint16_t; bounded<1024,65535>, +, -, checked, <=>, hash, #<cstdint>, no-constexpr-hash
 
 [test::features::NonNullWithForwarding]
 description=std::unique_ptr<int>; non_null, no-constexpr, ==, !=, ->, #<memory>
 forward=get
 
 [test::features::NonEmptyVectorOps]
-description=std::vector<int>; non_empty, ==, #<vector>
+description=std::vector<int>; non_empty, ==, #<vector>, no-constexpr
 forward=size, empty, front, back, push_back
 
 [test::features::BoundedRangeWithCmp]
@@ -219,7 +219,7 @@ description=int; bounded_range<0,10>, <=>
 description=int; positive, <=>
 
 [test::edge_cases::NonEmptyStringMoveCopy]
-description=std::string; non_empty, ==
+description=std::string; non_empty, ==, no-constexpr
 
 [test::edge_cases::PositiveForOptional]
 description=int; positive, ==
@@ -237,7 +237,7 @@ description=int; non_negative, ==
 description=int; positive, <=>
 
 [test::edge_cases::NonNullUniquePtr]
-description=std::unique_ptr<int>; non_null, #<memory>
+description=std::unique_ptr<int>; non_null, #<memory>, no-constexpr
 
 [test::edge_cases::PositiveForConstexpr]
 description=int; positive, ==, <, >, c++20

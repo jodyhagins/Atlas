@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_689A80C5555C93A76DEB0D5EC8B036D507B1F0F7
-#define FOO_BAR_689A80C5555C93A76DEB0D5EC8B036D507B1F0F7
+#ifndef FOO_BAR_5FB988760E2057F60AEC02A37C9A0762643EA431
+#define FOO_BAR_5FB988760E2057F60AEC02A37C9A0762643EA431
 
 static_assert(__cplusplus >= 202002L,
     "This file requires C++20 or later. Compile with -std=c++20 or higher.");
@@ -1464,7 +1464,7 @@ namespace test {
  * - kind: struct
  * - type_namespace: test
  * - type_name: BoundedString
- * - description: std::string; <=>, bounded<"A", "AAAA">
+ * - description: std::string; <=>, bounded<"A", "AAAA">, no-constexpr
  * - default_value: ""
  */
 struct BoundedString
@@ -1476,26 +1476,26 @@ struct BoundedString
     struct atlas_bounds
     {
         using value_type = atlas_value_type;
-        static constexpr value_type min() noexcept {
+        static value_type min() noexcept {
             return value_type("A");
         }
-        static constexpr value_type max() noexcept {
+        static value_type max() noexcept {
             return value_type("AAAA");
         }
-        static constexpr char const * message() noexcept {
+        static char const * message() noexcept {
             return "value must be in [\"A\", \"AAAA\"]";
         }
     };
     using atlas_constraint = atlas::constraints::bounded<atlas_bounds>;
 
-    constexpr explicit BoundedString() = default;
+    explicit BoundedString() = default;
 
     template <
         typename... ArgTs,
         typename std::enable_if<
             std::is_constructible<std::string, ArgTs...>::value,
             bool>::type = true>
-    constexpr explicit BoundedString(ArgTs && ... args)
+    explicit BoundedString(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     {
         if (not atlas_constraint::check(value)) {
@@ -1509,15 +1509,15 @@ struct BoundedString
     /**
      * The explicit cast operator provides a reference to the wrapped object.
      */
-    constexpr explicit operator std::string const & () const { return value; }
-    constexpr explicit operator std::string & () { return value; }
+    explicit operator std::string const & () const { return value; }
+    explicit operator std::string & () { return value; }
 
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
     /**
      * The default three-way comparison (spaceship) operator.
      */
-    friend constexpr auto operator <=> (
+    friend auto operator <=> (
         BoundedString const &,
         BoundedString const &) = default;
 #else
@@ -1525,7 +1525,7 @@ struct BoundedString
      * Comparison operators (C++17 fallback for spaceship operator).
      * In C++20+, these are synthesized from operator<=>.
      */
-    friend constexpr bool operator < (
+    friend bool operator < (
         BoundedString const & lhs,
         BoundedString const & rhs)
     noexcept(noexcept(std::declval<std::string const &>() <
@@ -1534,7 +1534,7 @@ struct BoundedString
         return lhs.value < rhs.value;
     }
 
-    friend constexpr bool operator <= (
+    friend bool operator <= (
         BoundedString const & lhs,
         BoundedString const & rhs)
     noexcept(noexcept(std::declval<std::string const &>() <=
@@ -1543,7 +1543,7 @@ struct BoundedString
         return lhs.value <= rhs.value;
     }
 
-    friend constexpr bool operator > (
+    friend bool operator > (
         BoundedString const & lhs,
         BoundedString const & rhs)
     noexcept(noexcept(std::declval<std::string const &>() >
@@ -1552,7 +1552,7 @@ struct BoundedString
         return lhs.value > rhs.value;
     }
 
-    friend constexpr bool operator >= (
+    friend bool operator >= (
         BoundedString const & lhs,
         BoundedString const & rhs)
     noexcept(noexcept(std::declval<std::string const &>() >=
@@ -1568,7 +1568,7 @@ struct BoundedString
      * The default equality comparison operator.
      * Provided with spaceship operator for optimal performance.
      */
-    friend constexpr bool operator == (
+    friend bool operator == (
         BoundedString const &,
         BoundedString const &) = default;
 #else
@@ -1576,7 +1576,7 @@ struct BoundedString
      * Equality comparison operators (C++17 fallback).
      * In C++20+, these are synthesized from operator<=>.
      */
-    friend constexpr bool operator == (
+    friend bool operator == (
         BoundedString const & lhs,
         BoundedString const & rhs)
     noexcept(noexcept(std::declval<std::string const &>() ==
@@ -1585,7 +1585,7 @@ struct BoundedString
         return lhs.value == rhs.value;
     }
 
-    friend constexpr bool operator != (
+    friend bool operator != (
         BoundedString const & lhs,
         BoundedString const & rhs)
     noexcept(noexcept(std::declval<std::string const &>() !=
@@ -1597,5 +1597,5 @@ struct BoundedString
 };
 } // namespace test
 
-#endif // FOO_BAR_689A80C5555C93A76DEB0D5EC8B036D507B1F0F7
+#endif // FOO_BAR_5FB988760E2057F60AEC02A37C9A0762643EA431
 
