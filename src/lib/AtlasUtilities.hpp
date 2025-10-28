@@ -94,7 +94,7 @@ struct PreambleOptions
     bool include_dereference_operator_traits = false;
     bool include_checked_helpers = false;
     bool include_saturating_helpers = false;
-    bool include_constraints = false; // Include constraint error and predicates
+    bool include_constraints = false;
 };
 
 /**
@@ -103,7 +103,8 @@ struct PreambleOptions
  * @param options Controls which optional preamble features are included
  * @return Vector of header file names (e.g., "<type_traits>", "<utility>")
  */
-std::vector<std::string> get_preamble_includes(PreambleOptions options = {});
+std::vector<std::string> get_preamble_includes(
+    PreambleOptions const & options = {});
 
 /**
  * @brief The code necessary in every generated file.

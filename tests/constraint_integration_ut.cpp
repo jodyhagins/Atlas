@@ -1,15 +1,15 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include "doctest.hpp"
 
-#include <limits>
 #include <cstdint>
-#include <string>
+#include <limits>
 #include <memory>
-#include <vector>
-#include <unordered_set>
 #include <optional>
-#include <variant>
+#include <string>
+#include <unordered_set>
 #include <utility>
+#include <variant>
+#include <vector>
 
 // Include the generated types
 #include "constraint_integration_types.hpp"
@@ -22,8 +22,9 @@ namespace {
 
 /// Helper function to expect a ConstraintError and return the error message
 /// This eliminates the repetitive try-catch pattern and makes tests DRY.
-template<typename Func>
-std::string expect_constraint_error(Func&& f)
+template <typename Func>
+std::string
+expect_constraint_error(Func && f)
 {
     try {
         f();
@@ -35,14 +36,16 @@ std::string expect_constraint_error(Func&& f)
 }
 
 /// Check if the error message contains a specific keyword
-inline bool message_contains(std::string const & msg, std::string const & keyword)
+inline bool
+message_contains(std::string const & msg, std::string const & keyword)
 {
     return msg.find(keyword) != std::string::npos;
 }
 
 /// Check if the error message contains any of the given keywords
-template<typename... Keywords>
-bool message_contains_any(std::string const & msg, Keywords const &... keywords)
+template <typename... Keywords>
+bool
+message_contains_any(std::string const & msg, Keywords const &... keywords)
 {
     return (message_contains(msg, keywords) || ...);
 }
@@ -57,14 +60,21 @@ TEST_SUITE("Positive Constraint")
     {
         CHECK_NOTHROW(test::constraints::PositiveInt{1});
         CHECK_NOTHROW(test::constraints::PositiveInt{100});
-        CHECK_NOTHROW(test::constraints::PositiveInt{std::numeric_limits<int>::max()});
+        CHECK_NOTHROW(
+            test::constraints::PositiveInt{std::numeric_limits<int>::max()});
     }
 
     TEST_CASE("positive constraint - invalid construction")
     {
-        CHECK_THROWS_AS(test::constraints::PositiveInt{0}, atlas::ConstraintError);
-        CHECK_THROWS_AS(test::constraints::PositiveInt{-1}, atlas::ConstraintError);
-        CHECK_THROWS_AS(test::constraints::PositiveInt{-100}, atlas::ConstraintError);
+        CHECK_THROWS_AS(
+            test::constraints::PositiveInt{0},
+            atlas::ConstraintError);
+        CHECK_THROWS_AS(
+            test::constraints::PositiveInt{-1},
+            atlas::ConstraintError);
+        CHECK_THROWS_AS(
+            test::constraints::PositiveInt{-100},
+            atlas::ConstraintError);
         CHECK_THROWS_AS(
             test::constraints::PositiveInt{std::numeric_limits<int>::min()},
             atlas::ConstraintError);
@@ -104,7 +114,9 @@ TEST_SUITE("Positive Constraint")
     TEST_CASE(
         "positive constraint with checked arithmetic - invalid construction")
     {
-        CHECK_THROWS_AS(test::constraints::PositiveChecked{0}, atlas::ConstraintError);
+        CHECK_THROWS_AS(
+            test::constraints::PositiveChecked{0},
+            atlas::ConstraintError);
     }
 
     TEST_CASE(
@@ -169,7 +181,9 @@ TEST_SUITE("Positive Constraint")
 
     TEST_CASE("positive constraint with saturating - invalid construction")
     {
-        CHECK_THROWS_AS(test::constraints::PositiveSaturating{0}, atlas::ConstraintError);
+        CHECK_THROWS_AS(
+            test::constraints::PositiveSaturating{0},
+            atlas::ConstraintError);
     }
 
     TEST_CASE("positive constraint with saturating - underflow to zero throws")
@@ -228,7 +242,9 @@ TEST_SUITE("Positive Constraint")
 
     TEST_CASE("positive constraint with wrapping - invalid construction")
     {
-        CHECK_THROWS_AS(test::constraints::PositiveWrapping{0}, atlas::ConstraintError);
+        CHECK_THROWS_AS(
+            test::constraints::PositiveWrapping{0},
+            atlas::ConstraintError);
     }
 
     TEST_CASE("positive constraint with wrapping - underflow to zero throws")
@@ -302,13 +318,18 @@ TEST_SUITE("Non-Negative Constraint")
         CHECK_NOTHROW(test::constraints::NonNegativeInt{0}); // Zero is OK!
         CHECK_NOTHROW(test::constraints::NonNegativeInt{1});
         CHECK_NOTHROW(test::constraints::NonNegativeInt{100});
-        CHECK_NOTHROW(test::constraints::NonNegativeInt{std::numeric_limits<int>::max()});
+        CHECK_NOTHROW(
+            test::constraints::NonNegativeInt{std::numeric_limits<int>::max()});
     }
 
     TEST_CASE("non_negative constraint - invalid construction")
     {
-        CHECK_THROWS_AS(test::constraints::NonNegativeInt{-1}, atlas::ConstraintError);
-        CHECK_THROWS_AS(test::constraints::NonNegativeInt{-100}, atlas::ConstraintError);
+        CHECK_THROWS_AS(
+            test::constraints::NonNegativeInt{-1},
+            atlas::ConstraintError);
+        CHECK_THROWS_AS(
+            test::constraints::NonNegativeInt{-100},
+            atlas::ConstraintError);
         CHECK_THROWS_AS(
             test::constraints::NonNegativeInt{std::numeric_limits<int>::min()},
             atlas::ConstraintError);
@@ -427,7 +448,8 @@ TEST_SUITE("Non-Negative Constraint")
 
     TEST_CASE("non_negative constraint with saturating - valid construction")
     {
-        CHECK_NOTHROW(test::constraints::NonNegativeSaturating{0}); // Zero is OK!
+        CHECK_NOTHROW(
+            test::constraints::NonNegativeSaturating{0}); // Zero is OK!
         CHECK_NOTHROW(test::constraints::NonNegativeSaturating{1});
         CHECK_NOTHROW(test::constraints::NonNegativeSaturating{100});
         CHECK_NOTHROW(test::constraints::NonNegativeSaturating{255});
@@ -497,8 +519,10 @@ TEST_SUITE("Non-Zero Constraint")
         CHECK_NOTHROW(test::constraints::NonZeroInt{-1}); // Negative OK
         CHECK_NOTHROW(test::constraints::NonZeroInt{100});
         CHECK_NOTHROW(test::constraints::NonZeroInt{-100}); // Negative OK
-        CHECK_NOTHROW(test::constraints::NonZeroInt{std::numeric_limits<int>::max()});
-        CHECK_NOTHROW(test::constraints::NonZeroInt{std::numeric_limits<int>::min()});
+        CHECK_NOTHROW(
+            test::constraints::NonZeroInt{std::numeric_limits<int>::max()});
+        CHECK_NOTHROW(
+            test::constraints::NonZeroInt{std::numeric_limits<int>::min()});
     }
 
     TEST_CASE("non_zero constraint - invalid construction")
@@ -663,8 +687,12 @@ TEST_SUITE("Bounded Constraint")
         CHECK_THROWS_AS(
             test::constraints::Percentage{101},
             atlas::ConstraintError); // Above max
-        CHECK_THROWS_AS(test::constraints::Percentage{-100}, atlas::ConstraintError);
-        CHECK_THROWS_AS(test::constraints::Percentage{200}, atlas::ConstraintError);
+        CHECK_THROWS_AS(
+            test::constraints::Percentage{-100},
+            atlas::ConstraintError);
+        CHECK_THROWS_AS(
+            test::constraints::Percentage{200},
+            atlas::ConstraintError);
     }
 
     TEST_CASE("bounded constraint - float - valid construction")
@@ -688,8 +716,12 @@ TEST_SUITE("Bounded Constraint")
     TEST_CASE("bounded constraint - construction with out-of-bounds value")
     {
         // Direct construction with out-of-bounds value should throw
-        CHECK_THROWS_AS(test::constraints::Percentage{110}, atlas::ConstraintError);
-        CHECK_THROWS_AS(test::constraints::Percentage{-10}, atlas::ConstraintError);
+        CHECK_THROWS_AS(
+            test::constraints::Percentage{110},
+            atlas::ConstraintError);
+        CHECK_THROWS_AS(
+            test::constraints::Percentage{-10},
+            atlas::ConstraintError);
     }
 
     TEST_CASE("bounded constraint - comparison operators work")
@@ -708,8 +740,12 @@ TEST_SUITE("Bounded Constraint")
     {
         // Only 42 is valid
         CHECK_NOTHROW(test::constraints::FortyTwo{42});
-        CHECK_THROWS_AS(test::constraints::FortyTwo{41}, atlas::ConstraintError);
-        CHECK_THROWS_AS(test::constraints::FortyTwo{43}, atlas::ConstraintError);
+        CHECK_THROWS_AS(
+            test::constraints::FortyTwo{41},
+            atlas::ConstraintError);
+        CHECK_THROWS_AS(
+            test::constraints::FortyTwo{43},
+            atlas::ConstraintError);
     }
 
     TEST_CASE("bounded constraint - exception message shows value and bounds")
@@ -748,7 +784,9 @@ TEST_SUITE("Bounded Constraint")
     TEST_CASE(
         "bounded constraint with checked arithmetic - invalid construction")
     {
-        CHECK_THROWS_AS(test::constraints::BoundedChecked{101}, atlas::ConstraintError);
+        CHECK_THROWS_AS(
+            test::constraints::BoundedChecked{101},
+            atlas::ConstraintError);
     }
 
     TEST_CASE("bounded constraint with checked arithmetic - overflow throws "
@@ -836,15 +874,29 @@ TEST_SUITE("Bounded Constraint")
     TEST_CASE("bounded constraint - string - invalid construction")
     {
         // Below min (lexicographically less than "A")
-        CHECK_THROWS_AS(test::constraints::BoundedString{""}, atlas::ConstraintError);
-        CHECK_THROWS_AS(test::constraints::BoundedString{"0"}, atlas::ConstraintError);
-        CHECK_THROWS_AS(test::constraints::BoundedString{"9"}, atlas::ConstraintError);
+        CHECK_THROWS_AS(
+            test::constraints::BoundedString{""},
+            atlas::ConstraintError);
+        CHECK_THROWS_AS(
+            test::constraints::BoundedString{"0"},
+            atlas::ConstraintError);
+        CHECK_THROWS_AS(
+            test::constraints::BoundedString{"9"},
+            atlas::ConstraintError);
 
         // Above max (lexicographically greater than "AAAA")
-        CHECK_THROWS_AS(test::constraints::BoundedString{"AAAAA"}, atlas::ConstraintError);
-        CHECK_THROWS_AS(test::constraints::BoundedString{"AAAB"}, atlas::ConstraintError);
-        CHECK_THROWS_AS(test::constraints::BoundedString{"B"}, atlas::ConstraintError);
-        CHECK_THROWS_AS(test::constraints::BoundedString{"Z"}, atlas::ConstraintError);
+        CHECK_THROWS_AS(
+            test::constraints::BoundedString{"AAAAA"},
+            atlas::ConstraintError);
+        CHECK_THROWS_AS(
+            test::constraints::BoundedString{"AAAB"},
+            atlas::ConstraintError);
+        CHECK_THROWS_AS(
+            test::constraints::BoundedString{"B"},
+            atlas::ConstraintError);
+        CHECK_THROWS_AS(
+            test::constraints::BoundedString{"Z"},
+            atlas::ConstraintError);
     }
 
     TEST_CASE("bounded constraint - string - boundary values")
@@ -854,8 +906,12 @@ TEST_SUITE("Bounded Constraint")
         CHECK_NOTHROW(test::constraints::BoundedString{"AAAA"});
 
         // Just outside boundaries should fail
-        CHECK_THROWS_AS(test::constraints::BoundedString{"0"}, atlas::ConstraintError);
-        CHECK_THROWS_AS(test::constraints::BoundedString{"AAAAA"}, atlas::ConstraintError);
+        CHECK_THROWS_AS(
+            test::constraints::BoundedString{"0"},
+            atlas::ConstraintError);
+        CHECK_THROWS_AS(
+            test::constraints::BoundedString{"AAAAA"},
+            atlas::ConstraintError);
     }
 
     TEST_CASE("bounded constraint - string - comparison operators work")
@@ -918,9 +974,11 @@ TEST_SUITE("Bounded Range Constraint (Half-Open)")
 {
     TEST_CASE("bounded_range constraint - integer - valid construction")
     {
-        CHECK_NOTHROW(test::constraints::HalfOpenPercentage{0}); // Min boundary (inclusive)
+        CHECK_NOTHROW(test::constraints::HalfOpenPercentage{
+            0}); // Min boundary (inclusive)
         CHECK_NOTHROW(test::constraints::HalfOpenPercentage{50}); // Middle
-        CHECK_NOTHROW(test::constraints::HalfOpenPercentage{99}); // Just below max
+        CHECK_NOTHROW(
+            test::constraints::HalfOpenPercentage{99}); // Just below max
     }
 
     TEST_CASE("bounded_range constraint - integer - max boundary excluded")
@@ -942,8 +1000,12 @@ TEST_SUITE("Bounded Range Constraint (Half-Open)")
         CHECK_THROWS_AS(
             test::constraints::HalfOpenPercentage{101},
             atlas::ConstraintError); // Above max
-        CHECK_THROWS_AS(test::constraints::HalfOpenPercentage{-100}, atlas::ConstraintError);
-        CHECK_THROWS_AS(test::constraints::HalfOpenPercentage{200}, atlas::ConstraintError);
+        CHECK_THROWS_AS(
+            test::constraints::HalfOpenPercentage{-100},
+            atlas::ConstraintError);
+        CHECK_THROWS_AS(
+            test::constraints::HalfOpenPercentage{200},
+            atlas::ConstraintError);
     }
 
     TEST_CASE("bounded_range constraint - float - valid construction")
@@ -981,8 +1043,12 @@ TEST_SUITE("Bounded Range Constraint (Half-Open)")
         CHECK_THROWS_AS(
             test::constraints::HalfOpenPercentage{100},
             atlas::ConstraintError); // Max excluded
-        CHECK_THROWS_AS(test::constraints::HalfOpenPercentage{110}, atlas::ConstraintError);
-        CHECK_THROWS_AS(test::constraints::HalfOpenPercentage{-10}, atlas::ConstraintError);
+        CHECK_THROWS_AS(
+            test::constraints::HalfOpenPercentage{110},
+            atlas::ConstraintError);
+        CHECK_THROWS_AS(
+            test::constraints::HalfOpenPercentage{-10},
+            atlas::ConstraintError);
     }
 
     TEST_CASE("bounded_range constraint - comparison operators work")
@@ -1049,7 +1115,8 @@ TEST_SUITE("Bounded Range Constraint (Half-Open)")
     TEST_CASE("bounded_range constraint - floating point boundary precision")
     {
         // Test exact boundary values
-        CHECK_NOTHROW(test::constraints::CelsiusRange{0.0}); // Exact min (inclusive)
+        CHECK_NOTHROW(
+            test::constraints::CelsiusRange{0.0}); // Exact min (inclusive)
         CHECK_THROWS_AS(
             test::constraints::CelsiusRange{100.0},
             atlas::ConstraintError); // Exact max (excluded!)
@@ -1067,13 +1134,16 @@ TEST_SUITE("Bounded Range Constraint (Half-Open)")
     {
         CHECK_NOTHROW(test::constraints::BoundedRangeChecked{0}); // Min
         CHECK_NOTHROW(test::constraints::BoundedRangeChecked{50}); // Middle
-        CHECK_NOTHROW(test::constraints::BoundedRangeChecked{99}); // Just below max
+        CHECK_NOTHROW(
+            test::constraints::BoundedRangeChecked{99}); // Just below max
     }
 
     TEST_CASE("bounded_range constraint with checked arithmetic - max excluded")
     {
         // Max is excluded in half-open range
-        CHECK_THROWS_AS(test::constraints::BoundedRangeChecked{100}, atlas::ConstraintError);
+        CHECK_THROWS_AS(
+            test::constraints::BoundedRangeChecked{100},
+            atlas::ConstraintError);
     }
 
     TEST_CASE("bounded_range constraint with checked arithmetic - invalid "
@@ -1186,8 +1256,8 @@ TEST_SUITE("Bounded Range Constraint (Half-Open)")
 
     TEST_CASE("bounded_range constraint - string - valid construction")
     {
-        CHECK_NOTHROW(
-            test::constraints::BoundedRangeString{"A"}); // Min boundary (inclusive)
+        CHECK_NOTHROW(test::constraints::BoundedRangeString{
+            "A"}); // Min boundary (inclusive)
         CHECK_NOTHROW(test::constraints::BoundedRangeString{"AA"}); // Middle
         CHECK_NOTHROW(test::constraints::BoundedRangeString{"AAA"}); // Middle
     }
@@ -1203,9 +1273,15 @@ TEST_SUITE("Bounded Range Constraint (Half-Open)")
     TEST_CASE("bounded_range constraint - string - invalid construction")
     {
         // Below min (lexicographically less than "A")
-        CHECK_THROWS_AS(test::constraints::BoundedRangeString{""}, atlas::ConstraintError);
-        CHECK_THROWS_AS(test::constraints::BoundedRangeString{"0"}, atlas::ConstraintError);
-        CHECK_THROWS_AS(test::constraints::BoundedRangeString{"9"}, atlas::ConstraintError);
+        CHECK_THROWS_AS(
+            test::constraints::BoundedRangeString{""},
+            atlas::ConstraintError);
+        CHECK_THROWS_AS(
+            test::constraints::BoundedRangeString{"0"},
+            atlas::ConstraintError);
+        CHECK_THROWS_AS(
+            test::constraints::BoundedRangeString{"9"},
+            atlas::ConstraintError);
 
         // At or above max (lexicographically >= "AAAA")
         CHECK_THROWS_AS(
@@ -1217,8 +1293,12 @@ TEST_SUITE("Bounded Range Constraint (Half-Open)")
         CHECK_THROWS_AS(
             test::constraints::BoundedRangeString{"AAAB"},
             atlas::ConstraintError);
-        CHECK_THROWS_AS(test::constraints::BoundedRangeString{"B"}, atlas::ConstraintError);
-        CHECK_THROWS_AS(test::constraints::BoundedRangeString{"Z"}, atlas::ConstraintError);
+        CHECK_THROWS_AS(
+            test::constraints::BoundedRangeString{"B"},
+            atlas::ConstraintError);
+        CHECK_THROWS_AS(
+            test::constraints::BoundedRangeString{"Z"},
+            atlas::ConstraintError);
     }
 
     TEST_CASE("bounded_range constraint - string - boundary values")
@@ -1235,7 +1315,9 @@ TEST_SUITE("Bounded Range Constraint (Half-Open)")
         CHECK_NOTHROW(test::constraints::BoundedRangeString{"AAA"});
 
         // Just outside min should fail
-        CHECK_THROWS_AS(test::constraints::BoundedRangeString{"0"}, atlas::ConstraintError);
+        CHECK_THROWS_AS(
+            test::constraints::BoundedRangeString{"0"},
+            atlas::ConstraintError);
 
         // Just above max should fail
         CHECK_THROWS_AS(
@@ -1313,8 +1395,12 @@ TEST_SUITE("Non-Empty Constraint")
 
     TEST_CASE("non_empty - string - invalid construction")
     {
-        CHECK_THROWS_AS(test::constraints::Username{""}, atlas::ConstraintError);
-        CHECK_THROWS_AS(test::constraints::Username{std::string()}, atlas::ConstraintError);
+        CHECK_THROWS_AS(
+            test::constraints::Username{""},
+            atlas::ConstraintError);
+        CHECK_THROWS_AS(
+            test::constraints::Username{std::string()},
+            atlas::ConstraintError);
     }
 
     TEST_CASE("non_empty - string - exception message content")
@@ -1332,7 +1418,8 @@ TEST_SUITE("Non-Empty Constraint")
     TEST_CASE("non_empty - vector - valid construction")
     {
         CHECK_NOTHROW(test::constraints::NonEmptyVector{std::vector<int>{1}});
-        CHECK_NOTHROW(test::constraints::NonEmptyVector{std::vector<int>{1, 2, 3}});
+        CHECK_NOTHROW(
+            test::constraints::NonEmptyVector{std::vector<int>{1, 2, 3}});
     }
 
     TEST_CASE("non_empty - vector - invalid construction")
@@ -1496,13 +1583,18 @@ TEST_SUITE("Non-Null Constraint")
     {
         int value = 42;
         CHECK_NOTHROW(test::constraints::Handle{&value});
-        CHECK_NOTHROW(test::constraints::Handle{reinterpret_cast<void*>(0x1234)});
+        CHECK_NOTHROW(
+            test::constraints::Handle{reinterpret_cast<void *>(0x1234)});
     }
 
     TEST_CASE("non_null - void* - invalid construction")
     {
-        CHECK_THROWS_AS(test::constraints::Handle{nullptr}, atlas::ConstraintError);
-        CHECK_THROWS_AS(test::constraints::Handle{static_cast<void*>(nullptr)}, atlas::ConstraintError);
+        CHECK_THROWS_AS(
+            test::constraints::Handle{nullptr},
+            atlas::ConstraintError);
+        CHECK_THROWS_AS(
+            test::constraints::Handle{static_cast<void *>(nullptr)},
+            atlas::ConstraintError);
     }
 
     TEST_CASE("non_null - void* - exception message content")
@@ -1525,7 +1617,9 @@ TEST_SUITE("Non-Null Constraint")
 
     TEST_CASE("non_null - int* - invalid construction")
     {
-        CHECK_THROWS_AS(test::constraints::DataPointer{nullptr}, atlas::ConstraintError);
+        CHECK_THROWS_AS(
+            test::constraints::DataPointer{nullptr},
+            atlas::ConstraintError);
     }
 
     TEST_CASE("non_null - int* - with arrow operator")
@@ -1534,7 +1628,7 @@ TEST_SUITE("Non-Null Constraint")
         test::constraints::DataPointer ptr{&value};
 
         // Use arrow operator to access the pointed-to value
-        CHECK(*ptr.operator->() == 42);
+        CHECK(*ptr.operator -> () == 42);
     }
 
     TEST_CASE("non_null - int* - exception message content")
@@ -1551,13 +1645,18 @@ TEST_SUITE("Non-Null Constraint")
 
     TEST_CASE("non_null - shared_ptr - valid construction")
     {
-        CHECK_NOTHROW(test::constraints::SharedPointer{std::make_shared<int>(42)});
+        CHECK_NOTHROW(
+            test::constraints::SharedPointer{std::make_shared<int>(42)});
     }
 
     TEST_CASE("non_null - shared_ptr - invalid construction")
     {
-        CHECK_THROWS_AS(test::constraints::SharedPointer{std::shared_ptr<int>{}}, atlas::ConstraintError);
-        CHECK_THROWS_AS(test::constraints::SharedPointer{nullptr}, atlas::ConstraintError);
+        CHECK_THROWS_AS(
+            test::constraints::SharedPointer{std::shared_ptr<int>{}},
+            atlas::ConstraintError);
+        CHECK_THROWS_AS(
+            test::constraints::SharedPointer{nullptr},
+            atlas::ConstraintError);
     }
 
     TEST_CASE("non_null - shared_ptr - exception message content")
@@ -1574,13 +1673,18 @@ TEST_SUITE("Non-Null Constraint")
 
     TEST_CASE("non_null - unique_ptr - valid construction")
     {
-        CHECK_NOTHROW(test::constraints::UniquePointer{std::make_unique<int>(42)});
+        CHECK_NOTHROW(
+            test::constraints::UniquePointer{std::make_unique<int>(42)});
     }
 
     TEST_CASE("non_null - unique_ptr - invalid construction")
     {
-        CHECK_THROWS_AS(test::constraints::UniquePointer{std::unique_ptr<int>{}}, atlas::ConstraintError);
-        CHECK_THROWS_AS(test::constraints::UniquePointer{nullptr}, atlas::ConstraintError);
+        CHECK_THROWS_AS(
+            test::constraints::UniquePointer{std::unique_ptr<int>{}},
+            atlas::ConstraintError);
+        CHECK_THROWS_AS(
+            test::constraints::UniquePointer{nullptr},
+            atlas::ConstraintError);
     }
 
     TEST_CASE("non_null - unique_ptr - exception message content")
@@ -1603,8 +1707,12 @@ TEST_SUITE("Non-Null Constraint")
 
     TEST_CASE("non_null - optional - invalid construction")
     {
-        CHECK_THROWS_AS(test::constraints::Optional{std::optional<int>{}}, atlas::ConstraintError);
-        CHECK_THROWS_AS(test::constraints::Optional{std::nullopt}, atlas::ConstraintError);
+        CHECK_THROWS_AS(
+            test::constraints::Optional{std::optional<int>{}},
+            atlas::ConstraintError);
+        CHECK_THROWS_AS(
+            test::constraints::Optional{std::nullopt},
+            atlas::ConstraintError);
     }
 
     TEST_CASE("non_null - optional - exception message content")
@@ -1652,11 +1760,11 @@ TEST_SUITE("Non-Null Constraint")
 
         // Copy constructor
         test::constraints::DataPointer b{a};
-        CHECK(static_cast<int*>(b) == &value);
+        CHECK(static_cast<int *>(b) == &value);
 
         // Move constructor
         test::constraints::DataPointer c{std::move(a)};
-        CHECK(static_cast<int*>(c) == &value);
+        CHECK(static_cast<int *>(c) == &value);
     }
 
     TEST_CASE("non_null - copy and move assignment work")
@@ -1668,33 +1776,36 @@ TEST_SUITE("Non-Null Constraint")
 
         // Copy assignment
         b = a;
-        CHECK(static_cast<int*>(b) == &value1);
+        CHECK(static_cast<int *>(b) == &value1);
 
         int value3 = 123;
         test::constraints::DataPointer d{&value3};
         // Move assignment
         d = std::move(a);
-        CHECK(static_cast<int*>(d) == &value1);
+        CHECK(static_cast<int *>(d) == &value1);
     }
 
     TEST_CASE("non_null - move-from limitation with unique_ptr")
     {
         // This test documents a known limitation: moved-from smart pointers
-        // violate the non_null invariant. This is inherent to C++ move semantics
-        // and cannot be prevented at compile time.
+        // violate the non_null invariant. This is inherent to C++ move
+        // semantics and cannot be prevented at compile time.
         //
         // Users must be careful not to use smart pointer strong types after
         // moving from them, just as with regular smart pointers.
 
         test::constraints::UniquePointer ptr{std::make_unique<int>(42)};
 
-        // Move the unique_ptr out - this leaves the strong type in a moved-from state
-        auto underlying = std::move(static_cast<std::unique_ptr<int>&>(ptr));
+        // Move the unique_ptr out - this leaves the strong type in a moved-from
+        // state
+        auto underlying = std::move(static_cast<std::unique_ptr<int> &>(ptr));
 
-        // The moved-from strong type now contains a null pointer, violating the invariant
-        // This is a known limitation and users should avoid accessing moved-from objects
-        auto const & moved_from_ptr = static_cast<std::unique_ptr<int> const &>(ptr);
-        CHECK(moved_from_ptr == nullptr);  // Invariant violated!
+        // The moved-from strong type now contains a null pointer, violating the
+        // invariant This is a known limitation and users should avoid accessing
+        // moved-from objects
+        auto const & moved_from_ptr = static_cast<std::unique_ptr<int> const &>(
+            ptr);
+        CHECK(moved_from_ptr == nullptr); // Invariant violated!
 
         // Note: This is the same behavior as with regular unique_ptr.
         // The solution is the same: don't use objects after moving from them.

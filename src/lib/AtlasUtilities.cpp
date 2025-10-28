@@ -233,7 +233,7 @@ trim(std::string const & str)
 }
 
 std::vector<std::string>
-get_preamble_includes(PreambleOptions options)
+get_preamble_includes(PreambleOptions const & options)
 {
     std::vector<std::string> includes;
 
@@ -1444,18 +1444,20 @@ public:
     virtual ~ConstraintError() noexcept = default;
 };
 
-namespace atlas_detail {
+namespace constraints {
+
+namespace detail {
 
 template <typename T>
 std::string
-format_value_impl(T const &, PriorityTag<0>)
+format_value_impl(T const &, atlas_detail::PriorityTag<0>)
 {
     return "unknown value";
 }
 
 template <typename T>
 auto
-format_value_impl(T const & value, PriorityTag<1>)
+format_value_impl(T const & value, atlas_detail::PriorityTag<1>)
 -> decltype(std::declval<std::ostringstream &>() << value, std::string())
 {
     std::ostringstream oss;
@@ -1465,7 +1467,7 @@ format_value_impl(T const & value, PriorityTag<1>)
 
 template <typename T>
 auto
-format_value_impl(T const & value, PriorityTag<2>)
+format_value_impl(T const & value, atlas_detail::PriorityTag<2>)
 -> decltype(std::to_string(value))
 {
     return std::to_string(value);
@@ -1475,7 +1477,7 @@ template <typename T>
 std::string
 format_value(T const & value)
 {
-    return format_value_impl(value, PriorityTag<2>{});
+    return format_value_impl(value, atlas_detail::PriorityTag<2>{});
 }
 
 inline int uncaught_exceptions() noexcept
@@ -1527,7 +1529,7 @@ struct ConstraintGuard
     constexpr ConstraintGuard(T const & v, char const * op) noexcept
     : value(v)
     , operation_name(op)
-    , uncaught_at_entry(atlas::atlas_detail::uncaught_exceptions())
+    , uncaught_at_entry(uncaught_exceptions())
     { }
 
     /**
@@ -1540,7 +1542,7 @@ struct ConstraintGuard
      */
     constexpr ~ConstraintGuard() noexcept(false)
     {
-        if (atlas::atlas_detail::uncaught_exceptions() == uncaught_at_entry) {
+        if (uncaught_exceptions() == uncaught_at_entry) {
             if (not ConstraintT::check(value)) {
                 throw atlas::ConstraintError(
                     std::string(operation_name) +
@@ -1561,15 +1563,13 @@ struct ConstraintGuard<
     { }
 };
 
+} // namespace detail
+
 template <typename ConstraintT, typename T>
 auto constraint_guard(T & t, char const * op) noexcept
 {
-    return ConstraintGuard<T, ConstraintT>(t, op);
+    return detail::ConstraintGuard<T, ConstraintT>(t, op);
 }
-
-} // namespace atlas_detail
-
-namespace constraints {
 
 /**
  * @brief Constraint: value must be > 0
@@ -1577,13 +1577,14 @@ namespace constraints {
 template <typename T>
 struct positive
 {
-    static constexpr bool check(T value)
-        noexcept(noexcept(value > T{0}))
+    static constexpr bool check(T const & value)
+    noexcept(noexcept(value > T{0}))
     {
         return value > T{0};
     }
 
-    static constexpr char const * message() noexcept {
+    static constexpr char const * message() noexcept
+    {
         return "value must be positive (> 0)";
     }
 };
@@ -1594,13 +1595,14 @@ struct positive
 template <typename T>
 struct non_negative
 {
-    static constexpr bool check(T value)
-        noexcept(noexcept(value >= T{0}))
+    static constexpr bool check(T const & value)
+    noexcept(noexcept(value >= T{0}))
     {
         return value >= T{0};
     }
 
-    static constexpr char const * message() noexcept {
+    static constexpr char const * message() noexcept
+    {
         return "value must be non-negative (>= 0)";
     }
 };
@@ -1611,13 +1613,14 @@ struct non_negative
 template <typename T>
 struct non_zero
 {
-    static constexpr bool check(T value)
-        noexcept(noexcept(value != T{0}))
+    static constexpr bool check(T const & value)
+    noexcept(noexcept(value != T{0}))
     {
         return value != T{0};
     }
 
-    static constexpr char const * message() noexcept {
+    static constexpr char const * message() noexcept
+    {
         return "value must be non-zero (!= 0)";
     }
 };
@@ -1634,7 +1637,8 @@ struct bounded
         return value >= T::min() && value <= T::max();
     }
 
-    static constexpr char const * message() noexcept {
+    static constexpr char const * message() noexcept
+    {
         return T::message();
     }
 };
@@ -1651,7 +1655,8 @@ struct bounded_range
         return value >= T::min() && value < T::max();
     }
 
-    static constexpr char const * message() noexcept {
+    static constexpr char const * message() noexcept
+    {
         return T::message();
     }
 };
@@ -1663,12 +1668,13 @@ template <typename T>
 struct non_empty
 {
     static constexpr bool check(T const & value)
-        noexcept(noexcept(value.empty()))
+    noexcept(noexcept(value.empty()))
     {
         return not value.empty();
     }
 
-    static constexpr char const * message() noexcept {
+    static constexpr char const * message() noexcept
+    {
         return "value must not be empty";
     }
 };
@@ -1685,7 +1691,7 @@ template <typename T>
 struct non_null
 {
     static constexpr bool check(T const & value)
-        noexcept(noexcept(static_cast<bool>(std::declval<T const &>())))
+    noexcept(noexcept(static_cast<bool>(value)))
     {
         // Use explicit bool conversion - works for:
         // - Raw pointers (void*, int*, etc.)
@@ -1695,7 +1701,8 @@ struct non_null
         return static_cast<bool>(value);
     }
 
-    static constexpr char const * message() noexcept {
+    static constexpr char const * message() noexcept
+    {
         return "pointer must not be null";
     }
 };

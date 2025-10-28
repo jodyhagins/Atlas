@@ -174,15 +174,20 @@ auto strong_template = R"(
             std::is_constructible<{{{underlying_type}}}, ArgTs...>::value,
             bool>::type = true>
     {{{const_expr}}}explicit {{{class_name}}}(ArgTs && ... args)
-    : value(std::forward<ArgTs>(args)...){{#has_constraint}}
+    : value(std::forward<ArgTs>(args)...)
+    {{#has_constraint}}
     {
         if (not atlas_constraint::check(value)) {
             throw atlas::ConstraintError(
-                "{{{class_name}}}: " + atlas::atlas_detail::format_value(value) +
+                "{{{class_name}}}: " +
+                atlas::constraints::detail::format_value(value) +
                 " violates constraint: {{{constraint_message}}}");
         }
-    }{{/has_constraint}}{{^has_constraint}}
-    { }{{/has_constraint}}
+    }
+    {{/has_constraint}}
+    {{^has_constraint}}
+    { }
+    {{/has_constraint}}
     {{#template_assignment_operator}}
     {{>template_assignment_operator}}
     {{/template_assignment_operator}}
@@ -363,12 +368,13 @@ constexpr char arithmetic_binary_operators[] = R"__(
 {{/has_constraint}}
     {
         lhs.value {{{op}}}= rhs.value;
-{{#has_constraint}}
+        {{#has_constraint}}
         if (not atlas_constraint::check(lhs.value)) {
             throw atlas::ConstraintError(
-                "{{{class_name}}}: arithmetic result violates constraint ({{{constraint_message}}})");
+                "{{{class_name}}}: arithmetic result violates constraint"
+                " ({{{constraint_message}}})");
         }
-{{/has_constraint}}
+        {{/has_constraint}}
         return lhs;
     }
     /**
@@ -399,12 +405,13 @@ constexpr char checked_addition[] = R"__(
             rhs.value,
             "{{{full_qualified_name}}}: addition overflow",
             "{{{full_qualified_name}}}: addition underflow");
-{{#has_constraint}}
+        {{#has_constraint}}
         if (not atlas_constraint::check(lhs.value)) {
             throw atlas::ConstraintError(
-                "{{{class_name}}}: arithmetic result violates constraint ({{{constraint_message}}})");
+                "{{{class_name}}}: arithmetic result violates constraint"
+                " ({{{constraint_message}}})");
         }
-{{/has_constraint}}
+        {{/has_constraint}}
         return lhs;
     }
 )__";
@@ -424,12 +431,13 @@ constexpr char checked_subtraction[] = R"__(
             rhs.value,
             "{{{full_qualified_name}}}: subtraction overflow",
             "{{{full_qualified_name}}}: subtraction underflow");
-{{#has_constraint}}
+        {{#has_constraint}}
         if (not atlas_constraint::check(lhs.value)) {
             throw atlas::ConstraintError(
-                "{{{class_name}}}: arithmetic result violates constraint ({{{constraint_message}}})");
+                "{{{class_name}}}: arithmetic result violates constraint"
+                "({{{constraint_message}}})");
         }
-{{/has_constraint}}
+        {{/has_constraint}}
         return lhs;
     }
 )__";
@@ -449,12 +457,13 @@ constexpr char checked_multiplication[] = R"__(
             rhs.value,
             "{{{full_qualified_name}}}: multiplication overflow",
             "{{{full_qualified_name}}}: multiplication underflow");
-{{#has_constraint}}
+        {{#has_constraint}}
         if (not atlas_constraint::check(lhs.value)) {
             throw atlas::ConstraintError(
-                "{{{class_name}}}: arithmetic result violates constraint ({{{constraint_message}}})");
+                "{{{class_name}}}: arithmetic result violates constraint"
+                "({{{constraint_message}}})");
         }
-{{/has_constraint}}
+        {{/has_constraint}}
         return lhs;
     }
 )__";
@@ -474,12 +483,13 @@ constexpr char checked_division[] = R"__(
             rhs.value,
             "{{{full_qualified_name}}}: division by zero",
             "{{{full_qualified_name}}}: division overflow (INT_MIN / -1)");
-{{#has_constraint}}
+        {{#has_constraint}}
         if (not atlas_constraint::check(lhs.value)) {
             throw atlas::ConstraintError(
-                "{{{class_name}}}: arithmetic result violates constraint ({{{constraint_message}}})");
+                "{{{class_name}}}: arithmetic result violates constraint"
+                " ({{{constraint_message}}})");
         }
-{{/has_constraint}}
+        {{/has_constraint}}
         return lhs;
     }
 )__";
@@ -498,12 +508,13 @@ constexpr char checked_modulo[] = R"__(
             lhs.value,
             rhs.value,
             "{{{full_qualified_name}}}: modulo by zero");
-{{#has_constraint}}
+        {{#has_constraint}}
         if (not atlas_constraint::check(lhs.value)) {
             throw atlas::ConstraintError(
-                "{{{class_name}}}: arithmetic result violates constraint ({{{constraint_message}}})");
+                "{{{class_name}}}: arithmetic result violates constraint"
+                " ({{{constraint_message}}})");
         }
-{{/has_constraint}}
+        {{/has_constraint}}
         return lhs;
     }
 )__";
@@ -516,17 +527,18 @@ constexpr char saturating_addition[] = R"__(
     friend {{{class_name}}} operator + (
         {{{class_name}}} lhs,
         {{{class_name}}} const & rhs)
-{{^has_constraint}}
+    {{^has_constraint}}
     noexcept
-{{/has_constraint}}
+    {{/has_constraint}}
     {
         lhs.value = atlas::atlas_detail::saturating_add(lhs.value, rhs.value);
-{{#has_constraint}}
+        {{#has_constraint}}
         if (not atlas_constraint::check(lhs.value)) {
             throw atlas::ConstraintError(
-                "{{{class_name}}}: arithmetic result violates constraint ({{{constraint_message}}})");
+                "{{{class_name}}}: arithmetic result violates constraint"
+                " ({{{constraint_message}}})");
         }
-{{/has_constraint}}
+        {{/has_constraint}}
         return lhs;
     }
 )__";
@@ -539,17 +551,18 @@ constexpr char saturating_subtraction[] = R"__(
     friend {{{class_name}}} operator - (
         {{{class_name}}} lhs,
         {{{class_name}}} const & rhs)
-{{^has_constraint}}
+    {{^has_constraint}}
     noexcept
-{{/has_constraint}}
+    {{/has_constraint}}
     {
         lhs.value = atlas::atlas_detail::saturating_sub(lhs.value, rhs.value);
-{{#has_constraint}}
+        {{#has_constraint}}
         if (not atlas_constraint::check(lhs.value)) {
             throw atlas::ConstraintError(
-                "{{{class_name}}}: arithmetic result violates constraint ({{{constraint_message}}})");
+                "{{{class_name}}}: arithmetic result violates constraint"
+                " ({{{constraint_message}}})");
         }
-{{/has_constraint}}
+        {{/has_constraint}}
         return lhs;
     }
 )__";
@@ -562,17 +575,18 @@ constexpr char saturating_multiplication[] = R"__(
     friend {{{class_name}}} operator * (
         {{{class_name}}} lhs,
         {{{class_name}}} const & rhs)
-{{^has_constraint}}
+    {{^has_constraint}}
     noexcept
-{{/has_constraint}}
+    {{/has_constraint}}
     {
         lhs.value = atlas::atlas_detail::saturating_mul(lhs.value, rhs.value);
-{{#has_constraint}}
+        {{#has_constraint}}
         if (not atlas_constraint::check(lhs.value)) {
             throw atlas::ConstraintError(
-                "{{{class_name}}}: arithmetic result violates constraint ({{{constraint_message}}})");
+                "{{{class_name}}}: arithmetic result violates constraint"
+                " ({{{constraint_message}}})");
         }
-{{/has_constraint}}
+        {{/has_constraint}}
         return lhs;
     }
 )__";
@@ -585,17 +599,18 @@ constexpr char saturating_division[] = R"__(
     friend {{{class_name}}} operator / (
         {{{class_name}}} lhs,
         {{{class_name}}} const & rhs)
-{{^has_constraint}}
+    {{^has_constraint}}
     noexcept
-{{/has_constraint}}
+    {{/has_constraint}}
     {
         lhs.value = atlas::atlas_detail::saturating_div(lhs.value, rhs.value);
-{{#has_constraint}}
+        {{#has_constraint}}
         if (not atlas_constraint::check(lhs.value)) {
             throw atlas::ConstraintError(
-                "{{{class_name}}}: arithmetic result violates constraint ({{{constraint_message}}})");
+                "{{{class_name}}}: arithmetic result violates constraint"
+                " ({{{constraint_message}}})");
         }
-{{/has_constraint}}
+        {{/has_constraint}}
         return lhs;
     }
 )__";
@@ -609,17 +624,18 @@ constexpr char saturating_remainder[] = R"__(
     friend {{{class_name}}} operator % (
         {{{class_name}}} lhs,
         {{{class_name}}} const & rhs)
-{{^has_constraint}}
+    {{^has_constraint}}
     noexcept
-{{/has_constraint}}
+    {{/has_constraint}}
     {
         lhs.value = atlas::atlas_detail::saturating_rem(lhs.value, rhs.value);
-{{#has_constraint}}
+        {{#has_constraint}}
         if (not atlas_constraint::check(lhs.value)) {
             throw atlas::ConstraintError(
-                "{{{class_name}}}: arithmetic result violates constraint ({{{constraint_message}}})");
+                "{{{class_name}}}: arithmetic result violates constraint"
+                " ({{{constraint_message}}})");
         }
-{{/has_constraint}}
+        {{/has_constraint}}
         return lhs;
     }
 )__";
@@ -634,9 +650,9 @@ constexpr char wrapping_arithmetic[] = R"__(
     friend {{{class_name}}} operator {{{op}}} (
         {{{class_name}}} lhs,
         {{{class_name}}} const & rhs)
-{{^has_constraint}}
+    {{^has_constraint}}
     noexcept
-{{/has_constraint}}
+    {{/has_constraint}}
     {
         static_assert(std::is_integral<{{{underlying_type}}}>::value,
                       "Wrapping arithmetic is only supported for integral types");
@@ -645,12 +661,13 @@ constexpr char wrapping_arithmetic[] = R"__(
             static_cast<unsigned_type>(lhs.value) {{{op}}}
             static_cast<unsigned_type>(rhs.value)
         );
-{{#has_constraint}}
+        {{#has_constraint}}
         if (not atlas_constraint::check(lhs.value)) {
             throw atlas::ConstraintError(
-                "{{{class_name}}}: arithmetic result violates constraint ({{{constraint_message}}})");
+                "{{{class_name}}}: arithmetic result violates constraint"
+                " ({{{constraint_message}}})");
         }
-{{/has_constraint}}
+        {{/has_constraint}}
         return lhs;
     }
 )__";
@@ -1155,12 +1172,12 @@ constexpr char forwarded_memfn_template[] = R"xxx(
     -> decltype(std::forward<Self>(self).value.{{memfn_name}}(std::forward<Args>(args)...))
 {{/return_type}}
     {
-{{#has_constraint}}
-        using atlas::atlas_detail::constraint_guard;
+        {{#has_constraint}}
+        using atlas::constraints::constraint_guard;
         [[maybe_unused]] auto guard = constraint_guard<atlas_constraint>(
             self.value,
             "{{class_name}}::{{memfn_name}}");
-{{/has_constraint}}
+        {{/has_constraint}}
         return {{#return_type}}{{return_type}}({{/return_type}}std::forward<Self>(self).value.{{memfn_name}}(std::forward<Args>(args)...){{#return_type}}){{/return_type}};
     }
 #else
@@ -1223,12 +1240,12 @@ constexpr char forwarded_memfn_template[] = R"xxx(
     -> decltype(value.{{memfn_name}}(std::forward<Args>(args)...))
 {{/return_type}}
     {
-{{#has_constraint}}
-        using atlas::atlas_detail::constraint_guard;
+        {{#has_constraint}}
+        using atlas::constraints::constraint_guard;
         [[maybe_unused]] auto guard = constraint_guard<atlas_constraint>(
             value,
             "{{class_name}}::{{memfn_name}}");
-{{/has_constraint}}
+        {{/has_constraint}}
         return {{#return_type}}{{return_type}}({{/return_type}}value.{{memfn_name}}(std::forward<Args>(args)...){{#return_type}}){{/return_type}};
     }
 {{/generate_nonconst_lvalue}}
@@ -1246,12 +1263,12 @@ constexpr char forwarded_memfn_template[] = R"xxx(
     -> decltype(std::move(value).{{memfn_name}}(std::forward<Args>(args)...))
 {{/return_type}}
     {
-{{#has_constraint}}
-        using atlas::atlas_detail::constraint_guard;
+        {{#has_constraint}}
+        using atlas::constraints::constraint_guard;
         [[maybe_unused]] auto guard = constraint_guard<atlas_constraint>(
             value,
             "{{class_name}}::{{memfn_name}}");
-{{/has_constraint}}
+        {{/has_constraint}}
         return {{#return_type}}{{return_type}}({{/return_type}}std::move(value).{{memfn_name}}(std::forward<Args>(args)...){{#return_type}}){{/return_type}};
     }
 {{/generate_nonconst_rvalue}}
