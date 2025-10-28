@@ -63,15 +63,18 @@ split(std::string_view sv, char sep)
             sv.remove_prefix(1);
         }
         // Find the next separator, respecting angle bracket nesting
-        // Only count brackets when they're part of identifiers (like bounded<0,100>)
+        // Only count brackets when they're part of identifiers (bounded<0,100>)
         // not standalone comparison operators (like <, <=, >, >=)
         int bracket_depth = 0;
         size_t n = 0;
         while (n < sv.size()) {
             char c = sv[n];
-            if (c == '<' && n > 0 && std::isalnum(static_cast<unsigned char>(sv[n-1]))) {
+            if (c == '<' && n > 0 &&
+                std::isalnum(static_cast<unsigned char>(sv[n - 1])))
+            {
                 // This looks like a template parameter (e.g., bounded<...)
-                // Only increase depth if preceded directly by alphanumeric (no space)
+                // Only increase depth if preceded directly by alphanumeric (no
+                // space)
                 ++bracket_depth;
             } else if (c == '>' && bracket_depth > 0) {
                 --bracket_depth;
@@ -1475,6 +1478,95 @@ format_value(T const & value)
     return format_value_impl(value, PriorityTag<2>{});
 }
 
+inline int uncaught_exceptions() noexcept
+{
+#if defined(__cpp_lib_uncaught_exceptions) && \
+    __cpp_lib_uncaught_exceptions >= 201411L
+    return std::uncaught_exceptions();
+#elif defined(_MSC_VER)
+    return __uncaught_exceptions();  // MSVC extension available since VS2015
+#elif defined(__GLIBCXX__)
+    // libstdc++ has __cxa_get_globals which tracks uncaught exceptions
+    return __cxxabiv1::__cxa_get_globals()->uncaughtExceptions;
+#elif defined(_LIBCPP_VERSION)
+    // libc++ has std::uncaught_exceptions even in C++11 mode as extension
+    return std::uncaught_exceptions();
+#else
+    // Fallback: use old uncaught_exception() (singular) - less safe but works
+    // This will return 1 during any exception, 0 otherwise
+    // Can't distinguish between multiple exceptions, but better than nothing
+    return std::uncaught_exception() ? 1 : 0;
+#endif
+}
+
+/**
+ * @brief RAII guard for validating constraints after mutating operations
+ *
+ * This guard validates constraints in its destructor, ensuring that the
+ * constraint is checked after the operation completes. The guard checks
+ * uncaught_exceptions() to avoid throwing during stack unwinding.
+ *
+ * Only validates non-const operations - const operations cannot violate
+ * constraints by definition.
+ *
+ * @tparam T The value type being constrained (may be const)
+ * @tparam ConstraintT The constraint type with static check() and message()
+ */
+template <typename T, typename ConstraintT, typename = void>
+struct ConstraintGuard
+{
+    using value_type = typename std::remove_const<T>::type;
+
+    T const & value;
+    char const * operation_name;
+    int uncaught_at_entry;
+
+    /**
+     * @brief Construct guard, capturing current exception state
+     */
+    constexpr ConstraintGuard(T const & v, char const * op) noexcept
+    : value(v)
+    , operation_name(op)
+    , uncaught_at_entry(atlas::atlas_detail::uncaught_exceptions())
+    { }
+
+    /**
+     * @brief Destructor validates constraint if no new exceptions
+     *
+     * Only throws if the constraint is violated AND no exceptions are
+     * currently unwinding (to avoid std::terminate).
+     *
+     * Only validates non-const operations - uses std::is_const to check.
+     */
+    constexpr ~ConstraintGuard() noexcept(false)
+    {
+        if (atlas::atlas_detail::uncaught_exceptions() == uncaught_at_entry) {
+            if (not ConstraintT::check(value)) {
+                throw atlas::ConstraintError(
+                    std::string(operation_name) +
+                    ": operation violates constraint (" +
+                    ConstraintT::message() + ")");
+            }
+        }
+    }
+};
+
+template <typename T, typename ConstraintT>
+struct ConstraintGuard<
+    T,
+    ConstraintT,
+    typename std::enable_if<std::is_const<T>::value>::type>
+{
+    constexpr ConstraintGuard(T const &, char const *) noexcept
+    { }
+};
+
+template <typename ConstraintT, typename T>
+auto constraint_guard(T & t, char const * op) noexcept
+{
+    return ConstraintGuard<T, ConstraintT>(t, op);
+}
+
 } // namespace atlas_detail
 
 namespace constraints {
@@ -1561,6 +1653,23 @@ struct bounded_range
 
     static constexpr char const * message() noexcept {
         return T::message();
+    }
+};
+
+/**
+ * @brief Constraint: container/string must not be empty
+ */
+template <typename T>
+struct non_empty
+{
+    static constexpr bool check(T const & value)
+        noexcept(noexcept(value.empty()))
+    {
+        return not value.empty();
+    }
+
+    static constexpr char const * message() noexcept {
+        return "value must not be empty";
     }
 };
 

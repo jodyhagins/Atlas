@@ -12,31 +12,39 @@ TEST_SUITE("Bounded Constraint")
 {
     TEST_CASE("bounded constraint - integer - valid construction")
     {
-        CHECK_NOTHROW(test::Percentage{0});    // Min boundary
-        CHECK_NOTHROW(test::Percentage{50});   // Middle
-        CHECK_NOTHROW(test::Percentage{100});  // Max boundary
+        CHECK_NOTHROW(test::Percentage{0}); // Min boundary
+        CHECK_NOTHROW(test::Percentage{50}); // Middle
+        CHECK_NOTHROW(test::Percentage{100}); // Max boundary
     }
 
     TEST_CASE("bounded constraint - integer - invalid construction")
     {
-        CHECK_THROWS_AS(test::Percentage{-1}, atlas::ConstraintError);   // Below min
-        CHECK_THROWS_AS(test::Percentage{101}, atlas::ConstraintError);  // Above max
+        CHECK_THROWS_AS(
+            test::Percentage{-1},
+            atlas::ConstraintError); // Below min
+        CHECK_THROWS_AS(
+            test::Percentage{101},
+            atlas::ConstraintError); // Above max
         CHECK_THROWS_AS(test::Percentage{-100}, atlas::ConstraintError);
         CHECK_THROWS_AS(test::Percentage{200}, atlas::ConstraintError);
     }
 
     TEST_CASE("bounded constraint - float - valid construction")
     {
-        CHECK_NOTHROW(physics::Temperature{-273.15});  // Absolute zero
-        CHECK_NOTHROW(physics::Temperature{0.0});      // Freezing
-        CHECK_NOTHROW(physics::Temperature{100.0});    // Boiling
-        CHECK_NOTHROW(physics::Temperature{1e7});      // Sun's core
+        CHECK_NOTHROW(physics::Temperature{-273.15}); // Absolute zero
+        CHECK_NOTHROW(physics::Temperature{0.0}); // Freezing
+        CHECK_NOTHROW(physics::Temperature{100.0}); // Boiling
+        CHECK_NOTHROW(physics::Temperature{1e7}); // Sun's core
     }
 
     TEST_CASE("bounded constraint - float - invalid construction")
     {
-        CHECK_THROWS_AS(physics::Temperature{-274.0}, atlas::ConstraintError);  // Below abs zero
-        CHECK_THROWS_AS(physics::Temperature{1e8}, atlas::ConstraintError);     // Hotter than sun
+        CHECK_THROWS_AS(
+            physics::Temperature{-274.0},
+            atlas::ConstraintError); // Below abs zero
+        CHECK_THROWS_AS(
+            physics::Temperature{1e8},
+            atlas::ConstraintError); // Hotter than sun
     }
 
     TEST_CASE("bounded constraint - construction with out-of-bounds value")
@@ -74,20 +82,22 @@ TEST_SUITE("Bounded Constraint")
         } catch (atlas::ConstraintError const & e) {
             std::string msg = e.what();
             CHECK(msg.find("Percentage") != std::string::npos);
-            CHECK(msg.find("101") != std::string::npos);   // Actual value
-            CHECK(msg.find("0") != std::string::npos);     // Min bound
-            CHECK(msg.find("100") != std::string::npos);   // Max bound
+            CHECK(msg.find("101") != std::string::npos); // Actual value
+            CHECK(msg.find("0") != std::string::npos); // Min bound
+            CHECK(msg.find("100") != std::string::npos); // Max bound
         }
     }
 
     TEST_CASE("bounded constraint - floating point boundary precision")
     {
         // Test exact boundary values work
-        CHECK_NOTHROW(physics::Temperature{-273.15});  // Exact min
-        CHECK_NOTHROW(physics::Temperature{1e7});      // Exact max
+        CHECK_NOTHROW(physics::Temperature{-273.15}); // Exact min
+        CHECK_NOTHROW(physics::Temperature{1e7}); // Exact max
 
         // Values very close but outside should fail
-        CHECK_THROWS_AS(physics::Temperature{-273.150001}, atlas::ConstraintError);
+        CHECK_THROWS_AS(
+            physics::Temperature{-273.150001},
+            atlas::ConstraintError);
     }
 
     TEST_CASE("bounded constraint with checked arithmetic - valid values")
@@ -97,21 +107,24 @@ TEST_SUITE("Bounded Constraint")
         CHECK_NOTHROW(test::BoundedChecked{100});
     }
 
-    TEST_CASE("bounded constraint with checked arithmetic - invalid construction")
+    TEST_CASE(
+        "bounded constraint with checked arithmetic - invalid construction")
     {
         CHECK_THROWS_AS(test::BoundedChecked{101}, atlas::ConstraintError);
     }
 
-    TEST_CASE("bounded constraint with checked arithmetic - overflow throws before constraint")
+    TEST_CASE("bounded constraint with checked arithmetic - overflow throws "
+              "before constraint")
     {
         test::BoundedChecked a{60};
         test::BoundedChecked b{50};
 
-        // 60 + 50 = 110, which is within uint8_t range, but violates bounded constraint
-        // However, the result needs to be checked for constraint violation
-        // The actual behavior depends on whether overflow happens first or constraint check
-        // For uint8_t with checked mode, 60 + 50 = 110 is within type range but exceeds bound
-        // This should throw ConstraintError after addition
+        // 60 + 50 = 110, which is within uint8_t range, but violates bounded
+        // constraint However, the result needs to be checked for constraint
+        // violation The actual behavior depends on whether overflow happens
+        // first or constraint check For uint8_t with checked mode, 60 + 50 =
+        // 110 is within type range but exceeds bound This should throw
+        // ConstraintError after addition
         CHECK_THROWS_AS(a + b, atlas::ConstraintError);
     }
 
@@ -162,13 +175,13 @@ TEST_SUITE("Bounded Constraint")
 
     TEST_CASE("bounded constraint - temperature arithmetic")
     {
-        physics::Temperature a{100.0};   // Boiling water
+        physics::Temperature a{100.0}; // Boiling water
         physics::Temperature b{50.0};
 
-        CHECK_NOTHROW(a + b);  // 150.0 is valid
-        CHECK_NOTHROW(a - b);  // 50.0 is valid
-        CHECK_NOTHROW(a * b);  // 5000.0 is valid
-        CHECK_NOTHROW(a / b);  // 2.0 is valid
+        CHECK_NOTHROW(a + b); // 150.0 is valid
+        CHECK_NOTHROW(a - b); // 50.0 is valid
+        CHECK_NOTHROW(a * b); // 5000.0 is valid
+        CHECK_NOTHROW(a / b); // 2.0 is valid
 
         auto add_result = a + b;
         CHECK(static_cast<double>(add_result) == 150.0);
@@ -176,10 +189,10 @@ TEST_SUITE("Bounded Constraint")
 
     TEST_CASE("bounded constraint - string - valid construction")
     {
-        CHECK_NOTHROW(test::BoundedString{"A"});     // Min boundary
-        CHECK_NOTHROW(test::BoundedString{"AA"});    // Middle
-        CHECK_NOTHROW(test::BoundedString{"AAA"});   // Middle
-        CHECK_NOTHROW(test::BoundedString{"AAAA"});  // Max boundary
+        CHECK_NOTHROW(test::BoundedString{"A"}); // Min boundary
+        CHECK_NOTHROW(test::BoundedString{"AA"}); // Middle
+        CHECK_NOTHROW(test::BoundedString{"AAA"}); // Middle
+        CHECK_NOTHROW(test::BoundedString{"AAAA"}); // Max boundary
     }
 
     TEST_CASE("bounded constraint - string - invalid construction")
@@ -221,7 +234,8 @@ TEST_SUITE("Bounded Constraint")
         CHECK(a >= c);
     }
 
-    TEST_CASE("bounded constraint - string - exception message shows value and bounds")
+    TEST_CASE("bounded constraint - string - exception message shows value and "
+              "bounds")
     {
         try {
             test::BoundedString invalid{"ZZZZZ"};
@@ -229,9 +243,11 @@ TEST_SUITE("Bounded Constraint")
         } catch (atlas::ConstraintError const & e) {
             std::string msg = e.what();
             CHECK(msg.find("BoundedString") != std::string::npos);
-            CHECK(msg.find("ZZZZZ") != std::string::npos);  // Actual value
-            CHECK(msg.find("A") != std::string::npos);      // Min bound (will appear in bounds message)
-            CHECK(msg.find("AAAA") != std::string::npos);   // Max bound
+            CHECK(msg.find("ZZZZZ") != std::string::npos); // Actual value
+            CHECK(
+                msg.find("A") !=
+                std::string::npos); // Min bound (will appear in bounds message)
+            CHECK(msg.find("AAAA") != std::string::npos); // Max bound
         }
     }
 

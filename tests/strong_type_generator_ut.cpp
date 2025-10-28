@@ -588,7 +588,8 @@ TEST_SUITE("StrongTypeGenerator")
         }
 
         SUBCASE("floating-point bounds work with any C++ standard") {
-            // With trait-based design, floating-point bounds work in any C++ standard
+            // With trait-based design, floating-point bounds work in any C++
+            // standard
             StrongTypeDescription desc{
                 .kind = "struct",
                 .type_namespace = "physics",

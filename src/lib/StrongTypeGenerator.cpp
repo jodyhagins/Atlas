@@ -161,7 +161,9 @@ auto strong_template = R"(
 {{>constant_declarations}}
 {{/constants}}
 
-    {{{const_expr}}}explicit {{{class_name}}}() = default;
+{{#delete_default_constructor}}    {{{class_name}}}() = delete;
+{{/delete_default_constructor}}{{^delete_default_constructor}}    {{{const_expr}}}explicit {{{class_name}}}() = default;
+{{/delete_default_constructor}}
     {{{const_expr}}}{{{class_name}}}({{{class_name}}} const &) = default;
     {{{const_expr}}}{{{class_name}}}({{{class_name}}} &&) = default;
     {{{const_expr}}}{{{class_name}}} & operator = ({{{class_name}}} const &) = default;
@@ -1124,7 +1126,7 @@ constexpr char template_assignment_operator_template[] = R"(
     }
 )";
 
-constexpr char forwarded_memfn_template[] = R"(
+constexpr char forwarded_memfn_template[] = R"xxx(
     /**
      * @brief Forward {{memfn_name}} to wrapped object{{#alias_name}} (aliased as {{alias_name}}){{/alias_name}}{{#return_type}},
      * wrapping return value in {{return_type}}{{/return_type}}
@@ -1135,75 +1137,128 @@ constexpr char forwarded_memfn_template[] = R"(
 {{#const_only}}     * Only const overloads are generated.
 {{/const_only}}{{#return_type}}     * Return value is wrapped in {{return_type}} (requires {{return_type}} to be
      * constructible from the memfn's return type).
-{{/return_type}}     */
+{{/return_type}}{{#has_constraint}}     *
+     * IMPORTANT: Constraint checking occurs AFTER the operation executes.
+     * This is an inherent limitation of generic constraint checking - we cannot
+     * know ahead of time if an operation will violate a constraint without
+     * operation-specific knowledge.
+{{/has_constraint}}     */
 {{^const_only}}#if defined(__cpp_explicit_this_parameter) && __cpp_explicit_this_parameter >= 202110L
     // C++23 deducing this - single elegant overload
     template <typename Self, typename... Args>
-    {{const_expr}}auto {{#alias_name}}{{alias_name}}{{/alias_name}}{{^alias_name}}{{memfn_name}}{{/alias_name}}(this Self&& self, Args&&... args){{#return_type}}
-    -> {{return_type}}{{/return_type}}{{^return_type}}
+    {{const_expr}}auto {{#alias_name}}{{alias_name}}{{/alias_name}}{{^alias_name}}{{memfn_name}}{{/alias_name}}(this Self&& self, Args&&... args)
+{{#return_type}}
+    -> {{return_type}}
+{{/return_type}}
+{{^return_type}}
+{{^has_constraint}}
     noexcept(noexcept(std::forward<Self>(self).value.{{memfn_name}}(std::forward<Args>(args)...)))
-    -> decltype(std::forward<Self>(self).value.{{memfn_name}}(std::forward<Args>(args)...)){{/return_type}}
+{{/has_constraint}}
+    -> decltype(std::forward<Self>(self).value.{{memfn_name}}(std::forward<Args>(args)...))
+{{/return_type}}
     {
-        return {{#return_type}}{{return_type}}{{/return_type}}{{^return_type}}std::forward<Self>(self).value.{{memfn_name}}(std::forward<Args>(args)...){{/return_type}}{{#return_type}}(std::forward<Self>(self).value.{{memfn_name}}(std::forward<Args>(args)...)){{/return_type}};
+{{#has_constraint}}
+        using atlas::atlas_detail::constraint_guard;
+        [[maybe_unused]] auto guard = constraint_guard<atlas_constraint>(
+            self.value,
+            "{{class_name}}::{{memfn_name}}");
+{{/has_constraint}}
+        return {{#return_type}}{{return_type}}({{/return_type}}std::forward<Self>(self).value.{{memfn_name}}(std::forward<Args>(args)...){{#return_type}}){{/return_type}};
     }
 #else
 {{/const_only}}    // C++11-20: ref-qualified overloads (or just const for const-only)
 {{#generate_const_no_ref}}
     template <typename... Args>
-    {{const_expr}}auto {{#alias_name}}{{alias_name}}{{/alias_name}}{{^alias_name}}{{memfn_name}}{{/alias_name}}(Args&&... args) const{{#return_type}}
-    -> {{return_type}}{{/return_type}}{{^return_type}}
+    {{const_expr}}auto {{#alias_name}}{{alias_name}}{{/alias_name}}{{^alias_name}}{{memfn_name}}{{/alias_name}}(Args&&... args) const
+{{#return_type}}
+    -> {{return_type}}
+{{/return_type}}
+{{^return_type}}
     noexcept(noexcept(value.{{memfn_name}}(std::forward<Args>(args)...)))
-    -> decltype(value.{{memfn_name}}(std::forward<Args>(args)...)){{/return_type}}
+    -> decltype(value.{{memfn_name}}(std::forward<Args>(args)...))
+{{/return_type}}
     {
-        return {{#return_type}}{{return_type}}{{/return_type}}{{^return_type}}value.{{memfn_name}}(std::forward<Args>(args)...){{/return_type}}{{#return_type}}(value.{{memfn_name}}(std::forward<Args>(args)...)){{/return_type}};
+        return {{#return_type}}{{return_type}}({{/return_type}}value.{{memfn_name}}(std::forward<Args>(args)...){{#return_type}}){{/return_type}};
     }
 {{/generate_const_no_ref}}
 
 {{#generate_const_lvalue}}
     template <typename... Args>
-    {{const_expr}}auto {{#alias_name}}{{alias_name}}{{/alias_name}}{{^alias_name}}{{memfn_name}}{{/alias_name}}(Args&&... args) const &{{#return_type}}
-    -> {{return_type}}{{/return_type}}{{^return_type}}
+    {{const_expr}}auto {{#alias_name}}{{alias_name}}{{/alias_name}}{{^alias_name}}{{memfn_name}}{{/alias_name}}(Args&&... args) const &
+{{#return_type}}
+    -> {{return_type}}
+{{/return_type}}
+{{^return_type}}
     noexcept(noexcept(value.{{memfn_name}}(std::forward<Args>(args)...)))
-    -> decltype(value.{{memfn_name}}(std::forward<Args>(args)...)){{/return_type}}
+    -> decltype(value.{{memfn_name}}(std::forward<Args>(args)...))
+{{/return_type}}
     {
-        return {{#return_type}}{{return_type}}{{/return_type}}{{^return_type}}value.{{memfn_name}}(std::forward<Args>(args)...){{/return_type}}{{#return_type}}(value.{{memfn_name}}(std::forward<Args>(args)...)){{/return_type}};
+        return {{#return_type}}{{return_type}}({{/return_type}}value.{{memfn_name}}(std::forward<Args>(args)...){{#return_type}}){{/return_type}};
     }
 {{/generate_const_lvalue}}
 
 {{#generate_const_rvalue}}
     template <typename... Args>
-    {{const_expr}}auto {{#alias_name}}{{alias_name}}{{/alias_name}}{{^alias_name}}{{memfn_name}}{{/alias_name}}(Args&&... args) const &&{{#return_type}}
-    -> {{return_type}}{{/return_type}}{{^return_type}}
+    {{const_expr}}auto {{#alias_name}}{{alias_name}}{{/alias_name}}{{^alias_name}}{{memfn_name}}{{/alias_name}}(Args&&... args) const &&
+{{#return_type}}
+    -> {{return_type}}
+{{/return_type}}
+{{^return_type}}
     noexcept(noexcept(std::move(value).{{memfn_name}}(std::forward<Args>(args)...)))
-    -> decltype(std::move(value).{{memfn_name}}(std::forward<Args>(args)...)){{/return_type}}
+    -> decltype(std::move(value).{{memfn_name}}(std::forward<Args>(args)...))
+{{/return_type}}
     {
-        return {{#return_type}}{{return_type}}{{/return_type}}{{^return_type}}std::move(value).{{memfn_name}}(std::forward<Args>(args)...){{/return_type}}{{#return_type}}(std::move(value).{{memfn_name}}(std::forward<Args>(args)...)){{/return_type}};
+        return {{#return_type}}{{return_type}}({{/return_type}}std::move(value).{{memfn_name}}(std::forward<Args>(args)...){{#return_type}}){{/return_type}};
     }
 {{/generate_const_rvalue}}
 
 {{#generate_nonconst_lvalue}}
     template <typename... Args>
-    {{const_expr}}auto {{#alias_name}}{{alias_name}}{{/alias_name}}{{^alias_name}}{{memfn_name}}{{/alias_name}}(Args&&... args) &{{#return_type}}
-    -> {{return_type}}{{/return_type}}{{^return_type}}
+    {{const_expr}}auto {{#alias_name}}{{alias_name}}{{/alias_name}}{{^alias_name}}{{memfn_name}}{{/alias_name}}(Args&&... args) &
+{{#return_type}}
+    -> {{return_type}}
+{{/return_type}}
+{{^return_type}}
+{{^has_constraint}}
     noexcept(noexcept(value.{{memfn_name}}(std::forward<Args>(args)...)))
-    -> decltype(value.{{memfn_name}}(std::forward<Args>(args)...)){{/return_type}}
+{{/has_constraint}}
+    -> decltype(value.{{memfn_name}}(std::forward<Args>(args)...))
+{{/return_type}}
     {
-        return {{#return_type}}{{return_type}}{{/return_type}}{{^return_type}}value.{{memfn_name}}(std::forward<Args>(args)...){{/return_type}}{{#return_type}}(value.{{memfn_name}}(std::forward<Args>(args)...)){{/return_type}};
+{{#has_constraint}}
+        using atlas::atlas_detail::constraint_guard;
+        [[maybe_unused]] auto guard = constraint_guard<atlas_constraint>(
+            value,
+            "{{class_name}}::{{memfn_name}}");
+{{/has_constraint}}
+        return {{#return_type}}{{return_type}}({{/return_type}}value.{{memfn_name}}(std::forward<Args>(args)...){{#return_type}}){{/return_type}};
     }
 {{/generate_nonconst_lvalue}}
 
 {{#generate_nonconst_rvalue}}
     template <typename... Args>
-    {{const_expr}}auto {{#alias_name}}{{alias_name}}{{/alias_name}}{{^alias_name}}{{memfn_name}}{{/alias_name}}(Args&&... args) &&{{#return_type}}
-    -> {{return_type}}{{/return_type}}{{^return_type}}
+    {{const_expr}}auto {{#alias_name}}{{alias_name}}{{/alias_name}}{{^alias_name}}{{memfn_name}}{{/alias_name}}(Args&&... args) &&
+{{#return_type}}
+    -> {{return_type}}
+{{/return_type}}
+{{^return_type}}
+{{^has_constraint}}
     noexcept(noexcept(std::move(value).{{memfn_name}}(std::forward<Args>(args)...)))
-    -> decltype(std::move(value).{{memfn_name}}(std::forward<Args>(args)...)){{/return_type}}
+{{/has_constraint}}
+    -> decltype(std::move(value).{{memfn_name}}(std::forward<Args>(args)...))
+{{/return_type}}
     {
-        return {{#return_type}}{{return_type}}{{/return_type}}{{^return_type}}std::move(value).{{memfn_name}}(std::forward<Args>(args)...){{/return_type}}{{#return_type}}(std::move(value).{{memfn_name}}(std::forward<Args>(args)...)){{/return_type}};
+{{#has_constraint}}
+        using atlas::atlas_detail::constraint_guard;
+        [[maybe_unused]] auto guard = constraint_guard<atlas_constraint>(
+            value,
+            "{{class_name}}::{{memfn_name}}");
+{{/has_constraint}}
+        return {{#return_type}}{{return_type}}({{/return_type}}std::move(value).{{memfn_name}}(std::forward<Args>(args)...){{#return_type}}){{/return_type}};
     }
 {{/generate_nonconst_rvalue}}
 {{^const_only}}#endif
-{{/const_only}})";
+{{/const_only}})xxx";
 
 struct Operator
 {
@@ -1347,6 +1402,7 @@ struct ClassInfo
     bool is_bounded = false;
     std::string bounded_min;
     std::string bounded_max;
+    bool delete_default_constructor = false;
 };
 BOOST_DESCRIBE_STRUCT(
     ClassInfo,
@@ -1399,7 +1455,8 @@ BOOST_DESCRIBE_STRUCT(
      constraint_template_args,
      is_bounded,
      bounded_min,
-     bounded_max))
+     bounded_max,
+     delete_default_constructor))
 
 constexpr auto arithmetic_binary_op_tags = std::to_array<std::string_view>(
     {"+", "-", "*", "/", "%", "&", "|", "^", "<<", ">>", "+*", "-*"});
@@ -1801,8 +1858,10 @@ process_forwarded_memfns(ClassInfo & info)
 }
 
 /**
- * @brief Parse bounded-style constraint syntax and extract parameters as strings
- * @param token The token string (e.g., "bounded<0,100>" or "bounded_range<0,100>")
+ * @brief Parse bounded-style constraint syntax and extract parameters as
+ * strings
+ * @param token The token string (e.g., "bounded<0,100>" or
+ * "bounded_range<0,100>")
  * @return Map with "min" and "max" keys containing literal strings
  * @throws std::invalid_argument if syntax is invalid
  *
@@ -1823,7 +1882,8 @@ parse_bounded_params(std::string_view token)
         end <= start)
     {
         throw std::invalid_argument(
-            "Invalid bounded constraint syntax: expected 'constraint<min,max>', got: " +
+            "Invalid bounded constraint syntax: expected "
+            "'constraint<min,max>', got: " +
             std::string(token));
     }
 
@@ -1832,7 +1892,8 @@ parse_bounded_params(std::string_view token)
 
     if (comma == std::string_view::npos) {
         throw std::invalid_argument(
-            "Bounded constraint requires two parameters: constraint<min,max>, got: " +
+            "Bounded constraint requires two parameters: constraint<min,max>, "
+            "got: " +
             std::string(token));
     }
 
@@ -1842,7 +1903,8 @@ parse_bounded_params(std::string_view token)
 
     if (result["min"].empty() || result["max"].empty()) {
         throw std::invalid_argument(
-            "Bounded constraint parameters cannot be empty: " + std::string(token));
+            "Bounded constraint parameters cannot be empty: " +
+            std::string(token));
     }
 
     return result;
@@ -2059,8 +2121,17 @@ parse(
             info.has_constraint = true;
             info.constraint_type = "non_zero";
             info.constraint_message = "value must be non-zero (!= 0)";
-        } else if (sv.starts_with("bounded<") || sv.starts_with("bounded <") ||
-                   sv.starts_with("bounded_range<") || sv.starts_with("bounded_range <")) {
+        } else if (sv == "non_empty") {
+            recognized = true;
+            info.has_constraint = true;
+            info.constraint_type = "non_empty";
+            info.constraint_message = "value must not be empty";
+            info.delete_default_constructor = true;
+        } else if (
+            sv.starts_with("bounded<") || sv.starts_with("bounded <") ||
+            sv.starts_with("bounded_range<") ||
+            sv.starts_with("bounded_range <"))
+        {
             recognized = true;
             info.has_constraint = true;
             info.is_bounded = true;
@@ -2075,7 +2146,8 @@ parse(
             info.bounded_min = info.constraint_params["min"];
             info.bounded_max = info.constraint_params["max"];
 
-            // Build human-readable message (note: [min, max) for half-open range)
+            // Build human-readable message (note: [min, max) for half-open
+            // range)
             auto escaped = [](std::string const s) {
                 std::string result;
                 for (auto c : s) {
@@ -2140,9 +2212,11 @@ parse(
 
     // Set constraint template arguments if constraint is present
     if (info.has_constraint && not info.constraint_type.empty()) {
-        if (info.constraint_type == "bounded" || info.constraint_type == "bounded_range") {
-            // For bounded and bounded_range constraints, we use the trait-based design:
-            // atlas::constraints::bounded<atlas_bounds>
+        if (info.constraint_type == "bounded" ||
+            info.constraint_type == "bounded_range")
+        {
+            // For bounded and bounded_range constraints, we use the trait-based
+            // design: atlas::constraints::bounded<atlas_bounds>
             // atlas::constraints::bounded_range<atlas_bounds>
             // The atlas_bounds trait will be generated with
             // min()/max()/message()

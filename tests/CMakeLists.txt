@@ -232,3 +232,22 @@ target_include_directories(bounded_range_constraint_ut
     PRIVATE
         ${CMAKE_CURRENT_BINARY_DIR}
 )
+
+# Non-empty constraint tests
+set(INPUT "${CMAKE_CURRENT_SOURCE_DIR}/non_empty_constraint.txt")
+set(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/constraints-non-empty.hpp")
+add_custom_command(
+    OUTPUT ${OUTPUT}
+    COMMAND atlas --input=${INPUT} --output=${OUTPUT}
+    DEPENDS atlas ${INPUT}
+    COMMENT "Generating non-empty constraint test types"
+)
+add_executable(non_empty_constraint_ut non_empty_constraint_ut.cpp ${OUTPUT})
+target_link_libraries(non_empty_constraint_ut PRIVATE
+    doctest::doctest
+)
+add_test(NAME NonEmptyConstraintTests COMMAND non_empty_constraint_ut)
+target_include_directories(non_empty_constraint_ut
+    PRIVATE
+        ${CMAKE_CURRENT_BINARY_DIR}
+)
