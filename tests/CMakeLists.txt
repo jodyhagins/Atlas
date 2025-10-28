@@ -251,3 +251,22 @@ target_include_directories(non_empty_constraint_ut
     PRIVATE
         ${CMAKE_CURRENT_BINARY_DIR}
 )
+
+# Non-null constraint tests
+set(INPUT "${CMAKE_CURRENT_SOURCE_DIR}/non_null_constraint.txt")
+set(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/constraints-non-null.hpp")
+add_custom_command(
+    OUTPUT ${OUTPUT}
+    COMMAND atlas --input=${INPUT} --output=${OUTPUT}
+    DEPENDS atlas ${INPUT}
+    COMMENT "Generating non-null constraint test types"
+)
+add_executable(non_null_constraint_ut non_null_constraint_ut.cpp ${OUTPUT})
+target_link_libraries(non_null_constraint_ut PRIVATE
+    doctest::doctest
+)
+add_test(NAME NonNullConstraintTests COMMAND non_null_constraint_ut)
+target_include_directories(non_null_constraint_ut
+    PRIVATE
+        ${CMAKE_CURRENT_BINARY_DIR}
+)

@@ -1,0 +1,19 @@
+# Test: Non-null pointer constraint
+[sys::Handle]
+description=void*; non_null, ==, !=
+
+# Test: Non-null typed pointer
+[data::DataPointer]
+description=int*; non_null, ==, !=, ->
+
+# Test: Non-null unique pointer (no-constexpr because smart pointers don't support constexpr in C++20)
+[data::UniquePointer]
+description=std::unique_ptr<int>; non_null, no-constexpr, ==, !=, ->
+
+# Test: Non-null shared pointer (no-constexpr because smart pointers don't support constexpr in C++20)
+[data::SharedPointer]
+description=std::shared_ptr<int>; non_null, no-constexpr, ==, !=, ->
+
+# Test: Non-null optional (no-constexpr because std::optional special members aren't constexpr in C++20)
+[data::Optional]
+description=std::optional<int>; non_null, no-constexpr, ==, !=, ->

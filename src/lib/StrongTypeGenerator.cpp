@@ -2127,6 +2127,12 @@ parse(
             info.constraint_type = "non_empty";
             info.constraint_message = "value must not be empty";
             info.delete_default_constructor = true;
+        } else if (sv == "non_null") {
+            recognized = true;
+            info.has_constraint = true;
+            info.constraint_type = "non_null";
+            info.constraint_message = "pointer must not be null";
+            info.delete_default_constructor = true;
         } else if (
             sv.starts_with("bounded<") || sv.starts_with("bounded <") ||
             sv.starts_with("bounded_range<") ||

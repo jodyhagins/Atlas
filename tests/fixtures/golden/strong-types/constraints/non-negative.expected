@@ -1333,11 +1333,38 @@ struct non_empty
     static constexpr bool check(T const & value)
         noexcept(noexcept(value.empty()))
     {
-        return !value.empty();
+        return not value.empty();
     }
 
     static constexpr char const * message() noexcept {
         return "value must not be empty";
+    }
+};
+
+/**
+ * @brief Constraint: pointer must not be null
+ *
+ * Works with raw pointers, smart pointers (unique_ptr, shared_ptr), and
+ * std::optional by using explicit bool conversion (operator bool()).
+ *
+ * Note: weak_ptr requires C++23 for operator bool() support.
+ */
+template <typename T>
+struct non_null
+{
+    static constexpr bool check(T const & value)
+        noexcept(noexcept(static_cast<bool>(std::declval<T const &>())))
+    {
+        // Use explicit bool conversion - works for:
+        // - Raw pointers (void*, int*, etc.)
+        // - Smart pointers (unique_ptr, shared_ptr)
+        // - std::optional
+        // - Any type with explicit operator bool()
+        return static_cast<bool>(value);
+    }
+
+    static constexpr char const * message() noexcept {
+        return "pointer must not be null";
     }
 };
 
