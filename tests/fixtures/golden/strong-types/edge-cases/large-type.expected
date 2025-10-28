@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_47D4DA4797A63E15AAFC928EAD9E5C909C1A7D18
-#define FOO_BAR_47D4DA4797A63E15AAFC928EAD9E5C909C1A7D18
+#ifndef FOO_BAR_8FB6977EEDEDDE4CAA22912C87B63D4D64FA7E36
+#define FOO_BAR_8FB6977EEDEDDE4CAA22912C87B63D4D64FA7E36
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -252,11 +252,6 @@ struct LargeType
     using atlas_value_type = std::array<int, 1000>;
 
     constexpr explicit LargeType() = default;
-    constexpr LargeType(LargeType const &) = default;
-    constexpr LargeType(LargeType &&) = default;
-    constexpr LargeType & operator = (LargeType const &) = default;
-    constexpr LargeType & operator = (LargeType &&) = default;
-    constexpr ~LargeType() = default;
 
     template <
         typename... ArgTs,
@@ -287,5 +282,5 @@ struct LargeType
 } // namespace edge_cases
 } // namespace test
 
-#endif // FOO_BAR_47D4DA4797A63E15AAFC928EAD9E5C909C1A7D18
+#endif // FOO_BAR_8FB6977EEDEDDE4CAA22912C87B63D4D64FA7E36
 

@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_3149DBBEE22C937CBD6C04964EC6E0CFFD6A1781
-#define FOO_BAR_3149DBBEE22C937CBD6C04964EC6E0CFFD6A1781
+#ifndef FOO_BAR_F6F0DD62128223399F3B7EF4614FA91C1ECDE22F
+#define FOO_BAR_F6F0DD62128223399F3B7EF4614FA91C1ECDE22F
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -533,11 +533,6 @@ struct NonZeroInt
     using atlas_constraint = atlas::constraints::non_zero<int>;
 
     constexpr explicit NonZeroInt() = default;
-    constexpr NonZeroInt(NonZeroInt const &) = default;
-    constexpr NonZeroInt(NonZeroInt &&) = default;
-    constexpr NonZeroInt & operator = (NonZeroInt const &) = default;
-    constexpr NonZeroInt & operator = (NonZeroInt &&) = default;
-    constexpr ~NonZeroInt() = default;
 
     template <
         typename... ArgTs,
@@ -668,11 +663,6 @@ struct Denominator
     using atlas_constraint = atlas::constraints::non_zero<int>;
 
     constexpr explicit Denominator() = default;
-    constexpr Denominator(Denominator const &) = default;
-    constexpr Denominator(Denominator &&) = default;
-    constexpr Denominator & operator = (Denominator const &) = default;
-    constexpr Denominator & operator = (Denominator &&) = default;
-    constexpr ~Denominator() = default;
 
     template <
         typename... ArgTs,
@@ -772,11 +762,6 @@ struct NonZeroUChar
     using atlas_constraint = atlas::constraints::non_zero<unsigned char>;
 
     constexpr explicit NonZeroUChar() = default;
-    constexpr NonZeroUChar(NonZeroUChar const &) = default;
-    constexpr NonZeroUChar(NonZeroUChar &&) = default;
-    constexpr NonZeroUChar & operator = (NonZeroUChar const &) = default;
-    constexpr NonZeroUChar & operator = (NonZeroUChar &&) = default;
-    constexpr ~NonZeroUChar() = default;
 
     template <
         typename... ArgTs,
@@ -827,5 +812,5 @@ struct NonZeroUChar
 };
 } // namespace test
 
-#endif // FOO_BAR_3149DBBEE22C937CBD6C04964EC6E0CFFD6A1781
+#endif // FOO_BAR_F6F0DD62128223399F3B7EF4614FA91C1ECDE22F
 

@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_A687DAB57124E4C5BC432FA1721A4756DB774E6B
-#define FOO_BAR_A687DAB57124E4C5BC432FA1721A4756DB774E6B
+#ifndef FOO_BAR_83FBA0C7ADA0E1D72B6A7C002C9D47D267EAFF1C
+#define FOO_BAR_83FBA0C7ADA0E1D72B6A7C002C9D47D267EAFF1C
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -250,11 +250,6 @@ struct UnaryPlusMinusType
     using atlas_value_type = int;
 
     constexpr explicit UnaryPlusMinusType() = default;
-    constexpr UnaryPlusMinusType(UnaryPlusMinusType const &) = default;
-    constexpr UnaryPlusMinusType(UnaryPlusMinusType &&) = default;
-    constexpr UnaryPlusMinusType & operator = (UnaryPlusMinusType const &) = default;
-    constexpr UnaryPlusMinusType & operator = (UnaryPlusMinusType &&) = default;
-    constexpr ~UnaryPlusMinusType() = default;
 
     template <
         typename... ArgTs,
@@ -303,5 +298,5 @@ struct UnaryPlusMinusType
 };
 } // namespace test
 
-#endif // FOO_BAR_A687DAB57124E4C5BC432FA1721A4756DB774E6B
+#endif // FOO_BAR_83FBA0C7ADA0E1D72B6A7C002C9D47D267EAFF1C
 

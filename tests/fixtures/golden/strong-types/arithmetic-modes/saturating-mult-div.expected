@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_884818C098C0239E52CBF17D0F5B95ED799C1457
-#define FOO_BAR_884818C098C0239E52CBF17D0F5B95ED799C1457
+#ifndef FOO_BAR_0F6BD856B03A3340CD8C4034261955FCDA449B60
+#define FOO_BAR_0F6BD856B03A3340CD8C4034261955FCDA449B60
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -680,11 +680,6 @@ struct Value
     using atlas_value_type = int;
 
     constexpr explicit Value() = default;
-    constexpr Value(Value const &) = default;
-    constexpr Value(Value &&) = default;
-    constexpr Value & operator = (Value const &) = default;
-    constexpr Value & operator = (Value &&) = default;
-    constexpr ~Value() = default;
 
     template <
         typename... ArgTs,
@@ -729,5 +724,5 @@ struct Value
 };
 } // namespace test
 
-#endif // FOO_BAR_884818C098C0239E52CBF17D0F5B95ED799C1457
+#endif // FOO_BAR_0F6BD856B03A3340CD8C4034261955FCDA449B60
 

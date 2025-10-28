@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_AA5631A59593A02AC4FD2DD5563B79D913810781
-#define FOO_BAR_AA5631A59593A02AC4FD2DD5563B79D913810781
+#ifndef FOO_BAR_4766946BCBD2856779E116BA77A8F4CDD559BB60
+#define FOO_BAR_4766946BCBD2856779E116BA77A8F4CDD559BB60
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -252,11 +252,6 @@ struct StreamBothType
     using atlas_value_type = int;
 
     constexpr explicit StreamBothType() = default;
-    constexpr StreamBothType(StreamBothType const &) = default;
-    constexpr StreamBothType(StreamBothType &&) = default;
-    constexpr StreamBothType & operator = (StreamBothType const &) = default;
-    constexpr StreamBothType & operator = (StreamBothType &&) = default;
-    constexpr ~StreamBothType() = default;
 
     template <
         typename... ArgTs,
@@ -295,5 +290,5 @@ struct StreamBothType
 };
 } // namespace test
 
-#endif // FOO_BAR_AA5631A59593A02AC4FD2DD5563B79D913810781
+#endif // FOO_BAR_4766946BCBD2856779E116BA77A8F4CDD559BB60
 

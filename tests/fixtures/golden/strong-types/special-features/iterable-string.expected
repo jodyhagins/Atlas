@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_321CAF489B3468B2A191B3751796687693DBB13F
-#define FOO_BAR_321CAF489B3468B2A191B3751796687693DBB13F
+#ifndef FOO_BAR_64A9A04C520DA004C3E0BBD8F81E2A32E6F271FD
+#define FOO_BAR_64A9A04C520DA004C3E0BBD8F81E2A32E6F271FD
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -251,11 +251,6 @@ struct IterableStringType
     using atlas_value_type = std::string;
 
     constexpr explicit IterableStringType() = default;
-    constexpr IterableStringType(IterableStringType const &) = default;
-    constexpr IterableStringType(IterableStringType &&) = default;
-    constexpr IterableStringType & operator = (IterableStringType const &) = default;
-    constexpr IterableStringType & operator = (IterableStringType &&) = default;
-    constexpr ~IterableStringType() = default;
 
     template <
         typename... ArgTs,
@@ -318,5 +313,5 @@ struct IterableStringType
 };
 } // namespace test
 
-#endif // FOO_BAR_321CAF489B3468B2A191B3751796687693DBB13F
+#endif // FOO_BAR_64A9A04C520DA004C3E0BBD8F81E2A32E6F271FD
 

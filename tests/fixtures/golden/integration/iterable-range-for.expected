@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_39B3A0D34F80A5297A511ED8260451BB96D8883D
-#define FOO_BAR_39B3A0D34F80A5297A511ED8260451BB96D8883D
+#ifndef FOO_BAR_D42899DA6B2FED7CCD257597DE09A0D011942279
+#define FOO_BAR_D42899DA6B2FED7CCD257597DE09A0D011942279
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -252,11 +252,6 @@ struct RangeForString
     using atlas_value_type = std::string;
 
     constexpr explicit RangeForString() = default;
-    constexpr RangeForString(RangeForString const &) = default;
-    constexpr RangeForString(RangeForString &&) = default;
-    constexpr RangeForString & operator = (RangeForString const &) = default;
-    constexpr RangeForString & operator = (RangeForString &&) = default;
-    constexpr ~RangeForString() = default;
 
     template <
         typename... ArgTs,
@@ -320,5 +315,5 @@ struct RangeForString
 } // namespace integration
 } // namespace test
 
-#endif // FOO_BAR_39B3A0D34F80A5297A511ED8260451BB96D8883D
+#endif // FOO_BAR_D42899DA6B2FED7CCD257597DE09A0D011942279
 

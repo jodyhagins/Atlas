@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_8B95CDBA890E4CE019420696B7D5A4A171FD03C8
-#define FOO_BAR_8B95CDBA890E4CE019420696B7D5A4A171FD03C8
+#ifndef FOO_BAR_5712238DC13DEC7AB767FF6F556262B8FB7D439E
+#define FOO_BAR_5712238DC13DEC7AB767FF6F556262B8FB7D439E
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -250,11 +250,6 @@ struct ModuloType
     using atlas_value_type = int;
 
     constexpr explicit ModuloType() = default;
-    constexpr ModuloType(ModuloType const &) = default;
-    constexpr ModuloType(ModuloType &&) = default;
-    constexpr ModuloType & operator = (ModuloType const &) = default;
-    constexpr ModuloType & operator = (ModuloType &&) = default;
-    constexpr ~ModuloType() = default;
 
     template <
         typename... ArgTs,
@@ -303,5 +298,5 @@ struct ModuloType
 };
 } // namespace test
 
-#endif // FOO_BAR_8B95CDBA890E4CE019420696B7D5A4A171FD03C8
+#endif // FOO_BAR_5712238DC13DEC7AB767FF6F556262B8FB7D439E
 

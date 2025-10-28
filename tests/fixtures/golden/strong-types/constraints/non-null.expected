@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_699DB570377DD55B44B62EB18F1B8774CC28DB35
-#define FOO_BAR_699DB570377DD55B44B62EB18F1B8774CC28DB35
+#ifndef FOO_BAR_96EDBA659949FC4A26FB4CCD188DF77E62C90DE1
+#define FOO_BAR_96EDBA659949FC4A26FB4CCD188DF77E62C90DE1
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -595,11 +595,6 @@ struct Handle
     using atlas_constraint = atlas::constraints::non_null<void*>;
 
     Handle() = delete;
-    constexpr Handle(Handle const &) = default;
-    constexpr Handle(Handle &&) = default;
-    constexpr Handle & operator = (Handle const &) = default;
-    constexpr Handle & operator = (Handle &&) = default;
-    constexpr ~Handle() = default;
 
     template <
         typename... ArgTs,
@@ -669,11 +664,6 @@ struct DataPointer
     using atlas_constraint = atlas::constraints::non_null<int*>;
 
     DataPointer() = delete;
-    constexpr DataPointer(DataPointer const &) = default;
-    constexpr DataPointer(DataPointer &&) = default;
-    constexpr DataPointer & operator = (DataPointer const &) = default;
-    constexpr DataPointer & operator = (DataPointer &&) = default;
-    constexpr ~DataPointer() = default;
 
     template <
         typename... ArgTs,
@@ -773,11 +763,6 @@ struct UniquePointer
     using atlas_constraint = atlas::constraints::non_null<std::unique_ptr<int>>;
 
     UniquePointer() = delete;
-    UniquePointer(UniquePointer const &) = default;
-    UniquePointer(UniquePointer &&) = default;
-    UniquePointer & operator = (UniquePointer const &) = default;
-    UniquePointer & operator = (UniquePointer &&) = default;
-    ~UniquePointer() = default;
 
     template <
         typename... ArgTs,
@@ -877,11 +862,6 @@ struct SharedPointer
     using atlas_constraint = atlas::constraints::non_null<std::shared_ptr<int>>;
 
     SharedPointer() = delete;
-    SharedPointer(SharedPointer const &) = default;
-    SharedPointer(SharedPointer &&) = default;
-    SharedPointer & operator = (SharedPointer const &) = default;
-    SharedPointer & operator = (SharedPointer &&) = default;
-    ~SharedPointer() = default;
 
     template <
         typename... ArgTs,
@@ -981,11 +961,6 @@ struct Optional
     using atlas_constraint = atlas::constraints::non_null<std::optional<int>>;
 
     Optional() = delete;
-    Optional(Optional const &) = default;
-    Optional(Optional &&) = default;
-    Optional & operator = (Optional const &) = default;
-    Optional & operator = (Optional &&) = default;
-    ~Optional() = default;
 
     template <
         typename... ArgTs,
@@ -1062,5 +1037,5 @@ struct Optional
 };
 } // namespace data
 
-#endif // FOO_BAR_699DB570377DD55B44B62EB18F1B8774CC28DB35
+#endif // FOO_BAR_96EDBA659949FC4A26FB4CCD188DF77E62C90DE1
 

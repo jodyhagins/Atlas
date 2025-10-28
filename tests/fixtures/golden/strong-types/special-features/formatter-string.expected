@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_29ABE9414E6CC7FF7DFE2BB3AB4D6D32D6DC0F51
-#define FOO_BAR_29ABE9414E6CC7FF7DFE2BB3AB4D6D32D6DC0F51
+#ifndef FOO_BAR_175191CD8BD1CDB86305FAF250D2645CC3E079D7
+#define FOO_BAR_175191CD8BD1CDB86305FAF250D2645CC3E079D7
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -254,11 +254,6 @@ struct FormatterStringType
     using atlas_value_type = std::string;
 
     constexpr explicit FormatterStringType() = default;
-    constexpr FormatterStringType(FormatterStringType const &) = default;
-    constexpr FormatterStringType(FormatterStringType &&) = default;
-    constexpr FormatterStringType & operator = (FormatterStringType const &) = default;
-    constexpr FormatterStringType & operator = (FormatterStringType &&) = default;
-    constexpr ~FormatterStringType() = default;
 
     template <
         typename... ArgTs,
@@ -299,5 +294,5 @@ struct std::formatter<test::FormatterStringType> : std::formatter<std::string>
     }
 };
 #endif // defined(__cpp_lib_format) && __cpp_lib_format >= 202110L
-#endif // FOO_BAR_29ABE9414E6CC7FF7DFE2BB3AB4D6D32D6DC0F51
+#endif // FOO_BAR_175191CD8BD1CDB86305FAF250D2645CC3E079D7
 

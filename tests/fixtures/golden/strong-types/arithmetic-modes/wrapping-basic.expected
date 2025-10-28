@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_B5E917C380AD6D1E67B0210CB81AD57AC678DF83
-#define FOO_BAR_B5E917C380AD6D1E67B0210CB81AD57AC678DF83
+#ifndef FOO_BAR_A994988C389D70E8E61B029FA38C7310D57EDF45
+#define FOO_BAR_A994988C389D70E8E61B029FA38C7310D57EDF45
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -250,11 +250,6 @@ struct WrappingHash
     using atlas_value_type = uint32_t;
 
     constexpr explicit WrappingHash() = default;
-    constexpr WrappingHash(WrappingHash const &) = default;
-    constexpr WrappingHash(WrappingHash &&) = default;
-    constexpr WrappingHash & operator = (WrappingHash const &) = default;
-    constexpr WrappingHash & operator = (WrappingHash &&) = default;
-    constexpr ~WrappingHash() = default;
 
     template <
         typename... ArgTs,
@@ -336,5 +331,5 @@ struct WrappingHash
 };
 } // namespace test
 
-#endif // FOO_BAR_B5E917C380AD6D1E67B0210CB81AD57AC678DF83
+#endif // FOO_BAR_A994988C389D70E8E61B029FA38C7310D57EDF45
 

@@ -161,14 +161,12 @@ auto strong_template = R"(
 {{>constant_declarations}}
 {{/constants}}
 
-{{#delete_default_constructor}}    {{{class_name}}}() = delete;
-{{/delete_default_constructor}}{{^delete_default_constructor}}    {{{const_expr}}}explicit {{{class_name}}}() = default;
+{{#delete_default_constructor}}
+    {{{class_name}}}() = delete;
 {{/delete_default_constructor}}
-    {{{const_expr}}}{{{class_name}}}({{{class_name}}} const &) = default;
-    {{{const_expr}}}{{{class_name}}}({{{class_name}}} &&) = default;
-    {{{const_expr}}}{{{class_name}}} & operator = ({{{class_name}}} const &) = default;
-    {{{const_expr}}}{{{class_name}}} & operator = ({{{class_name}}} &&) = default;
-    {{{const_expr}}}~{{{class_name}}}() = default;
+{{^delete_default_constructor}}
+    {{{const_expr}}}explicit {{{class_name}}}() = default;
+{{/delete_default_constructor}}
 
     template <
         typename... ArgTs,

@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_0CD05C430BAFE9469D478E77FABC60AF857F123B
-#define FOO_BAR_0CD05C430BAFE9469D478E77FABC60AF857F123B
+#ifndef FOO_BAR_15607843EC9ACC03BC8CB5C0CFB15C9EB45B3311
+#define FOO_BAR_15607843EC9ACC03BC8CB5C0CFB15C9EB45B3311
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -252,11 +252,6 @@ struct ProfileDeduplicationType
     using atlas_value_type = int;
 
     constexpr explicit ProfileDeduplicationType() = default;
-    constexpr ProfileDeduplicationType(ProfileDeduplicationType const &) = default;
-    constexpr ProfileDeduplicationType(ProfileDeduplicationType &&) = default;
-    constexpr ProfileDeduplicationType & operator = (ProfileDeduplicationType const &) = default;
-    constexpr ProfileDeduplicationType & operator = (ProfileDeduplicationType &&) = default;
-    constexpr ~ProfileDeduplicationType() = default;
 
     template <
         typename... ArgTs,
@@ -336,5 +331,5 @@ struct std::hash<test::profiles::ProfileDeduplicationType>
             static_cast<int const &>(t));
     }
 };
-#endif // FOO_BAR_0CD05C430BAFE9469D478E77FABC60AF857F123B
+#endif // FOO_BAR_15607843EC9ACC03BC8CB5C0CFB15C9EB45B3311
 

@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_328ACCBDE86C5DEB317A229F293AB301111C8C6C
-#define FOO_BAR_328ACCBDE86C5DEB317A229F293AB301111C8C6C
+#ifndef FOO_BAR_471D62008C4C7A46A9E875D38D66BDE51CAD5838
+#define FOO_BAR_471D62008C4C7A46A9E875D38D66BDE51CAD5838
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -252,11 +252,6 @@ struct HashMapKey
     using atlas_value_type = int;
 
     constexpr explicit HashMapKey() = default;
-    constexpr HashMapKey(HashMapKey const &) = default;
-    constexpr HashMapKey(HashMapKey &&) = default;
-    constexpr HashMapKey & operator = (HashMapKey const &) = default;
-    constexpr HashMapKey & operator = (HashMapKey &&) = default;
-    constexpr ~HashMapKey() = default;
 
     template <
         typename... ArgTs,
@@ -306,5 +301,5 @@ struct std::hash<test::integration::HashMapKey>
             static_cast<int const &>(t));
     }
 };
-#endif // FOO_BAR_328ACCBDE86C5DEB317A229F293AB301111C8C6C
+#endif // FOO_BAR_471D62008C4C7A46A9E875D38D66BDE51CAD5838
 

@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_B04ADAE124FB8A11C66BD6EE7394F266A6A421C8
-#define FOO_BAR_B04ADAE124FB8A11C66BD6EE7394F266A6A421C8
+#ifndef FOO_BAR_F048B14DC4BC7FC4E7979DF057DDC5D0065B45B2
+#define FOO_BAR_F048B14DC4BC7FC4E7979DF057DDC5D0065B45B2
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -312,11 +312,6 @@ struct ComplexTemplateType
     using atlas_value_type = std::vector<std::pair<int, std::string>>;
 
     constexpr explicit ComplexTemplateType() = default;
-    constexpr ComplexTemplateType(ComplexTemplateType const &) = default;
-    constexpr ComplexTemplateType(ComplexTemplateType &&) = default;
-    constexpr ComplexTemplateType & operator = (ComplexTemplateType const &) = default;
-    constexpr ComplexTemplateType & operator = (ComplexTemplateType &&) = default;
-    constexpr ~ComplexTemplateType() = default;
 
     template <
         typename... ArgTs,
@@ -410,5 +405,5 @@ struct ComplexTemplateType
 } // namespace edge_cases
 } // namespace test
 
-#endif // FOO_BAR_B04ADAE124FB8A11C66BD6EE7394F266A6A421C8
+#endif // FOO_BAR_F048B14DC4BC7FC4E7979DF057DDC5D0065B45B2
 

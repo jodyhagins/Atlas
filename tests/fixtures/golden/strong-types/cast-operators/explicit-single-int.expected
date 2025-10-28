@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_46380F8CCC13359CDE2D360F1A760C3D3E52B9E9
-#define FOO_BAR_46380F8CCC13359CDE2D360F1A760C3D3E52B9E9
+#ifndef FOO_BAR_01EA3CA747C6DC527656BD162284A14863F09788
+#define FOO_BAR_01EA3CA747C6DC527656BD162284A14863F09788
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -250,11 +250,6 @@ struct ExplicitIntType
     using atlas_value_type = double;
 
     constexpr explicit ExplicitIntType() = default;
-    constexpr ExplicitIntType(ExplicitIntType const &) = default;
-    constexpr ExplicitIntType(ExplicitIntType &&) = default;
-    constexpr ExplicitIntType & operator = (ExplicitIntType const &) = default;
-    constexpr ExplicitIntType & operator = (ExplicitIntType &&) = default;
-    constexpr ~ExplicitIntType() = default;
 
     template <
         typename... ArgTs,
@@ -283,5 +278,5 @@ struct ExplicitIntType
 };
 } // namespace test
 
-#endif // FOO_BAR_46380F8CCC13359CDE2D360F1A760C3D3E52B9E9
+#endif // FOO_BAR_01EA3CA747C6DC527656BD162284A14863F09788
 

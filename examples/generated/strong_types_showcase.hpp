@@ -1,5 +1,5 @@
-#ifndef EXAMPLE_DFF719F56EAABCC3D8D523E2BB55DE14FD8EF3D1
-#define EXAMPLE_DFF719F56EAABCC3D8D523E2BB55DE14FD8EF3D1
+#ifndef EXAMPLE_80661E8475FE080CD634A296BD33EF55B5E24304
+#define EXAMPLE_80661E8475FE080CD634A296BD33EF55B5E24304
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -359,11 +359,6 @@ struct Price
     using atlas_value_type = double;
 
     constexpr explicit Price() = default;
-    constexpr Price(Price const &) = default;
-    constexpr Price(Price &&) = default;
-    constexpr Price & operator = (Price const &) = default;
-    constexpr Price & operator = (Price &&) = default;
-    constexpr ~Price() = default;
 
     template <
         typename... ArgTs,
@@ -611,11 +606,6 @@ struct Quantity
     using atlas_value_type = int;
 
     constexpr explicit Quantity() = default;
-    constexpr Quantity(Quantity const &) = default;
-    constexpr Quantity(Quantity &&) = default;
-    constexpr Quantity & operator = (Quantity const &) = default;
-    constexpr Quantity & operator = (Quantity &&) = default;
-    constexpr ~Quantity() = default;
 
     template <
         typename... ArgTs,
@@ -819,11 +809,6 @@ struct Identifier
     using atlas_value_type = std::string;
 
     constexpr explicit Identifier() = default;
-    constexpr Identifier(Identifier const &) = default;
-    constexpr Identifier(Identifier &&) = default;
-    constexpr Identifier & operator = (Identifier const &) = default;
-    constexpr Identifier & operator = (Identifier &&) = default;
-    constexpr ~Identifier() = default;
 
     template <
         typename... ArgTs,
@@ -927,11 +912,6 @@ struct Money
     using atlas_value_type = double;
 
     constexpr explicit Money() = default;
-    constexpr Money(Money const &) = default;
-    constexpr Money(Money &&) = default;
-    constexpr Money & operator = (Money const &) = default;
-    constexpr Money & operator = (Money &&) = default;
-    constexpr ~Money() = default;
 
     template <
         typename... ArgTs,
@@ -1210,11 +1190,6 @@ public:
     using atlas_value_type = unsigned long;
 
     constexpr explicit UserId() = default;
-    constexpr UserId(UserId const &) = default;
-    constexpr UserId(UserId &&) = default;
-    constexpr UserId & operator = (UserId const &) = default;
-    constexpr UserId & operator = (UserId &&) = default;
-    constexpr ~UserId() = default;
 
     template <
         typename... ArgTs,
@@ -1359,11 +1334,6 @@ struct Meters
     using atlas_value_type = double;
 
     constexpr explicit Meters() = default;
-    constexpr Meters(Meters const &) = default;
-    constexpr Meters(Meters &&) = default;
-    constexpr Meters & operator = (Meters const &) = default;
-    constexpr Meters & operator = (Meters &&) = default;
-    constexpr ~Meters() = default;
 
     template <
         typename... ArgTs,
@@ -1624,11 +1594,6 @@ struct Seconds
     using atlas_value_type = double;
 
     constexpr explicit Seconds() = default;
-    constexpr Seconds(Seconds const &) = default;
-    constexpr Seconds(Seconds &&) = default;
-    constexpr Seconds & operator = (Seconds const &) = default;
-    constexpr Seconds & operator = (Seconds &&) = default;
-    constexpr ~Seconds() = default;
 
     template <
         typename... ArgTs,
@@ -1889,11 +1854,6 @@ struct MetersPerSecond
     using atlas_value_type = double;
 
     constexpr explicit MetersPerSecond() = default;
-    constexpr MetersPerSecond(MetersPerSecond const &) = default;
-    constexpr MetersPerSecond(MetersPerSecond &&) = default;
-    constexpr MetersPerSecond & operator = (MetersPerSecond const &) = default;
-    constexpr MetersPerSecond & operator = (MetersPerSecond &&) = default;
-    constexpr ~MetersPerSecond() = default;
 
     template <
         typename... ArgTs,
@@ -2153,11 +2113,6 @@ struct ByteCount
     using atlas_value_type = size_t;
 
     constexpr explicit ByteCount() = default;
-    constexpr ByteCount(ByteCount const &) = default;
-    constexpr ByteCount(ByteCount &&) = default;
-    constexpr ByteCount & operator = (ByteCount const &) = default;
-    constexpr ByteCount & operator = (ByteCount &&) = default;
-    constexpr ~ByteCount() = default;
 
     template <
         typename... ArgTs,
@@ -2493,11 +2448,6 @@ struct RedChannel
     using atlas_value_type = uint8_t;
 
     constexpr explicit RedChannel() = default;
-    constexpr RedChannel(RedChannel const &) = default;
-    constexpr RedChannel(RedChannel &&) = default;
-    constexpr RedChannel & operator = (RedChannel const &) = default;
-    constexpr RedChannel & operator = (RedChannel &&) = default;
-    constexpr ~RedChannel() = default;
 
     template <
         typename... ArgTs,
@@ -2848,11 +2798,6 @@ public:
     using atlas_value_type = std::string;
 
     constexpr explicit EncryptedData() = default;
-    constexpr EncryptedData(EncryptedData const &) = default;
-    constexpr EncryptedData(EncryptedData &&) = default;
-    constexpr EncryptedData & operator = (EncryptedData const &) = default;
-    constexpr EncryptedData & operator = (EncryptedData &&) = default;
-    constexpr ~EncryptedData() = default;
 
     template <
         typename... ArgTs,
@@ -2964,11 +2909,6 @@ struct Latitude
     using atlas_value_type = double;
 
     constexpr explicit Latitude() = default;
-    constexpr Latitude(Latitude const &) = default;
-    constexpr Latitude(Latitude &&) = default;
-    constexpr Latitude & operator = (Latitude const &) = default;
-    constexpr Latitude & operator = (Latitude &&) = default;
-    constexpr ~Latitude() = default;
 
     template <
         typename... ArgTs,
@@ -3120,11 +3060,6 @@ struct Longitude
     using atlas_value_type = double;
 
     constexpr explicit Longitude() = default;
-    constexpr Longitude(Longitude const &) = default;
-    constexpr Longitude(Longitude &&) = default;
-    constexpr Longitude & operator = (Longitude const &) = default;
-    constexpr Longitude & operator = (Longitude &&) = default;
-    constexpr ~Longitude() = default;
 
     template <
         typename... ArgTs,
@@ -3276,11 +3211,6 @@ struct ThreadId
     using atlas_value_type = int;
 
     explicit ThreadId() = default;
-    ThreadId(ThreadId const &) = default;
-    ThreadId(ThreadId &&) = default;
-    ThreadId & operator = (ThreadId const &) = default;
-    ThreadId & operator = (ThreadId &&) = default;
-    ~ThreadId() = default;
 
     template <
         typename... ArgTs,
@@ -3393,11 +3323,6 @@ struct Numerator
     using atlas_value_type = long;
 
     constexpr explicit Numerator() = default;
-    constexpr Numerator(Numerator const &) = default;
-    constexpr Numerator(Numerator &&) = default;
-    constexpr Numerator & operator = (Numerator const &) = default;
-    constexpr Numerator & operator = (Numerator &&) = default;
-    constexpr ~Numerator() = default;
 
     template <
         typename... ArgTs,
@@ -3613,11 +3538,6 @@ struct Denominator
     using atlas_value_type = long;
 
     constexpr explicit Denominator() = default;
-    constexpr Denominator(Denominator const &) = default;
-    constexpr Denominator(Denominator &&) = default;
-    constexpr Denominator & operator = (Denominator const &) = default;
-    constexpr Denominator & operator = (Denominator &&) = default;
-    constexpr ~Denominator() = default;
 
     template <
         typename... ArgTs,
@@ -3803,11 +3723,6 @@ struct Octet
     using atlas_value_type = uint8_t;
 
     constexpr explicit Octet() = default;
-    constexpr Octet(Octet const &) = default;
-    constexpr Octet(Octet &&) = default;
-    constexpr Octet & operator = (Octet const &) = default;
-    constexpr Octet & operator = (Octet &&) = default;
-    constexpr ~Octet() = default;
 
     template <
         typename... ArgTs,
@@ -4038,11 +3953,6 @@ public:
     using atlas_value_type = std::string;
 
     constexpr explicit ConfigKey() = default;
-    constexpr ConfigKey(ConfigKey const &) = default;
-    constexpr ConfigKey(ConfigKey &&) = default;
-    constexpr ConfigKey & operator = (ConfigKey const &) = default;
-    constexpr ConfigKey & operator = (ConfigKey &&) = default;
-    constexpr ~ConfigKey() = default;
 
     template <
         typename... ArgTs,
@@ -4229,11 +4139,6 @@ struct IterableString
     using atlas_value_type = std::string;
 
     constexpr explicit IterableString() = default;
-    constexpr IterableString(IterableString const &) = default;
-    constexpr IterableString(IterableString &&) = default;
-    constexpr IterableString & operator = (IterableString const &) = default;
-    constexpr IterableString & operator = (IterableString &&) = default;
-    constexpr ~IterableString() = default;
 
     template <
         typename... ArgTs,
@@ -4340,11 +4245,6 @@ struct IntVector
     using atlas_value_type = std::vector<int>;
 
     constexpr explicit IntVector() = default;
-    constexpr IntVector(IntVector const &) = default;
-    constexpr IntVector(IntVector &&) = default;
-    constexpr IntVector & operator = (IntVector const &) = default;
-    constexpr IntVector & operator = (IntVector &&) = default;
-    constexpr ~IntVector() = default;
 
     template <
         typename... ArgTs,
@@ -4474,11 +4374,6 @@ public:
     using atlas_value_type = std::vector<uint8_t>;
 
     constexpr explicit DataBuffer() = default;
-    constexpr DataBuffer(DataBuffer const &) = default;
-    constexpr DataBuffer(DataBuffer &&) = default;
-    constexpr DataBuffer & operator = (DataBuffer const &) = default;
-    constexpr DataBuffer & operator = (DataBuffer &&) = default;
-    constexpr ~DataBuffer() = default;
 
     template <
         typename... ArgTs,
@@ -4637,11 +4532,6 @@ struct FormattedString
     using atlas_value_type = std::string;
 
     constexpr explicit FormattedString() = default;
-    constexpr FormattedString(FormattedString const &) = default;
-    constexpr FormattedString(FormattedString &&) = default;
-    constexpr FormattedString & operator = (FormattedString const &) = default;
-    constexpr FormattedString & operator = (FormattedString &&) = default;
-    constexpr ~FormattedString() = default;
 
     template <
         typename... ArgTs,
@@ -4755,11 +4645,6 @@ struct FormattedInt
     using atlas_value_type = int;
 
     constexpr explicit FormattedInt() = default;
-    constexpr FormattedInt(FormattedInt const &) = default;
-    constexpr FormattedInt(FormattedInt &&) = default;
-    constexpr FormattedInt & operator = (FormattedInt const &) = default;
-    constexpr FormattedInt & operator = (FormattedInt &&) = default;
-    constexpr ~FormattedInt() = default;
 
     template <
         typename... ArgTs,
@@ -4833,11 +4718,6 @@ struct AssignableString
     using atlas_value_type = std::string;
 
     constexpr explicit AssignableString() = default;
-    constexpr AssignableString(AssignableString const &) = default;
-    constexpr AssignableString(AssignableString &&) = default;
-    constexpr AssignableString & operator = (AssignableString const &) = default;
-    constexpr AssignableString & operator = (AssignableString &&) = default;
-    constexpr ~AssignableString() = default;
 
     template <
         typename... ArgTs,
@@ -4947,11 +4827,6 @@ struct AssignablePort
     using atlas_value_type = int;
 
     constexpr explicit AssignablePort() = default;
-    constexpr AssignablePort(AssignablePort const &) = default;
-    constexpr AssignablePort(AssignablePort &&) = default;
-    constexpr AssignablePort & operator = (AssignablePort const &) = default;
-    constexpr AssignablePort & operator = (AssignablePort &&) = default;
-    constexpr ~AssignablePort() = default;
 
     template <
         typename... ArgTs,
@@ -5051,11 +4926,6 @@ struct CastableString
     using atlas_value_type = std::string;
 
     constexpr explicit CastableString() = default;
-    constexpr CastableString(CastableString const &) = default;
-    constexpr CastableString(CastableString &&) = default;
-    constexpr CastableString & operator = (CastableString const &) = default;
-    constexpr CastableString & operator = (CastableString &&) = default;
-    constexpr ~CastableString() = default;
 
     template <
         typename... ArgTs,
@@ -5129,11 +4999,6 @@ public:
     using atlas_value_type = std::string;
 
     constexpr explicit ViewableText() = default;
-    constexpr ViewableText(ViewableText const &) = default;
-    constexpr ViewableText(ViewableText &&) = default;
-    constexpr ViewableText & operator = (ViewableText const &) = default;
-    constexpr ViewableText & operator = (ViewableText &&) = default;
-    constexpr ~ViewableText() = default;
 
     template <
         typename... ArgTs,
@@ -5205,11 +5070,6 @@ struct EnableFlag
     using atlas_value_type = int;
 
     constexpr explicit EnableFlag() = default;
-    constexpr EnableFlag(EnableFlag const &) = default;
-    constexpr EnableFlag(EnableFlag &&) = default;
-    constexpr EnableFlag & operator = (EnableFlag const &) = default;
-    constexpr EnableFlag & operator = (EnableFlag &&) = default;
-    constexpr ~EnableFlag() = default;
 
     template <
         typename... ArgTs,
@@ -5272,11 +5132,6 @@ struct Temperature
     using atlas_value_type = double;
 
     constexpr explicit Temperature() = default;
-    constexpr Temperature(Temperature const &) = default;
-    constexpr Temperature(Temperature &&) = default;
-    constexpr Temperature & operator = (Temperature const &) = default;
-    constexpr Temperature & operator = (Temperature &&) = default;
-    constexpr ~Temperature() = default;
 
     template <
         typename... ArgTs,
@@ -5460,11 +5315,6 @@ struct GlobalEventId
     using atlas_value_type = unsigned long;
 
     constexpr explicit GlobalEventId() = default;
-    constexpr GlobalEventId(GlobalEventId const &) = default;
-    constexpr GlobalEventId(GlobalEventId &&) = default;
-    constexpr GlobalEventId & operator = (GlobalEventId const &) = default;
-    constexpr GlobalEventId & operator = (GlobalEventId &&) = default;
-    constexpr ~GlobalEventId() = default;
 
     template <
         typename... ArgTs,
@@ -5556,11 +5406,6 @@ struct HttpStatusCode
     static const HttpStatusCode server_error;
 
     constexpr explicit HttpStatusCode() = default;
-    constexpr HttpStatusCode(HttpStatusCode const &) = default;
-    constexpr HttpStatusCode(HttpStatusCode &&) = default;
-    constexpr HttpStatusCode & operator = (HttpStatusCode const &) = default;
-    constexpr HttpStatusCode & operator = (HttpStatusCode &&) = default;
-    constexpr ~HttpStatusCode() = default;
 
     template <
         typename... ArgTs,
@@ -5704,11 +5549,6 @@ struct Priority
     static const Priority medium;
 
     constexpr explicit Priority() = default;
-    constexpr Priority(Priority const &) = default;
-    constexpr Priority(Priority &&) = default;
-    constexpr Priority & operator = (Priority const &) = default;
-    constexpr Priority & operator = (Priority &&) = default;
-    constexpr ~Priority() = default;
 
     template <
         typename... ArgTs,
@@ -5825,11 +5665,6 @@ struct RequestCount
     using atlas_value_type = unsigned int;
 
     constexpr explicit RequestCount() = default;
-    constexpr RequestCount(RequestCount const &) = default;
-    constexpr RequestCount(RequestCount &&) = default;
-    constexpr RequestCount & operator = (RequestCount const &) = default;
-    constexpr RequestCount & operator = (RequestCount &&) = default;
-    constexpr ~RequestCount() = default;
 
     template <
         typename... ArgTs,
@@ -6003,11 +5838,6 @@ struct SessionTimeout
     using atlas_value_type = std::chrono::seconds;
 
     constexpr explicit SessionTimeout() = default;
-    constexpr SessionTimeout(SessionTimeout const &) = default;
-    constexpr SessionTimeout(SessionTimeout &&) = default;
-    constexpr SessionTimeout & operator = (SessionTimeout const &) = default;
-    constexpr SessionTimeout & operator = (SessionTimeout &&) = default;
-    constexpr ~SessionTimeout() = default;
 
     template <
         typename... ArgTs,
@@ -6133,11 +5963,6 @@ struct SafeString
     using atlas_value_type = std::string;
 
     constexpr explicit SafeString() = default;
-    constexpr SafeString(SafeString const &) = default;
-    constexpr SafeString(SafeString &&) = default;
-    constexpr SafeString & operator = (SafeString const &) = default;
-    constexpr SafeString & operator = (SafeString &&) = default;
-    constexpr ~SafeString() = default;
 
     template <
         typename... ArgTs,
@@ -6377,11 +6202,6 @@ struct DistanceValue
     using atlas_value_type = double;
 
     constexpr explicit DistanceValue() = default;
-    constexpr DistanceValue(DistanceValue const &) = default;
-    constexpr DistanceValue(DistanceValue &&) = default;
-    constexpr DistanceValue & operator = (DistanceValue const &) = default;
-    constexpr DistanceValue & operator = (DistanceValue &&) = default;
-    constexpr ~DistanceValue() = default;
 
     template <
         typename... ArgTs,
@@ -6679,11 +6499,6 @@ struct ImmutableConfig
     using atlas_value_type = std::map<std::string, std::string>;
 
     constexpr explicit ImmutableConfig() = default;
-    constexpr ImmutableConfig(ImmutableConfig const &) = default;
-    constexpr ImmutableConfig(ImmutableConfig &&) = default;
-    constexpr ImmutableConfig & operator = (ImmutableConfig const &) = default;
-    constexpr ImmutableConfig & operator = (ImmutableConfig &&) = default;
-    constexpr ~ImmutableConfig() = default;
 
     template <
         typename... ArgTs,
@@ -6821,11 +6636,6 @@ struct TaskQueue
     using atlas_value_type = std::deque<std::string>;
 
     constexpr explicit TaskQueue() = default;
-    constexpr TaskQueue(TaskQueue const &) = default;
-    constexpr TaskQueue(TaskQueue &&) = default;
-    constexpr TaskQueue & operator = (TaskQueue const &) = default;
-    constexpr TaskQueue & operator = (TaskQueue &&) = default;
-    constexpr ~TaskQueue() = default;
 
     template <
         typename... ArgTs,
@@ -7131,11 +6941,6 @@ struct ResourceHandle
     using atlas_value_type = std::unique_ptr<int>;
 
     constexpr explicit ResourceHandle() = default;
-    constexpr ResourceHandle(ResourceHandle const &) = default;
-    constexpr ResourceHandle(ResourceHandle &&) = default;
-    constexpr ResourceHandle & operator = (ResourceHandle const &) = default;
-    constexpr ResourceHandle & operator = (ResourceHandle &&) = default;
-    constexpr ~ResourceHandle() = default;
 
     template <
         typename... ArgTs,
@@ -7352,11 +7157,6 @@ struct ManagedString
     using atlas_value_type = std::string;
 
     constexpr explicit ManagedString() = default;
-    constexpr ManagedString(ManagedString const &) = default;
-    constexpr ManagedString(ManagedString &&) = default;
-    constexpr ManagedString & operator = (ManagedString const &) = default;
-    constexpr ManagedString & operator = (ManagedString &&) = default;
-    constexpr ~ManagedString() = default;
 
     template <
         typename... ArgTs,
@@ -7625,4 +7425,4 @@ struct std::hash<demo::forwarding::ManagedString>
             static_cast<std::string const &>(t));
     }
 };
-#endif // EXAMPLE_DFF719F56EAABCC3D8D523E2BB55DE14FD8EF3D1
+#endif // EXAMPLE_80661E8475FE080CD634A296BD33EF55B5E24304

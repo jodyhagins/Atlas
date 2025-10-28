@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_862B136836CA8B7AD2CFF6569CFEB395D6EAC02B
-#define FOO_BAR_862B136836CA8B7AD2CFF6569CFEB395D6EAC02B
+#ifndef FOO_BAR_B7300DDAA1A945FCE837A6C96E712BC85A6BEA4E
+#define FOO_BAR_B7300DDAA1A945FCE837A6C96E712BC85A6BEA4E
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -680,11 +680,6 @@ struct SaturatingByte
     using atlas_value_type = uint8_t;
 
     constexpr explicit SaturatingByte() = default;
-    constexpr SaturatingByte(SaturatingByte const &) = default;
-    constexpr SaturatingByte(SaturatingByte &&) = default;
-    constexpr SaturatingByte & operator = (SaturatingByte const &) = default;
-    constexpr SaturatingByte & operator = (SaturatingByte &&) = default;
-    constexpr ~SaturatingByte() = default;
 
     template <
         typename... ArgTs,
@@ -729,5 +724,5 @@ struct SaturatingByte
 };
 } // namespace test
 
-#endif // FOO_BAR_862B136836CA8B7AD2CFF6569CFEB395D6EAC02B
+#endif // FOO_BAR_B7300DDAA1A945FCE837A6C96E712BC85A6BEA4E
 

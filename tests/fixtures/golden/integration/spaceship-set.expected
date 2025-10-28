@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_4987844E6C963A8CFF8218672DD3E817513D3046
-#define FOO_BAR_4987844E6C963A8CFF8218672DD3E817513D3046
+#ifndef FOO_BAR_9114DF065FEC1EC2D7AA0D500AF80632CB9A753A
+#define FOO_BAR_9114DF065FEC1EC2D7AA0D500AF80632CB9A753A
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -251,11 +251,6 @@ struct OrderedSetInt
     using atlas_value_type = int;
 
     constexpr explicit OrderedSetInt() = default;
-    constexpr OrderedSetInt(OrderedSetInt const &) = default;
-    constexpr OrderedSetInt(OrderedSetInt &&) = default;
-    constexpr OrderedSetInt & operator = (OrderedSetInt const &) = default;
-    constexpr OrderedSetInt & operator = (OrderedSetInt &&) = default;
-    constexpr ~OrderedSetInt() = default;
 
     template <
         typename... ArgTs,
@@ -358,5 +353,5 @@ struct OrderedSetInt
 } // namespace integration
 } // namespace test
 
-#endif // FOO_BAR_4987844E6C963A8CFF8218672DD3E817513D3046
+#endif // FOO_BAR_9114DF065FEC1EC2D7AA0D500AF80632CB9A753A
 

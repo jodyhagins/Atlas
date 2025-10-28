@@ -1,5 +1,5 @@
-#ifndef TEST_OPTIONAL_KIND_7937F8A13E8F843E88145B49817249E95B808A62
-#define TEST_OPTIONAL_KIND_7937F8A13E8F843E88145B49817249E95B808A62
+#ifndef TEST_OPTIONAL_KIND_9EC4D1FF0F8AEC471F0E387671E5E12382934572
+#define TEST_OPTIONAL_KIND_9EC4D1FF0F8AEC471F0E387671E5E12382934572
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -252,11 +252,6 @@ struct ExplicitStruct
     using atlas_value_type = int;
 
     constexpr explicit ExplicitStruct() = default;
-    constexpr ExplicitStruct(ExplicitStruct const &) = default;
-    constexpr ExplicitStruct(ExplicitStruct &&) = default;
-    constexpr ExplicitStruct & operator = (ExplicitStruct const &) = default;
-    constexpr ExplicitStruct & operator = (ExplicitStruct &&) = default;
-    constexpr ~ExplicitStruct() = default;
 
     template <
         typename... ArgTs,
@@ -357,11 +352,6 @@ struct DefaultStruct
     using atlas_value_type = double;
 
     constexpr explicit DefaultStruct() = default;
-    constexpr DefaultStruct(DefaultStruct const &) = default;
-    constexpr DefaultStruct(DefaultStruct &&) = default;
-    constexpr DefaultStruct & operator = (DefaultStruct const &) = default;
-    constexpr DefaultStruct & operator = (DefaultStruct &&) = default;
-    constexpr ~DefaultStruct() = default;
 
     template <
         typename... ArgTs,
@@ -523,11 +513,6 @@ public:
     using atlas_value_type = unsigned int;
 
     constexpr explicit ExplicitClass() = default;
-    constexpr ExplicitClass(ExplicitClass const &) = default;
-    constexpr ExplicitClass(ExplicitClass &&) = default;
-    constexpr ExplicitClass & operator = (ExplicitClass const &) = default;
-    constexpr ExplicitClass & operator = (ExplicitClass &&) = default;
-    constexpr ~ExplicitClass() = default;
 
     template <
         typename... ArgTs,
@@ -651,11 +636,6 @@ struct DefaultStructComplex
     using atlas_value_type = std::string;
 
     constexpr explicit DefaultStructComplex() = default;
-    constexpr DefaultStructComplex(DefaultStructComplex const &) = default;
-    constexpr DefaultStructComplex(DefaultStructComplex &&) = default;
-    constexpr DefaultStructComplex & operator = (DefaultStructComplex const &) = default;
-    constexpr DefaultStructComplex & operator = (DefaultStructComplex &&) = default;
-    constexpr ~DefaultStructComplex() = default;
 
     template <
         typename... ArgTs,
@@ -737,11 +717,6 @@ struct One
     using atlas_value_type = int;
 
     constexpr explicit One() = default;
-    constexpr One(One const &) = default;
-    constexpr One(One &&) = default;
-    constexpr One & operator = (One const &) = default;
-    constexpr One & operator = (One &&) = default;
-    constexpr ~One() = default;
 
     template <
         typename... ArgTs,
@@ -842,11 +817,6 @@ struct Two
     using atlas_value_type = double;
 
     constexpr explicit Two() = default;
-    constexpr Two(Two const &) = default;
-    constexpr Two(Two &&) = default;
-    constexpr Two & operator = (Two const &) = default;
-    constexpr Two & operator = (Two &&) = default;
-    constexpr ~Two() = default;
 
     template <
         typename... ArgTs,
@@ -918,11 +888,6 @@ public:
     using atlas_value_type = unsigned;
 
     constexpr explicit Three() = default;
-    constexpr Three(Three const &) = default;
-    constexpr Three(Three &&) = default;
-    constexpr Three & operator = (Three const &) = default;
-    constexpr Three & operator = (Three &&) = default;
-    constexpr ~Three() = default;
 
     template <
         typename... ArgTs,
@@ -952,5 +917,5 @@ public:
 };
 } // namespace mixed
 
-#endif // TEST_OPTIONAL_KIND_7937F8A13E8F843E88145B49817249E95B808A62
+#endif // TEST_OPTIONAL_KIND_9EC4D1FF0F8AEC471F0E387671E5E12382934572
 

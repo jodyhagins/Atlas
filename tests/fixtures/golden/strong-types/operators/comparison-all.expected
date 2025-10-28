@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_958B81DBC6F1185C00509C88992BEED7490CA7D8
-#define FOO_BAR_958B81DBC6F1185C00509C88992BEED7490CA7D8
+#ifndef FOO_BAR_D828D9724A97B7EA50503277E3279159B29C3818
+#define FOO_BAR_D828D9724A97B7EA50503277E3279159B29C3818
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -250,11 +250,6 @@ struct ComparisonAllType
     using atlas_value_type = int;
 
     constexpr explicit ComparisonAllType() = default;
-    constexpr ComparisonAllType(ComparisonAllType const &) = default;
-    constexpr ComparisonAllType(ComparisonAllType &&) = default;
-    constexpr ComparisonAllType & operator = (ComparisonAllType const &) = default;
-    constexpr ComparisonAllType & operator = (ComparisonAllType &&) = default;
-    constexpr ~ComparisonAllType() = default;
 
     template <
         typename... ArgTs,
@@ -400,5 +395,5 @@ struct ComparisonAllType
 };
 } // namespace test
 
-#endif // FOO_BAR_958B81DBC6F1185C00509C88992BEED7490CA7D8
+#endif // FOO_BAR_D828D9724A97B7EA50503277E3279159B29C3818
 

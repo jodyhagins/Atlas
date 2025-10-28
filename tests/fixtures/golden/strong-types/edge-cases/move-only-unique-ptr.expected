@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_0D6CB07C04E3868D365AE620A82E9BE7D35539E9
-#define FOO_BAR_0D6CB07C04E3868D365AE620A82E9BE7D35539E9
+#ifndef FOO_BAR_6F1A101F1CA25B160B736BDBD45D8DCE4DC8D803
+#define FOO_BAR_6F1A101F1CA25B160B736BDBD45D8DCE4DC8D803
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -312,11 +312,6 @@ struct MoveOnlyUniquePtr
     using atlas_value_type = std::unique_ptr<int>;
 
     constexpr explicit MoveOnlyUniquePtr() = default;
-    constexpr MoveOnlyUniquePtr(MoveOnlyUniquePtr const &) = default;
-    constexpr MoveOnlyUniquePtr(MoveOnlyUniquePtr &&) = default;
-    constexpr MoveOnlyUniquePtr & operator = (MoveOnlyUniquePtr const &) = default;
-    constexpr MoveOnlyUniquePtr & operator = (MoveOnlyUniquePtr &&) = default;
-    constexpr ~MoveOnlyUniquePtr() = default;
 
     template <
         typename... ArgTs,
@@ -377,5 +372,5 @@ struct MoveOnlyUniquePtr
 } // namespace edge_cases
 } // namespace test
 
-#endif // FOO_BAR_0D6CB07C04E3868D365AE620A82E9BE7D35539E9
+#endif // FOO_BAR_6F1A101F1CA25B160B736BDBD45D8DCE4DC8D803
 

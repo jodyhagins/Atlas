@@ -1,5 +1,5 @@
-#ifndef TEST_OPTIONAL_STRONG_A5E529EB6D3A2860CC9414D660D28E0DCF1CD9E1
-#define TEST_OPTIONAL_STRONG_A5E529EB6D3A2860CC9414D660D28E0DCF1CD9E1
+#ifndef TEST_OPTIONAL_STRONG_E122E533B3B59351A5812CC9F3A2DBFE2948FB60
+#define TEST_OPTIONAL_STRONG_E122E533B3B59351A5812CC9F3A2DBFE2948FB60
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -252,11 +252,6 @@ struct WithStrong
     using atlas_value_type = double;
 
     constexpr explicit WithStrong() = default;
-    constexpr WithStrong(WithStrong const &) = default;
-    constexpr WithStrong(WithStrong &&) = default;
-    constexpr WithStrong & operator = (WithStrong const &) = default;
-    constexpr WithStrong & operator = (WithStrong &&) = default;
-    constexpr ~WithStrong() = default;
 
     template <
         typename... ArgTs,
@@ -500,11 +495,6 @@ struct WithoutStrong
     using atlas_value_type = double;
 
     constexpr explicit WithoutStrong() = default;
-    constexpr WithoutStrong(WithoutStrong const &) = default;
-    constexpr WithoutStrong(WithoutStrong &&) = default;
-    constexpr WithoutStrong & operator = (WithoutStrong const &) = default;
-    constexpr WithoutStrong & operator = (WithoutStrong &&) = default;
-    constexpr ~WithoutStrong() = default;
 
     template <
         typename... ArgTs,
@@ -748,11 +738,6 @@ struct ComplexWithStrong
     using atlas_value_type = std::vector<int>;
 
     constexpr explicit ComplexWithStrong() = default;
-    constexpr ComplexWithStrong(ComplexWithStrong const &) = default;
-    constexpr ComplexWithStrong(ComplexWithStrong &&) = default;
-    constexpr ComplexWithStrong & operator = (ComplexWithStrong const &) = default;
-    constexpr ComplexWithStrong & operator = (ComplexWithStrong &&) = default;
-    constexpr ~ComplexWithStrong() = default;
 
     template <
         typename... ArgTs,
@@ -892,11 +877,6 @@ struct ComplexWithoutStrong
     using atlas_value_type = std::vector<int>;
 
     constexpr explicit ComplexWithoutStrong() = default;
-    constexpr ComplexWithoutStrong(ComplexWithoutStrong const &) = default;
-    constexpr ComplexWithoutStrong(ComplexWithoutStrong &&) = default;
-    constexpr ComplexWithoutStrong & operator = (ComplexWithoutStrong const &) = default;
-    constexpr ComplexWithoutStrong & operator = (ComplexWithoutStrong &&) = default;
-    constexpr ~ComplexWithoutStrong() = default;
 
     template <
         typename... ArgTs,
@@ -1036,11 +1016,6 @@ struct InlineNsWithStrong
     using atlas_value_type = geo::Point;
 
     constexpr explicit InlineNsWithStrong() = default;
-    constexpr InlineNsWithStrong(InlineNsWithStrong const &) = default;
-    constexpr InlineNsWithStrong(InlineNsWithStrong &&) = default;
-    constexpr InlineNsWithStrong & operator = (InlineNsWithStrong const &) = default;
-    constexpr InlineNsWithStrong & operator = (InlineNsWithStrong &&) = default;
-    constexpr ~InlineNsWithStrong() = default;
 
     template <
         typename... ArgTs,
@@ -1103,11 +1078,6 @@ struct InlineNsWithoutStrong
     using atlas_value_type = geo::Distance;
 
     constexpr explicit InlineNsWithoutStrong() = default;
-    constexpr InlineNsWithoutStrong(InlineNsWithoutStrong const &) = default;
-    constexpr InlineNsWithoutStrong(InlineNsWithoutStrong &&) = default;
-    constexpr InlineNsWithoutStrong & operator = (InlineNsWithoutStrong const &) = default;
-    constexpr InlineNsWithoutStrong & operator = (InlineNsWithoutStrong &&) = default;
-    constexpr ~InlineNsWithoutStrong() = default;
 
     template <
         typename... ArgTs,
@@ -1170,11 +1140,6 @@ struct AllOpsStrong
     using atlas_value_type = int;
 
     constexpr explicit AllOpsStrong() = default;
-    constexpr AllOpsStrong(AllOpsStrong const &) = default;
-    constexpr AllOpsStrong(AllOpsStrong &&) = default;
-    constexpr AllOpsStrong & operator = (AllOpsStrong const &) = default;
-    constexpr AllOpsStrong & operator = (AllOpsStrong &&) = default;
-    constexpr ~AllOpsStrong() = default;
 
     template <
         typename... ArgTs,
@@ -1498,11 +1463,6 @@ struct AllOpsNoStrong
     using atlas_value_type = int;
 
     constexpr explicit AllOpsNoStrong() = default;
-    constexpr AllOpsNoStrong(AllOpsNoStrong const &) = default;
-    constexpr AllOpsNoStrong(AllOpsNoStrong &&) = default;
-    constexpr AllOpsNoStrong & operator = (AllOpsNoStrong const &) = default;
-    constexpr AllOpsNoStrong & operator = (AllOpsNoStrong &&) = default;
-    constexpr ~AllOpsNoStrong() = default;
 
     template <
         typename... ArgTs,
@@ -1804,5 +1764,5 @@ struct std::hash<test::AllOpsNoStrong>
             static_cast<int const &>(t));
     }
 };
-#endif // TEST_OPTIONAL_STRONG_A5E529EB6D3A2860CC9414D660D28E0DCF1CD9E1
+#endif // TEST_OPTIONAL_STRONG_E122E533B3B59351A5812CC9F3A2DBFE2948FB60
 

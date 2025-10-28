@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_60B2BC87C6C23B3DF47EE5E722B3066D26DD2A95
-#define FOO_BAR_60B2BC87C6C23B3DF47EE5E722B3066D26DD2A95
+#ifndef FOO_BAR_C143992440315550B8474085DF7DF2CF0025230A
+#define FOO_BAR_C143992440315550B8474085DF7DF2CF0025230A
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -250,11 +250,6 @@ struct IncrementOnlyType
     using atlas_value_type = int;
 
     constexpr explicit IncrementOnlyType() = default;
-    constexpr IncrementOnlyType(IncrementOnlyType const &) = default;
-    constexpr IncrementOnlyType(IncrementOnlyType &&) = default;
-    constexpr IncrementOnlyType & operator = (IncrementOnlyType const &) = default;
-    constexpr IncrementOnlyType & operator = (IncrementOnlyType &&) = default;
-    constexpr ~IncrementOnlyType() = default;
 
     template <
         typename... ArgTs,
@@ -297,5 +292,5 @@ struct IncrementOnlyType
 };
 } // namespace test
 
-#endif // FOO_BAR_60B2BC87C6C23B3DF47EE5E722B3066D26DD2A95
+#endif // FOO_BAR_C143992440315550B8474085DF7DF2CF0025230A
 

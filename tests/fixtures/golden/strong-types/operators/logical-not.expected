@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_107F748889AA808EC5194A778BE23D2F8253FC5F
-#define FOO_BAR_107F748889AA808EC5194A778BE23D2F8253FC5F
+#ifndef FOO_BAR_D3268B8AD16F64C2250F6B16647C004EE203E0FC
+#define FOO_BAR_D3268B8AD16F64C2250F6B16647C004EE203E0FC
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -250,11 +250,6 @@ struct LogicalNotType
     using atlas_value_type = int;
 
     constexpr explicit LogicalNotType() = default;
-    constexpr LogicalNotType(LogicalNotType const &) = default;
-    constexpr LogicalNotType(LogicalNotType &&) = default;
-    constexpr LogicalNotType & operator = (LogicalNotType const &) = default;
-    constexpr LogicalNotType & operator = (LogicalNotType &&) = default;
-    constexpr ~LogicalNotType() = default;
 
     template <
         typename... ArgTs,
@@ -282,5 +277,5 @@ struct LogicalNotType
 };
 } // namespace test
 
-#endif // FOO_BAR_107F748889AA808EC5194A778BE23D2F8253FC5F
+#endif // FOO_BAR_D3268B8AD16F64C2250F6B16647C004EE203E0FC
 

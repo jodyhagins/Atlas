@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_0EA6C2439DB41CB9936F6731CB14EAB9CD485B9C
-#define FOO_BAR_0EA6C2439DB41CB9936F6731CB14EAB9CD485B9C
+#ifndef FOO_BAR_ADEC2CF8534A1A4FFD8D36AFC130C3D8BDF940FC
+#define FOO_BAR_ADEC2CF8534A1A4FFD8D36AFC130C3D8BDF940FC
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -1403,11 +1403,6 @@ struct NonNegativeInt
     using atlas_constraint = atlas::constraints::non_negative<int>;
 
     constexpr explicit NonNegativeInt() = default;
-    constexpr NonNegativeInt(NonNegativeInt const &) = default;
-    constexpr NonNegativeInt(NonNegativeInt &&) = default;
-    constexpr NonNegativeInt & operator = (NonNegativeInt const &) = default;
-    constexpr NonNegativeInt & operator = (NonNegativeInt &&) = default;
-    constexpr ~NonNegativeInt() = default;
 
     template <
         typename... ArgTs,
@@ -1590,11 +1585,6 @@ struct NonNegativeChecked
     using atlas_constraint = atlas::constraints::non_negative<uint8_t>;
 
     constexpr explicit NonNegativeChecked() = default;
-    constexpr NonNegativeChecked(NonNegativeChecked const &) = default;
-    constexpr NonNegativeChecked(NonNegativeChecked &&) = default;
-    constexpr NonNegativeChecked & operator = (NonNegativeChecked const &) = default;
-    constexpr NonNegativeChecked & operator = (NonNegativeChecked &&) = default;
-    constexpr ~NonNegativeChecked() = default;
 
     template <
         typename... ArgTs,
@@ -1684,11 +1674,6 @@ struct NonNegativeSaturating
     using atlas_constraint = atlas::constraints::non_negative<uint8_t>;
 
     constexpr explicit NonNegativeSaturating() = default;
-    constexpr NonNegativeSaturating(NonNegativeSaturating const &) = default;
-    constexpr NonNegativeSaturating(NonNegativeSaturating &&) = default;
-    constexpr NonNegativeSaturating & operator = (NonNegativeSaturating const &) = default;
-    constexpr NonNegativeSaturating & operator = (NonNegativeSaturating &&) = default;
-    constexpr ~NonNegativeSaturating() = default;
 
     template <
         typename... ArgTs,
@@ -1745,5 +1730,5 @@ struct NonNegativeSaturating
 };
 } // namespace test
 
-#endif // FOO_BAR_0EA6C2439DB41CB9936F6731CB14EAB9CD485B9C
+#endif // FOO_BAR_ADEC2CF8534A1A4FFD8D36AFC130C3D8BDF940FC
 

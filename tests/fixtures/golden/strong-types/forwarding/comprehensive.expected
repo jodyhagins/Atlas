@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_C533AA9BC8905FA01603B87F05BA6E888BB807DF
-#define FOO_BAR_C533AA9BC8905FA01603B87F05BA6E888BB807DF
+#ifndef FOO_BAR_A463DE441DFFF6446AA3AC649148F7AA81663CFE
+#define FOO_BAR_A463DE441DFFF6446AA3AC649148F7AA81663CFE
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -347,11 +347,6 @@ struct BasicString
     using atlas_value_type = std::string;
 
     constexpr explicit BasicString() = default;
-    constexpr BasicString(BasicString const &) = default;
-    constexpr BasicString(BasicString &&) = default;
-    constexpr BasicString & operator = (BasicString const &) = default;
-    constexpr BasicString & operator = (BasicString &&) = default;
-    constexpr ~BasicString() = default;
 
     template <
         typename... ArgTs,
@@ -570,11 +565,6 @@ struct AliasedString
     using atlas_value_type = std::string;
 
     constexpr explicit AliasedString() = default;
-    constexpr AliasedString(AliasedString const &) = default;
-    constexpr AliasedString(AliasedString &&) = default;
-    constexpr AliasedString & operator = (AliasedString const &) = default;
-    constexpr AliasedString & operator = (AliasedString &&) = default;
-    constexpr ~AliasedString() = default;
 
     template <
         typename... ArgTs,
@@ -741,11 +731,6 @@ struct BothNameAndAlias
     using atlas_value_type = std::string;
 
     constexpr explicit BothNameAndAlias() = default;
-    constexpr BothNameAndAlias(BothNameAndAlias const &) = default;
-    constexpr BothNameAndAlias(BothNameAndAlias &&) = default;
-    constexpr BothNameAndAlias & operator = (BothNameAndAlias const &) = default;
-    constexpr BothNameAndAlias & operator = (BothNameAndAlias &&) = default;
-    constexpr ~BothNameAndAlias() = default;
 
     template <
         typename... ArgTs,
@@ -964,11 +949,6 @@ struct ConstOnly
     using atlas_value_type = std::string;
 
     constexpr explicit ConstOnly() = default;
-    constexpr ConstOnly(ConstOnly const &) = default;
-    constexpr ConstOnly(ConstOnly &&) = default;
-    constexpr ConstOnly & operator = (ConstOnly const &) = default;
-    constexpr ConstOnly & operator = (ConstOnly &&) = default;
-    constexpr ~ConstOnly() = default;
 
     template <
         typename... ArgTs,
@@ -1073,11 +1053,6 @@ struct MultipleLines
     using atlas_value_type = std::string;
 
     constexpr explicit MultipleLines() = default;
-    constexpr MultipleLines(MultipleLines const &) = default;
-    constexpr MultipleLines(MultipleLines &&) = default;
-    constexpr MultipleLines & operator = (MultipleLines const &) = default;
-    constexpr MultipleLines & operator = (MultipleLines &&) = default;
-    constexpr ~MultipleLines() = default;
 
     template <
         typename... ArgTs,
@@ -1296,11 +1271,6 @@ struct IntVector
     using atlas_value_type = std::vector<int>;
 
     constexpr explicit IntVector() = default;
-    constexpr IntVector(IntVector const &) = default;
-    constexpr IntVector(IntVector &&) = default;
-    constexpr IntVector & operator = (IntVector const &) = default;
-    constexpr IntVector & operator = (IntVector &&) = default;
-    constexpr ~IntVector() = default;
 
     template <
         typename... ArgTs,
@@ -1604,11 +1574,6 @@ struct ResourceHandle
     using atlas_value_type = std::unique_ptr<int>;
 
     constexpr explicit ResourceHandle() = default;
-    constexpr ResourceHandle(ResourceHandle const &) = default;
-    constexpr ResourceHandle(ResourceHandle &&) = default;
-    constexpr ResourceHandle & operator = (ResourceHandle const &) = default;
-    constexpr ResourceHandle & operator = (ResourceHandle &&) = default;
-    constexpr ~ResourceHandle() = default;
 
     template <
         typename... ArgTs,
@@ -1823,11 +1788,6 @@ struct AdvancedString
     using atlas_value_type = std::string;
 
     constexpr explicit AdvancedString() = default;
-    constexpr AdvancedString(AdvancedString const &) = default;
-    constexpr AdvancedString(AdvancedString &&) = default;
-    constexpr AdvancedString & operator = (AdvancedString const &) = default;
-    constexpr AdvancedString & operator = (AdvancedString &&) = default;
-    constexpr ~AdvancedString() = default;
 
     template <
         typename... ArgTs,
@@ -2003,11 +1963,6 @@ struct Username
     using atlas_value_type = std::string;
 
     constexpr explicit Username() = default;
-    constexpr Username(Username const &) = default;
-    constexpr Username(Username &&) = default;
-    constexpr Username & operator = (Username const &) = default;
-    constexpr Username & operator = (Username &&) = default;
-    constexpr ~Username() = default;
 
     template <
         typename... ArgTs,
@@ -2120,11 +2075,6 @@ struct EmailAddress
     using atlas_value_type = std::string;
 
     constexpr explicit EmailAddress() = default;
-    constexpr EmailAddress(EmailAddress const &) = default;
-    constexpr EmailAddress(EmailAddress &&) = default;
-    constexpr EmailAddress & operator = (EmailAddress const &) = default;
-    constexpr EmailAddress & operator = (EmailAddress &&) = default;
-    constexpr ~EmailAddress() = default;
 
     template <
         typename... ArgTs,
@@ -2237,11 +2187,6 @@ struct SafeString
     using atlas_value_type = std::string;
 
     constexpr explicit SafeString() = default;
-    constexpr SafeString(SafeString const &) = default;
-    constexpr SafeString(SafeString &&) = default;
-    constexpr SafeString & operator = (SafeString const &) = default;
-    constexpr SafeString & operator = (SafeString &&) = default;
-    constexpr ~SafeString() = default;
 
     template <
         typename... ArgTs,
@@ -2406,11 +2351,6 @@ struct Name
     using atlas_value_type = std::string;
 
     constexpr explicit Name() = default;
-    constexpr Name(Name const &) = default;
-    constexpr Name(Name &&) = default;
-    constexpr Name & operator = (Name const &) = default;
-    constexpr Name & operator = (Name &&) = default;
-    constexpr ~Name() = default;
 
     template <
         typename... ArgTs,
@@ -2627,11 +2567,6 @@ struct Label
     using atlas_value_type = std::string;
 
     constexpr explicit Label() = default;
-    constexpr Label(Label const &) = default;
-    constexpr Label(Label &&) = default;
-    constexpr Label & operator = (Label const &) = default;
-    constexpr Label & operator = (Label &&) = default;
-    constexpr ~Label() = default;
 
     template <
         typename... ArgTs,
@@ -2848,11 +2783,6 @@ struct UserId
     using atlas_value_type = std::string;
 
     constexpr explicit UserId() = default;
-    constexpr UserId(UserId const &) = default;
-    constexpr UserId(UserId &&) = default;
-    constexpr UserId & operator = (UserId const &) = default;
-    constexpr UserId & operator = (UserId &&) = default;
-    constexpr ~UserId() = default;
 
     template <
         typename... ArgTs,
@@ -2965,11 +2895,6 @@ struct Token
     using atlas_value_type = std::string;
 
     constexpr explicit Token() = default;
-    constexpr Token(Token const &) = default;
-    constexpr Token(Token &&) = default;
-    constexpr Token & operator = (Token const &) = default;
-    constexpr Token & operator = (Token &&) = default;
-    constexpr ~Token() = default;
 
     template <
         typename... ArgTs,
@@ -3186,11 +3111,6 @@ struct Path
     using atlas_value_type = std::string;
 
     constexpr explicit Path() = default;
-    constexpr Path(Path const &) = default;
-    constexpr Path(Path &&) = default;
-    constexpr Path & operator = (Path const &) = default;
-    constexpr Path & operator = (Path &&) = default;
-    constexpr ~Path() = default;
 
     template <
         typename... ArgTs,
@@ -3355,11 +3275,6 @@ struct Identifier
     using atlas_value_type = std::string;
 
     constexpr explicit Identifier() = default;
-    constexpr Identifier(Identifier const &) = default;
-    constexpr Identifier(Identifier &&) = default;
-    constexpr Identifier & operator = (Identifier const &) = default;
-    constexpr Identifier & operator = (Identifier &&) = default;
-    constexpr ~Identifier() = default;
 
     template <
         typename... ArgTs,
@@ -3576,11 +3491,6 @@ struct ReadOnlyText
     using atlas_value_type = std::string;
 
     constexpr explicit ReadOnlyText() = default;
-    constexpr ReadOnlyText(ReadOnlyText const &) = default;
-    constexpr ReadOnlyText(ReadOnlyText &&) = default;
-    constexpr ReadOnlyText & operator = (ReadOnlyText const &) = default;
-    constexpr ReadOnlyText & operator = (ReadOnlyText &&) = default;
-    constexpr ~ReadOnlyText() = default;
 
     template <
         typename... ArgTs,
@@ -3644,5 +3554,5 @@ struct ReadOnlyText
 };
 } // namespace test
 
-#endif // FOO_BAR_C533AA9BC8905FA01603B87F05BA6E888BB807DF
+#endif // FOO_BAR_A463DE441DFFF6446AA3AC649148F7AA81663CFE
 

@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_0802CC3629CB45AE560C4293DEEF8185F9D2F4CA
-#define FOO_BAR_0802CC3629CB45AE560C4293DEEF8185F9D2F4CA
+#ifndef FOO_BAR_88CD3BC6FD5B66F89976FB72480CAE19D699AB1B
+#define FOO_BAR_88CD3BC6FD5B66F89976FB72480CAE19D699AB1B
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -252,11 +252,6 @@ public:
     using atlas_value_type = int;
 
     constexpr explicit KindClassType() = default;
-    constexpr KindClassType(KindClassType const &) = default;
-    constexpr KindClassType(KindClassType &&) = default;
-    constexpr KindClassType & operator = (KindClassType const &) = default;
-    constexpr KindClassType & operator = (KindClassType &&) = default;
-    constexpr ~KindClassType() = default;
 
     template <
         typename... ArgTs,
@@ -287,5 +282,5 @@ public:
 } // namespace edge_cases
 } // namespace test
 
-#endif // FOO_BAR_0802CC3629CB45AE560C4293DEEF8185F9D2F4CA
+#endif // FOO_BAR_88CD3BC6FD5B66F89976FB72480CAE19D699AB1B
 

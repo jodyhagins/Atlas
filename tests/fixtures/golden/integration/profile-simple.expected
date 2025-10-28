@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_9EA9D1EAB3742F49C8FF2B5DB7BD1656B518BC6A
-#define FOO_BAR_9EA9D1EAB3742F49C8FF2B5DB7BD1656B518BC6A
+#ifndef FOO_BAR_EDB28C315B8551F4D279BD1F8D755D71401C16ED
+#define FOO_BAR_EDB28C315B8551F4D279BD1F8D755D71401C16ED
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -251,11 +251,6 @@ struct SimpleProfileType
     using atlas_value_type = int;
 
     constexpr explicit SimpleProfileType() = default;
-    constexpr SimpleProfileType(SimpleProfileType const &) = default;
-    constexpr SimpleProfileType(SimpleProfileType &&) = default;
-    constexpr SimpleProfileType & operator = (SimpleProfileType const &) = default;
-    constexpr SimpleProfileType & operator = (SimpleProfileType &&) = default;
-    constexpr ~SimpleProfileType() = default;
 
     template <
         typename... ArgTs,
@@ -406,5 +401,5 @@ struct SimpleProfileType
 } // namespace profiles
 } // namespace test
 
-#endif // FOO_BAR_9EA9D1EAB3742F49C8FF2B5DB7BD1656B518BC6A
+#endif // FOO_BAR_EDB28C315B8551F4D279BD1F8D755D71401C16ED
 

@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_13D8F22BAF58FC4682F0A42BF97314276F8865F1
-#define FOO_BAR_13D8F22BAF58FC4682F0A42BF97314276F8865F1
+#ifndef FOO_BAR_9775346BDE6A49C8DF2737CD1A9C0BC1BFFFDFB5
+#define FOO_BAR_9775346BDE6A49C8DF2737CD1A9C0BC1BFFFDFB5
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -250,11 +250,6 @@ struct ExplicitBoolType
     using atlas_value_type = int;
 
     constexpr explicit ExplicitBoolType() = default;
-    constexpr ExplicitBoolType(ExplicitBoolType const &) = default;
-    constexpr ExplicitBoolType(ExplicitBoolType &&) = default;
-    constexpr ExplicitBoolType & operator = (ExplicitBoolType const &) = default;
-    constexpr ExplicitBoolType & operator = (ExplicitBoolType &&) = default;
-    constexpr ~ExplicitBoolType() = default;
 
     template <
         typename... ArgTs,
@@ -283,5 +278,5 @@ struct ExplicitBoolType
 };
 } // namespace test
 
-#endif // FOO_BAR_13D8F22BAF58FC4682F0A42BF97314276F8865F1
+#endif // FOO_BAR_9775346BDE6A49C8DF2737CD1A9C0BC1BFFFDFB5
 

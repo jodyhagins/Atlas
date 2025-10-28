@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_F104614A190624D06857A13AA88F3DFC1491C5E8
-#define FOO_BAR_F104614A190624D06857A13AA88F3DFC1491C5E8
+#ifndef FOO_BAR_0F3C6DBE62B38B197F8A65E0D8265FE3E7CFEBB4
+#define FOO_BAR_0F3C6DBE62B38B197F8A65E0D8265FE3E7CFEBB4
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -313,11 +313,6 @@ struct ArrowStringWrapper
     using atlas_value_type = std::string;
 
     constexpr explicit ArrowStringWrapper() = default;
-    constexpr ArrowStringWrapper(ArrowStringWrapper const &) = default;
-    constexpr ArrowStringWrapper(ArrowStringWrapper &&) = default;
-    constexpr ArrowStringWrapper & operator = (ArrowStringWrapper const &) = default;
-    constexpr ArrowStringWrapper & operator = (ArrowStringWrapper &&) = default;
-    constexpr ~ArrowStringWrapper() = default;
 
     template <
         typename... ArgTs,
@@ -388,11 +383,6 @@ struct ArrowRawPointer
     using atlas_value_type = int*;
 
     constexpr explicit ArrowRawPointer() = default;
-    constexpr ArrowRawPointer(ArrowRawPointer const &) = default;
-    constexpr ArrowRawPointer(ArrowRawPointer &&) = default;
-    constexpr ArrowRawPointer & operator = (ArrowRawPointer const &) = default;
-    constexpr ArrowRawPointer & operator = (ArrowRawPointer &&) = default;
-    constexpr ~ArrowRawPointer() = default;
 
     template <
         typename... ArgTs,
@@ -463,11 +453,6 @@ struct ArrowSharedPtr
     using atlas_value_type = std::shared_ptr<int>;
 
     constexpr explicit ArrowSharedPtr() = default;
-    constexpr ArrowSharedPtr(ArrowSharedPtr const &) = default;
-    constexpr ArrowSharedPtr(ArrowSharedPtr &&) = default;
-    constexpr ArrowSharedPtr & operator = (ArrowSharedPtr const &) = default;
-    constexpr ArrowSharedPtr & operator = (ArrowSharedPtr &&) = default;
-    constexpr ~ArrowSharedPtr() = default;
 
     template <
         typename... ArgTs,
@@ -538,11 +523,6 @@ struct ArrowUniquePtr
     using atlas_value_type = std::unique_ptr<int>;
 
     constexpr explicit ArrowUniquePtr() = default;
-    constexpr ArrowUniquePtr(ArrowUniquePtr const &) = default;
-    constexpr ArrowUniquePtr(ArrowUniquePtr &&) = default;
-    constexpr ArrowUniquePtr & operator = (ArrowUniquePtr const &) = default;
-    constexpr ArrowUniquePtr & operator = (ArrowUniquePtr &&) = default;
-    constexpr ~ArrowUniquePtr() = default;
 
     template <
         typename... ArgTs,
@@ -613,11 +593,6 @@ struct ArrowOptional
     using atlas_value_type = std::optional<int>;
 
     constexpr explicit ArrowOptional() = default;
-    constexpr ArrowOptional(ArrowOptional const &) = default;
-    constexpr ArrowOptional(ArrowOptional &&) = default;
-    constexpr ArrowOptional & operator = (ArrowOptional const &) = default;
-    constexpr ArrowOptional & operator = (ArrowOptional &&) = default;
-    constexpr ~ArrowOptional() = default;
 
     template <
         typename... ArgTs,
@@ -666,5 +641,5 @@ struct ArrowOptional
 };
 } // namespace test
 
-#endif // FOO_BAR_F104614A190624D06857A13AA88F3DFC1491C5E8
+#endif // FOO_BAR_0F3C6DBE62B38B197F8A65E0D8265FE3E7CFEBB4
 

@@ -1,5 +1,5 @@
-#ifndef TEST_CPP23_667EDA36E33024ED41F159348EFBF17B2853CF41
-#define TEST_CPP23_667EDA36E33024ED41F159348EFBF17B2853CF41
+#ifndef TEST_CPP23_0DDA4606B50CB5963DE22346D95F7C7B8730CA84
+#define TEST_CPP23_0DDA4606B50CB5963DE22346D95F7C7B8730CA84
 
 static_assert(__cplusplus >= 202302L,
     "This file requires C++23 or later. Compile with -std=c++23 or higher.");
@@ -253,11 +253,6 @@ struct Timestamp
     using atlas_value_type = long;
 
     constexpr explicit Timestamp() = default;
-    constexpr Timestamp(Timestamp const &) = default;
-    constexpr Timestamp(Timestamp &&) = default;
-    constexpr Timestamp & operator = (Timestamp const &) = default;
-    constexpr Timestamp & operator = (Timestamp &&) = default;
-    constexpr ~Timestamp() = default;
 
     template <
         typename... ArgTs,
@@ -359,5 +354,5 @@ struct Timestamp
 };
 } // namespace test
 
-#endif // TEST_CPP23_667EDA36E33024ED41F159348EFBF17B2853CF41
+#endif // TEST_CPP23_0DDA4606B50CB5963DE22346D95F7C7B8730CA84
 

@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_EA724CC8071215BBEACD5DB655FD2A1377D064DD
-#define FOO_BAR_EA724CC8071215BBEACD5DB655FD2A1377D064DD
+#ifndef FOO_BAR_A64CC41EEBD450DBF9075C14B48D887ED5BFFDA9
+#define FOO_BAR_A64CC41EEBD450DBF9075C14B48D887ED5BFFDA9
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -680,11 +680,6 @@ struct SaturatingInt
     using atlas_value_type = int;
 
     constexpr explicit SaturatingInt() = default;
-    constexpr SaturatingInt(SaturatingInt const &) = default;
-    constexpr SaturatingInt(SaturatingInt &&) = default;
-    constexpr SaturatingInt & operator = (SaturatingInt const &) = default;
-    constexpr SaturatingInt & operator = (SaturatingInt &&) = default;
-    constexpr ~SaturatingInt() = default;
 
     template <
         typename... ArgTs,
@@ -729,5 +724,5 @@ struct SaturatingInt
 };
 } // namespace test
 
-#endif // FOO_BAR_EA724CC8071215BBEACD5DB655FD2A1377D064DD
+#endif // FOO_BAR_A64CC41EEBD450DBF9075C14B48D887ED5BFFDA9
 

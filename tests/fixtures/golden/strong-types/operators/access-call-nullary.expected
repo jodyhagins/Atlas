@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_9848A5F530182A325D28A4F2B0E04243A369AC32
-#define FOO_BAR_9848A5F530182A325D28A4F2B0E04243A369AC32
+#ifndef FOO_BAR_AA34CF19AE2D52D3F014BFF38EE1DF762E5A4D76
+#define FOO_BAR_AA34CF19AE2D52D3F014BFF38EE1DF762E5A4D76
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -250,11 +250,6 @@ struct CallNullaryType
     using atlas_value_type = int;
 
     constexpr explicit CallNullaryType() = default;
-    constexpr CallNullaryType(CallNullaryType const &) = default;
-    constexpr CallNullaryType(CallNullaryType &&) = default;
-    constexpr CallNullaryType & operator = (CallNullaryType const &) = default;
-    constexpr CallNullaryType & operator = (CallNullaryType &&) = default;
-    constexpr ~CallNullaryType() = default;
 
     template <
         typename... ArgTs,
@@ -287,5 +282,5 @@ struct CallNullaryType
 };
 } // namespace test
 
-#endif // FOO_BAR_9848A5F530182A325D28A4F2B0E04243A369AC32
+#endif // FOO_BAR_AA34CF19AE2D52D3F014BFF38EE1DF762E5A4D76
 

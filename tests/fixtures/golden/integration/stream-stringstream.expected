@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_4C4871FB60A393C1574A7C9C9CAD71BADFB1250D
-#define FOO_BAR_4C4871FB60A393C1574A7C9C9CAD71BADFB1250D
+#ifndef FOO_BAR_6AEF6734AC93F602ADD1B94572FC261AC706664A
+#define FOO_BAR_6AEF6734AC93F602ADD1B94572FC261AC706664A
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -253,11 +253,6 @@ struct StreamableInt
     using atlas_value_type = int;
 
     constexpr explicit StreamableInt() = default;
-    constexpr StreamableInt(StreamableInt const &) = default;
-    constexpr StreamableInt(StreamableInt &&) = default;
-    constexpr StreamableInt & operator = (StreamableInt const &) = default;
-    constexpr StreamableInt & operator = (StreamableInt &&) = default;
-    constexpr ~StreamableInt() = default;
 
     template <
         typename... ArgTs,
@@ -308,5 +303,5 @@ struct StreamableInt
 } // namespace integration
 } // namespace test
 
-#endif // FOO_BAR_4C4871FB60A393C1574A7C9C9CAD71BADFB1250D
+#endif // FOO_BAR_6AEF6734AC93F602ADD1B94572FC261AC706664A
 

@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_7C85B91EBF83B6AB43C68D229B18A2FB5BDCDB26
-#define FOO_BAR_7C85B91EBF83B6AB43C68D229B18A2FB5BDCDB26
+#ifndef FOO_BAR_222571CAD511F46F3564D87E747F80F47EFE21E7
+#define FOO_BAR_222571CAD511F46F3564D87E747F80F47EFE21E7
 
 static_assert(__cplusplus >= 202002L,
     "This file requires C++20 or later. Compile with -std=c++20 or higher.");
@@ -992,11 +992,6 @@ struct HalfOpenPercentage
     using atlas_constraint = atlas::constraints::bounded_range<atlas_bounds>;
 
     constexpr explicit HalfOpenPercentage() = default;
-    constexpr HalfOpenPercentage(HalfOpenPercentage const &) = default;
-    constexpr HalfOpenPercentage(HalfOpenPercentage &&) = default;
-    constexpr HalfOpenPercentage & operator = (HalfOpenPercentage const &) = default;
-    constexpr HalfOpenPercentage & operator = (HalfOpenPercentage &&) = default;
-    constexpr ~HalfOpenPercentage() = default;
 
     template <
         typename... ArgTs,
@@ -1140,11 +1135,6 @@ struct CelsiusRange
     using atlas_constraint = atlas::constraints::bounded_range<atlas_bounds>;
 
     constexpr explicit CelsiusRange() = default;
-    constexpr CelsiusRange(CelsiusRange const &) = default;
-    constexpr CelsiusRange(CelsiusRange &&) = default;
-    constexpr CelsiusRange & operator = (CelsiusRange const &) = default;
-    constexpr CelsiusRange & operator = (CelsiusRange &&) = default;
-    constexpr ~CelsiusRange() = default;
 
     template <
         typename... ArgTs,
@@ -1309,11 +1299,6 @@ struct BoundedRangeChecked
     using atlas_constraint = atlas::constraints::bounded_range<atlas_bounds>;
 
     constexpr explicit BoundedRangeChecked() = default;
-    constexpr BoundedRangeChecked(BoundedRangeChecked const &) = default;
-    constexpr BoundedRangeChecked(BoundedRangeChecked &&) = default;
-    constexpr BoundedRangeChecked & operator = (BoundedRangeChecked const &) = default;
-    constexpr BoundedRangeChecked & operator = (BoundedRangeChecked &&) = default;
-    constexpr ~BoundedRangeChecked() = default;
 
     template <
         typename... ArgTs,
@@ -1416,11 +1401,6 @@ struct TinyRange
     using atlas_constraint = atlas::constraints::bounded_range<atlas_bounds>;
 
     constexpr explicit TinyRange() = default;
-    constexpr TinyRange(TinyRange const &) = default;
-    constexpr TinyRange(TinyRange &&) = default;
-    constexpr TinyRange & operator = (TinyRange const &) = default;
-    constexpr TinyRange & operator = (TinyRange &&) = default;
-    constexpr ~TinyRange() = default;
 
     template <
         typename... ArgTs,
@@ -1492,11 +1472,6 @@ struct NegativeRange
     using atlas_constraint = atlas::constraints::bounded_range<atlas_bounds>;
 
     constexpr explicit NegativeRange() = default;
-    constexpr NegativeRange(NegativeRange const &) = default;
-    constexpr NegativeRange(NegativeRange &&) = default;
-    constexpr NegativeRange & operator = (NegativeRange const &) = default;
-    constexpr NegativeRange & operator = (NegativeRange &&) = default;
-    constexpr ~NegativeRange() = default;
 
     template <
         typename... ArgTs,
@@ -1692,11 +1667,6 @@ struct BoundedRangeString
     using atlas_constraint = atlas::constraints::bounded_range<atlas_bounds>;
 
     constexpr explicit BoundedRangeString() = default;
-    constexpr BoundedRangeString(BoundedRangeString const &) = default;
-    constexpr BoundedRangeString(BoundedRangeString &&) = default;
-    constexpr BoundedRangeString & operator = (BoundedRangeString const &) = default;
-    constexpr BoundedRangeString & operator = (BoundedRangeString &&) = default;
-    constexpr ~BoundedRangeString() = default;
 
     template <
         typename... ArgTs,
@@ -1804,5 +1774,5 @@ struct BoundedRangeString
 };
 } // namespace test
 
-#endif // FOO_BAR_7C85B91EBF83B6AB43C68D229B18A2FB5BDCDB26
+#endif // FOO_BAR_222571CAD511F46F3564D87E747F80F47EFE21E7
 

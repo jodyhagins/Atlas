@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_40BC7036B7B2EEDADCD65BDDC81F8D09F03CDAE8
-#define FOO_BAR_40BC7036B7B2EEDADCD65BDDC81F8D09F03CDAE8
+#ifndef FOO_BAR_938F8D5577DF20336BFD3F43ABE1152DFFB4425E
+#define FOO_BAR_938F8D5577DF20336BFD3F43ABE1152DFFB4425E
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -251,11 +251,6 @@ struct AutoIncludeString
     using atlas_value_type = std::string;
 
     constexpr explicit AutoIncludeString() = default;
-    constexpr AutoIncludeString(AutoIncludeString const &) = default;
-    constexpr AutoIncludeString(AutoIncludeString &&) = default;
-    constexpr AutoIncludeString & operator = (AutoIncludeString const &) = default;
-    constexpr AutoIncludeString & operator = (AutoIncludeString &&) = default;
-    constexpr ~AutoIncludeString() = default;
 
     template <
         typename... ArgTs,
@@ -285,5 +280,5 @@ struct AutoIncludeString
 };
 } // namespace test
 
-#endif // FOO_BAR_40BC7036B7B2EEDADCD65BDDC81F8D09F03CDAE8
+#endif // FOO_BAR_938F8D5577DF20336BFD3F43ABE1152DFFB4425E
 

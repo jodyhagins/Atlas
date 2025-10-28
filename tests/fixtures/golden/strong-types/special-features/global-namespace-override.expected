@@ -1,5 +1,5 @@
-#ifndef TEST_B9AC4676528A4A5264DECBD4BA8301EC3BA5F2F8
-#define TEST_B9AC4676528A4A5264DECBD4BA8301EC3BA5F2F8
+#ifndef TEST_02A6B550B26AF643C522B35F1E015739027A845B
+#define TEST_02A6B550B26AF643C522B35F1E015739027A845B
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -251,11 +251,6 @@ struct TypeWithGlobal
     using atlas_value_type = int;
 
     constexpr explicit TypeWithGlobal() = default;
-    constexpr TypeWithGlobal(TypeWithGlobal const &) = default;
-    constexpr TypeWithGlobal(TypeWithGlobal &&) = default;
-    constexpr TypeWithGlobal & operator = (TypeWithGlobal const &) = default;
-    constexpr TypeWithGlobal & operator = (TypeWithGlobal &&) = default;
-    constexpr ~TypeWithGlobal() = default;
 
     template <
         typename... ArgTs,
@@ -358,11 +353,6 @@ struct TypeWithSpecific
     using atlas_value_type = double;
 
     constexpr explicit TypeWithSpecific() = default;
-    constexpr TypeWithSpecific(TypeWithSpecific const &) = default;
-    constexpr TypeWithSpecific(TypeWithSpecific &&) = default;
-    constexpr TypeWithSpecific & operator = (TypeWithSpecific const &) = default;
-    constexpr TypeWithSpecific & operator = (TypeWithSpecific &&) = default;
-    constexpr ~TypeWithSpecific() = default;
 
     template <
         typename... ArgTs,
@@ -442,5 +432,5 @@ struct TypeWithSpecific
 } // namespace ns
 } // namespace specific
 
-#endif // TEST_B9AC4676528A4A5264DECBD4BA8301EC3BA5F2F8
+#endif // TEST_02A6B550B26AF643C522B35F1E015739027A845B
 

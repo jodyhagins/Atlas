@@ -1,5 +1,5 @@
-#ifndef TEST_025FB9C68A4384E5D0EA6D8A181BBEEFC78C0018
-#define TEST_025FB9C68A4384E5D0EA6D8A181BBEEFC78C0018
+#ifndef TEST_3FFCEE39F850AA785801DDEBB3F63BBBDD74264B
+#define TEST_3FFCEE39F850AA785801DDEBB3F63BBBDD74264B
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -251,11 +251,6 @@ struct Price
     using atlas_value_type = double;
 
     constexpr explicit Price() = default;
-    constexpr Price(Price const &) = default;
-    constexpr Price(Price &&) = default;
-    constexpr Price & operator = (Price const &) = default;
-    constexpr Price & operator = (Price &&) = default;
-    constexpr ~Price() = default;
 
     template <
         typename... ArgTs,
@@ -369,11 +364,6 @@ struct Quantity
     using atlas_value_type = int;
 
     constexpr explicit Quantity() = default;
-    constexpr Quantity(Quantity const &) = default;
-    constexpr Quantity(Quantity &&) = default;
-    constexpr Quantity & operator = (Quantity const &) = default;
-    constexpr Quantity & operator = (Quantity &&) = default;
-    constexpr ~Quantity() = default;
 
     template <
         typename... ArgTs,
@@ -506,11 +496,6 @@ struct Volume
     using atlas_value_type = double;
 
     constexpr explicit Volume() = default;
-    constexpr Volume(Volume const &) = default;
-    constexpr Volume(Volume &&) = default;
-    constexpr Volume & operator = (Volume const &) = default;
-    constexpr Volume & operator = (Volume &&) = default;
-    constexpr ~Volume() = default;
 
     template <
         typename... ArgTs,
@@ -613,11 +598,6 @@ public:
     using atlas_value_type = int;
 
     constexpr explicit Currency() = default;
-    constexpr Currency(Currency const &) = default;
-    constexpr Currency(Currency &&) = default;
-    constexpr Currency & operator = (Currency const &) = default;
-    constexpr Currency & operator = (Currency &&) = default;
-    constexpr ~Currency() = default;
 
     template <
         typename... ArgTs,
@@ -744,11 +724,6 @@ struct Type
     using atlas_value_type = unsigned long;
 
     constexpr explicit Type() = default;
-    constexpr Type(Type const &) = default;
-    constexpr Type(Type &&) = default;
-    constexpr Type & operator = (Type const &) = default;
-    constexpr Type & operator = (Type &&) = default;
-    constexpr ~Type() = default;
 
     template <
         typename... ArgTs,
@@ -814,11 +789,6 @@ struct OldStyle
     using atlas_value_type = float;
 
     constexpr explicit OldStyle() = default;
-    constexpr OldStyle(OldStyle const &) = default;
-    constexpr OldStyle(OldStyle &&) = default;
-    constexpr OldStyle & operator = (OldStyle const &) = default;
-    constexpr OldStyle & operator = (OldStyle &&) = default;
-    constexpr ~OldStyle() = default;
 
     template <
         typename... ArgTs,
@@ -859,5 +829,5 @@ struct OldStyle
 };
 } // namespace legacy
 
-#endif // TEST_025FB9C68A4384E5D0EA6D8A181BBEEFC78C0018
+#endif // TEST_3FFCEE39F850AA785801DDEBB3F63BBBDD74264B
 

@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_E5E3C2574140154B8C99A9EA1D3A9351AF22FCB0
-#define FOO_BAR_E5E3C2574140154B8C99A9EA1D3A9351AF22FCB0
+#ifndef FOO_BAR_609B33A2FC794DB2CC49C4D65B23B7F54EA7B74B
+#define FOO_BAR_609B33A2FC794DB2CC49C4D65B23B7F54EA7B74B
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -250,11 +250,6 @@ struct LogicalAllType
     using atlas_value_type = int;
 
     constexpr explicit LogicalAllType() = default;
-    constexpr LogicalAllType(LogicalAllType const &) = default;
-    constexpr LogicalAllType(LogicalAllType &&) = default;
-    constexpr LogicalAllType & operator = (LogicalAllType const &) = default;
-    constexpr LogicalAllType & operator = (LogicalAllType &&) = default;
-    constexpr ~LogicalAllType() = default;
 
     template <
         typename... ArgTs,
@@ -312,5 +307,5 @@ struct LogicalAllType
 };
 } // namespace test
 
-#endif // FOO_BAR_E5E3C2574140154B8C99A9EA1D3A9351AF22FCB0
+#endif // FOO_BAR_609B33A2FC794DB2CC49C4D65B23B7F54EA7B74B
 

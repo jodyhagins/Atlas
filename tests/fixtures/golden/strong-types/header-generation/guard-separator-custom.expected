@@ -1,5 +1,5 @@
-#ifndef MY_APP__DCA188C1AF0D8CBDC3A50284BB9D0E2ADA7DF598
-#define MY_APP__DCA188C1AF0D8CBDC3A50284BB9D0E2ADA7DF598
+#ifndef MY_APP__E8BBD383B32C6C0A1D1567248426369E92F4B51A
+#define MY_APP__E8BBD383B32C6C0A1D1567248426369E92F4B51A
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -250,11 +250,6 @@ struct GuardSeparatorType
     using atlas_value_type = int;
 
     constexpr explicit GuardSeparatorType() = default;
-    constexpr GuardSeparatorType(GuardSeparatorType const &) = default;
-    constexpr GuardSeparatorType(GuardSeparatorType &&) = default;
-    constexpr GuardSeparatorType & operator = (GuardSeparatorType const &) = default;
-    constexpr GuardSeparatorType & operator = (GuardSeparatorType &&) = default;
-    constexpr ~GuardSeparatorType() = default;
 
     template <
         typename... ArgTs,
@@ -284,5 +279,5 @@ struct GuardSeparatorType
 };
 } // namespace test
 
-#endif // MY_APP__DCA188C1AF0D8CBDC3A50284BB9D0E2ADA7DF598
+#endif // MY_APP__E8BBD383B32C6C0A1D1567248426369E92F4B51A
 

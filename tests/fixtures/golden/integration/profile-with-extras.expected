@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_201C87A216D5730919A8E5B76D8DF238A0775191
-#define FOO_BAR_201C87A216D5730919A8E5B76D8DF238A0775191
+#ifndef FOO_BAR_FFD44939ED4E09A97D34F44B44E360493423C41E
+#define FOO_BAR_FFD44939ED4E09A97D34F44B44E360493423C41E
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -255,11 +255,6 @@ struct ProfileWithExtrasType
     using atlas_value_type = int;
 
     constexpr explicit ProfileWithExtrasType() = default;
-    constexpr ProfileWithExtrasType(ProfileWithExtrasType const &) = default;
-    constexpr ProfileWithExtrasType(ProfileWithExtrasType &&) = default;
-    constexpr ProfileWithExtrasType & operator = (ProfileWithExtrasType const &) = default;
-    constexpr ProfileWithExtrasType & operator = (ProfileWithExtrasType &&) = default;
-    constexpr ~ProfileWithExtrasType() = default;
 
     template <
         typename... ArgTs,
@@ -342,5 +337,5 @@ struct std::formatter<test::profiles::ProfileWithExtrasType> : std::formatter<in
     }
 };
 #endif // defined(__cpp_lib_format) && __cpp_lib_format >= 202110L
-#endif // FOO_BAR_201C87A216D5730919A8E5B76D8DF238A0775191
+#endif // FOO_BAR_FFD44939ED4E09A97D34F44B44E360493423C41E
 

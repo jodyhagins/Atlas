@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_C926D36F234D4DA6B0A0AE28F31A4A60E53E3166
-#define FOO_BAR_C926D36F234D4DA6B0A0AE28F31A4A60E53E3166
+#ifndef FOO_BAR_3BAA1E1DAE84F03F9ED563AAB887DD130FE8C2B9
+#define FOO_BAR_3BAA1E1DAE84F03F9ED563AAB887DD130FE8C2B9
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -250,11 +250,6 @@ struct LogicalAndAliasType
     using atlas_value_type = int;
 
     constexpr explicit LogicalAndAliasType() = default;
-    constexpr LogicalAndAliasType(LogicalAndAliasType const &) = default;
-    constexpr LogicalAndAliasType(LogicalAndAliasType &&) = default;
-    constexpr LogicalAndAliasType & operator = (LogicalAndAliasType const &) = default;
-    constexpr LogicalAndAliasType & operator = (LogicalAndAliasType &&) = default;
-    constexpr ~LogicalAndAliasType() = default;
 
     template <
         typename... ArgTs,
@@ -288,5 +283,5 @@ struct LogicalAndAliasType
 };
 } // namespace test
 
-#endif // FOO_BAR_C926D36F234D4DA6B0A0AE28F31A4A60E53E3166
+#endif // FOO_BAR_3BAA1E1DAE84F03F9ED563AAB887DD130FE8C2B9
 

@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_4B9EC915D94D56201A993497FF961175E62F64E3
-#define FOO_BAR_4B9EC915D94D56201A993497FF961175E62F64E3
+#ifndef FOO_BAR_792B282917C4A5E8469366A4269DA736FD40B0E8
+#define FOO_BAR_792B282917C4A5E8469366A4269DA736FD40B0E8
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -250,11 +250,6 @@ struct BitwiseShiftType
     using atlas_value_type = int;
 
     constexpr explicit BitwiseShiftType() = default;
-    constexpr BitwiseShiftType(BitwiseShiftType const &) = default;
-    constexpr BitwiseShiftType(BitwiseShiftType &&) = default;
-    constexpr BitwiseShiftType & operator = (BitwiseShiftType const &) = default;
-    constexpr BitwiseShiftType & operator = (BitwiseShiftType &&) = default;
-    constexpr ~BitwiseShiftType() = default;
 
     template <
         typename... ArgTs,
@@ -333,5 +328,5 @@ struct BitwiseShiftType
 };
 } // namespace test
 
-#endif // FOO_BAR_4B9EC915D94D56201A993497FF961175E62F64E3
+#endif // FOO_BAR_792B282917C4A5E8469366A4269DA736FD40B0E8
 

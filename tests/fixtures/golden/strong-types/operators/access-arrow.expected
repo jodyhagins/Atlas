@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_4231E7377D36DC68DB0EC66E4011273308012184
-#define FOO_BAR_4231E7377D36DC68DB0EC66E4011273308012184
+#ifndef FOO_BAR_5C76DA8A77EE04CFFC8FD61C22266CC835F245F0
+#define FOO_BAR_5C76DA8A77EE04CFFC8FD61C22266CC835F245F0
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -312,11 +312,6 @@ struct ArrowType
     using atlas_value_type = std::string;
 
     constexpr explicit ArrowType() = default;
-    constexpr ArrowType(ArrowType const &) = default;
-    constexpr ArrowType(ArrowType &&) = default;
-    constexpr ArrowType & operator = (ArrowType const &) = default;
-    constexpr ArrowType & operator = (ArrowType &&) = default;
-    constexpr ~ArrowType() = default;
 
     template <
         typename... ArgTs,
@@ -365,5 +360,5 @@ struct ArrowType
 };
 } // namespace test
 
-#endif // FOO_BAR_4231E7377D36DC68DB0EC66E4011273308012184
+#endif // FOO_BAR_5C76DA8A77EE04CFFC8FD61C22266CC835F245F0
 

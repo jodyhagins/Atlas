@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_D79BA27F4AE26A159D22D5B1BDE4539F4E6CD31A
-#define FOO_BAR_D79BA27F4AE26A159D22D5B1BDE4539F4E6CD31A
+#ifndef FOO_BAR_971B1838200EB1251414BB1672A3E6EBB3D633DC
+#define FOO_BAR_971B1838200EB1251414BB1672A3E6EBB3D633DC
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -250,11 +250,6 @@ struct MixedCastType
     using atlas_value_type = double;
 
     constexpr explicit MixedCastType() = default;
-    constexpr MixedCastType(MixedCastType const &) = default;
-    constexpr MixedCastType(MixedCastType &&) = default;
-    constexpr MixedCastType & operator = (MixedCastType const &) = default;
-    constexpr MixedCastType & operator = (MixedCastType &&) = default;
-    constexpr ~MixedCastType() = default;
 
     template <
         typename... ArgTs,
@@ -293,5 +288,5 @@ struct MixedCastType
 };
 } // namespace test
 
-#endif // FOO_BAR_D79BA27F4AE26A159D22D5B1BDE4539F4E6CD31A
+#endif // FOO_BAR_971B1838200EB1251414BB1672A3E6EBB3D633DC
 

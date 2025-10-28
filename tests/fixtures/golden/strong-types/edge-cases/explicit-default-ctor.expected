@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_2203F75D54C7CB0EF9B0FEFA4FC35D8178A6A8D5
-#define FOO_BAR_2203F75D54C7CB0EF9B0FEFA4FC35D8178A6A8D5
+#ifndef FOO_BAR_618875AFB54841F94BA2455426033FFBF00BE224
+#define FOO_BAR_618875AFB54841F94BA2455426033FFBF00BE224
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -251,11 +251,6 @@ struct ExplicitDefaultCtor
     using atlas_value_type = int;
 
     constexpr explicit ExplicitDefaultCtor() = default;
-    constexpr ExplicitDefaultCtor(ExplicitDefaultCtor const &) = default;
-    constexpr ExplicitDefaultCtor(ExplicitDefaultCtor &&) = default;
-    constexpr ExplicitDefaultCtor & operator = (ExplicitDefaultCtor const &) = default;
-    constexpr ExplicitDefaultCtor & operator = (ExplicitDefaultCtor &&) = default;
-    constexpr ~ExplicitDefaultCtor() = default;
 
     template <
         typename... ArgTs,
@@ -286,5 +281,5 @@ struct ExplicitDefaultCtor
 } // namespace edge_cases
 } // namespace test
 
-#endif // FOO_BAR_2203F75D54C7CB0EF9B0FEFA4FC35D8178A6A8D5
+#endif // FOO_BAR_618875AFB54841F94BA2455426033FFBF00BE224
 

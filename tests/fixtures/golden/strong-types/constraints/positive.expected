@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_C5BF6128961788CB63A46D60FF9ED6BD3D041C03
-#define FOO_BAR_C5BF6128961788CB63A46D60FF9ED6BD3D041C03
+#ifndef FOO_BAR_6DF975F01E1FC1C5C84426B8DA5824546B0EC199
+#define FOO_BAR_6DF975F01E1FC1C5C84426B8DA5824546B0EC199
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -1404,11 +1404,6 @@ struct PositiveInt
     using atlas_constraint = atlas::constraints::positive<int>;
 
     constexpr explicit PositiveInt() = default;
-    constexpr PositiveInt(PositiveInt const &) = default;
-    constexpr PositiveInt(PositiveInt &&) = default;
-    constexpr PositiveInt & operator = (PositiveInt const &) = default;
-    constexpr PositiveInt & operator = (PositiveInt &&) = default;
-    constexpr ~PositiveInt() = default;
 
     template <
         typename... ArgTs,
@@ -1539,11 +1534,6 @@ struct PositiveChecked
     using atlas_constraint = atlas::constraints::positive<std::uint8_t>;
 
     constexpr explicit PositiveChecked() = default;
-    constexpr PositiveChecked(PositiveChecked const &) = default;
-    constexpr PositiveChecked(PositiveChecked &&) = default;
-    constexpr PositiveChecked & operator = (PositiveChecked const &) = default;
-    constexpr PositiveChecked & operator = (PositiveChecked &&) = default;
-    constexpr ~PositiveChecked() = default;
 
     template <
         typename... ArgTs,
@@ -1633,11 +1623,6 @@ struct PositiveSaturating
     using atlas_constraint = atlas::constraints::positive<std::uint8_t>;
 
     constexpr explicit PositiveSaturating() = default;
-    constexpr PositiveSaturating(PositiveSaturating const &) = default;
-    constexpr PositiveSaturating(PositiveSaturating &&) = default;
-    constexpr PositiveSaturating & operator = (PositiveSaturating const &) = default;
-    constexpr PositiveSaturating & operator = (PositiveSaturating &&) = default;
-    constexpr ~PositiveSaturating() = default;
 
     template <
         typename... ArgTs,
@@ -1717,11 +1702,6 @@ struct PositiveWrapping
     using atlas_constraint = atlas::constraints::positive<std::uint8_t>;
 
     constexpr explicit PositiveWrapping() = default;
-    constexpr PositiveWrapping(PositiveWrapping const &) = default;
-    constexpr PositiveWrapping(PositiveWrapping &&) = default;
-    constexpr PositiveWrapping & operator = (PositiveWrapping const &) = default;
-    constexpr PositiveWrapping & operator = (PositiveWrapping &&) = default;
-    constexpr ~PositiveWrapping() = default;
 
     template <
         typename... ArgTs,
@@ -1794,5 +1774,5 @@ struct PositiveWrapping
 };
 } // namespace test
 
-#endif // FOO_BAR_C5BF6128961788CB63A46D60FF9ED6BD3D041C03
+#endif // FOO_BAR_6DF975F01E1FC1C5C84426B8DA5824546B0EC199
 

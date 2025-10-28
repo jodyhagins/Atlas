@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_168AF0BCAE6E5E2553C33420527025352C609335
-#define FOO_BAR_168AF0BCAE6E5E2553C33420527025352C609335
+#ifndef FOO_BAR_7078D55AE50E584F1CCBA39DD499D6600FFBC0B3
+#define FOO_BAR_7078D55AE50E584F1CCBA39DD499D6600FFBC0B3
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -250,11 +250,6 @@ struct BitwiseBasicType
     using atlas_value_type = int;
 
     constexpr explicit BitwiseBasicType() = default;
-    constexpr BitwiseBasicType(BitwiseBasicType const &) = default;
-    constexpr BitwiseBasicType(BitwiseBasicType &&) = default;
-    constexpr BitwiseBasicType & operator = (BitwiseBasicType const &) = default;
-    constexpr BitwiseBasicType & operator = (BitwiseBasicType &&) = default;
-    constexpr ~BitwiseBasicType() = default;
 
     template <
         typename... ArgTs,
@@ -363,5 +358,5 @@ struct BitwiseBasicType
 };
 } // namespace test
 
-#endif // FOO_BAR_168AF0BCAE6E5E2553C33420527025352C609335
+#endif // FOO_BAR_7078D55AE50E584F1CCBA39DD499D6600FFBC0B3
 

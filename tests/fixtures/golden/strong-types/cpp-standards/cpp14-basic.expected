@@ -1,5 +1,5 @@
-#ifndef TEST_CPP14_1363A7D03F88E2C612B61C611E23971D9E31D14B
-#define TEST_CPP14_1363A7D03F88E2C612B61C611E23971D9E31D14B
+#ifndef TEST_CPP14_B37C60F0F29570EC565ADF092EEC4ABF0959F2C7
+#define TEST_CPP14_B37C60F0F29570EC565ADF092EEC4ABF0959F2C7
 
 static_assert(__cplusplus >= 201402L,
     "This file requires C++14 or later. Compile with -std=c++14 or higher.");
@@ -253,11 +253,6 @@ struct Value
     using atlas_value_type = double;
 
     constexpr explicit Value() = default;
-    constexpr Value(Value const &) = default;
-    constexpr Value(Value &&) = default;
-    constexpr Value & operator = (Value const &) = default;
-    constexpr Value & operator = (Value &&) = default;
-    constexpr ~Value() = default;
 
     template <
         typename... ArgTs,
@@ -396,5 +391,5 @@ struct Value
 };
 } // namespace test
 
-#endif // TEST_CPP14_1363A7D03F88E2C612B61C611E23971D9E31D14B
+#endif // TEST_CPP14_B37C60F0F29570EC565ADF092EEC4ABF0959F2C7
 

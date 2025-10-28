@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_1BE6F42FF79D91AB8D2F72532483F83A354E95E5
-#define FOO_BAR_1BE6F42FF79D91AB8D2F72532483F83A354E95E5
+#ifndef FOO_BAR_62A40AF23464F10049158F3E9AEFF8DCFCEC5728
+#define FOO_BAR_62A40AF23464F10049158F3E9AEFF8DCFCEC5728
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -693,11 +693,6 @@ struct CheckedUInt
     using atlas_value_type = uint32_t;
 
     constexpr explicit CheckedUInt() = default;
-    constexpr CheckedUInt(CheckedUInt const &) = default;
-    constexpr CheckedUInt(CheckedUInt &&) = default;
-    constexpr CheckedUInt & operator = (CheckedUInt const &) = default;
-    constexpr CheckedUInt & operator = (CheckedUInt &&) = default;
-    constexpr ~CheckedUInt() = default;
 
     template <
         typename... ArgTs,
@@ -800,5 +795,5 @@ struct CheckedUInt
 };
 } // namespace test
 
-#endif // FOO_BAR_1BE6F42FF79D91AB8D2F72532483F83A354E95E5
+#endif // FOO_BAR_62A40AF23464F10049158F3E9AEFF8DCFCEC5728
 

@@ -1,5 +1,5 @@
-#ifndef TEST_MIXED_STANDARDS_B80538A80C4918083E3D1F7D5BC3AD82CBC462EF
-#define TEST_MIXED_STANDARDS_B80538A80C4918083E3D1F7D5BC3AD82CBC462EF
+#ifndef TEST_MIXED_STANDARDS_85E4A7E697E95DFC75FE4EC59825C01171E01D42
+#define TEST_MIXED_STANDARDS_85E4A7E697E95DFC75FE4EC59825C01171E01D42
 
 static_assert(__cplusplus >= 202002L,
     "This file requires C++20 or later. Compile with -std=c++20 or higher.");
@@ -253,11 +253,6 @@ struct Type1
     using atlas_value_type = int;
 
     constexpr explicit Type1() = default;
-    constexpr Type1(Type1 const &) = default;
-    constexpr Type1(Type1 &&) = default;
-    constexpr Type1 & operator = (Type1 const &) = default;
-    constexpr Type1 & operator = (Type1 &&) = default;
-    constexpr ~Type1() = default;
 
     template <
         typename... ArgTs,
@@ -358,11 +353,6 @@ struct Type2
     using atlas_value_type = int;
 
     constexpr explicit Type2() = default;
-    constexpr Type2(Type2 const &) = default;
-    constexpr Type2(Type2 &&) = default;
-    constexpr Type2 & operator = (Type2 const &) = default;
-    constexpr Type2 & operator = (Type2 &&) = default;
-    constexpr ~Type2() = default;
 
     template <
         typename... ArgTs,
@@ -463,11 +453,6 @@ struct Type3
     using atlas_value_type = int;
 
     constexpr explicit Type3() = default;
-    constexpr Type3(Type3 const &) = default;
-    constexpr Type3(Type3 &&) = default;
-    constexpr Type3 & operator = (Type3 const &) = default;
-    constexpr Type3 & operator = (Type3 &&) = default;
-    constexpr ~Type3() = default;
 
     template <
         typename... ArgTs,
@@ -569,5 +554,5 @@ struct Type3
 };
 } // namespace test
 
-#endif // TEST_MIXED_STANDARDS_B80538A80C4918083E3D1F7D5BC3AD82CBC462EF
+#endif // TEST_MIXED_STANDARDS_85E4A7E697E95DFC75FE4EC59825C01171E01D42
 

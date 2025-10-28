@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_6C44B0647192DD4966DBF44CBA67E82D46A574B3
-#define FOO_BAR_6C44B0647192DD4966DBF44CBA67E82D46A574B3
+#ifndef FOO_BAR_19B07D7C6A529034FFB1CE6923787CD020888EFB
+#define FOO_BAR_19B07D7C6A529034FFB1CE6923787CD020888EFB
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -252,11 +252,6 @@ struct TypeOne
     using atlas_value_type = int;
 
     constexpr explicit TypeOne() = default;
-    constexpr TypeOne(TypeOne const &) = default;
-    constexpr TypeOne(TypeOne &&) = default;
-    constexpr TypeOne & operator = (TypeOne const &) = default;
-    constexpr TypeOne & operator = (TypeOne &&) = default;
-    constexpr ~TypeOne() = default;
 
     template <
         typename... ArgTs,
@@ -318,5 +313,5 @@ struct TypeOne
 } // namespace integration
 } // namespace test
 
-#endif // FOO_BAR_6C44B0647192DD4966DBF44CBA67E82D46A574B3
+#endif // FOO_BAR_19B07D7C6A529034FFB1CE6923787CD020888EFB
 

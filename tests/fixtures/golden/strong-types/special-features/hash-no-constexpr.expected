@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_3B968ED700FC879ABD97504A08C1AE99C4380DB7
-#define FOO_BAR_3B968ED700FC879ABD97504A08C1AE99C4380DB7
+#ifndef FOO_BAR_9AA4476E3AAC1E4B334516578C994089F94944B2
+#define FOO_BAR_9AA4476E3AAC1E4B334516578C994089F94944B2
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -252,11 +252,6 @@ struct HashNoConstexprType
     using atlas_value_type = std::string;
 
     constexpr explicit HashNoConstexprType() = default;
-    constexpr HashNoConstexprType(HashNoConstexprType const &) = default;
-    constexpr HashNoConstexprType(HashNoConstexprType &&) = default;
-    constexpr HashNoConstexprType & operator = (HashNoConstexprType const &) = default;
-    constexpr HashNoConstexprType & operator = (HashNoConstexprType &&) = default;
-    constexpr ~HashNoConstexprType() = default;
 
     template <
         typename... ArgTs,
@@ -294,5 +289,5 @@ struct std::hash<test::HashNoConstexprType>
             static_cast<std::string const &>(t));
     }
 };
-#endif // FOO_BAR_3B968ED700FC879ABD97504A08C1AE99C4380DB7
+#endif // FOO_BAR_9AA4476E3AAC1E4B334516578C994089F94944B2
 

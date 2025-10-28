@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_EC67817B051C9E831F09B09646D953FDD588FAAE
-#define FOO_BAR_EC67817B051C9E831F09B09646D953FDD588FAAE
+#ifndef FOO_BAR_F98D4D14F3619E513A09FBE51F47502861C15C4C
+#define FOO_BAR_F98D4D14F3619E513A09FBE51F47502861C15C4C
 
 static_assert(__cplusplus >= 202002L,
     "This file requires C++20 or later. Compile with -std=c++20 or higher.");
@@ -992,11 +992,6 @@ struct Percentage
     using atlas_constraint = atlas::constraints::bounded<atlas_bounds>;
 
     constexpr explicit Percentage() = default;
-    constexpr Percentage(Percentage const &) = default;
-    constexpr Percentage(Percentage &&) = default;
-    constexpr Percentage & operator = (Percentage const &) = default;
-    constexpr Percentage & operator = (Percentage &&) = default;
-    constexpr ~Percentage() = default;
 
     template <
         typename... ArgTs,
@@ -1140,11 +1135,6 @@ struct Temperature
     using atlas_constraint = atlas::constraints::bounded<atlas_bounds>;
 
     constexpr explicit Temperature() = default;
-    constexpr Temperature(Temperature const &) = default;
-    constexpr Temperature(Temperature &&) = default;
-    constexpr Temperature & operator = (Temperature const &) = default;
-    constexpr Temperature & operator = (Temperature &&) = default;
-    constexpr ~Temperature() = default;
 
     template <
         typename... ArgTs,
@@ -1309,11 +1299,6 @@ struct BoundedChecked
     using atlas_constraint = atlas::constraints::bounded<atlas_bounds>;
 
     constexpr explicit BoundedChecked() = default;
-    constexpr BoundedChecked(BoundedChecked const &) = default;
-    constexpr BoundedChecked(BoundedChecked &&) = default;
-    constexpr BoundedChecked & operator = (BoundedChecked const &) = default;
-    constexpr BoundedChecked & operator = (BoundedChecked &&) = default;
-    constexpr ~BoundedChecked() = default;
 
     template <
         typename... ArgTs,
@@ -1416,11 +1401,6 @@ struct FortyTwo
     using atlas_constraint = atlas::constraints::bounded<atlas_bounds>;
 
     constexpr explicit FortyTwo() = default;
-    constexpr FortyTwo(FortyTwo const &) = default;
-    constexpr FortyTwo(FortyTwo &&) = default;
-    constexpr FortyTwo & operator = (FortyTwo const &) = default;
-    constexpr FortyTwo & operator = (FortyTwo &&) = default;
-    constexpr ~FortyTwo() = default;
 
     template <
         typename... ArgTs,
@@ -1492,11 +1472,6 @@ struct BoundedString
     using atlas_constraint = atlas::constraints::bounded<atlas_bounds>;
 
     constexpr explicit BoundedString() = default;
-    constexpr BoundedString(BoundedString const &) = default;
-    constexpr BoundedString(BoundedString &&) = default;
-    constexpr BoundedString & operator = (BoundedString const &) = default;
-    constexpr BoundedString & operator = (BoundedString &&) = default;
-    constexpr ~BoundedString() = default;
 
     template <
         typename... ArgTs,
@@ -1604,5 +1579,5 @@ struct BoundedString
 };
 } // namespace test
 
-#endif // FOO_BAR_EC67817B051C9E831F09B09646D953FDD588FAAE
+#endif // FOO_BAR_F98D4D14F3619E513A09FBE51F47502861C15C4C
 

@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_11A444919506AEEE94543481FA3434E2FAEBAE59
-#define FOO_BAR_11A444919506AEEE94543481FA3434E2FAEBAE59
+#ifndef FOO_BAR_CB1CDE2E15034FF76A44DDCBC4A225AC98F0D209
+#define FOO_BAR_CB1CDE2E15034FF76A44DDCBC4A225AC98F0D209
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -250,11 +250,6 @@ struct BitwiseNotType
     using atlas_value_type = int;
 
     constexpr explicit BitwiseNotType() = default;
-    constexpr BitwiseNotType(BitwiseNotType const &) = default;
-    constexpr BitwiseNotType(BitwiseNotType &&) = default;
-    constexpr BitwiseNotType & operator = (BitwiseNotType const &) = default;
-    constexpr BitwiseNotType & operator = (BitwiseNotType &&) = default;
-    constexpr ~BitwiseNotType() = default;
 
     template <
         typename... ArgTs,
@@ -288,5 +283,5 @@ struct BitwiseNotType
 };
 } // namespace test
 
-#endif // FOO_BAR_11A444919506AEEE94543481FA3434E2FAEBAE59
+#endif // FOO_BAR_CB1CDE2E15034FF76A44DDCBC4A225AC98F0D209
 

@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_ACB42A681E1F1AA9D202173073B04A12A8A56D9E
-#define FOO_BAR_ACB42A681E1F1AA9D202173073B04A12A8A56D9E
+#ifndef FOO_BAR_241D677B9383ACB9227E4B50785E86A74AC31ECD
+#define FOO_BAR_241D677B9383ACB9227E4B50785E86A74AC31ECD
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -250,11 +250,6 @@ struct BoolConversionType
     using atlas_value_type = int;
 
     constexpr explicit BoolConversionType() = default;
-    constexpr BoolConversionType(BoolConversionType const &) = default;
-    constexpr BoolConversionType(BoolConversionType &&) = default;
-    constexpr BoolConversionType & operator = (BoolConversionType const &) = default;
-    constexpr BoolConversionType & operator = (BoolConversionType &&) = default;
-    constexpr ~BoolConversionType() = default;
 
     template <
         typename... ArgTs,
@@ -283,5 +278,5 @@ struct BoolConversionType
 };
 } // namespace test
 
-#endif // FOO_BAR_ACB42A681E1F1AA9D202173073B04A12A8A56D9E
+#endif // FOO_BAR_241D677B9383ACB9227E4B50785E86A74AC31ECD
 

@@ -1,5 +1,5 @@
-#ifndef TEST_CPP11_DEFAULT_16F48EC85B45A3EB2D2128B97F20A257C6AA3F22
-#define TEST_CPP11_DEFAULT_16F48EC85B45A3EB2D2128B97F20A257C6AA3F22
+#ifndef TEST_CPP11_DEFAULT_5C2ABBB53A4B2D7B578F4A4CF4E610BFD7581D06
+#define TEST_CPP11_DEFAULT_5C2ABBB53A4B2D7B578F4A4CF4E610BFD7581D06
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -250,11 +250,6 @@ struct Counter
     using atlas_value_type = int;
 
     constexpr explicit Counter() = default;
-    constexpr Counter(Counter const &) = default;
-    constexpr Counter(Counter &&) = default;
-    constexpr Counter & operator = (Counter const &) = default;
-    constexpr Counter & operator = (Counter &&) = default;
-    constexpr ~Counter() = default;
 
     template <
         typename... ArgTs,
@@ -381,5 +376,5 @@ struct Counter
 };
 } // namespace test
 
-#endif // TEST_CPP11_DEFAULT_16F48EC85B45A3EB2D2128B97F20A257C6AA3F22
+#endif // TEST_CPP11_DEFAULT_5C2ABBB53A4B2D7B578F4A4CF4E610BFD7581D06
 

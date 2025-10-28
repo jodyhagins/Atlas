@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_294F04D0E5AB320AF59B0BD624591B4A3F48154C
-#define FOO_BAR_294F04D0E5AB320AF59B0BD624591B4A3F48154C
+#ifndef FOO_BAR_ED9022F67925331D56B525D9971A714E7127C55F
+#define FOO_BAR_ED9022F67925331D56B525D9971A714E7127C55F
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -534,11 +534,6 @@ struct Username
     using atlas_constraint = atlas::constraints::non_empty<std::string>;
 
     Username() = delete;
-    constexpr Username(Username const &) = default;
-    constexpr Username(Username &&) = default;
-    constexpr Username & operator = (Username const &) = default;
-    constexpr Username & operator = (Username &&) = default;
-    constexpr ~Username() = default;
 
     template <
         typename... ArgTs,
@@ -608,11 +603,6 @@ struct NonEmptyVector
     using atlas_constraint = atlas::constraints::non_empty<std::vector<int>>;
 
     NonEmptyVector() = delete;
-    constexpr NonEmptyVector(NonEmptyVector const &) = default;
-    constexpr NonEmptyVector(NonEmptyVector &&) = default;
-    constexpr NonEmptyVector & operator = (NonEmptyVector const &) = default;
-    constexpr NonEmptyVector & operator = (NonEmptyVector &&) = default;
-    constexpr ~NonEmptyVector() = default;
 
     template <
         typename... ArgTs,
@@ -989,5 +979,5 @@ struct NonEmptyVector
 };
 } // namespace test
 
-#endif // FOO_BAR_294F04D0E5AB320AF59B0BD624591B4A3F48154C
+#endif // FOO_BAR_ED9022F67925331D56B525D9971A714E7127C55F
 

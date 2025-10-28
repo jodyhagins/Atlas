@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_61BE33A8E7C110A4D414AB46C94101AF510C74D8
-#define FOO_BAR_61BE33A8E7C110A4D414AB46C94101AF510C74D8
+#ifndef FOO_BAR_1C6BB3B5CB43CED1C4EFC96BE0B062729B0A55E4
+#define FOO_BAR_1C6BB3B5CB43CED1C4EFC96BE0B062729B0A55E4
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -251,11 +251,6 @@ struct AutoIncludeVector
     using atlas_value_type = std::vector<int>;
 
     constexpr explicit AutoIncludeVector() = default;
-    constexpr AutoIncludeVector(AutoIncludeVector const &) = default;
-    constexpr AutoIncludeVector(AutoIncludeVector &&) = default;
-    constexpr AutoIncludeVector & operator = (AutoIncludeVector const &) = default;
-    constexpr AutoIncludeVector & operator = (AutoIncludeVector &&) = default;
-    constexpr ~AutoIncludeVector() = default;
 
     template <
         typename... ArgTs,
@@ -285,5 +280,5 @@ struct AutoIncludeVector
 };
 } // namespace test
 
-#endif // FOO_BAR_61BE33A8E7C110A4D414AB46C94101AF510C74D8
+#endif // FOO_BAR_1C6BB3B5CB43CED1C4EFC96BE0B062729B0A55E4
 

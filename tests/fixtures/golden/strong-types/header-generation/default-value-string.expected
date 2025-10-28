@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_38EB7B6E0A6FB8D3B3E5C2BF325430BFDE539B9B
-#define FOO_BAR_38EB7B6E0A6FB8D3B3E5C2BF325430BFDE539B9B
+#ifndef FOO_BAR_AE73B2FA8315C46892401D5936328241B462072B
+#define FOO_BAR_AE73B2FA8315C46892401D5936328241B462072B
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -251,11 +251,6 @@ struct DefaultValueString
     using atlas_value_type = std::string;
 
     constexpr explicit DefaultValueString() = default;
-    constexpr DefaultValueString(DefaultValueString const &) = default;
-    constexpr DefaultValueString(DefaultValueString &&) = default;
-    constexpr DefaultValueString & operator = (DefaultValueString const &) = default;
-    constexpr DefaultValueString & operator = (DefaultValueString &&) = default;
-    constexpr ~DefaultValueString() = default;
 
     template <
         typename... ArgTs,
@@ -285,5 +280,5 @@ struct DefaultValueString
 };
 } // namespace test
 
-#endif // FOO_BAR_38EB7B6E0A6FB8D3B3E5C2BF325430BFDE539B9B
+#endif // FOO_BAR_AE73B2FA8315C46892401D5936328241B462072B
 

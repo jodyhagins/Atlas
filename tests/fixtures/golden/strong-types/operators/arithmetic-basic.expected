@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_4163B5F838CF4AD624A15A7664658FB230656048
-#define FOO_BAR_4163B5F838CF4AD624A15A7664658FB230656048
+#ifndef FOO_BAR_55A4AD0D7DF3F426DF5ECEF267BBDB109114429B
+#define FOO_BAR_55A4AD0D7DF3F426DF5ECEF267BBDB109114429B
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -250,11 +250,6 @@ struct ArithmeticBasicType
     using atlas_value_type = int;
 
     constexpr explicit ArithmeticBasicType() = default;
-    constexpr ArithmeticBasicType(ArithmeticBasicType const &) = default;
-    constexpr ArithmeticBasicType(ArithmeticBasicType &&) = default;
-    constexpr ArithmeticBasicType & operator = (ArithmeticBasicType const &) = default;
-    constexpr ArithmeticBasicType & operator = (ArithmeticBasicType &&) = default;
-    constexpr ~ArithmeticBasicType() = default;
 
     template <
         typename... ArgTs,
@@ -423,5 +418,5 @@ struct ArithmeticBasicType
 };
 } // namespace test
 
-#endif // FOO_BAR_4163B5F838CF4AD624A15A7664658FB230656048
+#endif // FOO_BAR_55A4AD0D7DF3F426DF5ECEF267BBDB109114429B
 

@@ -1,5 +1,5 @@
-#ifndef my_app_types_ff9f99ef7f3fdd82cbc734f0ae44d43ef75465cd
-#define my_app_types_ff9f99ef7f3fdd82cbc734f0ae44d43ef75465cd
+#ifndef my_app_types_8cd47c254235540f802da36839a9d4e907f49b64
+#define my_app_types_8cd47c254235540f802da36839a9d4e907f49b64
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -250,11 +250,6 @@ struct LowercaseGuardType
     using atlas_value_type = int;
 
     constexpr explicit LowercaseGuardType() = default;
-    constexpr LowercaseGuardType(LowercaseGuardType const &) = default;
-    constexpr LowercaseGuardType(LowercaseGuardType &&) = default;
-    constexpr LowercaseGuardType & operator = (LowercaseGuardType const &) = default;
-    constexpr LowercaseGuardType & operator = (LowercaseGuardType &&) = default;
-    constexpr ~LowercaseGuardType() = default;
 
     template <
         typename... ArgTs,
@@ -284,5 +279,5 @@ struct LowercaseGuardType
 };
 } // namespace test
 
-#endif // my_app_types_ff9f99ef7f3fdd82cbc734f0ae44d43ef75465cd
+#endif // my_app_types_8cd47c254235540f802da36839a9d4e907f49b64
 

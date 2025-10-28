@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_22F8FD36340B171F410DCE9C9A3EB22ACC940E77
-#define FOO_BAR_22F8FD36340B171F410DCE9C9A3EB22ACC940E77
+#ifndef FOO_BAR_18081784A82A506462F4A1848F3024948DECA1ED
+#define FOO_BAR_18081784A82A506462F4A1848F3024948DECA1ED
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -254,11 +254,6 @@ struct TypeTwo
     using atlas_value_type = std::string;
 
     constexpr explicit TypeTwo() = default;
-    constexpr TypeTwo(TypeTwo const &) = default;
-    constexpr TypeTwo(TypeTwo &&) = default;
-    constexpr TypeTwo & operator = (TypeTwo const &) = default;
-    constexpr TypeTwo & operator = (TypeTwo &&) = default;
-    constexpr ~TypeTwo() = default;
 
     template <
         typename... ArgTs,
@@ -309,5 +304,5 @@ struct std::hash<test::integration::odr::TypeTwo>
             static_cast<std::string const &>(t));
     }
 };
-#endif // FOO_BAR_22F8FD36340B171F410DCE9C9A3EB22ACC940E77
+#endif // FOO_BAR_18081784A82A506462F4A1848F3024948DECA1ED
 

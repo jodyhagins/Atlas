@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_44DE1CE093ECFBE4DD49F04781118E2ECB9F757B
-#define FOO_BAR_44DE1CE093ECFBE4DD49F04781118E2ECB9F757B
+#ifndef FOO_BAR_DA437E2E97495BA14A614F024C88D31C5529F77C
+#define FOO_BAR_DA437E2E97495BA14A614F024C88D31C5529F77C
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -250,11 +250,6 @@ struct PlusStarType
     using atlas_value_type = int;
 
     constexpr explicit PlusStarType() = default;
-    constexpr PlusStarType(PlusStarType const &) = default;
-    constexpr PlusStarType(PlusStarType &&) = default;
-    constexpr PlusStarType & operator = (PlusStarType const &) = default;
-    constexpr PlusStarType & operator = (PlusStarType &&) = default;
-    constexpr ~PlusStarType() = default;
 
     template <
         typename... ArgTs,
@@ -318,5 +313,5 @@ struct PlusStarType
 };
 } // namespace test
 
-#endif // FOO_BAR_44DE1CE093ECFBE4DD49F04781118E2ECB9F757B
+#endif // FOO_BAR_DA437E2E97495BA14A614F024C88D31C5529F77C
 
