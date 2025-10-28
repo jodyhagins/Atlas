@@ -138,135 +138,52 @@ add_test(NAME ArithmeticModesRuntimeTests COMMAND arithmetic_modes_runtime_ut)
 # Ensure types are generated before building the test
 add_dependencies(arithmetic_modes_runtime_ut atlas)
 
-# Positive constraint tests
-set(INPUT "${CMAKE_CURRENT_SOURCE_DIR}/positive_constraint.txt")
-set(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/constraints-positive.hpp")
+# ======================================================================
+# CONSTRAINT INTEGRATION TESTS
+# ======================================================================
+set(INPUT "${CMAKE_CURRENT_SOURCE_DIR}/constraint_integration_test_types.txt")
+set(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/constraint_integration_types.hpp")
 add_custom_command(
     OUTPUT ${OUTPUT}
     COMMAND atlas --input=${INPUT} --output=${OUTPUT}
     DEPENDS atlas ${INPUT}
-    COMMENT "Generating arithmetic modes test types"
+    COMMENT "Generating constraint integration test types"
 )
-add_executable(positive_constraint_ut positive_constraint_ut.cpp ${OUTPUT})
-target_link_libraries(positive_constraint_ut PRIVATE
+add_executable(constraint_integration_ut
+    constraint_integration_ut.cpp
+    ${OUTPUT}
+)
+target_link_libraries(constraint_integration_ut PRIVATE
     doctest::doctest
 )
-add_test(NAME PositiveConstraintTests COMMAND positive_constraint_ut)
-target_include_directories(positive_constraint_ut
+add_test(NAME ConstraintIntegrationTests
+    COMMAND constraint_integration_ut
+)
+target_include_directories(constraint_integration_ut
     PRIVATE
         ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-# Non-negative constraint tests
-set(INPUT "${CMAKE_CURRENT_SOURCE_DIR}/non_negative_constraint.txt")
-set(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/constraints-non-negative.hpp")
+set(INPUT "${CMAKE_CURRENT_SOURCE_DIR}/constraint_integration2_test_types.txt")
+set(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/constraint_integration2_test_types.hpp")
 add_custom_command(
     OUTPUT ${OUTPUT}
     COMMAND atlas --input=${INPUT} --output=${OUTPUT}
     DEPENDS atlas ${INPUT}
-    COMMENT "Generating non-negative constraint test types"
+    COMMENT "Generating more constraint integration test types"
 )
-add_executable(non_negative_constraint_ut non_negative_constraint_ut.cpp ${OUTPUT})
-target_link_libraries(non_negative_constraint_ut PRIVATE
+add_executable(constraint_integration2_ut
+    constraint_integration2_ut.cpp
+    ${OUTPUT}
+)
+target_link_libraries(constraint_integration2_ut PRIVATE
     doctest::doctest
 )
-add_test(NAME NonNegativeConstraintTests COMMAND non_negative_constraint_ut)
-target_include_directories(non_negative_constraint_ut
+add_test(NAME MoreConstraintIntegrationTests
+    COMMAND constraint_integration2_ut
+)
+target_include_directories(constraint_integration2_ut
     PRIVATE
         ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-# Non-zero constraint tests
-set(INPUT "${CMAKE_CURRENT_SOURCE_DIR}/non_zero_constraint.txt")
-set(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/constraints-non-zero.hpp")
-add_custom_command(
-    OUTPUT ${OUTPUT}
-    COMMAND atlas --input=${INPUT} --output=${OUTPUT}
-    DEPENDS atlas ${INPUT}
-    COMMENT "Generating non-zero constraint test types"
-)
-add_executable(non_zero_constraint_ut non_zero_constraint_ut.cpp ${OUTPUT})
-target_link_libraries(non_zero_constraint_ut PRIVATE
-    doctest::doctest
-)
-add_test(NAME NonZeroConstraintTests COMMAND non_zero_constraint_ut)
-target_include_directories(non_zero_constraint_ut
-    PRIVATE
-        ${CMAKE_CURRENT_BINARY_DIR}
-)
-
-# Bounded constraint tests
-set(INPUT "${CMAKE_CURRENT_SOURCE_DIR}/bounded_constraint.txt")
-set(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/constraints-bounded.hpp")
-add_custom_command(
-    OUTPUT ${OUTPUT}
-    COMMAND atlas --input=${INPUT} --output=${OUTPUT}
-    DEPENDS atlas ${INPUT}
-    COMMENT "Generating bounded constraint test types"
-)
-add_executable(bounded_constraint_ut bounded_constraint_ut.cpp ${OUTPUT})
-target_link_libraries(bounded_constraint_ut PRIVATE
-    doctest::doctest
-)
-add_test(NAME BoundedConstraintTests COMMAND bounded_constraint_ut)
-target_include_directories(bounded_constraint_ut
-    PRIVATE
-        ${CMAKE_CURRENT_BINARY_DIR}
-)
-
-# Bounded range constraint tests (half-open range semantics)
-set(INPUT "${CMAKE_CURRENT_SOURCE_DIR}/fixtures/golden/strong-types/constraints/bounded_range.input")
-set(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/constraints-bounded_range.hpp")
-add_custom_command(
-    OUTPUT ${OUTPUT}
-    COMMAND atlas --input=${INPUT} --output=${OUTPUT}
-    DEPENDS atlas ${INPUT}
-    COMMENT "Generating bounded_range constraint test types"
-)
-add_executable(bounded_range_constraint_ut bounded_range_constraint_ut.cpp ${OUTPUT})
-target_link_libraries(bounded_range_constraint_ut PRIVATE
-    doctest::doctest
-)
-add_test(NAME BoundedRangeConstraintTests COMMAND bounded_range_constraint_ut)
-target_include_directories(bounded_range_constraint_ut
-    PRIVATE
-        ${CMAKE_CURRENT_BINARY_DIR}
-)
-
-# Non-empty constraint tests
-set(INPUT "${CMAKE_CURRENT_SOURCE_DIR}/non_empty_constraint.txt")
-set(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/constraints-non-empty.hpp")
-add_custom_command(
-    OUTPUT ${OUTPUT}
-    COMMAND atlas --input=${INPUT} --output=${OUTPUT}
-    DEPENDS atlas ${INPUT}
-    COMMENT "Generating non-empty constraint test types"
-)
-add_executable(non_empty_constraint_ut non_empty_constraint_ut.cpp ${OUTPUT})
-target_link_libraries(non_empty_constraint_ut PRIVATE
-    doctest::doctest
-)
-add_test(NAME NonEmptyConstraintTests COMMAND non_empty_constraint_ut)
-target_include_directories(non_empty_constraint_ut
-    PRIVATE
-        ${CMAKE_CURRENT_BINARY_DIR}
-)
-
-# Non-null constraint tests
-set(INPUT "${CMAKE_CURRENT_SOURCE_DIR}/non_null_constraint.txt")
-set(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/constraints-non-null.hpp")
-add_custom_command(
-    OUTPUT ${OUTPUT}
-    COMMAND atlas --input=${INPUT} --output=${OUTPUT}
-    DEPENDS atlas ${INPUT}
-    COMMENT "Generating non-null constraint test types"
-)
-add_executable(non_null_constraint_ut non_null_constraint_ut.cpp ${OUTPUT})
-target_link_libraries(non_null_constraint_ut PRIVATE
-    doctest::doctest
-)
-add_test(NAME NonNullConstraintTests COMMAND non_null_constraint_ut)
-target_include_directories(non_null_constraint_ut
-    PRIVATE
-        ${CMAKE_CURRENT_BINARY_DIR}
-)

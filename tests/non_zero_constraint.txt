@@ -1,7 +1,7 @@
 # Test: Basic non_zero constraint
 # Feature: Value must be != 0
 [test::NonZeroInt]
-description=int; non_zero, ==, <=>, +, -, *
+description=int; non_zero, <=>, +, -, *
 
 # Test: Non-zero denominator for division
 # Feature: Safe division with non-zero divisor

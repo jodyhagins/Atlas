@@ -1,7 +1,7 @@
 # Test: Basic positive constraint
 # Feature: Value must be > 0
 [test::PositiveInt]
-description=int; positive, ==, <=>
+description=int; positive, <=>
 
 # Test: Positive constraint with checked arithmetic
 # Feature: Positive values with overflow checking

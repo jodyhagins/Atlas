@@ -1,0 +1,246 @@
+# ======================================================================
+# CONSTRAINT INTEGRATION TEST TYPES
+# Consolidation of ALL constraint test type definitions (Tasks 2-8)
+# ======================================================================
+
+# ======================================================================
+# TASK 2: POSITIVE CONSTRAINT
+# Value must be > 0
+# ======================================================================
+
+[test::constraints::PositiveInt]
+description=int; positive, <=>
+
+[test::constraints::PositiveChecked]
+description=std::uint8_t; positive, +, -, checked, #<cstdint>
+
+[test::constraints::PositiveSaturating]
+description=std::uint8_t; positive, +, -, saturating, #<cstdint>
+
+[test::constraints::PositiveWrapping]
+description=std::uint8_t; positive, +, -, wrapping, #<cstdint>
+
+# ======================================================================
+# TASK 3: NON-NEGATIVE CONSTRAINT
+# Value must be >= 0
+# ======================================================================
+
+[test::constraints::NonNegativeInt]
+description=int; non_negative, <=>, +, -
+
+[test::constraints::NonNegativeChecked]
+description=std::uint8_t; non_negative, +, -, checked, #<cstdint>
+
+[test::constraints::NonNegativeSaturating]
+description=std::uint8_t; non_negative, +, -, saturating, #<cstdint>
+
+# ======================================================================
+# TASK 4: NON-ZERO CONSTRAINT
+# Value must be != 0
+# ======================================================================
+
+[test::constraints::NonZeroInt]
+description=int; non_zero, <=>, +, -, *
+
+[test::constraints::Denominator]
+description=int; non_zero, *, /
+
+[test::constraints::NonZeroUChar]
+description=unsigned char; non_zero, *
+
+# ======================================================================
+# TASK 5: BOUNDED CONSTRAINT
+# Value must be in closed range [Min, Max]
+# ======================================================================
+
+[test::constraints::Percentage]
+description=int; bounded<0,100>, <=>
+
+[test::constraints::Temperature]
+description=double; bounded<-273.15,1e7>, +, -, *, /, c++20
+
+[test::constraints::BoundedChecked]
+description=std::uint8_t; bounded<0,100>, +, -, checked, #<cstdint>
+
+[test::constraints::FortyTwo]
+description=int; bounded<42,42>, ==
+
+[test::constraints::BoundedString]
+description=std::string; bounded<"A", "AAAA">, <=>
+
+# ======================================================================
+# TASK 5.5: BOUNDED_RANGE CONSTRAINT
+# Value must be in half-open range [Min, Max)
+# ======================================================================
+
+[test::constraints::HalfOpenPercentage]
+description=int; bounded_range<0,100>, <=>
+
+[test::constraints::CelsiusRange]
+description=double; bounded_range<0.0,100.0>, +, -, *, /, c++20
+
+[test::constraints::BoundedRangeChecked]
+description=std::uint8_t; bounded_range<0,100>, +, -, checked, #<cstdint>
+
+[test::constraints::TinyRange]
+description=int; bounded_range<42,44>, ==
+
+[test::constraints::NegativeRange]
+description=int; bounded_range<-10,10>, +, -, <=>
+
+[test::constraints::BoundedRangeString]
+description=std::string; bounded_range<"A", "AAAA">, <=>
+
+# ======================================================================
+# TASK 6: NON-EMPTY CONSTRAINT
+# Container/string must not be empty
+# ======================================================================
+
+[test::constraints::Username]
+description=std::string; non_empty, ==, !=
+
+[test::constraints::NonEmptyVector]
+description=std::vector<int>; non_empty, ==, !=, #<vector>
+forward=size, empty, push_back, pop_back, clear
+
+# ======================================================================
+# TASK 7: NON-NULL CONSTRAINT
+# Pointer/optional must not be null
+# ======================================================================
+
+[test::constraints::Handle]
+description=void*; non_null, ==, !=
+
+[test::constraints::DataPointer]
+description=int*; non_null, ==, !=, ->
+
+[test::constraints::SharedPointer]
+description=std::shared_ptr<int>; non_null, no-constexpr, ==, !=, #<memory>
+
+[test::constraints::UniquePointer]
+description=std::unique_ptr<int>; non_null, no-constexpr, ==, !=, #<memory>
+
+[test::constraints::Optional]
+description=std::optional<int>; non_null, no-constexpr, ==, !=
+
+# ======================================================================
+# TASK 8: CONSTRAINT INTEGRATION TESTS
+# Arithmetic mode composition, feature interaction, edge cases
+# ======================================================================
+
+# === Positive Constraint × Arithmetic Modes ===
+
+[test::arithmetic::PositiveDefault]
+description=std::uint8_t; positive, +, -, #<cstdint>
+
+[test::arithmetic::PositiveChecked]
+description=std::uint8_t; positive, +, -, checked, #<cstdint>
+
+[test::arithmetic::PositiveSaturating]
+description=std::uint8_t; positive, +, -, saturating, #<cstdint>
+
+[test::arithmetic::PositiveWrapping]
+description=std::uint8_t; positive, +, -, wrapping, #<cstdint>
+
+# === Non-Negative Constraint × Arithmetic Modes ===
+
+[test::arithmetic::NonNegativeDefault]
+description=std::uint8_t; non_negative, +, -, #<cstdint>
+
+[test::arithmetic::NonNegativeChecked]
+description=std::uint8_t; non_negative, +, -, checked, #<cstdint>
+
+[test::arithmetic::NonNegativeSaturating]
+description=std::uint8_t; non_negative, +, -, saturating, #<cstdint>
+
+[test::arithmetic::NonNegativeWrapping]
+description=std::uint8_t; non_negative, +, -, wrapping, #<cstdint>
+
+# === Non-Zero Constraint × Arithmetic Modes ===
+
+[test::arithmetic::NonZeroDefault]
+description=std::uint8_t; non_zero, +, -, #<cstdint>
+
+[test::arithmetic::NonZeroChecked]
+description=std::uint8_t; non_zero, +, -, checked, #<cstdint>
+
+[test::arithmetic::NonZeroSaturating]
+description=std::uint8_t; non_zero, +, -, saturating, #<cstdint>
+
+[test::arithmetic::NonZeroWrapping]
+description=std::uint8_t; non_zero, +, -, wrapping, #<cstdint>
+
+# === Bounded Constraint × Arithmetic Modes ===
+
+[test::arithmetic::BoundedDefault]
+description=std::uint8_t; bounded<10,200>, +, -, #<cstdint>
+
+[test::arithmetic::BoundedChecked]
+description=std::uint8_t; bounded<10,200>, +, -, checked, #<cstdint>
+
+[test::arithmetic::BoundedSaturating]
+description=std::uint8_t; bounded<10,200>, +, -, saturating, #<cstdint>
+
+[test::arithmetic::BoundedWrapping]
+description=std::uint8_t; bounded<10,200>, +, -, wrapping, #<cstdint>
+
+# === Feature Interaction Types ===
+
+[test::features::NonEmptyWithForwarding]
+description=std::string; non_empty, <=>
+forward=size, empty, clear, length
+
+[test::features::PositiveWithCast]
+description=int; positive, cast<double>, cast<long>
+
+[test::features::BoundedWithHash]
+description=int; bounded<0,100>, ==, hash
+
+[test::features::NonNegativeWithComparison]
+description=int; non_negative, ==, !=, <, <=, >, >=
+
+[test::features::ComplexComposition]
+description=std::uint16_t; bounded<1024,65535>, +, -, checked, <=>, hash, #<cstdint>
+
+[test::features::NonNullWithForwarding]
+description=std::unique_ptr<int>; non_null, no-constexpr, ==, !=, ->, #<memory>
+forward=get
+
+[test::features::NonEmptyVectorOps]
+description=std::vector<int>; non_empty, ==, #<vector>
+forward=size, empty, front, back, push_back
+
+[test::features::BoundedRangeWithCmp]
+description=int; bounded_range<0,10>, <=>
+
+# === Edge Case Types ===
+
+[test::edge_cases::PositiveIntMoveCopy]
+description=int; positive, <=>
+
+[test::edge_cases::NonEmptyStringMoveCopy]
+description=std::string; non_empty, ==
+
+[test::edge_cases::PositiveForOptional]
+description=int; positive, ==
+
+[test::edge_cases::BoundedForOptional]
+description=int; bounded<0,100>, ==
+
+[test::edge_cases::NonZeroForVariant]
+description=int; non_zero, ==
+
+[test::edge_cases::NonNegativeForVariant]
+description=int; non_negative, ==
+
+[test::edge_cases::PositiveWithAssignment]
+description=int; positive, <=>
+
+[test::edge_cases::NonNullUniquePtr]
+description=std::unique_ptr<int>; non_null, #<memory>
+
+[test::edge_cases::PositiveForConstexpr]
+description=int; positive, ==, <, >, c++20
+
+[test::edge_cases::BoundedForConstexpr]
+description=int; bounded<1,100>, ==, <, >, c++20

@@ -1,0 +1,5 @@
+# Test: Complex composition of constraint with multiple features
+# Feature: bounded + checked + comparison + hash
+
+[net::ServerPort]
+description=std::uint16_t; bounded<1024,65535>, +, -, checked, <=>, hash, #<cstdint>

@@ -1,0 +1,137 @@
+# Integration Test: Constraint × Arithmetic Mode Composition
+# All 16 combinations: positive, non_negative, non_zero, bounded × default, checked, saturating, wrapping
+
+# === Positive Constraint × Arithmetic Modes ===
+
+[test::PositiveDefault]
+description=std::uint8_t; positive, +, -, #<cstdint>
+
+[test::PositiveChecked]
+description=std::uint8_t; positive, +, -, checked, #<cstdint>
+
+[test::PositiveSaturating]
+description=std::uint8_t; positive, +, -, saturating, #<cstdint>
+
+[test::PositiveWrapping]
+description=std::uint8_t; positive, +, -, wrapping, #<cstdint>
+
+# === Non-Negative Constraint × Arithmetic Modes ===
+
+[test::NonNegativeDefault]
+description=std::uint8_t; non_negative, +, -, #<cstdint>
+
+[test::NonNegativeChecked]
+description=std::uint8_t; non_negative, +, -, checked, #<cstdint>
+
+[test::NonNegativeSaturating]
+description=std::uint8_t; non_negative, +, -, saturating, #<cstdint>
+
+[test::NonNegativeWrapping]
+description=std::uint8_t; non_negative, +, -, wrapping, #<cstdint>
+
+# === Non-Zero Constraint × Arithmetic Modes ===
+
+[test::NonZeroDefault]
+description=std::uint8_t; non_zero, +, -, #<cstdint>
+
+[test::NonZeroChecked]
+description=std::uint8_t; non_zero, +, -, checked, #<cstdint>
+
+[test::NonZeroSaturating]
+description=std::uint8_t; non_zero, +, -, saturating, #<cstdint>
+
+[test::NonZeroWrapping]
+description=std::uint8_t; non_zero, +, -, wrapping, #<cstdint>
+
+# === Bounded Constraint × Arithmetic Modes ===
+
+[test::BoundedDefault]
+description=std::uint8_t; bounded<10,200>, +, -, #<cstdint>
+
+[test::BoundedChecked]
+description=std::uint8_t; bounded<10,200>, +, -, checked, #<cstdint>
+
+[test::BoundedSaturating]
+description=std::uint8_t; bounded<10,200>, +, -, saturating, #<cstdint>
+
+[test::BoundedWrapping]
+description=std::uint8_t; bounded<10,200>, +, -, wrapping, #<cstdint>
+
+
+# Integration Test: Edge Cases
+# Move/copy semantics, optional, variant, etc.
+
+# Basic types for move/copy testing
+[test::PositiveIntMoveCopy]
+description=int; positive, <=>
+
+[test::NonEmptyStringMoveCopy]
+description=std::string; non_empty, ==
+
+# Types for std::optional testing
+[test::PositiveForOptional]
+description=int; positive, ==
+
+[test::BoundedForOptional]
+description=int; bounded<0,100>, ==
+
+# Types for std::variant testing
+[test::NonZeroForVariant]
+description=int; non_zero, ==
+
+[test::NonNegativeForVariant]
+description=int; non_negative, ==
+
+# Types with assignment operators
+[test::PositiveWithAssignment]
+description=int; positive, <=>
+
+# Complex type for move semantics
+[test::NonNullUniquePtr]
+description=std::unique_ptr<int>; non_null, #<memory>
+
+# Type for constexpr testing with comparison
+[test::PositiveForConstexpr]
+description=int; positive, ==, <, >, c++20
+
+[test::BoundedForConstexpr]
+description=int; bounded<1,100>, ==, <, >, c++20
+
+
+# Integration Test: Constraint + Other Features
+# Test constraints with forwarding, cast operators, hash, comparison, etc.
+
+# Constraint + Forwarding
+[test::NonEmptyWithForwarding]
+description=std::string; non_empty, <=>
+forward=size, empty, clear, length
+
+# Constraint + Cast Operators
+[test::PositiveWithCast]
+description=int; positive, cast<double>, cast<long>
+
+# Constraint + Hash
+[test::BoundedWithHash]
+description=int; bounded<0,100>, ==, hash
+
+# Constraint + Comparison Operators
+[test::NonNegativeWithComparison]
+description=int; non_negative, ==, !=, <, <=, >, >=
+
+# Constraint + Multiple Features
+[test::ComplexComposition]
+description=std::uint16_t; bounded<1024,65535>, +, -, checked, <=>, hash, #<cstdint>
+
+# Non-null with operator->
+[test::NonNullWithForwarding]
+description=std::unique_ptr<int>; non_null, no-constexpr, ==, !=, ->, #<memory>
+forward=get
+
+# Non-empty vector with operations
+[test::NonEmptyVectorOps]
+description=std::vector<int>; non_empty, ==, #<vector>
+forward=size, empty, front, back, push_back
+
+# Bounded range with comparison
+[test::BoundedRangeWithCmp]
+description=int; bounded_range<0,10>, <=>

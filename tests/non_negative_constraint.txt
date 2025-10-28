@@ -1,7 +1,7 @@
 # Test: Basic non_negative constraint
 # Feature: Value must be >= 0
 [test::NonNegativeInt]
-description=int; non_negative, ==, <=>, +, -
+description=int; non_negative, <=>, +, -
 
 # Test: Non-negative constraint with checked arithmetic
 # Feature: Non-negative values with overflow checking
