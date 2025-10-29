@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_9E1FAE24031A72C0A1D083E08E92141267EC0F96
-#define FOO_BAR_9E1FAE24031A72C0A1D083E08E92141267EC0F96
+#ifndef FOO_BAR_61A7D1F39FABF3C3820A0F322A4FDBE2EAEE2EDA
+#define FOO_BAR_61A7D1F39FABF3C3820A0F322A4FDBE2EAEE2EDA
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -251,11 +251,6 @@ struct ExplicitIncludeQuote
     using atlas_value_type = int;
 
     constexpr explicit ExplicitIncludeQuote() = default;
-    constexpr ExplicitIncludeQuote(ExplicitIncludeQuote const &) = default;
-    constexpr ExplicitIncludeQuote(ExplicitIncludeQuote &&) = default;
-    constexpr ExplicitIncludeQuote & operator = (ExplicitIncludeQuote const &) = default;
-    constexpr ExplicitIncludeQuote & operator = (ExplicitIncludeQuote &&) = default;
-    constexpr ~ExplicitIncludeQuote() = default;
 
     template <
         typename... ArgTs,
@@ -285,5 +280,5 @@ struct ExplicitIncludeQuote
 };
 } // namespace test
 
-#endif // FOO_BAR_9E1FAE24031A72C0A1D083E08E92141267EC0F96
+#endif // FOO_BAR_61A7D1F39FABF3C3820A0F322A4FDBE2EAEE2EDA
 

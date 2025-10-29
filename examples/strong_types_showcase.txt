@@ -44,26 +44,26 @@ default_value=0.0
 kind=class
 namespace=ids::v1
 name=UserId
-description=strong unsigned long; ==, !=, <=>, hash, no-constexpr-hash
+description=strong unsigned long; <=>, hash, no-constexpr-hash
 default_value=0
 
 [type]
 kind=struct
 namespace=physics::units
 name=Meters
-description=strong double; +, -, *, /, u-, ==, !=, <=>
+description=strong double; +, -, *, /, u-, <=>
 
 [type]
 kind=struct
 namespace=physics::units
 name=Seconds
-description=strong double; +, -, *, /, u-, ==, !=, <=>
+description=strong double; +, -, *, /, u-, <=>
 
 [type]
 kind=struct
 namespace=physics::units
 name=MetersPerSecond
-description=strong double; +, -, *, /, u-, ==, !=, <=>
+description=strong double; +, -, *, /, u-, <=>
 
 [type]
 kind=struct
@@ -76,7 +76,7 @@ default_value=0
 kind=struct
 namespace=graphics::color
 name=RedChannel
-description=strong uint8_t; +, -, *, /, &, |, ^, ~, ==, !=, <=>
+description=strong uint8_t; +, -, *, /, &, |, ^, ~, <=>
 default_value=0
 
 [type]
@@ -109,13 +109,13 @@ description=strong int; ==, !=, <<, hash, no-constexpr, no-constexpr-hash
 kind=struct
 namespace=math::rational
 name=Numerator
-description=strong long; +, -, *, ==, !=, <=>
+description=strong long; +, -, *, <=>
 
 [type]
 kind=struct
 namespace=math::rational
 name=Denominator
-description=strong long; *, /, ==, !=, <=>
+description=strong long; *, /, <=>
 default_value=1
 
 [type]
@@ -199,7 +199,7 @@ description=strong int; ==, implicit_cast<bool>
 kind=struct
 namespace=demo::optional_strong
 name=Temperature
-description=double; +, -, ==, <=>
+description=double; +, -, <=>
 default_value=20.0
 
 # Global namespace support - generates type in global scope
@@ -214,7 +214,7 @@ description=unsigned long; ==, !=, hash
 kind=struct
 namespace=demo::constants
 name=HttpStatusCode
-description=unsigned short; ==, !=, <=>
+description=unsigned short; <=>
 constants=ok:200; created: 201; bad_request :400; not_found : 404; server_error:500
 
 [type]
@@ -230,11 +230,11 @@ constants=critical : 4
 [RequestCount]
 kind=struct
 namespace=demo::inline_syntax
-description=unsigned int; ++, --, ==, <=>
+description=unsigned int; ++, --, <=>
 
 [struct SessionTimeout]
 namespace=demo::inline_syntax
-description=std::chrono::seconds; ==, !=, <=>
+description=std::chrono::seconds; <=>
 
 # Member Function Forwarding - expose member functions from wrapped types
 
@@ -281,3 +281,248 @@ name=ManagedString
 description=std::string; ==, !=, hash
 forward=size:length,empty:is_empty
 forward=clear,append
+
+#================================================================================
+# CONSTRAINED TYPES - Enforce invariants at construction time
+#================================================================================
+
+# Positive constraint - value must be > 0
+# Used for quantities that cannot be zero or negative (prices, speeds, etc.)
+[type]
+kind=struct
+namespace=finance::pricing
+name=Price
+description=double; positive, +, -, *, /, <=>
+default_value=1.0
+
+# Non-negative constraint - value must be >= 0
+# Used for measurements that can be zero but not negative (distances, counts)
+[type]
+kind=struct
+namespace=physics::measurements
+name=Distance
+description=double; non_negative, +, -, <=>
+default_value=0.0
+
+# Non-zero constraint - value cannot be zero (positive or negative ok)
+# Used for divisors and denominators to prevent division by zero
+[type]
+kind=struct
+namespace=math::rational
+name=Divisor
+description=int; non_zero, *, /, ==, !=
+default_value=1
+
+# Bounded constraint - value must be in closed range [Min, Max]
+# Volume control limited to 0-100 range
+[type]
+kind=struct
+namespace=audio::controls
+name=Volume
+description=int; bounded<0,100>, +, -, <=>
+default_value=50
+
+# Bounded with different range - server ports typically 1024-65535
+[type]
+kind=struct
+namespace=net::config
+name=ServerPort
+description=uint16_t; bounded<1024,65535>, <=>
+default_value=8080
+
+# Bounded percentage - classic 0-100 range
+[type]
+kind=struct
+namespace=math::stats
+name=Percentage
+description=int; bounded<0,100>, +, -, <=>
+default_value=0
+
+# Non-empty constraint - strings cannot be empty
+# Note: default constructor is DELETED for non_empty types
+[type]
+kind=struct
+namespace=auth::credentials
+name=Username
+description=std::string; non_empty, ==, !=, <, <<, hash
+
+# Non-empty container - vector must have at least one element
+[type]
+kind=struct
+namespace=data::collections
+name=NonEmptyList
+description=std::vector<int>; non_empty, ==, iterable, []
+
+# Non-null constraint - pointer must not be nullptr
+[type]
+kind=struct
+namespace=sys::resources
+name=ResourceHandle
+description=void*; non_null, ==, !=
+
+#================================================================================
+# CONSTRAINED TYPES WITH ARITHMETIC MODES - Combining constraints with overflow handling
+#================================================================================
+
+# Bounded with checked arithmetic - detects both overflow AND constraint violations
+# Throws on overflow OR if result violates bounds
+[type]
+kind=struct
+namespace=audio::dsp
+name=BoundedChecked
+description=uint8_t; bounded<0,100>, +, -, *, checked
+
+# Positive with saturating arithmetic - prevents overflow and negative values
+# Operations saturate at type limits, then constraint is checked
+[type]
+kind=struct
+namespace=graphics::color
+name=PositiveSaturating
+description=uint8_t; positive, +, -, saturating
+default_value=1
+
+# Non-negative with wrapping arithmetic - wraps on overflow, then validates >= 0
+[type]
+kind=struct
+namespace=counter::metrics
+name=NonNegativeWrapping
+description=uint8_t; non_negative, +, -, wrapping
+default_value=0
+
+# Bounded with saturation - useful for safe clamping
+[type]
+kind=struct
+namespace=game::stats
+name=HealthPoints
+description=uint16_t; bounded<0,1000>, +, -, saturating
+default_value=100
+
+#================================================================================
+# REAL-WORLD CONSTRAINED TYPE EXAMPLES - Practical use cases
+#================================================================================
+
+# Temperature in Celsius with reasonable bounds
+[type]
+kind=struct
+namespace=weather::sensors
+name=CelsiusTemp
+description=int; bounded<-50,50>, <=>
+default_value=20
+
+# Age must be positive
+[type]
+kind=struct
+namespace=demographics::data
+name=Age
+description=unsigned int; positive, ==, !=, <, <<
+default_value=1
+
+# RGB color channel - 0-255 range
+[type]
+kind=struct
+namespace=graphics::rendering
+name=ColorChannel
+description=uint8_t; bounded<0,255>, +, -, <=>
+default_value=0
+
+# Battery percentage with arithmetic support
+[type]
+kind=struct
+namespace=mobile::power
+name=BatteryLevel
+description=uint8_t; bounded<0,100>, -, ==, <, <=, >=, >
+default_value=100
+
+# Database connection timeout - must be positive
+[type]
+kind=struct
+namespace=db::config
+name=TimeoutSeconds
+description=unsigned int; positive, <=>
+default_value=30
+
+# Non-empty API key for authentication
+[type]
+kind=class
+namespace=api::security
+name=ApiKey
+description=std::string; non_empty, ==, !=, hash
+
+# Thread priority level bounded to valid range
+[type]
+kind=struct
+namespace=sys::scheduling
+name=ThreadPriority
+description=int; bounded<-20,19>, <=>
+default_value=0
+
+# Retry count must be non-negative
+[type]
+kind=struct
+namespace=net::resilience
+name=RetryCount
+description=unsigned int; non_negative, ++, --, ==
+default_value=0
+
+# Latitude must be in valid geographic range
+[type]
+kind=struct
+namespace=geo::coordinates
+name=Latitude
+description=double; bounded<-90,90>, <=>
+default_value=0.0
+
+# Longitude must be in valid geographic range
+[type]
+kind=struct
+namespace=geo::coordinates
+name=Longitude
+description=double; bounded<-180,180>, <=>
+default_value=0.0
+
+# Quality of Service level 0-9
+[type]
+kind=struct
+namespace=net::qos
+name=QoSLevel
+description=uint8_t; bounded<0,9>, <=>
+default_value=0
+
+# Zoom level for maps - typically 0-20
+[type]
+kind=struct
+namespace=maps::display
+name=ZoomLevel
+description=uint8_t; bounded<0,20>, ++, --, <=>
+default_value=10
+
+# Non-zero divisor with arithmetic operations
+[type]
+kind=struct
+namespace=math::calculations
+name=SafeDivisor
+description=double; non_zero, *, /, ==, !=
+default_value=1.0
+
+# Positive speed with full arithmetic
+[type]
+kind=struct
+namespace=physics::kinematics
+name=Speed
+description=double; positive, +, -, *, /, <=>
+default_value=1.0
+
+# Non-empty filename with string operations
+[type]
+kind=struct
+namespace=fs::paths
+name=Filename
+description=std::string; non_empty, +, ==, !=, <<
+
+# Valid HTTP status code range
+[type]
+kind=struct
+namespace=http::protocol
+name=StatusCode
+description=uint16_t; bounded<100,599>, <=>
+default_value=200

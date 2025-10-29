@@ -1,5 +1,5 @@
-#ifndef TEST_CPP17_DESC_0F10D47A0D98363C1F8CBBFB3BF7DB01A6675B27
-#define TEST_CPP17_DESC_0F10D47A0D98363C1F8CBBFB3BF7DB01A6675B27
+#ifndef TEST_CPP17_DESC_95DBFF092FCC04F0D1B65A572B694D4A1D2A4B17
+#define TEST_CPP17_DESC_95DBFF092FCC04F0D1B65A572B694D4A1D2A4B17
 
 static_assert(__cplusplus >= 201703L,
     "This file requires C++17 or later. Compile with -std=c++17 or higher.");
@@ -253,11 +253,6 @@ struct Distance
     using atlas_value_type = int;
 
     constexpr explicit Distance() = default;
-    constexpr Distance(Distance const &) = default;
-    constexpr Distance(Distance &&) = default;
-    constexpr Distance & operator = (Distance const &) = default;
-    constexpr Distance & operator = (Distance &&) = default;
-    constexpr ~Distance() = default;
 
     template <
         typename... ArgTs,
@@ -380,5 +375,5 @@ struct Distance
 };
 } // namespace test
 
-#endif // TEST_CPP17_DESC_0F10D47A0D98363C1F8CBBFB3BF7DB01A6675B27
+#endif // TEST_CPP17_DESC_95DBFF092FCC04F0D1B65A572B694D4A1D2A4B17
 

@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_462174A426EA7720FFF716F8E9CC29327516F1A7
-#define FOO_BAR_462174A426EA7720FFF716F8E9CC29327516F1A7
+#ifndef FOO_BAR_656DC0A9D4F46302618435C5A88A89F15177E927
+#define FOO_BAR_656DC0A9D4F46302618435C5A88A89F15177E927
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -254,11 +254,6 @@ struct FormattableInt
     using atlas_value_type = int;
 
     constexpr explicit FormattableInt() = default;
-    constexpr FormattableInt(FormattableInt const &) = default;
-    constexpr FormattableInt(FormattableInt &&) = default;
-    constexpr FormattableInt & operator = (FormattableInt const &) = default;
-    constexpr FormattableInt & operator = (FormattableInt &&) = default;
-    constexpr ~FormattableInt() = default;
 
     template <
         typename... ArgTs,
@@ -311,5 +306,5 @@ struct std::formatter<test::integration::FormattableInt> : std::formatter<int>
     }
 };
 #endif // defined(__cpp_lib_format) && __cpp_lib_format >= 202110L
-#endif // FOO_BAR_462174A426EA7720FFF716F8E9CC29327516F1A7
+#endif // FOO_BAR_656DC0A9D4F46302618435C5A88A89F15177E927
 

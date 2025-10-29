@@ -24,8 +24,7 @@
 
 #include <iostream>
 
-namespace wjh::atlas {
-inline namespace v1 {
+namespace wjh::atlas { inline namespace v1 {
 
 
 BOOST_DESCRIBE_STRUCT(
@@ -140,16 +139,34 @@ auto strong_template = R"(
 {{{.}}}
 {{/public_specifier}}
     using atlas_value_type = {{{underlying_type}}};
+{{#has_constraint}}
+{{#is_bounded}}
+    struct atlas_bounds
+    {
+        using value_type = atlas_value_type;
+        static {{{const_expr}}}value_type min() noexcept {
+            return value_type({{{bounded_min}}});
+        }
+        static {{{const_expr}}}value_type max() noexcept {
+            return value_type({{{bounded_max}}});
+        }
+        static {{{const_expr}}}char const * message() noexcept {
+            return "{{{constraint_message}}}";
+        }
+    };
+{{/is_bounded}}
+    using atlas_constraint = atlas::constraints::{{{constraint_type}}}{{{constraint_template_args}}};
+{{/has_constraint}}
 {{#constants}}
 {{>constant_declarations}}
 {{/constants}}
 
+{{#delete_default_constructor}}
+    {{{class_name}}}() = delete;
+{{/delete_default_constructor}}
+{{^delete_default_constructor}}
     {{{const_expr}}}explicit {{{class_name}}}() = default;
-    {{{const_expr}}}{{{class_name}}}({{{class_name}}} const &) = default;
-    {{{const_expr}}}{{{class_name}}}({{{class_name}}} &&) = default;
-    {{{const_expr}}}{{{class_name}}} & operator = ({{{class_name}}} const &) = default;
-    {{{const_expr}}}{{{class_name}}} & operator = ({{{class_name}}} &&) = default;
-    {{{const_expr}}}~{{{class_name}}}() = default;
+{{/delete_default_constructor}}
 
     template <
         typename... ArgTs,
@@ -158,7 +175,19 @@ auto strong_template = R"(
             bool>::type = true>
     {{{const_expr}}}explicit {{{class_name}}}(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
+    {{#has_constraint}}
+    {
+        if (not atlas_constraint::check(value)) {
+            throw atlas::ConstraintError(
+                "{{{class_name}}}: " +
+                atlas::constraints::detail::format_value(value) +
+                " violates constraint: {{{constraint_message}}}");
+        }
+    }
+    {{/has_constraint}}
+    {{^has_constraint}}
     { }
+    {{/has_constraint}}
     {{#template_assignment_operator}}
     {{>template_assignment_operator}}
     {{/template_assignment_operator}}
@@ -320,13 +349,14 @@ constexpr char relational_operator[] = R"(
     }
 )";
 
-constexpr char arithmetic_binary_operators[] = R"(
+constexpr char arithmetic_binary_operators[] = R"__(
     /**
      * Apply {{{op}}} assignment to the wrapped objects.
      */
     friend {{{const_expr}}}{{{class_name}}} & operator {{{op}}}= (
         {{{class_name}}} & lhs,
         {{{class_name}}} const & rhs)
+{{^has_constraint}}
 #if defined(__clang__)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunevaluated-expression"
@@ -335,8 +365,16 @@ constexpr char arithmetic_binary_operators[] = R"(
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
+{{/has_constraint}}
     {
         lhs.value {{{op}}}= rhs.value;
+        {{#has_constraint}}
+        if (not atlas_constraint::check(lhs.value)) {
+            throw atlas::ConstraintError(
+                "{{{class_name}}}: arithmetic result violates constraint"
+                " ({{{constraint_message}}})");
+        }
+        {{/has_constraint}}
         return lhs;
     }
     /**
@@ -350,9 +388,9 @@ constexpr char arithmetic_binary_operators[] = R"(
         lhs {{{op}}}= rhs;
         return lhs;
     }
-)";
+)__";
 
-constexpr char checked_addition[] = R"(
+constexpr char checked_addition[] = R"__(
     /**
      * @brief Checked addition - throws on overflow
      * @throws atlas::CheckedOverflowError if result would overflow
@@ -367,11 +405,18 @@ constexpr char checked_addition[] = R"(
             rhs.value,
             "{{{full_qualified_name}}}: addition overflow",
             "{{{full_qualified_name}}}: addition underflow");
+        {{#has_constraint}}
+        if (not atlas_constraint::check(lhs.value)) {
+            throw atlas::ConstraintError(
+                "{{{class_name}}}: arithmetic result violates constraint"
+                " ({{{constraint_message}}})");
+        }
+        {{/has_constraint}}
         return lhs;
     }
-)";
+)__";
 
-constexpr char checked_subtraction[] = R"(
+constexpr char checked_subtraction[] = R"__(
     /**
      * @brief Checked subtraction - throws on overflow/underflow
      * @throws atlas::CheckedOverflowError if result would overflow
@@ -386,11 +431,18 @@ constexpr char checked_subtraction[] = R"(
             rhs.value,
             "{{{full_qualified_name}}}: subtraction overflow",
             "{{{full_qualified_name}}}: subtraction underflow");
+        {{#has_constraint}}
+        if (not atlas_constraint::check(lhs.value)) {
+            throw atlas::ConstraintError(
+                "{{{class_name}}}: arithmetic result violates constraint"
+                "({{{constraint_message}}})");
+        }
+        {{/has_constraint}}
         return lhs;
     }
-)";
+)__";
 
-constexpr char checked_multiplication[] = R"(
+constexpr char checked_multiplication[] = R"__(
     /**
      * @brief Checked multiplication - throws on overflow
      * @throws atlas::CheckedOverflowError if result would overflow
@@ -405,11 +457,18 @@ constexpr char checked_multiplication[] = R"(
             rhs.value,
             "{{{full_qualified_name}}}: multiplication overflow",
             "{{{full_qualified_name}}}: multiplication underflow");
+        {{#has_constraint}}
+        if (not atlas_constraint::check(lhs.value)) {
+            throw atlas::ConstraintError(
+                "{{{class_name}}}: arithmetic result violates constraint"
+                "({{{constraint_message}}})");
+        }
+        {{/has_constraint}}
         return lhs;
     }
-)";
+)__";
 
-constexpr char checked_division[] = R"_(
+constexpr char checked_division[] = R"__(
     /**
      * @brief Checked division - throws on division by zero and overflow
      * @throws atlas::CheckedDivisionByZeroError if divisor is zero
@@ -424,11 +483,18 @@ constexpr char checked_division[] = R"_(
             rhs.value,
             "{{{full_qualified_name}}}: division by zero",
             "{{{full_qualified_name}}}: division overflow (INT_MIN / -1)");
+        {{#has_constraint}}
+        if (not atlas_constraint::check(lhs.value)) {
+            throw atlas::ConstraintError(
+                "{{{class_name}}}: arithmetic result violates constraint"
+                " ({{{constraint_message}}})");
+        }
+        {{/has_constraint}}
         return lhs;
     }
-)_";
+)__";
 
-constexpr char checked_modulo[] = R"(
+constexpr char checked_modulo[] = R"__(
     /**
      * @brief Checked modulo - throws on division by zero
      * @throws atlas::CheckedDivisionByZeroError if divisor is zero
@@ -442,11 +508,18 @@ constexpr char checked_modulo[] = R"(
             lhs.value,
             rhs.value,
             "{{{full_qualified_name}}}: modulo by zero");
+        {{#has_constraint}}
+        if (not atlas_constraint::check(lhs.value)) {
+            throw atlas::ConstraintError(
+                "{{{class_name}}}: arithmetic result violates constraint"
+                " ({{{constraint_message}}})");
+        }
+        {{/has_constraint}}
         return lhs;
     }
-)";
+)__";
 
-constexpr char saturating_addition[] = R"(
+constexpr char saturating_addition[] = R"__(
     /**
      * @brief Saturating addition - clamps to type limits
      * @note noexcept - overflow/underflow clamps to limits instead of throwing
@@ -454,14 +527,23 @@ constexpr char saturating_addition[] = R"(
     friend {{{class_name}}} operator + (
         {{{class_name}}} lhs,
         {{{class_name}}} const & rhs)
+    {{^has_constraint}}
     noexcept
+    {{/has_constraint}}
     {
         lhs.value = atlas::atlas_detail::saturating_add(lhs.value, rhs.value);
+        {{#has_constraint}}
+        if (not atlas_constraint::check(lhs.value)) {
+            throw atlas::ConstraintError(
+                "{{{class_name}}}: arithmetic result violates constraint"
+                " ({{{constraint_message}}})");
+        }
+        {{/has_constraint}}
         return lhs;
     }
-)";
+)__";
 
-constexpr char saturating_subtraction[] = R"(
+constexpr char saturating_subtraction[] = R"__(
     /**
      * @brief Saturating subtraction - clamps to type limits
      * @note noexcept - overflow/underflow clamps to limits instead of throwing
@@ -469,14 +551,23 @@ constexpr char saturating_subtraction[] = R"(
     friend {{{class_name}}} operator - (
         {{{class_name}}} lhs,
         {{{class_name}}} const & rhs)
+    {{^has_constraint}}
     noexcept
+    {{/has_constraint}}
     {
         lhs.value = atlas::atlas_detail::saturating_sub(lhs.value, rhs.value);
+        {{#has_constraint}}
+        if (not atlas_constraint::check(lhs.value)) {
+            throw atlas::ConstraintError(
+                "{{{class_name}}}: arithmetic result violates constraint"
+                " ({{{constraint_message}}})");
+        }
+        {{/has_constraint}}
         return lhs;
     }
-)";
+)__";
 
-constexpr char saturating_multiplication[] = R"(
+constexpr char saturating_multiplication[] = R"__(
     /**
      * @brief Saturating multiplication - clamps to type limits
      * @note noexcept - overflow/underflow clamps to limits instead of throwing
@@ -484,14 +575,23 @@ constexpr char saturating_multiplication[] = R"(
     friend {{{class_name}}} operator * (
         {{{class_name}}} lhs,
         {{{class_name}}} const & rhs)
+    {{^has_constraint}}
     noexcept
+    {{/has_constraint}}
     {
         lhs.value = atlas::atlas_detail::saturating_mul(lhs.value, rhs.value);
+        {{#has_constraint}}
+        if (not atlas_constraint::check(lhs.value)) {
+            throw atlas::ConstraintError(
+                "{{{class_name}}}: arithmetic result violates constraint"
+                " ({{{constraint_message}}})");
+        }
+        {{/has_constraint}}
         return lhs;
     }
-)";
+)__";
 
-constexpr char saturating_division[] = R"(
+constexpr char saturating_division[] = R"__(
     /**
      * @brief Saturating division - clamps to type limits
      * @note noexcept - overflow/underflow clamps to limits instead of throwing
@@ -499,14 +599,23 @@ constexpr char saturating_division[] = R"(
     friend {{{class_name}}} operator / (
         {{{class_name}}} lhs,
         {{{class_name}}} const & rhs)
+    {{^has_constraint}}
     noexcept
+    {{/has_constraint}}
     {
         lhs.value = atlas::atlas_detail::saturating_div(lhs.value, rhs.value);
+        {{#has_constraint}}
+        if (not atlas_constraint::check(lhs.value)) {
+            throw atlas::ConstraintError(
+                "{{{class_name}}}: arithmetic result violates constraint"
+                " ({{{constraint_message}}})");
+        }
+        {{/has_constraint}}
         return lhs;
     }
-)";
+)__";
 
-constexpr char saturating_remainder[] = R"(
+constexpr char saturating_remainder[] = R"__(
     /**
      * @brief Saturating remainder - returns 0 for undefined operations
      * @note noexcept - modulo by zero returns 0 instead of throwing
@@ -515,14 +624,23 @@ constexpr char saturating_remainder[] = R"(
     friend {{{class_name}}} operator % (
         {{{class_name}}} lhs,
         {{{class_name}}} const & rhs)
+    {{^has_constraint}}
     noexcept
+    {{/has_constraint}}
     {
         lhs.value = atlas::atlas_detail::saturating_rem(lhs.value, rhs.value);
+        {{#has_constraint}}
+        if (not atlas_constraint::check(lhs.value)) {
+            throw atlas::ConstraintError(
+                "{{{class_name}}}: arithmetic result violates constraint"
+                " ({{{constraint_message}}})");
+        }
+        {{/has_constraint}}
         return lhs;
     }
-)";
+)__";
 
-constexpr char wrapping_arithmetic[] = R"(
+constexpr char wrapping_arithmetic[] = R"__(
     /**
      * @brief Wrapping arithmetic - explicit, well-defined overflow
      * @note Marked noexcept - overflow is intentional and well-defined
@@ -532,7 +650,9 @@ constexpr char wrapping_arithmetic[] = R"(
     friend {{{class_name}}} operator {{{op}}} (
         {{{class_name}}} lhs,
         {{{class_name}}} const & rhs)
+    {{^has_constraint}}
     noexcept
+    {{/has_constraint}}
     {
         static_assert(std::is_integral<{{{underlying_type}}}>::value,
                       "Wrapping arithmetic is only supported for integral types");
@@ -541,9 +661,16 @@ constexpr char wrapping_arithmetic[] = R"(
             static_cast<unsigned_type>(lhs.value) {{{op}}}
             static_cast<unsigned_type>(rhs.value)
         );
+        {{#has_constraint}}
+        if (not atlas_constraint::check(lhs.value)) {
+            throw atlas::ConstraintError(
+                "{{{class_name}}}: arithmetic result violates constraint"
+                " ({{{constraint_message}}})");
+        }
+        {{/has_constraint}}
         return lhs;
     }
-)";
+)__";
 
 constexpr char logical_operator[] = R"(
     /**
@@ -1014,7 +1141,7 @@ constexpr char template_assignment_operator_template[] = R"(
     }
 )";
 
-constexpr char forwarded_memfn_template[] = R"(
+constexpr char forwarded_memfn_template[] = R"xxx(
     /**
      * @brief Forward {{memfn_name}} to wrapped object{{#alias_name}} (aliased as {{alias_name}}){{/alias_name}}{{#return_type}},
      * wrapping return value in {{return_type}}{{/return_type}}
@@ -1025,75 +1152,128 @@ constexpr char forwarded_memfn_template[] = R"(
 {{#const_only}}     * Only const overloads are generated.
 {{/const_only}}{{#return_type}}     * Return value is wrapped in {{return_type}} (requires {{return_type}} to be
      * constructible from the memfn's return type).
-{{/return_type}}     */
+{{/return_type}}{{#has_constraint}}     *
+     * IMPORTANT: Constraint checking occurs AFTER the operation executes.
+     * This is an inherent limitation of generic constraint checking - we cannot
+     * know ahead of time if an operation will violate a constraint without
+     * operation-specific knowledge.
+{{/has_constraint}}     */
 {{^const_only}}#if defined(__cpp_explicit_this_parameter) && __cpp_explicit_this_parameter >= 202110L
     // C++23 deducing this - single elegant overload
     template <typename Self, typename... Args>
-    {{const_expr}}auto {{#alias_name}}{{alias_name}}{{/alias_name}}{{^alias_name}}{{memfn_name}}{{/alias_name}}(this Self&& self, Args&&... args){{#return_type}}
-    -> {{return_type}}{{/return_type}}{{^return_type}}
+    {{const_expr}}auto {{#alias_name}}{{alias_name}}{{/alias_name}}{{^alias_name}}{{memfn_name}}{{/alias_name}}(this Self&& self, Args&&... args)
+{{#return_type}}
+    -> {{return_type}}
+{{/return_type}}
+{{^return_type}}
+{{^has_constraint}}
     noexcept(noexcept(std::forward<Self>(self).value.{{memfn_name}}(std::forward<Args>(args)...)))
-    -> decltype(std::forward<Self>(self).value.{{memfn_name}}(std::forward<Args>(args)...)){{/return_type}}
+{{/has_constraint}}
+    -> decltype(std::forward<Self>(self).value.{{memfn_name}}(std::forward<Args>(args)...))
+{{/return_type}}
     {
-        return {{#return_type}}{{return_type}}{{/return_type}}{{^return_type}}std::forward<Self>(self).value.{{memfn_name}}(std::forward<Args>(args)...){{/return_type}}{{#return_type}}(std::forward<Self>(self).value.{{memfn_name}}(std::forward<Args>(args)...)){{/return_type}};
+        {{#has_constraint}}
+        using atlas::constraints::constraint_guard;
+        [[maybe_unused]] auto guard = constraint_guard<atlas_constraint>(
+            self.value,
+            "{{class_name}}::{{memfn_name}}");
+        {{/has_constraint}}
+        return {{#return_type}}{{return_type}}({{/return_type}}std::forward<Self>(self).value.{{memfn_name}}(std::forward<Args>(args)...){{#return_type}}){{/return_type}};
     }
 #else
 {{/const_only}}    // C++11-20: ref-qualified overloads (or just const for const-only)
 {{#generate_const_no_ref}}
     template <typename... Args>
-    {{const_expr}}auto {{#alias_name}}{{alias_name}}{{/alias_name}}{{^alias_name}}{{memfn_name}}{{/alias_name}}(Args&&... args) const{{#return_type}}
-    -> {{return_type}}{{/return_type}}{{^return_type}}
+    {{const_expr}}auto {{#alias_name}}{{alias_name}}{{/alias_name}}{{^alias_name}}{{memfn_name}}{{/alias_name}}(Args&&... args) const
+{{#return_type}}
+    -> {{return_type}}
+{{/return_type}}
+{{^return_type}}
     noexcept(noexcept(value.{{memfn_name}}(std::forward<Args>(args)...)))
-    -> decltype(value.{{memfn_name}}(std::forward<Args>(args)...)){{/return_type}}
+    -> decltype(value.{{memfn_name}}(std::forward<Args>(args)...))
+{{/return_type}}
     {
-        return {{#return_type}}{{return_type}}{{/return_type}}{{^return_type}}value.{{memfn_name}}(std::forward<Args>(args)...){{/return_type}}{{#return_type}}(value.{{memfn_name}}(std::forward<Args>(args)...)){{/return_type}};
+        return {{#return_type}}{{return_type}}({{/return_type}}value.{{memfn_name}}(std::forward<Args>(args)...){{#return_type}}){{/return_type}};
     }
 {{/generate_const_no_ref}}
 
 {{#generate_const_lvalue}}
     template <typename... Args>
-    {{const_expr}}auto {{#alias_name}}{{alias_name}}{{/alias_name}}{{^alias_name}}{{memfn_name}}{{/alias_name}}(Args&&... args) const &{{#return_type}}
-    -> {{return_type}}{{/return_type}}{{^return_type}}
+    {{const_expr}}auto {{#alias_name}}{{alias_name}}{{/alias_name}}{{^alias_name}}{{memfn_name}}{{/alias_name}}(Args&&... args) const &
+{{#return_type}}
+    -> {{return_type}}
+{{/return_type}}
+{{^return_type}}
     noexcept(noexcept(value.{{memfn_name}}(std::forward<Args>(args)...)))
-    -> decltype(value.{{memfn_name}}(std::forward<Args>(args)...)){{/return_type}}
+    -> decltype(value.{{memfn_name}}(std::forward<Args>(args)...))
+{{/return_type}}
     {
-        return {{#return_type}}{{return_type}}{{/return_type}}{{^return_type}}value.{{memfn_name}}(std::forward<Args>(args)...){{/return_type}}{{#return_type}}(value.{{memfn_name}}(std::forward<Args>(args)...)){{/return_type}};
+        return {{#return_type}}{{return_type}}({{/return_type}}value.{{memfn_name}}(std::forward<Args>(args)...){{#return_type}}){{/return_type}};
     }
 {{/generate_const_lvalue}}
 
 {{#generate_const_rvalue}}
     template <typename... Args>
-    {{const_expr}}auto {{#alias_name}}{{alias_name}}{{/alias_name}}{{^alias_name}}{{memfn_name}}{{/alias_name}}(Args&&... args) const &&{{#return_type}}
-    -> {{return_type}}{{/return_type}}{{^return_type}}
+    {{const_expr}}auto {{#alias_name}}{{alias_name}}{{/alias_name}}{{^alias_name}}{{memfn_name}}{{/alias_name}}(Args&&... args) const &&
+{{#return_type}}
+    -> {{return_type}}
+{{/return_type}}
+{{^return_type}}
     noexcept(noexcept(std::move(value).{{memfn_name}}(std::forward<Args>(args)...)))
-    -> decltype(std::move(value).{{memfn_name}}(std::forward<Args>(args)...)){{/return_type}}
+    -> decltype(std::move(value).{{memfn_name}}(std::forward<Args>(args)...))
+{{/return_type}}
     {
-        return {{#return_type}}{{return_type}}{{/return_type}}{{^return_type}}std::move(value).{{memfn_name}}(std::forward<Args>(args)...){{/return_type}}{{#return_type}}(std::move(value).{{memfn_name}}(std::forward<Args>(args)...)){{/return_type}};
+        return {{#return_type}}{{return_type}}({{/return_type}}std::move(value).{{memfn_name}}(std::forward<Args>(args)...){{#return_type}}){{/return_type}};
     }
 {{/generate_const_rvalue}}
 
 {{#generate_nonconst_lvalue}}
     template <typename... Args>
-    {{const_expr}}auto {{#alias_name}}{{alias_name}}{{/alias_name}}{{^alias_name}}{{memfn_name}}{{/alias_name}}(Args&&... args) &{{#return_type}}
-    -> {{return_type}}{{/return_type}}{{^return_type}}
+    {{const_expr}}auto {{#alias_name}}{{alias_name}}{{/alias_name}}{{^alias_name}}{{memfn_name}}{{/alias_name}}(Args&&... args) &
+{{#return_type}}
+    -> {{return_type}}
+{{/return_type}}
+{{^return_type}}
+{{^has_constraint}}
     noexcept(noexcept(value.{{memfn_name}}(std::forward<Args>(args)...)))
-    -> decltype(value.{{memfn_name}}(std::forward<Args>(args)...)){{/return_type}}
+{{/has_constraint}}
+    -> decltype(value.{{memfn_name}}(std::forward<Args>(args)...))
+{{/return_type}}
     {
-        return {{#return_type}}{{return_type}}{{/return_type}}{{^return_type}}value.{{memfn_name}}(std::forward<Args>(args)...){{/return_type}}{{#return_type}}(value.{{memfn_name}}(std::forward<Args>(args)...)){{/return_type}};
+        {{#has_constraint}}
+        using atlas::constraints::constraint_guard;
+        [[maybe_unused]] auto guard = constraint_guard<atlas_constraint>(
+            value,
+            "{{class_name}}::{{memfn_name}}");
+        {{/has_constraint}}
+        return {{#return_type}}{{return_type}}({{/return_type}}value.{{memfn_name}}(std::forward<Args>(args)...){{#return_type}}){{/return_type}};
     }
 {{/generate_nonconst_lvalue}}
 
 {{#generate_nonconst_rvalue}}
     template <typename... Args>
-    {{const_expr}}auto {{#alias_name}}{{alias_name}}{{/alias_name}}{{^alias_name}}{{memfn_name}}{{/alias_name}}(Args&&... args) &&{{#return_type}}
-    -> {{return_type}}{{/return_type}}{{^return_type}}
+    {{const_expr}}auto {{#alias_name}}{{alias_name}}{{/alias_name}}{{^alias_name}}{{memfn_name}}{{/alias_name}}(Args&&... args) &&
+{{#return_type}}
+    -> {{return_type}}
+{{/return_type}}
+{{^return_type}}
+{{^has_constraint}}
     noexcept(noexcept(std::move(value).{{memfn_name}}(std::forward<Args>(args)...)))
-    -> decltype(std::move(value).{{memfn_name}}(std::forward<Args>(args)...)){{/return_type}}
+{{/has_constraint}}
+    -> decltype(std::move(value).{{memfn_name}}(std::forward<Args>(args)...))
+{{/return_type}}
     {
-        return {{#return_type}}{{return_type}}{{/return_type}}{{^return_type}}std::move(value).{{memfn_name}}(std::forward<Args>(args)...){{/return_type}}{{#return_type}}(std::move(value).{{memfn_name}}(std::forward<Args>(args)...)){{/return_type}};
+        {{#has_constraint}}
+        using atlas::constraints::constraint_guard;
+        [[maybe_unused]] auto guard = constraint_guard<atlas_constraint>(
+            value,
+            "{{class_name}}::{{memfn_name}}");
+        {{/has_constraint}}
+        return {{#return_type}}{{return_type}}({{/return_type}}std::move(value).{{memfn_name}}(std::forward<Args>(args)...){{#return_type}}){{/return_type}};
     }
 {{/generate_nonconst_rvalue}}
 {{^const_only}}#endif
-{{/const_only}})";
+{{/const_only}})xxx";
 
 struct Operator
 {
@@ -1227,6 +1407,17 @@ struct ClassInfo
     int cpp_standard = 11;
     ArithmeticMode arithmetic_mode = ArithmeticMode::Default;
     StrongTypeDescription desc;
+
+    // Constraint fields
+    bool has_constraint = false;
+    std::string constraint_type;
+    std::map<std::string, std::string> constraint_params;
+    std::string constraint_message;
+    std::string constraint_template_args;
+    bool is_bounded = false;
+    std::string bounded_min;
+    std::string bounded_max;
+    bool delete_default_constructor = false;
 };
 BOOST_DESCRIBE_STRUCT(
     ClassInfo,
@@ -1271,7 +1462,16 @@ BOOST_DESCRIBE_STRUCT(
      const_qualifier,
      cpp_standard,
      arithmetic_mode,
-     desc))
+     desc,
+     has_constraint,
+     constraint_type,
+     constraint_params,
+     constraint_message,
+     constraint_template_args,
+     is_bounded,
+     bounded_min,
+     bounded_max,
+     delete_default_constructor))
 
 constexpr auto arithmetic_binary_op_tags = std::to_array<std::string_view>(
     {"+", "-", "*", "/", "%", "&", "|", "^", "<<", ">>", "+*", "-*"});
@@ -1672,6 +1872,59 @@ process_forwarded_memfns(ClassInfo & info)
         });
 }
 
+/**
+ * @brief Parse bounded-style constraint syntax and extract parameters as
+ * strings
+ * @param token The token string (e.g., "bounded<0,100>" or
+ * "bounded_range<0,100>")
+ * @return Map with "min" and "max" keys containing literal strings
+ * @throws std::invalid_argument if syntax is invalid
+ *
+ * Note: This parser simply extracts the min/max values as strings.
+ * The compiler will validate the values when compiling the generated trait.
+ *
+ * This function is used for both bounded<min,max> and bounded_range<min,max>
+ * constraints, as they share identical parsing logic.
+ */
+std::map<std::string, std::string>
+parse_bounded_params(std::string_view token)
+{
+    // Expected format: constraint_name<min,max>
+    auto start = token.find('<');
+    auto end = token.rfind('>');
+
+    if (start == std::string_view::npos || end == std::string_view::npos ||
+        end <= start)
+    {
+        throw std::invalid_argument(
+            "Invalid bounded constraint syntax: expected "
+            "'constraint<min,max>', got: " +
+            std::string(token));
+    }
+
+    auto params_str = token.substr(start + 1, end - start - 1);
+    auto comma = params_str.find(',');
+
+    if (comma == std::string_view::npos) {
+        throw std::invalid_argument(
+            "Bounded constraint requires two parameters: constraint<min,max>, "
+            "got: " +
+            std::string(token));
+    }
+
+    std::map<std::string, std::string> result;
+    result["min"] = trim(std::string(params_str.substr(0, comma)));
+    result["max"] = trim(std::string(params_str.substr(comma + 1)));
+
+    if (result["min"].empty() || result["max"].empty()) {
+        throw std::invalid_argument(
+            "Bounded constraint parameters cannot be empty: " +
+            std::string(token));
+    }
+
+    return result;
+}
+
 ClassInfo
 parse(
     StrongTypeDescription const & desc,
@@ -1868,6 +2121,67 @@ parse(
             recognized = true;
             has_wrapping = true;
             info.arithmetic_mode = ArithmeticMode::Wrapping;
+        } else if (sv == "positive") {
+            recognized = true;
+            info.has_constraint = true;
+            info.constraint_type = "positive";
+            info.constraint_message = "value must be positive (> 0)";
+        } else if (sv == "non_negative") {
+            recognized = true;
+            info.has_constraint = true;
+            info.constraint_type = "non_negative";
+            info.constraint_message = "value must be non-negative (>= 0)";
+        } else if (sv == "non_zero") {
+            recognized = true;
+            info.has_constraint = true;
+            info.constraint_type = "non_zero";
+            info.constraint_message = "value must be non-zero (!= 0)";
+        } else if (sv == "non_empty") {
+            recognized = true;
+            info.has_constraint = true;
+            info.constraint_type = "non_empty";
+            info.constraint_message = "value must not be empty";
+            info.delete_default_constructor = true;
+        } else if (sv == "non_null") {
+            recognized = true;
+            info.has_constraint = true;
+            info.constraint_type = "non_null";
+            info.constraint_message = "pointer must not be null";
+            info.delete_default_constructor = true;
+        } else if (
+            sv.starts_with("bounded<") || sv.starts_with("bounded <") ||
+            sv.starts_with("bounded_range<") ||
+            sv.starts_with("bounded_range <"))
+        {
+            recognized = true;
+            info.has_constraint = true;
+            info.is_bounded = true;
+
+            // Determine constraint type and bracket style
+            bool is_half_open = sv.starts_with("bounded_range");
+            info.constraint_type = is_half_open ? "bounded_range" : "bounded";
+
+            info.constraint_params = parse_bounded_params(sv);
+
+            // Store min/max for template generation
+            info.bounded_min = info.constraint_params["min"];
+            info.bounded_max = info.constraint_params["max"];
+
+            // Build human-readable message (note: [min, max) for half-open
+            // range)
+            auto escaped = [](std::string const s) {
+                std::string result;
+                for (auto c : s) {
+                    if (c == '"') {
+                        result += '\\';
+                    }
+                    result += c;
+                }
+                return result;
+            };
+            info.constraint_message = "value must be in [" +
+                escaped(info.bounded_min) + ", " + escaped(info.bounded_max) +
+                (is_half_open ? ")" : "]");
         } else if (sv.starts_with('#')) {
             recognized = true;
             auto str = std::string(strip(sv.substr(1)));
@@ -1915,6 +2229,23 @@ parse(
     if (has_checked + has_saturating + has_wrapping > 1) {
         throw std::invalid_argument("Cannot specify multiple arithmetic modes "
                                     "(checked, saturating, wrapping)");
+    }
+
+    // Set constraint template arguments if constraint is present
+    if (info.has_constraint && not info.constraint_type.empty()) {
+        if (info.constraint_type == "bounded" ||
+            info.constraint_type == "bounded_range")
+        {
+            // For bounded and bounded_range constraints, we use the trait-based
+            // design: atlas::constraints::bounded<atlas_bounds>
+            // atlas::constraints::bounded_range<atlas_bounds>
+            // The atlas_bounds trait will be generated with
+            // min()/max()/message()
+            info.constraint_template_args = "<atlas_bounds>";
+        } else {
+            // Other constraints just need the type
+            info.constraint_template_args = "<" + info.underlying_type + ">";
+        }
     }
 
     // Check for redundant operators with spaceship
@@ -2144,6 +2475,10 @@ struct ClassInfoWithOp
     std::string full_qualified_name;
     std::string const_expr;
     std::string op; // The operator being rendered
+    bool has_constraint = false;
+    std::string constraint_type;
+    std::string constraint_message;
+    std::string constraint_template_args;
 
     explicit ClassInfoWithOp(ClassInfo const & info, std::string op_)
     : class_namespace(info.class_namespace)
@@ -2155,6 +2490,10 @@ struct ClassInfoWithOp
     , full_qualified_name(info.full_qualified_name)
     , const_expr(info.const_expr)
     , op(std::move(op_))
+    , has_constraint(info.has_constraint)
+    , constraint_type(info.constraint_type)
+    , constraint_message(info.constraint_message)
+    , constraint_template_args(info.constraint_template_args)
     { }
 };
 BOOST_DESCRIBE_STRUCT(
@@ -2168,7 +2507,11 @@ BOOST_DESCRIBE_STRUCT(
      underlying_type,
      full_qualified_name,
      const_expr,
-     op))
+     op,
+     has_constraint,
+     constraint_type,
+     constraint_message,
+     constraint_template_args))
 
 // Helper function to select arithmetic template based on mode and operator
 std::string_view
@@ -2293,12 +2636,29 @@ render_code(ClassInfo const & info)
         // or logical operators, or unary operators, or the class closing
         size_t insert_pos = std::string::npos;
 
-        // Try to find increment operators section
-        insert_pos = result.find("    friend");
+        // If there's a bounded constraint, skip past the atlas_bounds struct
+        size_t search_start = 0;
+        if (info.is_bounded) {
+            // Look for "using atlas_constraint" which comes right after
+            // atlas_bounds
+            size_t constraint_decl = result.find("using atlas_constraint =");
+            if (constraint_decl != std::string::npos) {
+                // Skip to the end of this line
+                size_t line_end = result.find('\n', constraint_decl);
+                if (line_end != std::string::npos) {
+                    search_start = line_end + 1;
+                }
+            }
+        }
+
+        // Try to find increment operators section (starting after atlas_bounds
+        // if present)
+        insert_pos = result.find("    friend", search_start);
 
         if (insert_pos == std::string::npos) {
             // No friend functions yet, insert before closing brace
-            insert_pos = result.find("};\n");
+            // Start search after atlas_bounds if present
+            insert_pos = result.find("};\n", search_start);
         }
 
         if (insert_pos != std::string::npos) {
@@ -2398,7 +2758,8 @@ operator () (StrongTypeDescription const & desc)
         .include_checked_helpers =
             (info.arithmetic_mode == ArithmeticMode::Checked),
         .include_saturating_helpers =
-            (info.arithmetic_mode == ArithmeticMode::Saturating)};
+            (info.arithmetic_mode == ArithmeticMode::Saturating),
+        .include_constraints = info.has_constraint};
 
     auto preamble_includes = get_preamble_includes(preamble_opts);
 
@@ -2454,6 +2815,7 @@ generate_strong_types_file(
     bool any_indirection_operator = false;
     bool any_checked_arithmetic = false;
     bool any_saturating_arithmetic = false;
+    bool any_constraints = false;
     int max_cpp_standard = 11;
 
     // Generate each type WITHOUT preamble, and collect includes
@@ -2483,6 +2845,11 @@ generate_strong_types_file(
         // Check if any type uses saturating arithmetic
         if (info.arithmetic_mode == ArithmeticMode::Saturating) {
             any_saturating_arithmetic = true;
+        }
+
+        // Check if any type uses constraints
+        if (info.has_constraint) {
+            any_constraints = true;
         }
 
         // Collect includes and guards from this type
@@ -2520,7 +2887,8 @@ generate_strong_types_file(
         .include_arrow_operator_traits = any_arrow_operator,
         .include_dereference_operator_traits = any_indirection_operator,
         .include_checked_helpers = any_checked_arithmetic,
-        .include_saturating_helpers = any_saturating_arithmetic};
+        .include_saturating_helpers = any_saturating_arithmetic,
+        .include_constraints = any_constraints};
     auto preamble_includes = get_preamble_includes(preamble_opts);
     for (auto const & include : preamble_includes) {
         all_includes.insert(include);
@@ -2566,5 +2934,4 @@ generate_strong_types_file(
     return output.str();
 }
 
-}
-} // namespace wjh::atlas::v1
+}} // namespace wjh::atlas::v1

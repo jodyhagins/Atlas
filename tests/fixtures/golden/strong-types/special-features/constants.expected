@@ -1,5 +1,5 @@
-#ifndef TEST_CONSTANTS_85359192D3C5D17564783A5967AC0F3FA9EB40E6
-#define TEST_CONSTANTS_85359192D3C5D17564783A5967AC0F3FA9EB40E6
+#ifndef TEST_CONSTANTS_B02032125B136B20A21EBC13BE8F7FCCBB75B8BB
+#define TEST_CONSTANTS_B02032125B136B20A21EBC13BE8F7FCCBB75B8BB
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -257,11 +257,6 @@ struct Angle
     static const Angle zero;
 
     constexpr explicit Angle() = default;
-    constexpr Angle(Angle const &) = default;
-    constexpr Angle(Angle &&) = default;
-    constexpr Angle & operator = (Angle const &) = default;
-    constexpr Angle & operator = (Angle &&) = default;
-    constexpr ~Angle() = default;
 
     template <
         typename... ArgTs,
@@ -394,11 +389,6 @@ struct StringConstant
     static const StringConstant empty;
 
     constexpr explicit StringConstant() = default;
-    constexpr StringConstant(StringConstant const &) = default;
-    constexpr StringConstant(StringConstant &&) = default;
-    constexpr StringConstant & operator = (StringConstant const &) = default;
-    constexpr StringConstant & operator = (StringConstant &&) = default;
-    constexpr ~StringConstant() = default;
 
     template <
         typename... ArgTs,
@@ -469,11 +459,6 @@ struct NumericValue
     static const NumericValue min;
 
     constexpr explicit NumericValue() = default;
-    constexpr NumericValue(NumericValue const &) = default;
-    constexpr NumericValue(NumericValue &&) = default;
-    constexpr NumericValue & operator = (NumericValue const &) = default;
-    constexpr NumericValue & operator = (NumericValue &&) = default;
-    constexpr ~NumericValue() = default;
 
     template <
         typename... ArgTs,
@@ -594,11 +579,6 @@ public:
     static const NoConstexprType zero;
 
     explicit NoConstexprType() = default;
-    NoConstexprType(NoConstexprType const &) = default;
-    NoConstexprType(NoConstexprType &&) = default;
-    NoConstexprType & operator = (NoConstexprType const &) = default;
-    NoConstexprType & operator = (NoConstexprType &&) = default;
-    ~NoConstexprType() = default;
 
     template <
         typename... ArgTs,
@@ -692,5 +672,5 @@ inline const test::NoConstexprType test::NoConstexprType::one = test::NoConstexp
 inline const test::NoConstexprType test::NoConstexprType::zero = test::NoConstexprType(0);
 } // namespace test
 
-#endif // TEST_CONSTANTS_85359192D3C5D17564783A5967AC0F3FA9EB40E6
+#endif // TEST_CONSTANTS_B02032125B136B20A21EBC13BE8F7FCCBB75B8BB
 

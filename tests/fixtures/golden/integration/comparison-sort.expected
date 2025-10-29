@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_AA5F43E16B5123BE481137CA220687E6AF920D69
-#define FOO_BAR_AA5F43E16B5123BE481137CA220687E6AF920D69
+#ifndef FOO_BAR_D9087F29EA0EB03D97057CE11DDA8B481C4914ED
+#define FOO_BAR_D9087F29EA0EB03D97057CE11DDA8B481C4914ED
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -251,11 +251,6 @@ struct SortableInt
     using atlas_value_type = int;
 
     constexpr explicit SortableInt() = default;
-    constexpr SortableInt(SortableInt const &) = default;
-    constexpr SortableInt(SortableInt &&) = default;
-    constexpr SortableInt & operator = (SortableInt const &) = default;
-    constexpr SortableInt & operator = (SortableInt &&) = default;
-    constexpr ~SortableInt() = default;
 
     template <
         typename... ArgTs,
@@ -297,5 +292,5 @@ struct SortableInt
 } // namespace integration
 } // namespace test
 
-#endif // FOO_BAR_AA5F43E16B5123BE481137CA220687E6AF920D69
+#endif // FOO_BAR_D9087F29EA0EB03D97057CE11DDA8B481C4914ED
 

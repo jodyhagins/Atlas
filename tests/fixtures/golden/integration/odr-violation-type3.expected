@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_C1DA7574B919F062138A4DCBC4EF1B1B4088D5D4
-#define FOO_BAR_C1DA7574B919F062138A4DCBC4EF1B1B4088D5D4
+#ifndef FOO_BAR_827417274690F04CE96BEB261363801A18CBF871
+#define FOO_BAR_827417274690F04CE96BEB261363801A18CBF871
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -252,11 +252,6 @@ struct TypeThree
     using atlas_value_type = double;
 
     constexpr explicit TypeThree() = default;
-    constexpr TypeThree(TypeThree const &) = default;
-    constexpr TypeThree(TypeThree &&) = default;
-    constexpr TypeThree & operator = (TypeThree const &) = default;
-    constexpr TypeThree & operator = (TypeThree &&) = default;
-    constexpr ~TypeThree() = default;
 
     template <
         typename... ArgTs,
@@ -450,5 +445,5 @@ struct TypeThree
 } // namespace integration
 } // namespace test
 
-#endif // FOO_BAR_C1DA7574B919F062138A4DCBC4EF1B1B4088D5D4
+#endif // FOO_BAR_827417274690F04CE96BEB261363801A18CBF871
 

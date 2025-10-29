@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_D41ED1E7F6DD595B834994C09762E81FAB1EEB58
-#define FOO_BAR_D41ED1E7F6DD595B834994C09762E81FAB1EEB58
+#ifndef FOO_BAR_7168140F875FB64E3F7E9509CB0B7C10D4B1FC59
+#define FOO_BAR_7168140F875FB64E3F7E9509CB0B7C10D4B1FC59
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -251,11 +251,6 @@ struct NoexceptVerification
     using atlas_value_type = int;
 
     constexpr explicit NoexceptVerification() = default;
-    constexpr NoexceptVerification(NoexceptVerification const &) = default;
-    constexpr NoexceptVerification(NoexceptVerification &&) = default;
-    constexpr NoexceptVerification & operator = (NoexceptVerification const &) = default;
-    constexpr NoexceptVerification & operator = (NoexceptVerification &&) = default;
-    constexpr ~NoexceptVerification() = default;
 
     template <
         typename... ArgTs,
@@ -340,5 +335,5 @@ struct NoexceptVerification
 } // namespace edge_cases
 } // namespace test
 
-#endif // FOO_BAR_D41ED1E7F6DD595B834994C09762E81FAB1EEB58
+#endif // FOO_BAR_7168140F875FB64E3F7E9509CB0B7C10D4B1FC59
 

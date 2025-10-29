@@ -1,5 +1,5 @@
-#ifndef WJH_IPC_30B7012B590E9C86D5982E4637FF053E3DEFBD70
-#define WJH_IPC_30B7012B590E9C86D5982E4637FF053E3DEFBD70
+#ifndef WJH_IPC_3A7C2DAA259D11871545A722B918E10734A854D9
+#define WJH_IPC_3A7C2DAA259D11871545A722B918E10734A854D9
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -312,11 +312,6 @@ struct Distance
     using atlas_value_type = double;
 
     constexpr explicit Distance() = default;
-    constexpr Distance(Distance const &) = default;
-    constexpr Distance(Distance &&) = default;
-    constexpr Distance & operator = (Distance const &) = default;
-    constexpr Distance & operator = (Distance &&) = default;
-    constexpr ~Distance() = default;
 
     template <
         typename... ArgTs,
@@ -562,11 +557,6 @@ struct Handle
     using atlas_value_type = size_t;
 
     constexpr explicit Handle() = default;
-    constexpr Handle(Handle const &) = default;
-    constexpr Handle(Handle &&) = default;
-    constexpr Handle & operator = (Handle const &) = default;
-    constexpr Handle & operator = (Handle &&) = default;
-    constexpr ~Handle() = default;
 
     template <
         typename... ArgTs,
@@ -648,5 +638,5 @@ struct Handle
 } // namespace ipc
 } // namespace wjh
 
-#endif // WJH_IPC_30B7012B590E9C86D5982E4637FF053E3DEFBD70
+#endif // WJH_IPC_3A7C2DAA259D11871545A722B918E10734A854D9
 

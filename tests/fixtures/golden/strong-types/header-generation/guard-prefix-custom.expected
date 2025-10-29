@@ -1,5 +1,5 @@
-#ifndef CUSTOM_PREFIX_6C32AD1CE0C4A7E3B57A2B42ED0DCB4114473F1C
-#define CUSTOM_PREFIX_6C32AD1CE0C4A7E3B57A2B42ED0DCB4114473F1C
+#ifndef CUSTOM_PREFIX_FDB207F881288F86F45E5D622C75D8A7EF9DE596
+#define CUSTOM_PREFIX_FDB207F881288F86F45E5D622C75D8A7EF9DE596
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -250,11 +250,6 @@ struct GuardPrefixType
     using atlas_value_type = int;
 
     constexpr explicit GuardPrefixType() = default;
-    constexpr GuardPrefixType(GuardPrefixType const &) = default;
-    constexpr GuardPrefixType(GuardPrefixType &&) = default;
-    constexpr GuardPrefixType & operator = (GuardPrefixType const &) = default;
-    constexpr GuardPrefixType & operator = (GuardPrefixType &&) = default;
-    constexpr ~GuardPrefixType() = default;
 
     template <
         typename... ArgTs,
@@ -284,5 +279,5 @@ struct GuardPrefixType
 };
 } // namespace test
 
-#endif // CUSTOM_PREFIX_6C32AD1CE0C4A7E3B57A2B42ED0DCB4114473F1C
+#endif // CUSTOM_PREFIX_FDB207F881288F86F45E5D622C75D8A7EF9DE596
 

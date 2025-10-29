@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_223D0635FC146992295A1E6A3C5CBD909EA8D236
-#define FOO_BAR_223D0635FC146992295A1E6A3C5CBD909EA8D236
+#ifndef FOO_BAR_EF17AC841370E30089B68E7DCB5AD70DEF41085B
+#define FOO_BAR_EF17AC841370E30089B68E7DCB5AD70DEF41085B
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -693,11 +693,6 @@ struct CheckedInt
     using atlas_value_type = int;
 
     constexpr explicit CheckedInt() = default;
-    constexpr CheckedInt(CheckedInt const &) = default;
-    constexpr CheckedInt(CheckedInt &&) = default;
-    constexpr CheckedInt & operator = (CheckedInt const &) = default;
-    constexpr CheckedInt & operator = (CheckedInt &&) = default;
-    constexpr ~CheckedInt() = default;
 
     template <
         typename... ArgTs,
@@ -772,11 +767,6 @@ struct CheckedLong
     using atlas_value_type = long;
 
     constexpr explicit CheckedLong() = default;
-    constexpr CheckedLong(CheckedLong const &) = default;
-    constexpr CheckedLong(CheckedLong &&) = default;
-    constexpr CheckedLong & operator = (CheckedLong const &) = default;
-    constexpr CheckedLong & operator = (CheckedLong &&) = default;
-    constexpr ~CheckedLong() = default;
 
     template <
         typename... ArgTs,
@@ -829,5 +819,5 @@ struct CheckedLong
 };
 } // namespace test
 
-#endif // FOO_BAR_223D0635FC146992295A1E6A3C5CBD909EA8D236
+#endif // FOO_BAR_EF17AC841370E30089B68E7DCB5AD70DEF41085B
 

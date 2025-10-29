@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_D7491F8689D5D76F736629E6DE82F67E15378B0E
-#define FOO_BAR_D7491F8689D5D76F736629E6DE82F67E15378B0E
+#ifndef FOO_BAR_735E9C9196BCF98646ED96ED27E78D24082C614C
+#define FOO_BAR_735E9C9196BCF98646ED96ED27E78D24082C614C
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -250,11 +250,6 @@ struct ArithmeticCompoundType
     using atlas_value_type = int;
 
     constexpr explicit ArithmeticCompoundType() = default;
-    constexpr ArithmeticCompoundType(ArithmeticCompoundType const &) = default;
-    constexpr ArithmeticCompoundType(ArithmeticCompoundType &&) = default;
-    constexpr ArithmeticCompoundType & operator = (ArithmeticCompoundType const &) = default;
-    constexpr ArithmeticCompoundType & operator = (ArithmeticCompoundType &&) = default;
-    constexpr ~ArithmeticCompoundType() = default;
 
     template <
         typename... ArgTs,
@@ -423,5 +418,5 @@ struct ArithmeticCompoundType
 };
 } // namespace test
 
-#endif // FOO_BAR_D7491F8689D5D76F736629E6DE82F67E15378B0E
+#endif // FOO_BAR_735E9C9196BCF98646ED96ED27E78D24082C614C
 

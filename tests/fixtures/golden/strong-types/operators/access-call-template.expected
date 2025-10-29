@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_3731B0ECE7E8C0D668F64BBEC0507B37F66BBBB0
-#define FOO_BAR_3731B0ECE7E8C0D668F64BBEC0507B37F66BBBB0
+#ifndef FOO_BAR_AD44E16B82D7A1C60E969CF31B9FAC28A6195582
+#define FOO_BAR_AD44E16B82D7A1C60E969CF31B9FAC28A6195582
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -251,11 +251,6 @@ struct CallTemplateType
     using atlas_value_type = int;
 
     constexpr explicit CallTemplateType() = default;
-    constexpr CallTemplateType(CallTemplateType const &) = default;
-    constexpr CallTemplateType(CallTemplateType &&) = default;
-    constexpr CallTemplateType & operator = (CallTemplateType const &) = default;
-    constexpr CallTemplateType & operator = (CallTemplateType &&) = default;
-    constexpr ~CallTemplateType() = default;
 
     template <
         typename... ArgTs,
@@ -310,5 +305,5 @@ struct CallTemplateType
 };
 } // namespace test
 
-#endif // FOO_BAR_3731B0ECE7E8C0D668F64BBEC0507B37F66BBBB0
+#endif // FOO_BAR_AD44E16B82D7A1C60E969CF31B9FAC28A6195582
 

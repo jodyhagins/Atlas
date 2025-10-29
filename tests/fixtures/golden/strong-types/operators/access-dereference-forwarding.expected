@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_C6E3716E704CDE19225676C0F3B1ED3F66ED3AA9
-#define FOO_BAR_C6E3716E704CDE19225676C0F3B1ED3F66ED3AA9
+#ifndef FOO_BAR_E8BC71F2B8351C057BA7CB92A619C3D850A6CE10
+#define FOO_BAR_E8BC71F2B8351C057BA7CB92A619C3D850A6CE10
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -313,11 +313,6 @@ struct DerefStringWrapper
     using atlas_value_type = std::string;
 
     constexpr explicit DerefStringWrapper() = default;
-    constexpr DerefStringWrapper(DerefStringWrapper const &) = default;
-    constexpr DerefStringWrapper(DerefStringWrapper &&) = default;
-    constexpr DerefStringWrapper & operator = (DerefStringWrapper const &) = default;
-    constexpr DerefStringWrapper & operator = (DerefStringWrapper &&) = default;
-    constexpr ~DerefStringWrapper() = default;
 
     template <
         typename... ArgTs,
@@ -388,11 +383,6 @@ struct DerefRawPointer
     using atlas_value_type = int*;
 
     constexpr explicit DerefRawPointer() = default;
-    constexpr DerefRawPointer(DerefRawPointer const &) = default;
-    constexpr DerefRawPointer(DerefRawPointer &&) = default;
-    constexpr DerefRawPointer & operator = (DerefRawPointer const &) = default;
-    constexpr DerefRawPointer & operator = (DerefRawPointer &&) = default;
-    constexpr ~DerefRawPointer() = default;
 
     template <
         typename... ArgTs,
@@ -463,11 +453,6 @@ struct DerefSharedPtr
     using atlas_value_type = std::shared_ptr<int>;
 
     constexpr explicit DerefSharedPtr() = default;
-    constexpr DerefSharedPtr(DerefSharedPtr const &) = default;
-    constexpr DerefSharedPtr(DerefSharedPtr &&) = default;
-    constexpr DerefSharedPtr & operator = (DerefSharedPtr const &) = default;
-    constexpr DerefSharedPtr & operator = (DerefSharedPtr &&) = default;
-    constexpr ~DerefSharedPtr() = default;
 
     template <
         typename... ArgTs,
@@ -538,11 +523,6 @@ struct DerefUniquePtr
     using atlas_value_type = std::unique_ptr<int>;
 
     constexpr explicit DerefUniquePtr() = default;
-    constexpr DerefUniquePtr(DerefUniquePtr const &) = default;
-    constexpr DerefUniquePtr(DerefUniquePtr &&) = default;
-    constexpr DerefUniquePtr & operator = (DerefUniquePtr const &) = default;
-    constexpr DerefUniquePtr & operator = (DerefUniquePtr &&) = default;
-    constexpr ~DerefUniquePtr() = default;
 
     template <
         typename... ArgTs,
@@ -613,11 +593,6 @@ struct DerefOptional
     using atlas_value_type = std::optional<int>;
 
     constexpr explicit DerefOptional() = default;
-    constexpr DerefOptional(DerefOptional const &) = default;
-    constexpr DerefOptional(DerefOptional &&) = default;
-    constexpr DerefOptional & operator = (DerefOptional const &) = default;
-    constexpr DerefOptional & operator = (DerefOptional &&) = default;
-    constexpr ~DerefOptional() = default;
 
     template <
         typename... ArgTs,
@@ -666,5 +641,5 @@ struct DerefOptional
 };
 } // namespace test
 
-#endif // FOO_BAR_C6E3716E704CDE19225676C0F3B1ED3F66ED3AA9
+#endif // FOO_BAR_E8BC71F2B8351C057BA7CB92A619C3D850A6CE10
 

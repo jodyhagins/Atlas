@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_265A842FDCD9FDC1E118E080123EC8B8BCDCE94B
-#define FOO_BAR_265A842FDCD9FDC1E118E080123EC8B8BCDCE94B
+#ifndef FOO_BAR_3B3EE61E98A279FE27D5428DD7D198821D6A770E
+#define FOO_BAR_3B3EE61E98A279FE27D5428DD7D198821D6A770E
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -251,11 +251,6 @@ struct MultipleProfileType
     using atlas_value_type = int;
 
     constexpr explicit MultipleProfileType() = default;
-    constexpr MultipleProfileType(MultipleProfileType const &) = default;
-    constexpr MultipleProfileType(MultipleProfileType &&) = default;
-    constexpr MultipleProfileType & operator = (MultipleProfileType const &) = default;
-    constexpr MultipleProfileType & operator = (MultipleProfileType &&) = default;
-    constexpr ~MultipleProfileType() = default;
 
     template <
         typename... ArgTs,
@@ -461,5 +456,5 @@ struct MultipleProfileType
 } // namespace profiles
 } // namespace test
 
-#endif // FOO_BAR_265A842FDCD9FDC1E118E080123EC8B8BCDCE94B
+#endif // FOO_BAR_3B3EE61E98A279FE27D5428DD7D198821D6A770E
 

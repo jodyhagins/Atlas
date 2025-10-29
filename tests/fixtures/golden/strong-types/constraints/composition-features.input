@@ -1,0 +1,9 @@
+# Test: Constraints with multiple features
+# Feature: non_empty with forwarding and comparison
+
+[data::NonEmptyUsername]
+description=std::string; non_empty, <=>
+forward=size, empty, length, clear
+
+[data::PositiveScore]
+description=int; positive, <=>, hash, cast<double>

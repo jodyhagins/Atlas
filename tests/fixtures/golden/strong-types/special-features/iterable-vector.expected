@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_389692DCFC7735813592157CE4C518880C9FC9D5
-#define FOO_BAR_389692DCFC7735813592157CE4C518880C9FC9D5
+#ifndef FOO_BAR_E3964EBE57E37CF71DA80FBAB49C2471A2D27C14
+#define FOO_BAR_E3964EBE57E37CF71DA80FBAB49C2471A2D27C14
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -251,11 +251,6 @@ struct IterableVectorType
     using atlas_value_type = std::vector<int>;
 
     constexpr explicit IterableVectorType() = default;
-    constexpr IterableVectorType(IterableVectorType const &) = default;
-    constexpr IterableVectorType(IterableVectorType &&) = default;
-    constexpr IterableVectorType & operator = (IterableVectorType const &) = default;
-    constexpr IterableVectorType & operator = (IterableVectorType &&) = default;
-    constexpr ~IterableVectorType() = default;
 
     template <
         typename... ArgTs,
@@ -318,5 +313,5 @@ struct IterableVectorType
 };
 } // namespace test
 
-#endif // FOO_BAR_389692DCFC7735813592157CE4C518880C9FC9D5
+#endif // FOO_BAR_E3964EBE57E37CF71DA80FBAB49C2471A2D27C14
 

@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_A1CF942B2D966EC24D27A966913A3FCDD593EEAE
-#define FOO_BAR_A1CF942B2D966EC24D27A966913A3FCDD593EEAE
+#ifndef FOO_BAR_721CF43193D4945E9CCB693C5C9A2F996CD21B42
+#define FOO_BAR_721CF43193D4945E9CCB693C5C9A2F996CD21B42
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -250,11 +250,6 @@ struct EqualityType
     using atlas_value_type = int;
 
     constexpr explicit EqualityType() = default;
-    constexpr EqualityType(EqualityType const &) = default;
-    constexpr EqualityType(EqualityType &&) = default;
-    constexpr EqualityType & operator = (EqualityType const &) = default;
-    constexpr EqualityType & operator = (EqualityType &&) = default;
-    constexpr ~EqualityType() = default;
 
     template <
         typename... ArgTs,
@@ -295,5 +290,5 @@ struct EqualityType
 };
 } // namespace test
 
-#endif // FOO_BAR_A1CF942B2D966EC24D27A966913A3FCDD593EEAE
+#endif // FOO_BAR_721CF43193D4945E9CCB693C5C9A2F996CD21B42
 

@@ -281,6 +281,25 @@ struct StrongTypeDescription
      * Multiple forward= lines are accumulated and merged.
      */
     std::vector<std::string> forwarded_memfns = {};
+
+    /**
+     * Type of constraint to apply (e.g., "positive", "non_negative",
+     * "bounded"). Empty string means no constraint.
+     */
+    std::string constraint_type = "";
+
+    /**
+     * Parameters for parameterized constraints (e.g., bounded<min,max>).
+     * For bounded: {"min": "0", "max": "100"}
+     * For other constraints: empty map
+     */
+    std::map<std::string, std::string> constraint_params = {};
+
+    /**
+     * Whether this type has any constraint applied.
+     * Set to true when constraint_type is non-empty.
+     */
+    bool has_constraint = false;
 };
 
 struct StrongTypeGenerator

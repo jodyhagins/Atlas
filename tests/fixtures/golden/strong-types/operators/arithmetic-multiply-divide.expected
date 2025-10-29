@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_EFFF8BEC33116382470877B5162E01B88C45464E
-#define FOO_BAR_EFFF8BEC33116382470877B5162E01B88C45464E
+#ifndef FOO_BAR_4EFE3F07EF01695789AD173F8A8878C51DDA21D8
+#define FOO_BAR_4EFE3F07EF01695789AD173F8A8878C51DDA21D8
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -250,11 +250,6 @@ struct MultiplyDivideType
     using atlas_value_type = int;
 
     constexpr explicit MultiplyDivideType() = default;
-    constexpr MultiplyDivideType(MultiplyDivideType const &) = default;
-    constexpr MultiplyDivideType(MultiplyDivideType &&) = default;
-    constexpr MultiplyDivideType & operator = (MultiplyDivideType const &) = default;
-    constexpr MultiplyDivideType & operator = (MultiplyDivideType &&) = default;
-    constexpr ~MultiplyDivideType() = default;
 
     template <
         typename... ArgTs,
@@ -333,5 +328,5 @@ struct MultiplyDivideType
 };
 } // namespace test
 
-#endif // FOO_BAR_EFFF8BEC33116382470877B5162E01B88C45464E
+#endif // FOO_BAR_4EFE3F07EF01695789AD173F8A8878C51DDA21D8
 

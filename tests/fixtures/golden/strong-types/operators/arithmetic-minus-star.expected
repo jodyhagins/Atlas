@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_A3D5F782377E38741836C441D1CA1A6F6F05384E
-#define FOO_BAR_A3D5F782377E38741836C441D1CA1A6F6F05384E
+#ifndef FOO_BAR_F4BF016A7D613B7A49B4CCB0E595C72333DF6B6D
+#define FOO_BAR_F4BF016A7D613B7A49B4CCB0E595C72333DF6B6D
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -250,11 +250,6 @@ struct MinusStarType
     using atlas_value_type = int;
 
     constexpr explicit MinusStarType() = default;
-    constexpr MinusStarType(MinusStarType const &) = default;
-    constexpr MinusStarType(MinusStarType &&) = default;
-    constexpr MinusStarType & operator = (MinusStarType const &) = default;
-    constexpr MinusStarType & operator = (MinusStarType &&) = default;
-    constexpr ~MinusStarType() = default;
 
     template <
         typename... ArgTs,
@@ -318,5 +313,5 @@ struct MinusStarType
 };
 } // namespace test
 
-#endif // FOO_BAR_A3D5F782377E38741836C441D1CA1A6F6F05384E
+#endif // FOO_BAR_F4BF016A7D613B7A49B4CCB0E595C72333DF6B6D
 

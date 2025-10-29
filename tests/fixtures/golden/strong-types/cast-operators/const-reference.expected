@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_64746066E60B13C6A57BC4665B6EADFA04D10BFB
-#define FOO_BAR_64746066E60B13C6A57BC4665B6EADFA04D10BFB
+#ifndef FOO_BAR_073C7F7F27C5565ED6118662FFCED63F40B9D18E
+#define FOO_BAR_073C7F7F27C5565ED6118662FFCED63F40B9D18E
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -251,11 +251,6 @@ struct ConstRefCastType
     using atlas_value_type = std::string;
 
     constexpr explicit ConstRefCastType() = default;
-    constexpr ConstRefCastType(ConstRefCastType const &) = default;
-    constexpr ConstRefCastType(ConstRefCastType &&) = default;
-    constexpr ConstRefCastType & operator = (ConstRefCastType const &) = default;
-    constexpr ConstRefCastType & operator = (ConstRefCastType &&) = default;
-    constexpr ~ConstRefCastType() = default;
 
     template <
         typename... ArgTs,
@@ -284,5 +279,5 @@ struct ConstRefCastType
 };
 } // namespace test
 
-#endif // FOO_BAR_64746066E60B13C6A57BC4665B6EADFA04D10BFB
+#endif // FOO_BAR_073C7F7F27C5565ED6118662FFCED63F40B9D18E
 

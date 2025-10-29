@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_AB8885038A0FAADE58CD87E9B4FD80E569C2A21C
-#define FOO_BAR_AB8885038A0FAADE58CD87E9B4FD80E569C2A21C
+#ifndef FOO_BAR_A959AF9C1CBA2695D2DE7A51E9AEE5BFEBB2D57F
+#define FOO_BAR_A959AF9C1CBA2695D2DE7A51E9AEE5BFEBB2D57F
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -250,11 +250,6 @@ struct AddSubtractType
     using atlas_value_type = int;
 
     constexpr explicit AddSubtractType() = default;
-    constexpr AddSubtractType(AddSubtractType const &) = default;
-    constexpr AddSubtractType(AddSubtractType &&) = default;
-    constexpr AddSubtractType & operator = (AddSubtractType const &) = default;
-    constexpr AddSubtractType & operator = (AddSubtractType &&) = default;
-    constexpr ~AddSubtractType() = default;
 
     template <
         typename... ArgTs,
@@ -333,5 +328,5 @@ struct AddSubtractType
 };
 } // namespace test
 
-#endif // FOO_BAR_AB8885038A0FAADE58CD87E9B4FD80E569C2A21C
+#endif // FOO_BAR_A959AF9C1CBA2695D2DE7A51E9AEE5BFEBB2D57F
 

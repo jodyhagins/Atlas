@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_B1A727D0D967454CB929079DF0C97D8E8811BC58
-#define FOO_BAR_B1A727D0D967454CB929079DF0C97D8E8811BC58
+#ifndef FOO_BAR_8CA07A3DF855E76A181B2E1728A7A9730359615F
+#define FOO_BAR_8CA07A3DF855E76A181B2E1728A7A9730359615F
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -250,11 +250,6 @@ struct RelationalType
     using atlas_value_type = int;
 
     constexpr explicit RelationalType() = default;
-    constexpr RelationalType(RelationalType const &) = default;
-    constexpr RelationalType(RelationalType &&) = default;
-    constexpr RelationalType & operator = (RelationalType const &) = default;
-    constexpr RelationalType & operator = (RelationalType &&) = default;
-    constexpr ~RelationalType() = default;
 
     template <
         typename... ArgTs,
@@ -317,5 +312,5 @@ struct RelationalType
 };
 } // namespace test
 
-#endif // FOO_BAR_B1A727D0D967454CB929079DF0C97D8E8811BC58
+#endif // FOO_BAR_8CA07A3DF855E76A181B2E1728A7A9730359615F
 

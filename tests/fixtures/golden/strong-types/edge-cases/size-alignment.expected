@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_D7AA33B005A57A75432826E3782FED68EB9476FE
-#define FOO_BAR_D7AA33B005A57A75432826E3782FED68EB9476FE
+#ifndef FOO_BAR_A1385D1C23317489EA1B4B625A7C2BF81642D27D
+#define FOO_BAR_A1385D1C23317489EA1B4B625A7C2BF81642D27D
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -251,11 +251,6 @@ struct SizeAlignment
     using atlas_value_type = int;
 
     constexpr explicit SizeAlignment() = default;
-    constexpr SizeAlignment(SizeAlignment const &) = default;
-    constexpr SizeAlignment(SizeAlignment &&) = default;
-    constexpr SizeAlignment & operator = (SizeAlignment const &) = default;
-    constexpr SizeAlignment & operator = (SizeAlignment &&) = default;
-    constexpr ~SizeAlignment() = default;
 
     template <
         typename... ArgTs,
@@ -286,5 +281,5 @@ struct SizeAlignment
 } // namespace edge_cases
 } // namespace test
 
-#endif // FOO_BAR_D7AA33B005A57A75432826E3782FED68EB9476FE
+#endif // FOO_BAR_A1385D1C23317489EA1B4B625A7C2BF81642D27D
 

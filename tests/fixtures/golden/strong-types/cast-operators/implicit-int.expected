@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_BD4A8A81B001E3F4997474A36BFBEB18BC7CC73F
-#define FOO_BAR_BD4A8A81B001E3F4997474A36BFBEB18BC7CC73F
+#ifndef FOO_BAR_B1B14FB238507C7AB8DC21C7F320D1E7CB876E10
+#define FOO_BAR_B1B14FB238507C7AB8DC21C7F320D1E7CB876E10
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -250,11 +250,6 @@ struct ImplicitIntType
     using atlas_value_type = double;
 
     constexpr explicit ImplicitIntType() = default;
-    constexpr ImplicitIntType(ImplicitIntType const &) = default;
-    constexpr ImplicitIntType(ImplicitIntType &&) = default;
-    constexpr ImplicitIntType & operator = (ImplicitIntType const &) = default;
-    constexpr ImplicitIntType & operator = (ImplicitIntType &&) = default;
-    constexpr ~ImplicitIntType() = default;
 
     template <
         typename... ArgTs,
@@ -283,5 +278,5 @@ struct ImplicitIntType
 };
 } // namespace test
 
-#endif // FOO_BAR_BD4A8A81B001E3F4997474A36BFBEB18BC7CC73F
+#endif // FOO_BAR_B1B14FB238507C7AB8DC21C7F320D1E7CB876E10
 

@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_D81FA5C81512A04CABB47EF82E3FEFD76A5E742F
-#define FOO_BAR_D81FA5C81512A04CABB47EF82E3FEFD76A5E742F
+#ifndef FOO_BAR_092FA131885DFBDE541A6FE507ACECD4A657B36A
+#define FOO_BAR_092FA131885DFBDE541A6FE507ACECD4A657B36A
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -250,11 +250,6 @@ struct SpaceshipType
     using atlas_value_type = int;
 
     constexpr explicit SpaceshipType() = default;
-    constexpr SpaceshipType(SpaceshipType const &) = default;
-    constexpr SpaceshipType(SpaceshipType &&) = default;
-    constexpr SpaceshipType & operator = (SpaceshipType const &) = default;
-    constexpr SpaceshipType & operator = (SpaceshipType &&) = default;
-    constexpr ~SpaceshipType() = default;
 
     template <
         typename... ArgTs,
@@ -356,5 +351,5 @@ struct SpaceshipType
 };
 } // namespace test
 
-#endif // FOO_BAR_D81FA5C81512A04CABB47EF82E3FEFD76A5E742F
+#endif // FOO_BAR_092FA131885DFBDE541A6FE507ACECD4A657B36A
 

@@ -1,0 +1,14 @@
+# Test: All arithmetic modes with bounded constraint
+# Feature: bounded constraint works with all arithmetic modes
+
+[test::BoundedDefaultArith]
+description=std::uint8_t; bounded<10,200>, +, -, *, /, #<cstdint>
+
+[test::BoundedCheckedArith]
+description=std::uint8_t; bounded<10,200>, +, -, *, /, checked, #<cstdint>
+
+[test::BoundedSaturatingArith]
+description=std::uint8_t; bounded<10,200>, +, -, *, /, saturating, #<cstdint>
+
+[test::BoundedWrappingArith]
+description=std::uint8_t; bounded<10,200>, +, -, *, /, wrapping, #<cstdint>

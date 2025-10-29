@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_81C8EF0C27BE50A6A2227B506BCE67481B5900AF
-#define FOO_BAR_81C8EF0C27BE50A6A2227B506BCE67481B5900AF
+#ifndef FOO_BAR_6E4687D71F3984AFCBD994CC89A50E7B69F09CCB
+#define FOO_BAR_6E4687D71F3984AFCBD994CC89A50E7B69F09CCB
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -254,11 +254,6 @@ struct AssignStringType
     using atlas_value_type = std::string;
 
     constexpr explicit AssignStringType() = default;
-    constexpr AssignStringType(AssignStringType const &) = default;
-    constexpr AssignStringType(AssignStringType &&) = default;
-    constexpr AssignStringType & operator = (AssignStringType const &) = default;
-    constexpr AssignStringType & operator = (AssignStringType &&) = default;
-    constexpr ~AssignStringType() = default;
 
     template <
         typename... ArgTs,
@@ -314,5 +309,5 @@ struct AssignStringType
 };
 } // namespace test
 
-#endif // FOO_BAR_81C8EF0C27BE50A6A2227B506BCE67481B5900AF
+#endif // FOO_BAR_6E4687D71F3984AFCBD994CC89A50E7B69F09CCB
 

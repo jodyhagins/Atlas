@@ -922,7 +922,7 @@ std::string
 AtlasCommandLine::
 get_help_text()
 {
-    return R"(Atlas Strong Type Generator
+    return R"_(Atlas Strong Type Generator
 
 Generate C++ strong type wrappers with configurable operators and features.
 
@@ -1089,6 +1089,34 @@ OPERATOR REFERENCE:
     Custom:         #<header> or #"header" for custom includes
     Modes:          checked, saturating, or wrapping
 
+CONSTRAINTS (Enforce Invariants):
+    Constrained types validate values at construction and after operations:
+
+    positive             Value must be > 0
+    non_negative         Value must be >= 0
+    non_zero             Value must be != 0
+    bounded<Min,Max>     Value must be in [Min, Max] (closed interval)
+    bounded_range<Min,Max> Value must be in [Min, Max) (half-open)
+    non_empty            Container/string must not be empty (deletes default ctor)
+    non_null             Pointer must not be null (deletes default ctor)
+
+    Examples:
+        "int; positive, +, -, *"                    # Positive integers
+        "int; bounded<0,100>, <=>"                  # Percentage (0-100)
+        "double; bounded<-273.15,1e7>, +, -"        # Temperature (absolute zero+)
+        "std::string; non_empty, ==, !="            # Non-empty strings
+        "void*; non_null, ==, !="                   # Non-null pointers
+        "uint8_t; bounded<0,100>, +, -, checked"    # Bounded with overflow check
+
+    Constraints throw atlas::ConstraintError on violations:
+    - Constructor: "TypeName: value violates constraint: message"
+    - Arithmetic: "TypeName: arithmetic result violates constraint (message)"
+    - Forwarded functions: "TypeName::function: operation violates constraint (message)"
+    Note: Minor formatting inconsistencies exist; don't rely on exact formats.
+
+    For constexpr values, violations cause compilation errors.
+    Constraints work with all arithmetic modes (checked/saturating/wrapping).
+
 CONSTEXPR BEHAVIOR:
     By default, all operations are marked constexpr for use in constant
     expressions.
@@ -1102,7 +1130,7 @@ CONSTEXPR BEHAVIOR:
         "strong std::string; ==, hash, no-constexpr" # Nothing constexpr
 
 For more information, see the Atlas documentation.
-)";
+)_";
 }
 
 InteractionFileDescription

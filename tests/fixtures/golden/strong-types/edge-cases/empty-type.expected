@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_8722835ADC6A139288E1C7FD16DA72EA7D5E5E7A
-#define FOO_BAR_8722835ADC6A139288E1C7FD16DA72EA7D5E5E7A
+#ifndef FOO_BAR_09C7853D6241B899753261AED9CFFDAA23C75DA5
+#define FOO_BAR_09C7853D6241B899753261AED9CFFDAA23C75DA5
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -251,11 +251,6 @@ struct EmptyType
     using atlas_value_type = struct Empty {};
 
     constexpr explicit EmptyType() = default;
-    constexpr EmptyType(EmptyType const &) = default;
-    constexpr EmptyType(EmptyType &&) = default;
-    constexpr EmptyType & operator = (EmptyType const &) = default;
-    constexpr EmptyType & operator = (EmptyType &&) = default;
-    constexpr ~EmptyType() = default;
 
     template <
         typename... ArgTs,
@@ -286,5 +281,5 @@ struct EmptyType
 } // namespace edge_cases
 } // namespace test
 
-#endif // FOO_BAR_8722835ADC6A139288E1C7FD16DA72EA7D5E5E7A
+#endif // FOO_BAR_09C7853D6241B899753261AED9CFFDAA23C75DA5
 

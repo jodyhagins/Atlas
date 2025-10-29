@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_06F217FA5E45DED5DDAADA235927755A7B4CB27D
-#define FOO_BAR_06F217FA5E45DED5DDAADA235927755A7B4CB27D
+#ifndef FOO_BAR_D2FDAA6EFD22E418FA71F8B70F16EC999F371C92
+#define FOO_BAR_D2FDAA6EFD22E418FA71F8B70F16EC999F371C92
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -251,11 +251,6 @@ struct ExplicitIncludeAngle
     using atlas_value_type = int;
 
     constexpr explicit ExplicitIncludeAngle() = default;
-    constexpr ExplicitIncludeAngle(ExplicitIncludeAngle const &) = default;
-    constexpr ExplicitIncludeAngle(ExplicitIncludeAngle &&) = default;
-    constexpr ExplicitIncludeAngle & operator = (ExplicitIncludeAngle const &) = default;
-    constexpr ExplicitIncludeAngle & operator = (ExplicitIncludeAngle &&) = default;
-    constexpr ~ExplicitIncludeAngle() = default;
 
     template <
         typename... ArgTs,
@@ -285,5 +280,5 @@ struct ExplicitIncludeAngle
 };
 } // namespace test
 
-#endif // FOO_BAR_06F217FA5E45DED5DDAADA235927755A7B4CB27D
+#endif // FOO_BAR_D2FDAA6EFD22E418FA71F8B70F16EC999F371C92
 

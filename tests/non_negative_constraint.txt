@@ -1,0 +1,14 @@
+# Test: Basic non_negative constraint
+# Feature: Value must be >= 0
+[test::NonNegativeInt]
+description=int; non_negative, <=>, +, -
+
+# Test: Non-negative constraint with checked arithmetic
+# Feature: Non-negative values with overflow checking
+[test::NonNegativeChecked]
+description=std::uint8_t; non_negative, +, -, checked, #<cstdint>
+
+# Test: Non-negative constraint with saturating arithmetic
+# Feature: Non-negative values with saturation
+[test::NonNegativeSaturating]
+description=std::uint8_t; non_negative, +, -, saturating, #<cstdint>

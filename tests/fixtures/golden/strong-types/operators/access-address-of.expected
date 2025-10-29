@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_9208E2EE2C803F3BE30310F5DB2CFEBC95ADD03D
-#define FOO_BAR_9208E2EE2C803F3BE30310F5DB2CFEBC95ADD03D
+#ifndef FOO_BAR_7D08835A1FF8A97518536BB909038261A3A66655
+#define FOO_BAR_7D08835A1FF8A97518536BB909038261A3A66655
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -251,11 +251,6 @@ struct AddressOfType
     using atlas_value_type = int;
 
     constexpr explicit AddressOfType() = default;
-    constexpr AddressOfType(AddressOfType const &) = default;
-    constexpr AddressOfType(AddressOfType &&) = default;
-    constexpr AddressOfType & operator = (AddressOfType const &) = default;
-    constexpr AddressOfType & operator = (AddressOfType &&) = default;
-    constexpr ~AddressOfType() = default;
 
     template <
         typename... ArgTs,
@@ -288,5 +283,5 @@ struct AddressOfType
 };
 } // namespace test
 
-#endif // FOO_BAR_9208E2EE2C803F3BE30310F5DB2CFEBC95ADD03D
+#endif // FOO_BAR_7D08835A1FF8A97518536BB909038261A3A66655
 

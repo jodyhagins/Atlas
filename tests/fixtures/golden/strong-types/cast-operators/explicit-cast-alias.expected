@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_79EFA3EA496CAABC24785AC282037DDD460342F4
-#define FOO_BAR_79EFA3EA496CAABC24785AC282037DDD460342F4
+#ifndef FOO_BAR_53140879BBEC3EDFF797CF1E90F4BD74871A8C02
+#define FOO_BAR_53140879BBEC3EDFF797CF1E90F4BD74871A8C02
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -250,11 +250,6 @@ struct ExplicitCastAliasType
     using atlas_value_type = double;
 
     constexpr explicit ExplicitCastAliasType() = default;
-    constexpr ExplicitCastAliasType(ExplicitCastAliasType const &) = default;
-    constexpr ExplicitCastAliasType(ExplicitCastAliasType &&) = default;
-    constexpr ExplicitCastAliasType & operator = (ExplicitCastAliasType const &) = default;
-    constexpr ExplicitCastAliasType & operator = (ExplicitCastAliasType &&) = default;
-    constexpr ~ExplicitCastAliasType() = default;
 
     template <
         typename... ArgTs,
@@ -283,5 +278,5 @@ struct ExplicitCastAliasType
 };
 } // namespace test
 
-#endif // FOO_BAR_79EFA3EA496CAABC24785AC282037DDD460342F4
+#endif // FOO_BAR_53140879BBEC3EDFF797CF1E90F4BD74871A8C02
 

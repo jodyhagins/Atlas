@@ -168,6 +168,46 @@ Common options (because we're all about that opt-in life):
 - Profiles: Reusable feature bundles with `profile=NAME; features...` and `{NAME}` references
 - Special: `bool`, `no-constexpr` — the "it's complicated" options
 
+### Constrained Types
+
+Enforce invariants at construction time and after operations. Invalid states become unrepresentable:
+
+- **`positive`** — Value must be > 0 (prices, speeds)
+- **`non_negative`** — Value must be >= 0 (distances, counts)
+- **`non_zero`** — Value must be != 0 (denominators, divisors)
+- **`bounded<Min,Max>`** — Value must be in [Min, Max] closed interval (percentages, volume levels)
+- **`bounded_range<Min,Max>`** — Value must be in [Min, Max) half-open interval (array indices)
+- **`non_empty`** — Container/string must not be empty (usernames, required fields)
+- **`non_null`** — Pointer must not be null (required handles, non-null pointers)
+
+Quick example:
+
+```
+[struct audio::Volume]
+description=int; bounded<0,100>, +, -, <=>, saturating
+
+[struct finance::Price]
+description=double; positive, +, -, *, /
+
+[struct auth::Username]
+description=std::string; non_empty, ==, hash
+```
+
+Generated types validate at construction and after operations:
+
+```cpp
+Volume v{150};        // Throws atlas::ConstraintError
+Volume a{50}, b{60};
+auto c = a + b;       // Throws - result 110 exceeds max of 100
+
+Username u{""};       // Throws - empty string not allowed
+Username u;           // Won't compile - default ctor deleted for non_empty types
+```
+
+Constraints work with all arithmetic modes (`checked`, `saturating`, `wrapping`) and provide compile-time checking for `constexpr` values.
+
+See the [Constrained Types section in the description language docs](docs/description-language.md#constrained-types) for complete details.
+
 Full reference (for the masochists): [`docs/description-language.md`](docs/description-language.md)
 
 ## Library API

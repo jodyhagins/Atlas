@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_3EC3525CFE01325EC4DC3E834D89519F5D0F9335
-#define FOO_BAR_3EC3525CFE01325EC4DC3E834D89519F5D0F9335
+#ifndef FOO_BAR_906B9059133727CCEC0F602E8EE9C26F34C90B6F
+#define FOO_BAR_906B9059133727CCEC0F602E8EE9C26F34C90B6F
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -251,11 +251,6 @@ struct StreamInType
     using atlas_value_type = int;
 
     constexpr explicit StreamInType() = default;
-    constexpr StreamInType(StreamInType const &) = default;
-    constexpr StreamInType(StreamInType &&) = default;
-    constexpr StreamInType & operator = (StreamInType const &) = default;
-    constexpr StreamInType & operator = (StreamInType &&) = default;
-    constexpr ~StreamInType() = default;
 
     template <
         typename... ArgTs,
@@ -284,5 +279,5 @@ struct StreamInType
 };
 } // namespace test
 
-#endif // FOO_BAR_3EC3525CFE01325EC4DC3E834D89519F5D0F9335
+#endif // FOO_BAR_906B9059133727CCEC0F602E8EE9C26F34C90B6F
 

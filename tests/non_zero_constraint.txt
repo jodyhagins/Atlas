@@ -1,0 +1,14 @@
+# Test: Basic non_zero constraint
+# Feature: Value must be != 0
+[test::NonZeroInt]
+description=int; non_zero, <=>, +, -, *
+
+# Test: Non-zero denominator for division
+# Feature: Safe division with non-zero divisor
+[math::Denominator]
+description=int; non_zero, *, /
+
+# Test: Non-zero unsigned char for wraparound testing
+# Feature: Tests that unsigned wraparound to zero is caught
+[test::NonZeroUChar]
+description=unsigned char; non_zero, *

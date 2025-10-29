@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_E6BC366827AB77D4769DC29D4DB7E05E4711B7E5
-#define FOO_BAR_E6BC366827AB77D4769DC29D4DB7E05E4711B7E5
+#ifndef FOO_BAR_E99AC4EBC9916A38F391758B30630EC22B27F58A
+#define FOO_BAR_E99AC4EBC9916A38F391758B30630EC22B27F58A
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -250,11 +250,6 @@ struct UnaryAllType
     using atlas_value_type = int;
 
     constexpr explicit UnaryAllType() = default;
-    constexpr UnaryAllType(UnaryAllType const &) = default;
-    constexpr UnaryAllType(UnaryAllType &&) = default;
-    constexpr UnaryAllType & operator = (UnaryAllType const &) = default;
-    constexpr UnaryAllType & operator = (UnaryAllType &&) = default;
-    constexpr ~UnaryAllType() = default;
 
     template <
         typename... ArgTs,
@@ -327,5 +322,5 @@ struct UnaryAllType
 };
 } // namespace test
 
-#endif // FOO_BAR_E6BC366827AB77D4769DC29D4DB7E05E4711B7E5
+#endif // FOO_BAR_E99AC4EBC9916A38F391758B30630EC22B27F58A
 

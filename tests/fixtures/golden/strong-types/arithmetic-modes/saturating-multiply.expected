@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_578EB604D5677DC1EF11CC18084D6F5B6690FCFF
-#define FOO_BAR_578EB604D5677DC1EF11CC18084D6F5B6690FCFF
+#ifndef FOO_BAR_5B7A4599E35458212FFEDCA8B5AA35C84979F683
+#define FOO_BAR_5B7A4599E35458212FFEDCA8B5AA35C84979F683
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -680,11 +680,6 @@ struct Distance
     using atlas_value_type = int;
 
     constexpr explicit Distance() = default;
-    constexpr Distance(Distance const &) = default;
-    constexpr Distance(Distance &&) = default;
-    constexpr Distance & operator = (Distance const &) = default;
-    constexpr Distance & operator = (Distance &&) = default;
-    constexpr ~Distance() = default;
 
     template <
         typename... ArgTs,
@@ -738,11 +733,6 @@ struct Count
     using atlas_value_type = unsigned int;
 
     constexpr explicit Count() = default;
-    constexpr Count(Count const &) = default;
-    constexpr Count(Count &&) = default;
-    constexpr Count & operator = (Count const &) = default;
-    constexpr Count & operator = (Count &&) = default;
-    constexpr ~Count() = default;
 
     template <
         typename... ArgTs,
@@ -796,11 +786,6 @@ struct Ratio
     using atlas_value_type = double;
 
     constexpr explicit Ratio() = default;
-    constexpr Ratio(Ratio const &) = default;
-    constexpr Ratio(Ratio &&) = default;
-    constexpr Ratio & operator = (Ratio const &) = default;
-    constexpr Ratio & operator = (Ratio &&) = default;
-    constexpr ~Ratio() = default;
 
     template <
         typename... ArgTs,
@@ -832,5 +817,5 @@ struct Ratio
 };
 } // namespace test
 
-#endif // FOO_BAR_578EB604D5677DC1EF11CC18084D6F5B6690FCFF
+#endif // FOO_BAR_5B7A4599E35458212FFEDCA8B5AA35C84979F683
 

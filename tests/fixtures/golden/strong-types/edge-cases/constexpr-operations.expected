@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_3BBD4217A2C3078C4B55FDEFB6546F5C2E7C1C15
-#define FOO_BAR_3BBD4217A2C3078C4B55FDEFB6546F5C2E7C1C15
+#ifndef FOO_BAR_52FAA0A3FBECACD919E12014AA8347D8F0A50898
+#define FOO_BAR_52FAA0A3FBECACD919E12014AA8347D8F0A50898
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -251,11 +251,6 @@ struct ConstexprOperations
     using atlas_value_type = int;
 
     constexpr explicit ConstexprOperations() = default;
-    constexpr ConstexprOperations(ConstexprOperations const &) = default;
-    constexpr ConstexprOperations(ConstexprOperations &&) = default;
-    constexpr ConstexprOperations & operator = (ConstexprOperations const &) = default;
-    constexpr ConstexprOperations & operator = (ConstexprOperations &&) = default;
-    constexpr ~ConstexprOperations() = default;
 
     template <
         typename... ArgTs,
@@ -387,5 +382,5 @@ struct ConstexprOperations
 } // namespace edge_cases
 } // namespace test
 
-#endif // FOO_BAR_3BBD4217A2C3078C4B55FDEFB6546F5C2E7C1C15
+#endif // FOO_BAR_52FAA0A3FBECACD919E12014AA8347D8F0A50898
 

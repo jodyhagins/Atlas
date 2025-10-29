@@ -137,3 +137,53 @@ target_link_libraries(arithmetic_modes_runtime_ut
 add_test(NAME ArithmeticModesRuntimeTests COMMAND arithmetic_modes_runtime_ut)
 # Ensure types are generated before building the test
 add_dependencies(arithmetic_modes_runtime_ut atlas)
+
+# ======================================================================
+# CONSTRAINT INTEGRATION TESTS
+# ======================================================================
+set(INPUT "${CMAKE_CURRENT_SOURCE_DIR}/constraint_integration_test_types.txt")
+set(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/constraint_integration_types.hpp")
+add_custom_command(
+    OUTPUT ${OUTPUT}
+    COMMAND atlas --input=${INPUT} --output=${OUTPUT}
+    DEPENDS atlas ${INPUT}
+    COMMENT "Generating constraint integration test types"
+)
+add_executable(constraint_integration_ut
+    constraint_integration_ut.cpp
+    ${OUTPUT}
+)
+target_link_libraries(constraint_integration_ut PRIVATE
+    doctest::doctest
+)
+add_test(NAME ConstraintIntegrationTests
+    COMMAND constraint_integration_ut
+)
+target_include_directories(constraint_integration_ut
+    PRIVATE
+        ${CMAKE_CURRENT_BINARY_DIR}
+)
+
+set(INPUT "${CMAKE_CURRENT_SOURCE_DIR}/constraint_integration2_test_types.txt")
+set(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/constraint_integration2_test_types.hpp")
+add_custom_command(
+    OUTPUT ${OUTPUT}
+    COMMAND atlas --input=${INPUT} --output=${OUTPUT}
+    DEPENDS atlas ${INPUT}
+    COMMENT "Generating more constraint integration test types"
+)
+add_executable(constraint_integration2_ut
+    constraint_integration2_ut.cpp
+    ${OUTPUT}
+)
+target_link_libraries(constraint_integration2_ut PRIVATE
+    doctest::doctest
+)
+add_test(NAME MoreConstraintIntegrationTests
+    COMMAND constraint_integration2_ut
+)
+target_include_directories(constraint_integration2_ut
+    PRIVATE
+        ${CMAKE_CURRENT_BINARY_DIR}
+)
+

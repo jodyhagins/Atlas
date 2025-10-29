@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_A40F30793C5304B91FE05554BAFB726C1232057A
-#define FOO_BAR_A40F30793C5304B91FE05554BAFB726C1232057A
+#ifndef FOO_BAR_D0EA4B2DD12744327AC279F5BE473DFEC03ECDCB
+#define FOO_BAR_D0EA4B2DD12744327AC279F5BE473DFEC03ECDCB
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -253,11 +253,6 @@ struct AssignIntType
     using atlas_value_type = int;
 
     constexpr explicit AssignIntType() = default;
-    constexpr AssignIntType(AssignIntType const &) = default;
-    constexpr AssignIntType(AssignIntType &&) = default;
-    constexpr AssignIntType & operator = (AssignIntType const &) = default;
-    constexpr AssignIntType & operator = (AssignIntType &&) = default;
-    constexpr ~AssignIntType() = default;
 
     template <
         typename... ArgTs,
@@ -313,5 +308,5 @@ struct AssignIntType
 };
 } // namespace test
 
-#endif // FOO_BAR_A40F30793C5304B91FE05554BAFB726C1232057A
+#endif // FOO_BAR_D0EA4B2DD12744327AC279F5BE473DFEC03ECDCB
 

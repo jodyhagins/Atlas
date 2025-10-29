@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_9AA1DDA43374D78E0F65F9BE669CC86B716FB052
-#define FOO_BAR_9AA1DDA43374D78E0F65F9BE669CC86B716FB052
+#ifndef FOO_BAR_BB0ED69BEA15518C01F2EC1FBBCE26D984CAC889
+#define FOO_BAR_BB0ED69BEA15518C01F2EC1FBBCE26D984CAC889
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -250,11 +250,6 @@ struct UnaryComplementType
     using atlas_value_type = int;
 
     constexpr explicit UnaryComplementType() = default;
-    constexpr UnaryComplementType(UnaryComplementType const &) = default;
-    constexpr UnaryComplementType(UnaryComplementType &&) = default;
-    constexpr UnaryComplementType & operator = (UnaryComplementType const &) = default;
-    constexpr UnaryComplementType & operator = (UnaryComplementType &&) = default;
-    constexpr ~UnaryComplementType() = default;
 
     template <
         typename... ArgTs,
@@ -288,5 +283,5 @@ struct UnaryComplementType
 };
 } // namespace test
 
-#endif // FOO_BAR_9AA1DDA43374D78E0F65F9BE669CC86B716FB052
+#endif // FOO_BAR_BB0ED69BEA15518C01F2EC1FBBCE26D984CAC889
 

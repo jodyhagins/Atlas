@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_764F70D9A930E9F507D6D8DB238121F1E92162BB
-#define FOO_BAR_764F70D9A930E9F507D6D8DB238121F1E92162BB
+#ifndef FOO_BAR_F5604831514877F4036BC10694A2D118A656C836
+#define FOO_BAR_F5604831514877F4036BC10694A2D118A656C836
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -310,11 +310,6 @@ struct DereferenceType
     using atlas_value_type = int;
 
     constexpr explicit DereferenceType() = default;
-    constexpr DereferenceType(DereferenceType const &) = default;
-    constexpr DereferenceType(DereferenceType &&) = default;
-    constexpr DereferenceType & operator = (DereferenceType const &) = default;
-    constexpr DereferenceType & operator = (DereferenceType &&) = default;
-    constexpr ~DereferenceType() = default;
 
     template <
         typename... ArgTs,
@@ -363,5 +358,5 @@ struct DereferenceType
 };
 } // namespace test
 
-#endif // FOO_BAR_764F70D9A930E9F507D6D8DB238121F1E92162BB
+#endif // FOO_BAR_F5604831514877F4036BC10694A2D118A656C836
 

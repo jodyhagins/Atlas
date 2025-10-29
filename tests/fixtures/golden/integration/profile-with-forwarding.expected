@@ -1,5 +1,5 @@
-#ifndef TEST_FA0EF182C0E63834D6251B40594CFCE72694C94F
-#define TEST_FA0EF182C0E63834D6251B40594CFCE72694C94F
+#ifndef TEST_3C430B880B186F0D2FC5F168100F0C58CB62F043
+#define TEST_3C430B880B186F0D2FC5F168100F0C58CB62F043
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -253,11 +253,6 @@ struct StringWrapper
     using atlas_value_type = std::string;
 
     constexpr explicit StringWrapper() = default;
-    constexpr StringWrapper(StringWrapper const &) = default;
-    constexpr StringWrapper(StringWrapper &&) = default;
-    constexpr StringWrapper & operator = (StringWrapper const &) = default;
-    constexpr StringWrapper & operator = (StringWrapper &&) = default;
-    constexpr ~StringWrapper() = default;
 
     template <
         typename... ArgTs,
@@ -473,11 +468,6 @@ struct VectorWrapper
     using atlas_value_type = std::vector<int>;
 
     constexpr explicit VectorWrapper() = default;
-    constexpr VectorWrapper(VectorWrapper const &) = default;
-    constexpr VectorWrapper(VectorWrapper &&) = default;
-    constexpr VectorWrapper & operator = (VectorWrapper const &) = default;
-    constexpr VectorWrapper & operator = (VectorWrapper &&) = default;
-    constexpr ~VectorWrapper() = default;
 
     template <
         typename... ArgTs,
@@ -792,11 +782,6 @@ struct StringWithExtra
     using atlas_value_type = std::string;
 
     constexpr explicit StringWithExtra() = default;
-    constexpr StringWithExtra(StringWithExtra const &) = default;
-    constexpr StringWithExtra(StringWithExtra &&) = default;
-    constexpr StringWithExtra & operator = (StringWithExtra const &) = default;
-    constexpr StringWithExtra & operator = (StringWithExtra &&) = default;
-    constexpr ~StringWithExtra() = default;
 
     template <
         typename... ArgTs,
@@ -1056,11 +1041,6 @@ struct ContainerWithComparison
     using atlas_value_type = std::vector<int>;
 
     constexpr explicit ContainerWithComparison() = default;
-    constexpr ContainerWithComparison(ContainerWithComparison const &) = default;
-    constexpr ContainerWithComparison(ContainerWithComparison &&) = default;
-    constexpr ContainerWithComparison & operator = (ContainerWithComparison const &) = default;
-    constexpr ContainerWithComparison & operator = (ContainerWithComparison &&) = default;
-    constexpr ~ContainerWithComparison() = default;
 
     template <
         typename... ArgTs,
@@ -1419,11 +1399,6 @@ struct ComparisonOnly
     using atlas_value_type = int;
 
     constexpr explicit ComparisonOnly() = default;
-    constexpr ComparisonOnly(ComparisonOnly const &) = default;
-    constexpr ComparisonOnly(ComparisonOnly &&) = default;
-    constexpr ComparisonOnly & operator = (ComparisonOnly const &) = default;
-    constexpr ComparisonOnly & operator = (ComparisonOnly &&) = default;
-    constexpr ~ComparisonOnly() = default;
 
     template <
         typename... ArgTs,
@@ -1530,11 +1505,6 @@ struct AliasedWrapper
     using atlas_value_type = std::string;
 
     constexpr explicit AliasedWrapper() = default;
-    constexpr AliasedWrapper(AliasedWrapper const &) = default;
-    constexpr AliasedWrapper(AliasedWrapper &&) = default;
-    constexpr AliasedWrapper & operator = (AliasedWrapper const &) = default;
-    constexpr AliasedWrapper & operator = (AliasedWrapper &&) = default;
-    constexpr ~AliasedWrapper() = default;
 
     template <
         typename... ArgTs,
@@ -1690,11 +1660,6 @@ struct ImmutableWrapper
     using atlas_value_type = std::string;
 
     constexpr explicit ImmutableWrapper() = default;
-    constexpr ImmutableWrapper(ImmutableWrapper const &) = default;
-    constexpr ImmutableWrapper(ImmutableWrapper &&) = default;
-    constexpr ImmutableWrapper & operator = (ImmutableWrapper const &) = default;
-    constexpr ImmutableWrapper & operator = (ImmutableWrapper &&) = default;
-    constexpr ~ImmutableWrapper() = default;
 
     template <
         typename... ArgTs,
@@ -1788,11 +1753,6 @@ struct MixedForwarding
     using atlas_value_type = std::string;
 
     constexpr explicit MixedForwarding() = default;
-    constexpr MixedForwarding(MixedForwarding const &) = default;
-    constexpr MixedForwarding(MixedForwarding &&) = default;
-    constexpr MixedForwarding & operator = (MixedForwarding const &) = default;
-    constexpr MixedForwarding & operator = (MixedForwarding &&) = default;
-    constexpr ~MixedForwarding() = default;
 
     template <
         typename... ArgTs,
@@ -2167,11 +2127,6 @@ struct MixedForwardingConst
     using atlas_value_type = std::string;
 
     constexpr explicit MixedForwardingConst() = default;
-    constexpr MixedForwardingConst(MixedForwardingConst const &) = default;
-    constexpr MixedForwardingConst(MixedForwardingConst &&) = default;
-    constexpr MixedForwardingConst & operator = (MixedForwardingConst const &) = default;
-    constexpr MixedForwardingConst & operator = (MixedForwardingConst &&) = default;
-    constexpr ~MixedForwardingConst() = default;
 
     template <
         typename... ArgTs,
@@ -2369,5 +2324,5 @@ struct MixedForwardingConst
 };
 } // namespace test
 
-#endif // TEST_FA0EF182C0E63834D6251B40594CFCE72694C94F
+#endif // TEST_3C430B880B186F0D2FC5F168100F0C58CB62F043
 

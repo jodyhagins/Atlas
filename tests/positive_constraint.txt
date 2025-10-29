@@ -1,0 +1,19 @@
+# Test: Basic positive constraint
+# Feature: Value must be > 0
+[test::PositiveInt]
+description=int; positive, <=>
+
+# Test: Positive constraint with checked arithmetic
+# Feature: Positive values with overflow checking
+[test::PositiveChecked]
+description=std::uint8_t; positive, +, -, checked, #<cstdint>
+
+# Test: Positive constraint with saturating arithmetic
+# Feature: Positive values with saturation
+[test::PositiveSaturating]
+description=std::uint8_t; positive, +, -, saturating, #<cstdint>
+
+# Test: Positive constraint with wrapping arithmetic
+# Feature: Positive values with wrapping
+[test::PositiveWrapping]
+description=std::uint8_t; positive, +, -, wrapping, #<cstdint>

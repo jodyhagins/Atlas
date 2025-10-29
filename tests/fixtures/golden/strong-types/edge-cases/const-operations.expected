@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_B73E8BB569A4C731EC759CD00C51C1C84A3274D6
-#define FOO_BAR_B73E8BB569A4C731EC759CD00C51C1C84A3274D6
+#ifndef FOO_BAR_C00C59A960B45A18F7753A9173EAE66279FE6FAD
+#define FOO_BAR_C00C59A960B45A18F7753A9173EAE66279FE6FAD
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -251,11 +251,6 @@ struct ConstOperations
     using atlas_value_type = int;
 
     constexpr explicit ConstOperations() = default;
-    constexpr ConstOperations(ConstOperations const &) = default;
-    constexpr ConstOperations(ConstOperations &&) = default;
-    constexpr ConstOperations & operator = (ConstOperations const &) = default;
-    constexpr ConstOperations & operator = (ConstOperations &&) = default;
-    constexpr ~ConstOperations() = default;
 
     template <
         typename... ArgTs,
@@ -357,5 +352,5 @@ struct ConstOperations
 } // namespace edge_cases
 } // namespace test
 
-#endif // FOO_BAR_B73E8BB569A4C731EC759CD00C51C1C84A3274D6
+#endif // FOO_BAR_C00C59A960B45A18F7753A9173EAE66279FE6FAD
 

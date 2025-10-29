@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_4329577517DE9C3A7913F3EF98BF7D6E9A2B3470
-#define FOO_BAR_4329577517DE9C3A7913F3EF98BF7D6E9A2B3470
+#ifndef FOO_BAR_A4A003F4294C8A130FC573B6D2DE84AFD6404381
+#define FOO_BAR_A4A003F4294C8A130FC573B6D2DE84AFD6404381
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -253,11 +253,6 @@ struct DeeplyNestedType
     using atlas_value_type = int;
 
     constexpr explicit DeeplyNestedType() = default;
-    constexpr DeeplyNestedType(DeeplyNestedType const &) = default;
-    constexpr DeeplyNestedType(DeeplyNestedType &&) = default;
-    constexpr DeeplyNestedType & operator = (DeeplyNestedType const &) = default;
-    constexpr DeeplyNestedType & operator = (DeeplyNestedType &&) = default;
-    constexpr ~DeeplyNestedType() = default;
 
     template <
         typename... ArgTs,
@@ -290,5 +285,5 @@ struct DeeplyNestedType
 } // namespace b
 } // namespace a
 
-#endif // FOO_BAR_4329577517DE9C3A7913F3EF98BF7D6E9A2B3470
+#endif // FOO_BAR_A4A003F4294C8A130FC573B6D2DE84AFD6404381
 

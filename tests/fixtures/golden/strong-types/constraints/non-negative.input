@@ -1,0 +1,11 @@
+# Test: Basic non_negative constraint
+# Feature: Value must be >= 0
+
+[test::NonNegativeInt]
+description=int; non_negative, <=>, +, -
+
+[test::NonNegativeChecked]
+description=uint8_t; non_negative, +, -, checked
+
+[test::NonNegativeSaturating]
+description=uint8_t; non_negative, +, -, saturating

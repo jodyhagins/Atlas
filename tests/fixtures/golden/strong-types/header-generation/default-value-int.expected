@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_E79BE12869205B847E996EAC1CA0DC78C0AB65E1
-#define FOO_BAR_E79BE12869205B847E996EAC1CA0DC78C0AB65E1
+#ifndef FOO_BAR_76C1AA5C1E5A5FF3807E75DC56393FDE0CA578AC
+#define FOO_BAR_76C1AA5C1E5A5FF3807E75DC56393FDE0CA578AC
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -250,11 +250,6 @@ struct DefaultValueInt
     using atlas_value_type = int;
 
     constexpr explicit DefaultValueInt() = default;
-    constexpr DefaultValueInt(DefaultValueInt const &) = default;
-    constexpr DefaultValueInt(DefaultValueInt &&) = default;
-    constexpr DefaultValueInt & operator = (DefaultValueInt const &) = default;
-    constexpr DefaultValueInt & operator = (DefaultValueInt &&) = default;
-    constexpr ~DefaultValueInt() = default;
 
     template <
         typename... ArgTs,
@@ -284,5 +279,5 @@ struct DefaultValueInt
 };
 } // namespace test
 
-#endif // FOO_BAR_E79BE12869205B847E996EAC1CA0DC78C0AB65E1
+#endif // FOO_BAR_76C1AA5C1E5A5FF3807E75DC56393FDE0CA578AC
 

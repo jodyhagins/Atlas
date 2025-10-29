@@ -62,7 +62,27 @@ split(std::string_view sv, char sep)
         while (not sv.empty() && std::isspace(sv.front())) {
             sv.remove_prefix(1);
         }
-        auto n = std::min(sv.find(sep), sv.size());
+        // Find the next separator, respecting angle bracket nesting
+        // Only count brackets when they're part of identifiers (bounded<0,100>)
+        // not standalone comparison operators (like <, <=, >, >=)
+        int bracket_depth = 0;
+        size_t n = 0;
+        while (n < sv.size()) {
+            char c = sv[n];
+            if (c == '<' && n > 0 &&
+                std::isalnum(static_cast<unsigned char>(sv[n - 1])))
+            {
+                // This looks like a template parameter (e.g., bounded<...)
+                // Only increase depth if preceded directly by alphanumeric (no
+                // space)
+                ++bracket_depth;
+            } else if (c == '>' && bracket_depth > 0) {
+                --bracket_depth;
+            } else if (c == sep && bracket_depth == 0) {
+                break;
+            }
+            ++n;
+        }
         components.push_back(strip(sv.substr(0, n)));
         sv.remove_prefix(std::min(n + 1, sv.size()));
     }
@@ -213,7 +233,7 @@ trim(std::string const & str)
 }
 
 std::vector<std::string>
-get_preamble_includes(PreambleOptions /* options */)
+get_preamble_includes(PreambleOptions const & options)
 {
     std::vector<std::string> includes;
 
@@ -221,12 +241,11 @@ get_preamble_includes(PreambleOptions /* options */)
     includes.push_back("<type_traits>");
     includes.push_back("<utility>");
 
-    // Conditionally add <compare> if three-way comparison is supported
-    // This is handled separately in the generated code via #if directive,
-    // so we don't include it in the unconditional list
-
-    // Note: options parameter reserved for future use (e.g., if we need to
-    // conditionally include headers based on arrow/dereference operators)
+    if (options.include_constraints) {
+        includes.push_back("<sstream>");
+        includes.push_back("<stdexcept>");
+        includes.push_back("<string>");
+    }
 
     return includes;
 }
@@ -1406,6 +1425,294 @@ saturating_rem(T a, T b) noexcept
 #endif // WJH_ATLAS_64A9A0E1C2564622BBEAE087A98B793D
 )";
 
+    static constexpr char const constraints_helpers[] = R"__(
+#ifndef WJH_ATLAS_173D2C4FC9AA46929AD14C8BDF75D829
+#define WJH_ATLAS_173D2C4FC9AA46929AD14C8BDF75D829
+
+#include <sstream>
+
+namespace atlas {
+
+/**
+ * @brief Exception thrown when a constraint is violated
+ */
+class ConstraintError
+: public std::logic_error
+{
+public:
+    using std::logic_error::logic_error;
+    virtual ~ConstraintError() noexcept = default;
+};
+
+namespace constraints {
+
+namespace detail {
+
+template <typename T>
+std::string
+format_value_impl(T const &, atlas_detail::PriorityTag<0>)
+{
+    return "unknown value";
+}
+
+template <typename T>
+auto
+format_value_impl(T const & value, atlas_detail::PriorityTag<1>)
+-> decltype(std::declval<std::ostringstream &>() << value, std::string())
+{
+    std::ostringstream oss;
+    oss << value;
+    return oss.str();
+}
+
+template <typename T>
+auto
+format_value_impl(T const & value, atlas_detail::PriorityTag<2>)
+-> decltype(std::to_string(value))
+{
+    return std::to_string(value);
+}
+
+template <typename T>
+std::string
+format_value(T const & value)
+{
+    return format_value_impl(value, atlas_detail::PriorityTag<2>{});
+}
+
+inline int uncaught_exceptions() noexcept
+{
+#if defined(__cpp_lib_uncaught_exceptions) && \
+    __cpp_lib_uncaught_exceptions >= 201411L
+    return std::uncaught_exceptions();
+#elif defined(_MSC_VER)
+    return __uncaught_exceptions();  // MSVC extension available since VS2015
+#elif defined(__GLIBCXX__)
+    // libstdc++ has __cxa_get_globals which tracks uncaught exceptions
+    return __cxxabiv1::__cxa_get_globals()->uncaughtExceptions;
+#elif defined(_LIBCPP_VERSION)
+    // libc++ has std::uncaught_exceptions even in C++11 mode as extension
+    return std::uncaught_exceptions();
+#else
+    // Fallback: use old uncaught_exception() (singular) - less safe but works
+    // This will return 1 during any exception, 0 otherwise
+    // Can't distinguish between multiple exceptions, but better than nothing
+    return std::uncaught_exception() ? 1 : 0;
+#endif
+}
+
+/**
+ * @brief RAII guard for validating constraints after mutating operations
+ *
+ * This guard validates constraints in its destructor, ensuring that the
+ * constraint is checked after the operation completes. The guard checks
+ * uncaught_exceptions() to avoid throwing during stack unwinding.
+ *
+ * Only validates non-const operations - const operations cannot violate
+ * constraints by definition.
+ *
+ * @tparam T The value type being constrained (may be const)
+ * @tparam ConstraintT The constraint type with static check() and message()
+ */
+template <typename T, typename ConstraintT, typename = void>
+struct ConstraintGuard
+{
+    using value_type = typename std::remove_const<T>::type;
+
+    T const & value;
+    char const * operation_name;
+    int uncaught_at_entry;
+
+    /**
+     * @brief Construct guard, capturing current exception state
+     */
+    constexpr ConstraintGuard(T const & v, char const * op) noexcept
+    : value(v)
+    , operation_name(op)
+    , uncaught_at_entry(uncaught_exceptions())
+    { }
+
+    /**
+     * @brief Destructor validates constraint if no new exceptions
+     *
+     * Only throws if the constraint is violated AND no exceptions are
+     * currently unwinding (to avoid std::terminate).
+     *
+     * Only validates non-const operations - uses std::is_const to check.
+     */
+    constexpr ~ConstraintGuard() noexcept(false)
+    {
+        if (uncaught_exceptions() == uncaught_at_entry) {
+            if (not ConstraintT::check(value)) {
+                throw atlas::ConstraintError(
+                    std::string(operation_name) +
+                    ": operation violates constraint (" +
+                    ConstraintT::message() + ")");
+            }
+        }
+    }
+};
+
+template <typename T, typename ConstraintT>
+struct ConstraintGuard<
+    T,
+    ConstraintT,
+    typename std::enable_if<std::is_const<T>::value>::type>
+{
+    constexpr ConstraintGuard(T const &, char const *) noexcept
+    { }
+};
+
+} // namespace detail
+
+template <typename ConstraintT, typename T>
+auto constraint_guard(T & t, char const * op) noexcept
+{
+    return detail::ConstraintGuard<T, ConstraintT>(t, op);
+}
+
+/**
+ * @brief Constraint: value must be > 0
+ */
+template <typename T>
+struct positive
+{
+    static constexpr bool check(T const & value)
+    noexcept(noexcept(value > T{0}))
+    {
+        return value > T{0};
+    }
+
+    static constexpr char const * message() noexcept
+    {
+        return "value must be positive (> 0)";
+    }
+};
+
+/**
+ * @brief Constraint: value must be >= 0
+ */
+template <typename T>
+struct non_negative
+{
+    static constexpr bool check(T const & value)
+    noexcept(noexcept(value >= T{0}))
+    {
+        return value >= T{0};
+    }
+
+    static constexpr char const * message() noexcept
+    {
+        return "value must be non-negative (>= 0)";
+    }
+};
+
+/**
+ * @brief Constraint: value must be != 0
+ */
+template <typename T>
+struct non_zero
+{
+    static constexpr bool check(T const & value)
+    noexcept(noexcept(value != T{0}))
+    {
+        return value != T{0};
+    }
+
+    static constexpr char const * message() noexcept
+    {
+        return "value must be non-zero (!= 0)";
+    }
+};
+
+/**
+ * Constraint: value must be in [Min, Max]
+ */
+template <typename T>
+struct bounded
+{
+    static constexpr bool check(typename T::value_type const & value)
+    noexcept(noexcept(value >= T::min()) && noexcept(value <= T::max()))
+    {
+        return value >= T::min() && value <= T::max();
+    }
+
+    static constexpr char const * message() noexcept
+    {
+        return T::message();
+    }
+};
+
+/**
+ * Constraint: value must be in [Min, Max) (half-open range)
+ */
+template <typename T>
+struct bounded_range
+{
+    static constexpr bool check(typename T::value_type const & value)
+    noexcept(noexcept(value >= T::min()) && noexcept(value < T::max()))
+    {
+        return value >= T::min() && value < T::max();
+    }
+
+    static constexpr char const * message() noexcept
+    {
+        return T::message();
+    }
+};
+
+/**
+ * @brief Constraint: container/string must not be empty
+ */
+template <typename T>
+struct non_empty
+{
+    static constexpr bool check(T const & value)
+    noexcept(noexcept(value.empty()))
+    {
+        return not value.empty();
+    }
+
+    static constexpr char const * message() noexcept
+    {
+        return "value must not be empty";
+    }
+};
+
+/**
+ * @brief Constraint: pointer must not be null
+ *
+ * Works with raw pointers, smart pointers (unique_ptr, shared_ptr), and
+ * std::optional by using explicit bool conversion (operator bool()).
+ *
+ * Note: weak_ptr requires C++23 for operator bool() support.
+ */
+template <typename T>
+struct non_null
+{
+    static constexpr bool check(T const & value)
+    noexcept(noexcept(static_cast<bool>(value)))
+    {
+        // Use explicit bool conversion - works for:
+        // - Raw pointers (void*, int*, etc.)
+        // - Smart pointers (unique_ptr, shared_ptr)
+        // - std::optional
+        // - Any type with explicit operator bool()
+        return static_cast<bool>(value);
+    }
+
+    static constexpr char const * message() noexcept
+    {
+        return "pointer must not be null";
+    }
+};
+
+} // namespace constraints
+} // namespace atlas
+
+#endif // WJH_ATLAS_173D2C4FC9AA46929AD14C8BDF75D829
+)__";
+
     static constexpr char const droids[] = R"(
 
 //////////////////////////////////////////////////////////////////////
@@ -1433,6 +1740,9 @@ saturating_rem(T a, T b) noexcept
     }
     if (options.include_saturating_helpers) {
         result += saturating_helpers;
+    }
+    if (options.include_constraints) {
+        result += constraints_helpers;
     }
     result += droids;
     return result;

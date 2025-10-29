@@ -566,6 +566,60 @@ TEST_SUITE("StrongTypeGenerator")
         }
     }
 
+    TEST_CASE("Floating-Point Bounds Validation")
+    {
+        SUBCASE("integer bounds work in C++11") {
+            auto desc = make_description(
+                "struct",
+                "test",
+                "IntBounds",
+                "strong int; bounded<0,100>");
+            CHECK_NOTHROW(generate_strong_type(desc));
+        }
+
+        SUBCASE("integer bounds work in C++17") {
+            StrongTypeDescription desc{
+                .kind = "struct",
+                .type_namespace = "test",
+                .type_name = "IntBounds17",
+                .description = "strong int; bounded<-10,200>",
+                .cpp_standard = 17};
+            CHECK_NOTHROW(generate_strong_type(desc));
+        }
+
+        SUBCASE("floating-point bounds work with any C++ standard") {
+            // With trait-based design, floating-point bounds work in any C++
+            // standard
+            StrongTypeDescription desc{
+                .kind = "struct",
+                .type_namespace = "physics",
+                .type_name = "Temperature",
+                .description = "strong double; bounded<-273.15,1e7>",
+                .cpp_standard = 11};
+            CHECK_NOTHROW(generate_strong_type(desc));
+        }
+
+        SUBCASE("floating-point bounds with C++17") {
+            StrongTypeDescription desc{
+                .kind = "struct",
+                .type_namespace = "test",
+                .type_name = "FloatBounds",
+                .description = "strong double; bounded<-273.15,1000.0>",
+                .cpp_standard = 17};
+            CHECK_NOTHROW(generate_strong_type(desc));
+        }
+
+        SUBCASE("scientific notation bounds work") {
+            StrongTypeDescription desc{
+                .kind = "struct",
+                .type_namespace = "test",
+                .type_name = "BigNumber",
+                .description = "strong double; bounded<0,1E10>",
+                .cpp_standard = 14};
+            CHECK_NOTHROW(generate_strong_type(desc));
+        }
+    }
+
     TEST_CASE("C++ Standard Specification")
     {
         SUBCASE("parse_cpp_standard - valid inputs") {

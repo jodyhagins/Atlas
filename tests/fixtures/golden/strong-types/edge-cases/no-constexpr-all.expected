@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_B100442D8A7990F992E5A26AAA7DB6B10B1B2E65
-#define FOO_BAR_B100442D8A7990F992E5A26AAA7DB6B10B1B2E65
+#ifndef FOO_BAR_65A28DF319B356048F53611B5D017FCCB49F4E5E
+#define FOO_BAR_65A28DF319B356048F53611B5D017FCCB49F4E5E
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -252,11 +252,6 @@ struct NoConstexprAll
     using atlas_value_type = int;
 
     explicit NoConstexprAll() = default;
-    NoConstexprAll(NoConstexprAll const &) = default;
-    NoConstexprAll(NoConstexprAll &&) = default;
-    NoConstexprAll & operator = (NoConstexprAll const &) = default;
-    NoConstexprAll & operator = (NoConstexprAll &&) = default;
-    ~NoConstexprAll() = default;
 
     template <
         typename... ArgTs,
@@ -366,5 +361,5 @@ struct std::hash<test::edge_cases::NoConstexprAll>
             static_cast<int const &>(t));
     }
 };
-#endif // FOO_BAR_B100442D8A7990F992E5A26AAA7DB6B10B1B2E65
+#endif // FOO_BAR_65A28DF319B356048F53611B5D017FCCB49F4E5E
 

@@ -1,5 +1,5 @@
-#ifndef TEST_INTTYPE_5FFD98D9ECEA665008A4E28033533D93922EB614
-#define TEST_INTTYPE_5FFD98D9ECEA665008A4E28033533D93922EB614
+#ifndef TEST_INTTYPE_A4E1BE75B443EC174B939EDE9D6F423F92A7E520
+#define TEST_INTTYPE_A4E1BE75B443EC174B939EDE9D6F423F92A7E520
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -250,11 +250,6 @@ struct IntType
     using atlas_value_type = int;
 
     constexpr explicit IntType() = default;
-    constexpr IntType(IntType const &) = default;
-    constexpr IntType(IntType &&) = default;
-    constexpr IntType & operator = (IntType const &) = default;
-    constexpr IntType & operator = (IntType &&) = default;
-    constexpr ~IntType() = default;
 
     template <
         typename... ArgTs,
@@ -333,5 +328,5 @@ struct IntType
 };
 } // namespace test
 
-#endif // TEST_INTTYPE_5FFD98D9ECEA665008A4E28033533D93922EB614
+#endif // TEST_INTTYPE_A4E1BE75B443EC174B939EDE9D6F423F92A7E520
 

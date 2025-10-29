@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_43FA5E37755E49F42AA2113469A945EB701B2277
-#define FOO_BAR_43FA5E37755E49F42AA2113469A945EB701B2277
+#ifndef FOO_BAR_A7519BE8F17230BA6CD67C190F72969C5E3A1810
+#define FOO_BAR_A7519BE8F17230BA6CD67C190F72969C5E3A1810
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -251,11 +251,6 @@ struct HashIntType
     using atlas_value_type = int;
 
     constexpr explicit HashIntType() = default;
-    constexpr HashIntType(HashIntType const &) = default;
-    constexpr HashIntType(HashIntType &&) = default;
-    constexpr HashIntType & operator = (HashIntType const &) = default;
-    constexpr HashIntType & operator = (HashIntType &&) = default;
-    constexpr ~HashIntType() = default;
 
     template <
         typename... ArgTs,
@@ -293,5 +288,5 @@ struct std::hash<test::HashIntType>
             static_cast<int const &>(t));
     }
 };
-#endif // FOO_BAR_43FA5E37755E49F42AA2113469A945EB701B2277
+#endif // FOO_BAR_A7519BE8F17230BA6CD67C190F72969C5E3A1810
 
