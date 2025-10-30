@@ -6,6 +6,7 @@
 // ----------------------------------------------------------------------
 #include "AtlasUtilities.hpp"
 #include "StrongTypeGenerator.hpp"
+#include "TypeTokenizer.hpp"
 #include "version.hpp"
 
 #include <boost/describe.hpp>
@@ -2287,85 +2288,10 @@ parse(
         info.default_initializer = "{" + desc.default_value + "}";
     }
 
-    // Try to deduce some of the standard header file locations
-    std::vector<std::pair<std::string_view, std::string_view>> equals = {
-        {"std::any", "<any>"},
-        {"std::string", "<string>"},
-        {"std::string_view", "<string_view>"},
-        {"std::regex", "<regex>"},
-        {"std::condition_variable", "<condition_variable>"},
-        {"std::condition_variable_any", "<condition_variable>"},
-        {"std::latch", "<latch>"},
-        {"std::mutex", "<mutex>"},
-        {"std::recursive_mutex", "<mutex>"},
-        {"std::timed_mutex", "<mutex>"},
-        {"std::recursive_timed_mutex", "<mutex>"},
-        {"std::shared_mutex", "<shared_mutex>"},
-        {"std::shared_timed_mutex", "<shared_mutex>"},
-        {"std::binary_semaphore", "<semaphore>"},
-        {"std::stop_token", "<stop_token>"},
-        {"std::stop_source", "<stop_token>"},
-        {"std::thread", "<thread>"},
-        {"std::jthread", "<thread>"},
-        {"std::thread_id", "<thread>"},
-    };
-    if (auto i = std::find_if(
-            equals.begin(),
-            equals.end(),
-            [&](auto const & p) { return p.first == info.underlying_type; });
-        i != equals.end())
-    {
-        info.includes_vec.emplace_back(i->second);
-    }
-    std::vector<std::pair<std::string_view, std::string_view>> starts_with = {
-        {"std::bitset<", "<bitset>"},
-        {"std::chrono::", "<chrono>"},
-        {"std::optional<", "<optional>"},
-        {"std::tuple<", "<tuple>"},
-        {"std::variant<", "<variant>"},
-        {"std::basic_string<", "<string>"},
-        {"std::basic_string_view<", "<string>"},
-        {"std::array<", "<array>"},
-        {"std::deque<", "<deque>"},
-        {"std::forward_list<", "<forward_list>"},
-        {"std::list<", "<list>"},
-        {"std::map<", "<map>"},
-        {"std::multimap<", "<map>"},
-        {"std::multiset<", "<set>"},
-        {"std::priority_queue<", "<queue>"},
-        {"std::queue<", "<queue>"},
-        {"std::set<", "<set>"},
-        {"std::span<", "<span>"},
-        {"std::stack<", "<stack>"},
-        {"std::unordered_map<", "<unordered_map>"},
-        {"std::unordered_multimap<", "<unordered_map>"},
-        {"std::unordered_multiset<", "<unordered_set>"},
-        {"std::unordered_set<", "<unordered_set>"},
-        {"std::vector<", "<vector>"},
-        {"std::filesystem::", "<filesystem>"},
-        {"std::basic_regex<", "<regex>"},
-        {"std::atomic<", "<atomic>"},
-        {"std::atomic_", "<atomic>"},
-        {"std::barrier<", "<barrier>"},
-        {"std::counting_semaphore<", "<semaphore>"},
-        {"std::stop_callback<", "<stop_token>"},
-        {"std::shared_ptr<", "<memory>"},
-        {"std::unique_ptr<", "<memory>"},
-        {"std::weak_ptr<", "<memory>"},
-        {"std::function<", "<functional>"},
-        {"std::hash<", "<functional>"},
-        {"std::pair<", "<utility>"},
-        {"std::expected<", "<expected>"},
-    };
-    if (auto i = std::find_if(
-            starts_with.begin(),
-            starts_with.end(),
-            [&](auto const & p) {
-                return info.underlying_type.starts_with(p.first);
-            });
-        i != starts_with.end())
-    {
-        info.includes_vec.emplace_back(i->second);
+    // Deduce standard library header file locations using the new tokenizer
+    auto deduced_headers = deduce_headers_from_type(info.underlying_type);
+    for (auto const & header : deduced_headers) {
+        info.includes_vec.emplace_back(header);
     }
 
     // Add standard includes that are always needed

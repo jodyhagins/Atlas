@@ -24,6 +24,8 @@
 #if defined(__cpp_concepts) && __cpp_concepts >= 201907L
 #include <concepts>
 #endif
+#include <cstddef>
+#include <cstdint>
 #include <deque>
 #if defined(__cpp_lib_format) && __cpp_lib_format >= 202110L
 #include <format>
