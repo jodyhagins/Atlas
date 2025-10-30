@@ -407,12 +407,27 @@ default_value=42
 
 ## Automatic Includes
 
-Atlas is smart enough to figure out your includes (most of the time):
+Atlas automatically discovers most required standard headers for your types:
+
+**Exact type matches:**
 - `std::string` → `<string>`
 - `std::vector` → `<vector>`
-- `std::chrono::...` → `<chrono>`
+- `std::map` → `<map>`
 
-When it guesses wrong, use `#<header>` to fix it.
+**Integral type families:**
+- `int8_t`, `uint32_t`, `int64_t` → `<cstdint>`
+- `size_t`, `ptrdiff_t` → `<cstddef>`
+
+**Namespace-qualified types:**
+- `std::chrono::*` → `<chrono>`
+- `std::filesystem::*` → `<filesystem>`
+- `std::ranges::*` → `<ranges>`
+
+**Complex nested types:**
+- `std::map<std::string, std::int64_t>` → `<cstdint>`, `<map>`, `<string>`
+- `std::vector<std::vector<int>>` → `<vector>`
+
+When Atlas guesses wrong or you need a non-standard header, use `#<header>` to explicitly add it.
 
 ## Examples
 

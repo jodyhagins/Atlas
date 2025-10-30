@@ -92,7 +92,11 @@ add_library(atlas_lib
     src/lib/ProfileSystem.cpp
     src/lib/ProfileSystem.hpp
     src/lib/AtlasMain.cpp
-    src/lib/AtlasMain.hpp)
+    src/lib/AtlasMain.hpp
+    src/lib/TypeTokenizer.cpp
+    src/lib/TypeTokenizer.hpp
+    src/lib/TokenToHeaderMapper.cpp
+    src/lib/TokenToHeaderMapper.hpp)
 
 target_include_directories(atlas_lib
     PUBLIC
