@@ -126,11 +126,11 @@ IncludeCategories:
     Priority:        999
     SortPriority:    999
     CaseSensitive:   false
-  - Regex:           '^(<|")doctest/doctest.h("|>)$'
+  - Regex:           '^(<|")(doctest|rapidcheck).hpp("|>)$'
     Priority:        1000
     SortPriority:    1000
     CaseSensitive:   true
-  - Regex:           '^(<|")testing/(doctest|rapidcheck).hpp("|>)$'
+  - Regex:           '^(<|")tests/(doctest|rapidcheck).hpp("|>)$'
     Priority:        1000
     SortPriority:    1000
     CaseSensitive:   true

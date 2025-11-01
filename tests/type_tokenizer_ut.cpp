@@ -5,10 +5,11 @@
 // https://opensource.org/licenses/MIT
 // ----------------------------------------------------------------------
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include "TypeTokenizer.hpp"
-#include "doctest.hpp"
+#include "atlas/TypeTokenizer.hpp"
 
 #include <algorithm>
+
+#include "doctest.hpp"
 
 namespace {
 

@@ -4,11 +4,12 @@
 // See accompanying file LICENSE or copy at
 // https://opensource.org/licenses/MIT
 // ----------------------------------------------------------------------
-#include "AtlasUtilities.hpp"
 #include "CodeStructureParser.hpp"
-#include "ProfileSystem.hpp"
-#include "StrongTypeGenerator.hpp"
-#include "version.hpp"
+
+#include "atlas/AtlasUtilities.hpp"
+#include "atlas/ProfileSystem.hpp"
+#include "atlas/StrongTypeGenerator.hpp"
+#include "atlas/version.hpp"
 
 #include <algorithm>
 #include <regex>

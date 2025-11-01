@@ -7,12 +7,13 @@
 #ifndef WJH_ATLAS_8A2430C93F9248C19DDBE4C08F13238E
 #define WJH_ATLAS_8A2430C93F9248C19DDBE4C08F13238E
 
-#include "StrongTypeGenerator.hpp"
-#include "rapidcheck.hpp"
+#include "atlas/StrongTypeGenerator.hpp"
 
 #include <algorithm>
 #include <string>
 #include <vector>
+
+#include "rapidcheck.hpp"
 
 namespace wjh::atlas::testing::generators {
 

@@ -4,8 +4,8 @@
 // See accompanying file LICENSE or copy at
 // https://opensource.org/licenses/MIT
 // ----------------------------------------------------------------------
-#include "InteractionGenerator.hpp"
-#include "version.hpp"
+#include "atlas/InteractionGenerator.hpp"
+#include "atlas/version.hpp"
 
 #include <algorithm>
 #include <regex>

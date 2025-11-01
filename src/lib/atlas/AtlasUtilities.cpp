@@ -183,22 +183,8 @@ parse_specification(std::string_view spec)
 // End of string parsing utilities
 // ============================================================================
 
-std::string
-get_sha1(std::string const & s)
-{
-    boost::uuids::detail::sha1 sha1;
-    sha1.process_bytes(s.data(), s.size());
-    boost::uuids::detail::sha1::digest_type hash;
-    sha1.get_digest(hash);
-
-    std::string result;
-    for (unsigned int x : hash) {
-        char buffer[64];
-        snprintf(buffer, sizeof(buffer), "%08x", x);
-        result += buffer;
-    }
-    return result;
-}
+// Note: get_sha1 has been moved to generation/core/SHA1Hasher.cpp
+// to avoid circular dependency issues between atlas_lib and generation library
 
 std::string
 generate_header_guard(

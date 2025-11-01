@@ -55,14 +55,6 @@ struct ParsedSpecification
 ParsedSpecification parse_specification(std::string_view spec);
 
 /**
- * @brief Generate SHA1 hash of a string
- *
- * @param s Input string to hash
- * @return Hexadecimal string representation of the SHA1 hash
- */
-std::string get_sha1(std::string const & s);
-
-/**
  * @brief Generate a header guard name
  *
  * @param prefix Guard prefix (empty = "ATLAS")

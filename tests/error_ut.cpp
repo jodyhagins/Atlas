@@ -6,10 +6,11 @@
 // ----------------------------------------------------------------------
 
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include "doctest.hpp"
 #include "error_test_support.hpp"
 
 #include <string>
+
+#include "doctest.hpp"
 
 using namespace wjh::atlas::testing;
 

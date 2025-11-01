@@ -5,14 +5,15 @@
 // https://opensource.org/licenses/MIT
 // ----------------------------------------------------------------------
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include "AtlasMain.hpp"
-#include "doctest.hpp"
+#include "atlas/AtlasMain.hpp"
 
 #include <cstdio>
 #include <cstdlib>
 #include <fstream>
 #include <sstream>
 #include <string>
+
+#include "doctest.hpp"
 
 namespace {
 

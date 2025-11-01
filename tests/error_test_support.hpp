@@ -7,8 +7,9 @@
 #ifndef WJH_ATLAS_C29D03282338498E82B7D8FD67765E9B
 #define WJH_ATLAS_C29D03282338498E82B7D8FD67765E9B
 
-#include "AtlasMain.hpp"
 #include "TestUtilities.hpp"
+
+#include "atlas/AtlasMain.hpp"
 
 #include <filesystem>
 #include <sstream>

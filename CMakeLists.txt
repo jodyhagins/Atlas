@@ -80,53 +80,8 @@ fetchcontent_declare(boost_mustache
 
 fetchcontent_makeavailable(boost_mustache)
 
-add_library(atlas_lib
-    src/lib/StrongTypeGenerator.cpp
-    src/lib/StrongTypeGenerator.hpp
-    src/lib/InteractionGenerator.cpp
-    src/lib/InteractionGenerator.hpp
-    src/lib/AtlasUtilities.cpp
-    src/lib/AtlasUtilities.hpp
-    src/lib/AtlasCommandLine.cpp
-    src/lib/AtlasCommandLine.hpp
-    src/lib/ProfileSystem.cpp
-    src/lib/ProfileSystem.hpp
-    src/lib/AtlasMain.cpp
-    src/lib/AtlasMain.hpp
-    src/lib/TypeTokenizer.cpp
-    src/lib/TypeTokenizer.hpp
-    src/lib/TokenToHeaderMapper.cpp
-    src/lib/TokenToHeaderMapper.hpp)
-
-target_include_directories(atlas_lib
-    PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/lib>
-        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/atlas>)
-
-target_link_libraries(atlas_lib
-    PRIVATE
-        Boost::describe
-        Boost::json
-        Boost::uuid)
-
-# Apply compiler warnings to library
-target_apply_atlas_warnings(atlas_lib)
-
-# Add boost and mustache include directories
-target_include_directories(atlas_lib
-    SYSTEM
-    PRIVATE
-        ${boost_mustache_SOURCE_DIR}/include
-        ${boost_SOURCE_DIR})
-
-# Add mustache source file to the library
-target_sources(atlas_lib
-    PRIVATE
-        ${boost_mustache_SOURCE_DIR}/src/renderer.cpp)
-
-# Disable all warnings for third-party mustache source
-set_source_files_properties(${boost_mustache_SOURCE_DIR}/src/renderer.cpp
-    PROPERTIES COMPILE_FLAGS "-w")
+# Add src/lib subdirectory which creates atlas_lib
+add_subdirectory(src/lib/atlas)
 
 add_executable(atlas src/tools/atlas.cpp)
 

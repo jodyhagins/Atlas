@@ -7,9 +7,10 @@
 #ifndef WJH_ATLAS_EBBE79C64640467FADB97E3D9F5B97D2
 #define WJH_ATLAS_EBBE79C64640467FADB97E3D9F5B97D2
 
-#include "AtlasMain.hpp"
 #include "TestUtilities.hpp"
 #include "test_common.hpp"
+
+#include "atlas/AtlasMain.hpp"
 
 #include <cstdlib>
 #include <filesystem>

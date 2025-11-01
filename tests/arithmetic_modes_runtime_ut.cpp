@@ -9,10 +9,11 @@
 
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include "arithmetic_modes_test_types.hpp"
-#include "doctest.hpp"
 
 #include <cmath>
 #include <limits>
+
+#include "doctest.hpp"
 
 // ======================================================================
 // CHECKED ARITHMETIC TESTS

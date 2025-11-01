@@ -11,6 +11,10 @@
 #include <string>
 #include <vector>
 
+namespace wjh::atlas::generation { inline namespace v1 {
+struct ClassInfo;
+}}
+
 namespace wjh::atlas { inline namespace v1 {
 
 struct StrongTypeDescription
@@ -20,7 +24,7 @@ struct StrongTypeDescription
      * the wrapped value will be public.  If a class, then the wrapped value
      * will be private.
      */
-    std::string kind;
+    std::string kind = "struct";
 
     /**
      * The fully qualified namespace of the strong type, type_name.
