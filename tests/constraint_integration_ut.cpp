@@ -1,6 +1,4 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include "doctest.hpp"
-
 #include <cstdint>
 #include <limits>
 #include <memory>
@@ -10,6 +8,8 @@
 #include <utility>
 #include <variant>
 #include <vector>
+
+#include "doctest.hpp"
 
 // Include the generated types
 #include "constraint_integration_types.hpp"

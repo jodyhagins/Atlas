@@ -1,0 +1,32 @@
+// ----------------------------------------------------------------------
+// Copyright 2025 Jody Hagins
+// Distributed under the MIT Software License
+// See accompanying file LICENSE or copy at
+// https://opensource.org/licenses/MIT
+// ----------------------------------------------------------------------
+#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include "tests/doctest.hpp"
+
+#include "HEADER_FILE"
+#include "atlas/generation/core/TemplateRegistry.hpp"
+
+using namespace wjh::atlas::generation;
+
+TEST_CASE("OPERATOR_NAME operator templates are registered")
+{
+    auto const & registry = TemplateRegistry::instance();
+
+    CHECK(registry.has_template("operators.arithmetic.OPERATOR_LOWER.default"));
+    EXTRA_REGISTRATIONS
+}
+
+TEST_CASE("Default OPERATOR_NAME operator has correct content")
+{
+    Default##OPERATOR_NAME##Operator op;
+
+    auto tmpl = op.get_template();
+    std::string tmpl_str(tmpl);
+
+    CHECK(tmpl_str.find("operator {{{op}}}") != std::string::npos);
+    CHECK(tmpl_str.find("lhs.value {{{op}}}") != std::string::npos);
+}

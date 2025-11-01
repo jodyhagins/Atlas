@@ -4,8 +4,9 @@
 // See accompanying file LICENSE or copy at
 // https://opensource.org/licenses/MIT
 // ----------------------------------------------------------------------
-#include "AtlasMain.hpp"
 #include "TestUtilities.hpp"
+
+#include "atlas/AtlasMain.hpp"
 
 #include <cstdlib>
 #include <filesystem>

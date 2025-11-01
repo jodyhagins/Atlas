@@ -6,14 +6,16 @@
 // ----------------------------------------------------------------------
 
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include "StrongTypeGenerator.hpp"
-#include "doctest.hpp"
 #include "property_generators.hpp"
-#include "rapidcheck.hpp"
+
+#include "atlas/StrongTypeGenerator.hpp"
 
 #include <algorithm>
 #include <regex>
 #include <string>
+
+#include "doctest.hpp"
+#include "rapidcheck.hpp"
 
 using namespace wjh::atlas;
 using namespace wjh::atlas::testing;

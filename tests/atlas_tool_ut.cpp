@@ -6,11 +6,12 @@
 // ----------------------------------------------------------------------
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include "TestUtilities.hpp"
-#include "doctest.hpp"
 
 #include <cstdlib>
 #include <fstream>
 #include <string>
+
+#include "doctest.hpp"
 
 // ATLAS_TOOL_PATH is defined via CMake compile definition
 #ifndef ATLAS_TOOL_PATH

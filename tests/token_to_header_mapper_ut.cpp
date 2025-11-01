@@ -5,7 +5,8 @@
 // https://opensource.org/licenses/MIT
 // ----------------------------------------------------------------------
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include "TokenToHeaderMapper.hpp"
+#include "atlas/TokenToHeaderMapper.hpp"
+
 #include "doctest.hpp"
 
 namespace {

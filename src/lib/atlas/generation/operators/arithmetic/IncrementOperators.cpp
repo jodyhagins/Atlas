@@ -1,0 +1,139 @@
+// ----------------------------------------------------------------------
+// Copyright 2025 Jody Hagins
+// Distributed under the MIT Software License
+// See accompanying file LICENSE or copy at
+// https://opensource.org/licenses/MIT
+// ----------------------------------------------------------------------
+#include "IncrementOperators.hpp"
+
+#include <boost/json/object.hpp>
+#include <boost/mustache.hpp>
+
+#include "atlas/generation/core/ClassInfo.hpp"
+#include "atlas/generation/core/TemplateRegistry.hpp"
+
+#include <sstream>
+
+namespace wjh::atlas::generation { inline namespace v1 {
+
+// ============================================================================
+// IncrementOperatorsTemplate Implementation
+// ============================================================================
+
+std::string_view
+IncrementOperatorsTemplate::
+get_template_impl() const noexcept
+{
+    static constexpr std::string_view tmpl = R"(
+    /**
+     * Apply the prefix {{{op}}} operator to the wrapped object.
+     */
+    friend {{{const_expr}}}{{{class_name}}} &
+    operator {{{op}}} ({{{class_name}}} & t)
+    noexcept(noexcept({{{op}}}std::declval<{{{underlying_type}}}&>()))
+    {
+        {{{op}}}t.value;
+        return t;
+    }
+    /**
+     * Apply the postfix {{{op}}} operator to the wrapped object.
+     */
+    friend {{{const_expr}}}{{{class_name}}}
+    operator {{{op}}} ({{{class_name}}} & t, int)
+    noexcept(
+        std::is_nothrow_copy_constructible<{{{underlying_type}}}>::value &&
+        noexcept({{{op}}}std::declval<{{{underlying_type}}}&>()))
+    {
+        auto result = t;
+        {{{op}}}t.value;
+        return result;
+    }
+)";
+    return tmpl;
+}
+
+bool
+IncrementOperatorsTemplate::
+should_apply_impl(ClassInfo const & info) const
+{
+    return not info.increment_operators.empty();
+}
+
+boost::json::object
+IncrementOperatorsTemplate::
+prepare_variables_impl(ClassInfo const & info) const
+{
+    // This method is still required by the interface, but it's not used
+    // since we override render_impl(). For completeness, return base variables
+    // without the "op" field.
+    boost::json::object variables;
+    variables["class_name"] = info.class_name;
+    variables["underlying_type"] = info.underlying_type;
+    variables["const_expr"] = info.const_expr;
+    return variables;
+}
+
+boost::json::object
+IncrementOperatorsTemplate::
+prepare_variables_for_operator(
+    ClassInfo const & info,
+    std::string_view op_symbol) const
+{
+    boost::json::object variables;
+    variables["class_name"] = info.class_name;
+    variables["underlying_type"] = info.underlying_type;
+    variables["const_expr"] = info.const_expr;
+    variables["op"] = op_symbol;
+    return variables;
+}
+
+std::string
+IncrementOperatorsTemplate::
+render_impl(ClassInfo const & info) const
+{
+    // Validate that this template should be applied
+    validate(info);
+
+    if (not should_apply(info)) {
+        return "";
+    }
+
+    // Get the template string once
+    std::string_view tmpl_str = get_template();
+    if (tmpl_str.empty()) {
+        return "";
+    }
+
+    // Iterate over all increment operators and render each one
+    std::ostringstream accumulated;
+    for (auto const & op : info.increment_operators) {
+        // Prepare variables for this specific operator
+        boost::json::object variables = prepare_variables_for_operator(
+            info,
+            op.op);
+
+        // Render this operator
+        std::ostringstream oss;
+        boost::mustache::render(
+            tmpl_str,
+            oss,
+            variables,
+            boost::json::object{}); // No partials needed
+
+        accumulated << oss.str();
+    }
+
+    return accumulated.str();
+}
+
+// ============================================================================
+// Self-Registration
+// ============================================================================
+
+namespace {
+
+TemplateRegistrar<IncrementOperatorsTemplate> register_increment_operators;
+
+} // anonymous namespace
+
+}} // namespace wjh::atlas::generation::v1

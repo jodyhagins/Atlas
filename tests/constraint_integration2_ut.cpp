@@ -1,10 +1,10 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include "doctest.hpp"
-
 #include <cstdint>
 #include <limits>
 #include <optional>
 #include <variant>
+
+#include "doctest.hpp"
 
 // Include the generated types
 #include "constraint_integration2_test_types.hpp"

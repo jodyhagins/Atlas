@@ -4,8 +4,8 @@
 // See accompanying file LICENSE or copy at
 // https://opensource.org/licenses/MIT
 // ----------------------------------------------------------------------
-#ifndef WJH_ATLAS_CODE_STRUCTURE_PARSER_HPP
-#define WJH_ATLAS_CODE_STRUCTURE_PARSER_HPP
+#ifndef WJH_ATLAS_60186E2D37844F59AB143B80B60B7E79
+#define WJH_ATLAS_60186E2D37844F59AB143B80B60B7E79
 
 #include <optional>
 #include <regex>
@@ -148,4 +148,4 @@ private:
 
 } // namespace wjh::atlas::testing
 
-#endif // WJH_ATLAS_CODE_STRUCTURE_PARSER_HPP
+#endif // WJH_ATLAS_60186E2D37844F59AB143B80B60B7E79

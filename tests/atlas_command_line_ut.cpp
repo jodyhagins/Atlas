@@ -5,11 +5,12 @@
 // https://opensource.org/licenses/MIT
 // ----------------------------------------------------------------------
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include "AtlasCommandLine.hpp"
-#include "doctest.hpp"
+#include "atlas/AtlasCommandLine.hpp"
 
 #include <filesystem>
 #include <fstream>
+
+#include "doctest.hpp"
 
 using namespace wjh::atlas;
 

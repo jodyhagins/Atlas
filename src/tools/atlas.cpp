@@ -4,8 +4,8 @@
 // See accompanying file LICENSE or copy at
 // https://opensource.org/licenses/MIT
 // ----------------------------------------------------------------------
-#include "AtlasCommandLine.hpp"
-#include "AtlasMain.hpp"
+#include "atlas/AtlasCommandLine.hpp"
+#include "atlas/AtlasMain.hpp"
 
 #include <cstdlib>
 

@@ -6,6 +6,7 @@
 // ----------------------------------------------------------------------
 #include "AtlasUtilities.hpp"
 #include "InteractionGenerator.hpp"
+#include "SHA1Hasher.hpp"
 #include "version.hpp"
 
 #include <boost/mustache.hpp>

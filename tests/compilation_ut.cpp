@@ -6,6 +6,7 @@
 // ----------------------------------------------------------------------
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include "compilation_support.hpp"
+
 #include "doctest.hpp"
 
 namespace {

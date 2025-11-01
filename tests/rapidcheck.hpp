@@ -7,7 +7,9 @@
 #ifndef WJH_ATLAS_C277B09170A04B1386A72F9034CBA4A2
 #define WJH_ATLAS_C277B09170A04B1386A72F9034CBA4A2
 
+// clang-format off
 #include "doctest.hpp"
+// clang-format on
 
 #include <rapidcheck/doctest.h>
 
