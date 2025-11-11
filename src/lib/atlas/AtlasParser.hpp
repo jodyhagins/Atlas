@@ -117,7 +117,7 @@ std::string normalize_description(std::string const & description);
  * File parser for Atlas type definition and interaction files.
  *
  * Extracts file parsing logic from AtlasCommandLine into reusable
- * static methods.
+ * static member functions.
  */
 class AtlasFileParser
 {
@@ -155,7 +155,7 @@ public:
  * CLI parser for Atlas command-line arguments.
  *
  * Extracts CLI parsing logic from AtlasCommandLine into reusable
- * static methods.
+ * static member functions.
  */
 class AtlasCliParser
 {

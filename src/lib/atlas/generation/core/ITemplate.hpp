@@ -32,8 +32,9 @@ namespace wjh::atlas::generation { inline namespace v1 {
  * etc.).
  *
  * The NVI pattern is employed here:
- * - Public methods are non-virtual and provide the stable interface
- * - Protected virtual *_impl() methods allow customization by derived classes
+ * - Public member functions are non-virtual and provide the stable interface
+ * - Protected virtual *_impl() member functions allow customization by derived
+ * classes
  * - This ensures consistent pre/post-conditions while enabling flexibility
  *
  * Templates are self-registering via the TemplateRegistrar helper and
@@ -51,7 +52,7 @@ namespace wjh::atlas::generation { inline namespace v1 {
  *         return info.has_operator("+");
  *     }
  *
- *     // ... implement other _impl() methods
+ *     // ... implement other _impl() member functions
  * };
  *
  * // Self-registration
@@ -63,7 +64,7 @@ namespace wjh::atlas::generation { inline namespace v1 {
 class ITemplate
 {
 public:
-    virtual ~ITemplate() noexcept = default;
+    virtual ~ITemplate() noexcept;
 
     /**
      * Get unique identifier for this template
@@ -74,10 +75,7 @@ public:
      * @return Unique string identifier
      */
     [[nodiscard]]
-    std::string id() const
-    {
-        return id_impl();
-    }
+    std::string id() const;
 
     /**
      * Get the sort key for this template
@@ -109,10 +107,7 @@ public:
      * @return Sort key string for ordering templates
      */
     [[nodiscard]]
-    std::string sort_key() const
-    {
-        return sort_key_impl();
-    }
+    std::string sort_key() const;
 
     /**
      * Get the Mustache template string
@@ -123,10 +118,7 @@ public:
      * @return String view of the Mustache template
      */
     [[nodiscard]]
-    std::string_view get_template() const
-    {
-        return get_template_impl();
-    }
+    std::string_view get_template() const;
 
     /**
      * Determine if this template applies to the given class
@@ -139,29 +131,27 @@ public:
      * @return true if this template should generate code
      */
     [[nodiscard]]
-    bool should_apply(ClassInfo const & info) const
-    {
-        return should_apply_impl(info);
-    }
+    bool should_apply(ClassInfo const & info) const;
 
     /**
      * Prepare variables for Mustache rendering
      *
      * Creates a JSON object containing all variables needed by the template.
-     * Common variables include:
-     * - type_name: The strong type's name
-     * - wrapped_type: The underlying type
-     * - operator_symbol: The specific operator (for operator templates)
-     * - etc.
+     * This member function calls prepare_variables_impl() to get
+     * template-specific variables, then adds common variables that all
+     * templates may need:
+     * - value: The member variable name (value or value_)
+     * - const_expr: "constexpr " or empty based on settings
+     *
+     * Derived classes can override specific variables by setting them in
+     * prepare_variables_impl(). The common variables are only set if not
+     * already present in the variables object.
      *
      * @param info Strong type class information
      * @return JSON object with template variables
      */
     [[nodiscard]]
-    boost::json::object prepare_variables(ClassInfo const & info) const
-    {
-        return prepare_variables_impl(info);
-    }
+    boost::json::object prepare_variables(ClassInfo const & info) const;
 
     /**
      * Get required header includes for this template
@@ -172,25 +162,19 @@ public:
      * @return Set of header file paths (e.g., "<functional>", "<utility>")
      */
     [[nodiscard]]
-    std::set<std::string> required_includes() const
-    {
-        return required_includes_impl();
-    }
+    std::set<std::string> required_includes() const;
 
     /**
      * Get required preamble code for this template
      *
      * Some templates require helper code in the preamble section
-     * (e.g., type traits, helper functions). This method returns
+     * (e.g., type traits, helper functions). This member function returns
      * identifiers for preamble sections needed by this template.
      *
      * @return Set of preamble section identifiers
      */
     [[nodiscard]]
-    std::set<std::string> required_preamble() const
-    {
-        return required_preamble_impl();
-    }
+    std::set<std::string> required_preamble() const;
 
     /**
      * Validate that this template can be applied
@@ -202,7 +186,7 @@ public:
      * @param info Strong type class information
      * @throws std::runtime_error if validation fails
      */
-    void validate(ClassInfo const & info) const { validate_impl(info); }
+    void validate(ClassInfo const & info) const;
 
     /**
      * Render the template with the given class information
@@ -215,57 +199,20 @@ public:
      * @throws std::runtime_error if rendering fails
      */
     [[nodiscard]]
-    std::string render(ClassInfo const & info) const
-    {
-        return render_impl(info);
-    }
+    std::string render(ClassInfo const & info) const;
 
 protected:
-    // Protected virtual implementation methods for NVI pattern
+    // Protected virtual implementation member functions for NVI pattern
 
     virtual std::string id_impl() const = 0;
     virtual std::string_view get_template_impl() const = 0;
-    virtual bool should_apply_impl(ClassInfo const & info) const = 0;
-    virtual boost::json::object prepare_variables_impl(
-        ClassInfo const & info) const = 0;
-
-    /**
-     * Default sort key implementation
-     *
-     * Returns the template ID as the sort key. This is appropriate for
-     * most templates (features, specializations, etc.).
-     *
-     * Operator templates should override this to return their operator
-     * symbol (e.g., "+", "==", "<<") to ensure proper sorting order.
-     *
-     * @return Template ID as sort key
-     */
-    virtual std::string sort_key_impl() const { return id_impl(); }
-
-    // Default implementations for optional operations
-    virtual std::set<std::string> required_includes_impl() const { return {}; }
-
-    virtual std::set<std::string> required_preamble_impl() const { return {}; }
-
-    virtual void validate_impl(ClassInfo const & info) const
-    {
-        // Default: no validation required
-        (void)info;
-    }
-
-    /**
-     * Default render implementation using Mustache
-     *
-     * Derived classes can override this if they need custom rendering logic,
-     * but most templates will use this default implementation which:
-     * 1. Validates the template can be applied
-     * 2. Prepares variables via prepare_variables()
-     * 3. Renders using boost::mustache
-     *
-     * @param info Strong type class information
-     * @return Rendered C++ code
-     */
-    virtual std::string render_impl(ClassInfo const & info) const;
+    virtual bool should_apply_impl(ClassInfo const &) const = 0;
+    virtual boost::json::object prepare_variables_impl(ClassInfo const &) const;
+    virtual std::string sort_key_impl() const;
+    virtual std::set<std::string> required_includes_impl() const;
+    virtual std::set<std::string> required_preamble_impl() const;
+    virtual void validate_impl(ClassInfo const &) const;
+    virtual std::string render_impl(ClassInfo const &) const;
 };
 
 }} // namespace wjh::atlas::generation::v1

@@ -52,20 +52,6 @@ should_apply_impl(ClassInfo const & info) const
 
 boost::json::object
 UnaryOperatorsTemplate::
-prepare_variables_impl(ClassInfo const & info) const
-{
-    // This method is still required by the interface, but it's not used
-    // since we override render_impl(). For completeness, return base variables
-    // without the "op" field.
-    boost::json::object variables;
-    variables["class_name"] = info.class_name;
-    variables["underlying_type"] = info.underlying_type;
-    variables["const_expr"] = info.const_expr;
-    return variables;
-}
-
-boost::json::object
-UnaryOperatorsTemplate::
 prepare_variables_for_operator(
     ClassInfo const & info,
     std::string_view op_symbol) const

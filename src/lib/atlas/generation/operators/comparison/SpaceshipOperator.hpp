@@ -67,21 +67,6 @@ protected:
     bool should_apply_impl(ClassInfo const & info) const override;
 
     /**
-     * Prepare variables for spaceship operator rendering
-     *
-     * Creates a JSON object with variables needed for rendering:
-     * - class_name
-     * - underlying_type
-     * - const_expr
-     *
-     * @param info Strong type class information
-     * @return JSON object with template variables
-     */
-    [[nodiscard]]
-    boost::json::object prepare_variables_impl(
-        ClassInfo const & info) const override;
-
-    /**
      * Required includes for spaceship operator
      *
      * In C++20 mode, the spaceship operator requires <compare> header.

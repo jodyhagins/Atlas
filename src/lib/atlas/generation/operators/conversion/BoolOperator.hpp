@@ -32,10 +32,6 @@ protected:
 
     [[nodiscard]]
     bool should_apply_impl(ClassInfo const & info) const override;
-
-    [[nodiscard]]
-    boost::json::object prepare_variables_impl(
-        ClassInfo const & info) const override;
 };
 
 }} // namespace wjh::atlas::generation::v1

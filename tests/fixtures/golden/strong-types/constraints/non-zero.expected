@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_40BEE92D45540DA29D717280630C3F50C5387C5E
-#define FOO_BAR_40BEE92D45540DA29D717280630C3F50C5387C5E
+#ifndef FOO_BAR_2DA1270CF454E0EFBE32466295F4C5CB83C15312
+#define FOO_BAR_2DA1270CF454E0EFBE32466295F4C5CB83C15312
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -369,6 +369,26 @@ auto constraint_guard(T & t, char const * op) noexcept
     return detail::ConstraintGuard<T, ConstraintT>(t, op);
 }
 
+template <typename T>
+constexpr auto is_nil_value(typename T::atlas_value_type const * value)
+-> decltype(atlas::value(T::nil_value) == *value)
+{
+    return atlas::value(T::nil_value) == *value;
+}
+
+template <typename T>
+constexpr bool is_nil_value(void const *)
+{
+    return false;
+}
+
+template <typename T>
+constexpr bool check(typename T::atlas_value_type const & value)
+{
+    return is_nil_value<T>(std::addressof(value)) ||
+        T::atlas_constraint::check(value);
+}
+
 /**
  * @brief Constraint: value must be > 0
  */
@@ -549,7 +569,7 @@ struct NonZeroInt
     constexpr explicit NonZeroInt(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     {
-        if (not atlas_constraint::check(value)) {
+        if (not atlas::constraints::check<NonZeroInt>(value)) {
             throw atlas::ConstraintError(
                 "NonZeroInt: " +
                 atlas::constraints::detail::format_value(value) +
@@ -680,7 +700,7 @@ struct Denominator
     constexpr explicit Denominator(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     {
-        if (not atlas_constraint::check(value)) {
+        if (not atlas::constraints::check<Denominator>(value)) {
             throw atlas::ConstraintError(
                 "Denominator: " +
                 atlas::constraints::detail::format_value(value) +
@@ -782,7 +802,7 @@ struct NonZeroUChar
     constexpr explicit NonZeroUChar(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     {
-        if (not atlas_constraint::check(value)) {
+        if (not atlas::constraints::check<NonZeroUChar>(value)) {
             throw atlas::ConstraintError(
                 "NonZeroUChar: " +
                 atlas::constraints::detail::format_value(value) +
@@ -825,5 +845,5 @@ struct NonZeroUChar
 };
 } // namespace test
 
-#endif // FOO_BAR_40BEE92D45540DA29D717280630C3F50C5387C5E
+#endif // FOO_BAR_2DA1270CF454E0EFBE32466295F4C5CB83C15312
 

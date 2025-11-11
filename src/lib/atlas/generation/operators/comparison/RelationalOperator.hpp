@@ -80,24 +80,6 @@ protected:
     bool should_apply_impl(ClassInfo const & info) const override;
 
     /**
-     * Prepare variables for relational operator rendering
-     *
-     * Creates a JSON object with variables needed for rendering a single
-     * relational operator:
-     * - class_name
-     * - underlying_type
-     * - const_expr
-     * - op: the operator being rendered (e.g., "<", ">=", etc.)
-     *
-     * @param info Strong type class information
-     * @param op_symbol The specific operator symbol to render
-     * @return JSON object with template variables
-     */
-    [[nodiscard]]
-    boost::json::object prepare_variables_impl(
-        ClassInfo const & info) const override;
-
-    /**
      * Render all relational operators
      *
      * Overrides the default render_impl() to iterate through all

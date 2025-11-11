@@ -14,17 +14,6 @@ namespace wjh::atlas::generation { inline namespace v1 {
 
 /**
  * Base class for multiplication operator templates
- *
- * Provides common should_apply logic for all multiplication operator modes.
- * Performance considerations:
- * - Template strings are static class members (zero-cost)
- * - All non-throwing methods are marked noexcept
- *
- * TODO(performance): Current implementation parses ClassInfo twice per
- * applicable template (once in should_apply_impl, once in
- * prepare_variables_impl). Consider caching parse results or restructuring
- * ITemplate to accept pre-parsed ClassInfo. Estimated 2x overhead during code
- * generation.
  */
 class MultiplicationOperatorBase
 : public ITemplate

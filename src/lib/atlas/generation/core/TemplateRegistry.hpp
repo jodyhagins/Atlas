@@ -35,14 +35,14 @@ namespace wjh::atlas::generation { inline namespace v1 {
  * - Ordered map ensures deterministic iteration
  *
  * Thread Safety:
- * - The singleton instance() method is thread-safe (C++11 magic statics)
+ * - The singleton instance() is thread-safe (C++11 magic statics)
  * - Template registration occurs during static initialization, which is
  *   single-threaded by design in C++. All TemplateRegistrar instances
  *   complete their registration before main() starts.
  * - After initialization, the registry is read-only in typical usage,
  *   making it safe to access from multiple threads.
- * - The clear() method is NOT thread-safe and should only be used in
- *   single-threaded test scenarios.
+ * - clear() is NOT thread-safe and should only be used in single-threaded test
+ *   scenarios.
  *
  * Example usage:
  * @code

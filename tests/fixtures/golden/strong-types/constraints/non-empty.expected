@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_F8BCDD91E53A3B8AB00230EE7BE622A82AC92D1A
-#define FOO_BAR_F8BCDD91E53A3B8AB00230EE7BE622A82AC92D1A
+#ifndef FOO_BAR_06AE14451AAF0F5130B7BF87F41C8E97CAC2C4B8
+#define FOO_BAR_06AE14451AAF0F5130B7BF87F41C8E97CAC2C4B8
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -370,6 +370,26 @@ auto constraint_guard(T & t, char const * op) noexcept
     return detail::ConstraintGuard<T, ConstraintT>(t, op);
 }
 
+template <typename T>
+constexpr auto is_nil_value(typename T::atlas_value_type const * value)
+-> decltype(atlas::value(T::nil_value) == *value)
+{
+    return atlas::value(T::nil_value) == *value;
+}
+
+template <typename T>
+constexpr bool is_nil_value(void const *)
+{
+    return false;
+}
+
+template <typename T>
+constexpr bool check(typename T::atlas_value_type const & value)
+{
+    return is_nil_value<T>(std::addressof(value)) ||
+        T::atlas_constraint::check(value);
+}
+
 /**
  * @brief Constraint: value must be > 0
  */
@@ -550,7 +570,7 @@ struct Username
     constexpr explicit Username(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     {
-        if (not atlas_constraint::check(value)) {
+        if (not atlas::constraints::check<Username>(value)) {
             throw atlas::ConstraintError(
                 "Username: " +
                 atlas::constraints::detail::format_value(value) +
@@ -620,7 +640,7 @@ struct NonEmptyVector
     constexpr explicit NonEmptyVector(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     {
-        if (not atlas_constraint::check(value)) {
+        if (not atlas::constraints::check<NonEmptyVector>(value)) {
             throw atlas::ConstraintError(
                 "NonEmptyVector: " +
                 atlas::constraints::detail::format_value(value) +
@@ -988,5 +1008,5 @@ struct NonEmptyVector
 };
 } // namespace test
 
-#endif // FOO_BAR_F8BCDD91E53A3B8AB00230EE7BE622A82AC92D1A
+#endif // FOO_BAR_06AE14451AAF0F5130B7BF87F41C8E97CAC2C4B8
 

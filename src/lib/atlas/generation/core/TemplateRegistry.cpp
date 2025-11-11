@@ -72,49 +72,4 @@ clear()
     templates_.clear();
 }
 
-// ============================================================================
-// ITemplate Default Implementation
-// ============================================================================
-
-std::string
-ITemplate::
-render_impl(ClassInfo const & info) const
-{
-    // Validate that this template should be applied
-    validate(info);
-
-    if (not should_apply(info)) [[unlikely]] {
-        std::stringstream strm;
-        strm << "ITemplate::render: template '" << id()
-            << "' should not apply to type '" << info.desc.type_name << "'";
-        throw std::runtime_error(strm.str());
-    }
-
-    // Prepare variables for rendering
-    boost::json::object variables = prepare_variables(info);
-
-    // Get the template string
-    std::string_view tmpl_str = get_template();
-    if (tmpl_str.empty()) {
-        // Empty template is valid - just return empty string
-        return "";
-    }
-
-    // Render using Mustache
-    try {
-        std::ostringstream oss;
-        boost::mustache::render(
-            tmpl_str,
-            oss,
-            variables,
-            boost::json::object{});
-        return oss.str();
-    } catch (std::exception const & e) {
-        std::stringstream strm;
-        strm << "ITemplate::render: Mustache rendering failed for template '"
-            << id() << "': " << e.what();
-        throw std::runtime_error(strm.str());
-    }
-}
-
 }} // namespace wjh::atlas::generation::v1

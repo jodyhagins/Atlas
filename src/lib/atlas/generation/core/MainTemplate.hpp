@@ -121,7 +121,7 @@ protected:
      * - Namespace and naming information
      * - Type information (underlying type, full qualified names)
      * - Feature flags (which operators, specializations to generate)
-     * - Collections (operators, constants, forwarded methods)
+     * - Collections (operators, constants, forwarded member functions)
      * - Original description metadata
      *
      * Process:
@@ -129,7 +129,7 @@ protected:
      * 2. Build ClassInfo with all metadata populated
      * 3. Convert to JSON via ClassInfo::to_json() for Mustache
      *
-     * NOTE: This method is NOT noexcept - parse() may throw if the
+     * NOTE: This member function is NOT noexcept - parse() may throw if the
      * StrongTypeDescription contains invalid data.
      *
      * @param info Strong type description from user

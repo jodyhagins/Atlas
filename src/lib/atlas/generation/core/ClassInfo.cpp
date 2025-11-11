@@ -926,7 +926,18 @@ finalize_default_values(
 {
     if (not desc.default_value.empty()) {
         info.has_default_value = true;
-        info.default_initializer = "{" + desc.default_value + "}";
+
+        // Check if default_value references a constant name
+        // If so, use the constant's expanded value instead
+        std::string resolved_value = desc.default_value;
+        for (auto const & constant : info.constants) {
+            if (constant.name == desc.default_value) {
+                resolved_value = constant.value;
+                break;
+            }
+        }
+
+        info.default_initializer = "{" + resolved_value + "}";
     }
 }
 
@@ -940,6 +951,23 @@ finalize_includes(ClassInfo & info)
     auto deduced_headers = deduce_headers_from_type(info.underlying_type);
     for (auto const & header : deduced_headers) {
         info.includes_vec.emplace_back(header);
+    }
+
+    // Also deduce headers from constant values and default values
+    // (e.g., std::numeric_limits<int>::max() needs <limits>)
+    for (auto const & constant : info.constants) {
+        auto const_headers = deduce_headers_from_type(constant.value);
+        for (auto const & header : const_headers) {
+            info.includes_vec.emplace_back(header);
+        }
+    }
+
+    if (not info.desc.default_value.empty()) {
+        auto default_headers = deduce_headers_from_type(
+            info.desc.default_value);
+        for (auto const & header : default_headers) {
+            info.includes_vec.emplace_back(header);
+        }
     }
 
     // Add standard includes that are always needed
@@ -1005,6 +1033,12 @@ set_boolean_flags(ClassInfo & info)
     info.has_forwarded_memfns = not info.forwarded_memfns.empty();
 }
 
+void
+set_member_variable_name(ClassInfo & info)
+{
+    info.value_member_name = "value";
+}
+
 /**
  * @brief Build fully qualified name for specializations and checked arithmetic
  */
@@ -1044,6 +1078,30 @@ enable_optional_features(ClassInfo & info)
 }
 
 /**
+ * @brief Expand special constant values (min/max) to std::numeric_limits
+ * @param value The constant value to potentially expand
+ * @param underlying_type The underlying type for the strong type
+ * @param includes Vector to add <limits> to if expansion occurs
+ * @return Expanded value or original if not a special value
+ */
+std::string
+expand_special_constant_value(
+    std::string_view value,
+    std::string const & underlying_type,
+    std::vector<std::string> & includes)
+{
+    if (value == "min" || value == "MIN") {
+        includes.push_back("<limits>");
+        return "std::numeric_limits<" + underlying_type + ">::min()";
+    } else if (value == "max" || value == "MAX") {
+        includes.push_back("<limits>");
+        return "std::numeric_limits<" + underlying_type + ">::max()";
+    } else {
+        return std::string(value);
+    }
+}
+
+/**
  * @brief Populate cast operator and constant vectors from description
  */
 void
@@ -1067,7 +1125,15 @@ populate_casts_and_constants(ClassInfo & info)
 
     // Populate constants
     for (auto const & [name, value] : info.desc.constants) {
-        info.constants.emplace_back(name, value);
+        std::string expanded_value = expand_special_constant_value(
+            value,
+            info.underlying_type,
+            info.includes_vec);
+        info.constants.emplace_back(name, expanded_value);
+
+        if (name == "nil_value") {
+            info.nil_value_is_constant = true;
+        }
     }
 }
 
@@ -1332,6 +1398,9 @@ to_json() const
     result["const_expr"] = const_expr;
     result["hash_const_expr"] = hash_const_expr;
 
+    // Member variable name
+    result["value"] = value_member_name;
+
     // Iterator support
     result["iterator_support_member"] = iterator_support_member;
 
@@ -1455,24 +1524,22 @@ parse(
     // Post-processing and finalization
     validate_arithmetic_modes(state);
     finalize_constraint_config(info);
-
-    // Check for redundant operators with spaceship
     check_for_redundant_operators(
         state.has_spaceship,
         state.has_equality_ops,
         state.has_relational_ops,
         info,
         warnings);
-
+    populate_casts_and_constants(info);
     finalize_spaceship_operators(info, state);
     finalize_default_values(info, desc);
     finalize_includes(info);
     propagate_arithmetic_mode(info);
     sort_operator_vectors(info);
     set_boolean_flags(info);
+    set_member_variable_name(info);
     set_qualified_name(info);
     enable_optional_features(info);
-    populate_casts_and_constants(info);
     process_forwarded_memfns(info);
     set_const_qualifier(info);
 

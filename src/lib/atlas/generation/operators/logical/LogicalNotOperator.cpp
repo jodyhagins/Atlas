@@ -35,18 +35,6 @@ should_apply_impl(ClassInfo const & info) const
     return info.logical_not_operator;
 }
 
-boost::json::object
-LogicalNotOperator::
-prepare_variables_impl(ClassInfo const & info) const
-{
-    boost::json::object variables;
-    variables["const_expr"] = info.const_expr;
-    variables["class_name"] = info.class_name;
-    variables["underlying_type"] = info.underlying_type;
-
-    return variables;
-}
-
 // Self-registration with the template registry
 namespace {
 TemplateRegistrar<LogicalNotOperator> logical_not_operator_registrar;

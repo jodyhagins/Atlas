@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_A8F697A2EB21EEE3D8D37E74524B0D62DA70C439
-#define FOO_BAR_A8F697A2EB21EEE3D8D37E74524B0D62DA70C439
+#ifndef FOO_BAR_603F5AEC85E74BE95719C15026662542FB34D264
+#define FOO_BAR_603F5AEC85E74BE95719C15026662542FB34D264
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -1240,6 +1240,26 @@ auto constraint_guard(T & t, char const * op) noexcept
     return detail::ConstraintGuard<T, ConstraintT>(t, op);
 }
 
+template <typename T>
+constexpr auto is_nil_value(typename T::atlas_value_type const * value)
+-> decltype(atlas::value(T::nil_value) == *value)
+{
+    return atlas::value(T::nil_value) == *value;
+}
+
+template <typename T>
+constexpr bool is_nil_value(void const *)
+{
+    return false;
+}
+
+template <typename T>
+constexpr bool check(typename T::atlas_value_type const & value)
+{
+    return is_nil_value<T>(std::addressof(value)) ||
+        T::atlas_constraint::check(value);
+}
+
 /**
  * @brief Constraint: value must be > 0
  */
@@ -1420,7 +1440,7 @@ struct NonNegativeInt
     constexpr explicit NonNegativeInt(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     {
-        if (not atlas_constraint::check(value)) {
+        if (not atlas::constraints::check<NonNegativeInt>(value)) {
             throw atlas::ConstraintError(
                 "NonNegativeInt: " +
                 atlas::constraints::detail::format_value(value) +
@@ -1605,7 +1625,7 @@ struct NonNegativeChecked
     constexpr explicit NonNegativeChecked(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     {
-        if (not atlas_constraint::check(value)) {
+        if (not atlas::constraints::check<NonNegativeChecked>(value)) {
             throw atlas::ConstraintError(
                 "NonNegativeChecked: " +
                 atlas::constraints::detail::format_value(value) +
@@ -1697,7 +1717,7 @@ struct NonNegativeSaturating
     constexpr explicit NonNegativeSaturating(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     {
-        if (not atlas_constraint::check(value)) {
+        if (not atlas::constraints::check<NonNegativeSaturating>(value)) {
             throw atlas::ConstraintError(
                 "NonNegativeSaturating: " +
                 atlas::constraints::detail::format_value(value) +
@@ -1747,5 +1767,5 @@ struct NonNegativeSaturating
 };
 } // namespace test
 
-#endif // FOO_BAR_A8F697A2EB21EEE3D8D37E74524B0D62DA70C439
+#endif // FOO_BAR_603F5AEC85E74BE95719C15026662542FB34D264
 

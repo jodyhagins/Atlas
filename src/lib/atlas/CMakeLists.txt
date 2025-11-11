@@ -42,6 +42,7 @@ add_library(atlas_lib STATIC
     generation/core/TemplateOrchestrator.hpp
     generation/core/TemplateRegistry.cpp
     generation/core/TemplateRegistry.hpp
+    generation/core/ITemplate.cpp
     generation/core/ITemplate.hpp
 
     # Parsing

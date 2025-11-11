@@ -236,6 +236,9 @@ struct ClassInfo
     std::string const_expr = "constexpr ";
     std::string hash_const_expr = "constexpr ";
 
+    // Member variable name (allows customization for nullable types)
+    std::string value_member_name = "value";
+
     // Iterator support
     bool iterator_support_member = false;
 
@@ -277,6 +280,7 @@ struct ClassInfo
     std::string bounded_min = {};
     std::string bounded_max = {};
     bool delete_default_constructor = false;
+    bool nil_value_is_constant = false;
 
     [[nodiscard]]
     boost::json::object to_json() const;

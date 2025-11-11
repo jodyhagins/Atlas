@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_65713159253A652A8D8F04DBD774F0CAF31E769E
-#define FOO_BAR_65713159253A652A8D8F04DBD774F0CAF31E769E
+#ifndef FOO_BAR_634693FA7E2BDFD0964EA55B208BB071F2BCD251
+#define FOO_BAR_634693FA7E2BDFD0964EA55B208BB071F2BCD251
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -1240,6 +1240,26 @@ auto constraint_guard(T & t, char const * op) noexcept
     return detail::ConstraintGuard<T, ConstraintT>(t, op);
 }
 
+template <typename T>
+constexpr auto is_nil_value(typename T::atlas_value_type const * value)
+-> decltype(atlas::value(T::nil_value) == *value)
+{
+    return atlas::value(T::nil_value) == *value;
+}
+
+template <typename T>
+constexpr bool is_nil_value(void const *)
+{
+    return false;
+}
+
+template <typename T>
+constexpr bool check(typename T::atlas_value_type const & value)
+{
+    return is_nil_value<T>(std::addressof(value)) ||
+        T::atlas_constraint::check(value);
+}
+
 /**
  * @brief Constraint: value must be > 0
  */
@@ -1433,7 +1453,7 @@ struct BoundedDefaultArith
     constexpr explicit BoundedDefaultArith(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     {
-        if (not atlas_constraint::check(value)) {
+        if (not atlas::constraints::check<BoundedDefaultArith>(value)) {
             throw atlas::ConstraintError(
                 "BoundedDefaultArith: " +
                 atlas::constraints::detail::format_value(value) +
@@ -1602,7 +1622,7 @@ struct BoundedCheckedArith
     constexpr explicit BoundedCheckedArith(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     {
-        if (not atlas_constraint::check(value)) {
+        if (not atlas::constraints::check<BoundedCheckedArith>(value)) {
             throw atlas::ConstraintError(
                 "BoundedCheckedArith: " +
                 atlas::constraints::detail::format_value(value) +
@@ -1751,7 +1771,7 @@ struct BoundedSaturatingArith
     constexpr explicit BoundedSaturatingArith(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     {
-        if (not atlas_constraint::check(value)) {
+        if (not atlas::constraints::check<BoundedSaturatingArith>(value)) {
             throw atlas::ConstraintError(
                 "BoundedSaturatingArith: " +
                 atlas::constraints::detail::format_value(value) +
@@ -1880,7 +1900,7 @@ struct BoundedWrappingArith
     constexpr explicit BoundedWrappingArith(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     {
-        if (not atlas_constraint::check(value)) {
+        if (not atlas::constraints::check<BoundedWrappingArith>(value)) {
             throw atlas::ConstraintError(
                 "BoundedWrappingArith: " +
                 atlas::constraints::detail::format_value(value) +
@@ -1998,5 +2018,5 @@ struct BoundedWrappingArith
 };
 } // namespace test
 
-#endif // FOO_BAR_65713159253A652A8D8F04DBD774F0CAF31E769E
+#endif // FOO_BAR_634693FA7E2BDFD0964EA55B208BB071F2BCD251
 

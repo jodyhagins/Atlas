@@ -65,19 +65,6 @@ protected:
     bool should_apply_impl(ClassInfo const & info) const override;
 
     /**
-     * Prepare variables for callable operator rendering
-     *
-     * Creates a JSON object with variables needed for rendering:
-     * - const_expr: constexpr specifier if applicable
-     *
-     * @param info Strong type class information
-     * @return JSON object with template variables
-     */
-    [[nodiscard]]
-    boost::json::object prepare_variables_impl(
-        ClassInfo const & info) const override;
-
-    /**
      * Specify required includes
      *
      * @return Set containing required headers

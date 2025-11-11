@@ -164,24 +164,6 @@ should_apply_impl(ClassInfo const & info) const
 
 boost::json::object
 ForwardedMemfnTemplate::
-prepare_variables_impl(ClassInfo const & info) const
-{
-    // This method is still required by the interface, but it's not used
-    // since we override render_impl(). For completeness, return base variables
-    // without the per-function fields.
-    boost::json::object variables;
-    variables["const_expr"] = info.const_expr;
-    variables["class_name"] = info.class_name;
-
-    // Check if type has constraints (used for constraint guard generation)
-    bool const has_constraint = not info.constraint_type.empty();
-    variables["has_constraint"] = has_constraint;
-
-    return variables;
-}
-
-boost::json::object
-ForwardedMemfnTemplate::
 prepare_variables_for_function(
     ClassInfo const & info,
     ForwardedMemfn const & fwd) const

@@ -35,7 +35,7 @@ get_template_impl() const noexcept
     noexcept(noexcept(std::declval<{{{underlying_type}}} const &>() <
         std::declval<{{{underlying_type}}} const &>()))
     {
-        return lhs.value < rhs.value;
+        return lhs.{{{value}}} < rhs.{{{value}}};
     }
 
     friend {{{const_expr}}}bool operator <= (
@@ -44,7 +44,7 @@ get_template_impl() const noexcept
     noexcept(noexcept(std::declval<{{{underlying_type}}} const &>() <=
         std::declval<{{{underlying_type}}} const &>()))
     {
-        return lhs.value <= rhs.value;
+        return lhs.{{{value}}} <= rhs.{{{value}}};
     }
 
     friend {{{const_expr}}}bool operator > (
@@ -53,7 +53,7 @@ get_template_impl() const noexcept
     noexcept(noexcept(std::declval<{{{underlying_type}}} const &>() >
         std::declval<{{{underlying_type}}} const &>()))
     {
-        return lhs.value > rhs.value;
+        return lhs.{{{value}}} > rhs.{{{value}}};
     }
 
     friend {{{const_expr}}}bool operator >= (
@@ -62,7 +62,7 @@ get_template_impl() const noexcept
     noexcept(noexcept(std::declval<{{{underlying_type}}} const &>() >=
         std::declval<{{{underlying_type}}} const &>()))
     {
-        return lhs.value >= rhs.value;
+        return lhs.{{{value}}} >= rhs.{{{value}}};
     }
 #endif
 )";
@@ -75,18 +75,6 @@ should_apply_impl(ClassInfo const & info) const
 {
     // Parse to get ClassInfo and check if spaceship operator is enabled
     return info.spaceship_operator;
-}
-
-boost::json::object
-SpaceshipOperator::
-prepare_variables_impl(ClassInfo const & info) const
-{
-    // Parse to get ClassInfo
-    boost::json::object variables;
-    variables["class_name"] = info.class_name;
-    variables["underlying_type"] = info.underlying_type;
-    variables["const_expr"] = info.const_expr;
-    return variables;
 }
 
 std::set<std::string>

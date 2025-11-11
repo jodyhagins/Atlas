@@ -21,11 +21,6 @@ namespace wjh::atlas::generation { inline namespace v1 {
  * Unlike arithmetic binary operators, increment/decrement operators
  * only have one mode (Default) - there are no checked/saturating/wrapping
  * variants in the current implementation.
- *
- * Performance:
- * - Single parse per method call
- * - Static template string (zero-cost)
- * - noexcept where possible
  */
 class IncrementOperatorsTemplate final
 : public ITemplate
@@ -58,10 +53,6 @@ protected:
     [[nodiscard]]
     bool should_apply_impl(ClassInfo const & info) const override;
 
-    [[nodiscard]]
-    boost::json::object prepare_variables_impl(
-        ClassInfo const & info) const override;
-
     /**
      * Custom render implementation that loops over all increment operators
      *
@@ -78,7 +69,7 @@ protected:
     /**
      * Prepare variables for a specific operator
      *
-     * Helper method that adds the operator symbol to the base variables.
+     * Helper that adds the operator symbol to the base variables.
      *
      * @param info Strong type class information
      * @param op_symbol The operator symbol ("++", "--")

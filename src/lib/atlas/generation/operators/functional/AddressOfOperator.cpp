@@ -45,8 +45,6 @@ AddressOfOperator::
 prepare_variables_impl(ClassInfo const & info) const
 {
     boost::json::object variables;
-    variables["const_expr"] = info.const_expr;
-    variables["underlying_type"] = info.underlying_type;
 
     // The operator is always "&" for address-of
     if (not info.addressof_operators.empty()) {

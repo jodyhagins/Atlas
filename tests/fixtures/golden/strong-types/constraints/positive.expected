@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_FA55F610F09A4E48BAD6E9FC66C35B9A513CD7E9
-#define FOO_BAR_FA55F610F09A4E48BAD6E9FC66C35B9A513CD7E9
+#ifndef FOO_BAR_177D7D3B55F53046CAD9D0DB9A6B39CCF22319BA
+#define FOO_BAR_177D7D3B55F53046CAD9D0DB9A6B39CCF22319BA
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -1240,6 +1240,26 @@ auto constraint_guard(T & t, char const * op) noexcept
     return detail::ConstraintGuard<T, ConstraintT>(t, op);
 }
 
+template <typename T>
+constexpr auto is_nil_value(typename T::atlas_value_type const * value)
+-> decltype(atlas::value(T::nil_value) == *value)
+{
+    return atlas::value(T::nil_value) == *value;
+}
+
+template <typename T>
+constexpr bool is_nil_value(void const *)
+{
+    return false;
+}
+
+template <typename T>
+constexpr bool check(typename T::atlas_value_type const & value)
+{
+    return is_nil_value<T>(std::addressof(value)) ||
+        T::atlas_constraint::check(value);
+}
+
 /**
  * @brief Constraint: value must be > 0
  */
@@ -1420,7 +1440,7 @@ struct PositiveInt
     constexpr explicit PositiveInt(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     {
-        if (not atlas_constraint::check(value)) {
+        if (not atlas::constraints::check<PositiveInt>(value)) {
             throw atlas::ConstraintError(
                 "PositiveInt: " +
                 atlas::constraints::detail::format_value(value) +
@@ -1551,7 +1571,7 @@ struct PositiveChecked
     constexpr explicit PositiveChecked(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     {
-        if (not atlas_constraint::check(value)) {
+        if (not atlas::constraints::check<PositiveChecked>(value)) {
             throw atlas::ConstraintError(
                 "PositiveChecked: " +
                 atlas::constraints::detail::format_value(value) +
@@ -1643,7 +1663,7 @@ struct PositiveSaturating
     constexpr explicit PositiveSaturating(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     {
-        if (not atlas_constraint::check(value)) {
+        if (not atlas::constraints::check<PositiveSaturating>(value)) {
             throw atlas::ConstraintError(
                 "PositiveSaturating: " +
                 atlas::constraints::detail::format_value(value) +
@@ -1725,7 +1745,7 @@ struct PositiveWrapping
     constexpr explicit PositiveWrapping(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     {
-        if (not atlas_constraint::check(value)) {
+        if (not atlas::constraints::check<PositiveWrapping>(value)) {
             throw atlas::ConstraintError(
                 "PositiveWrapping: " +
                 atlas::constraints::detail::format_value(value) +
@@ -1791,5 +1811,5 @@ struct PositiveWrapping
 };
 } // namespace test
 
-#endif // FOO_BAR_FA55F610F09A4E48BAD6E9FC66C35B9A513CD7E9
+#endif // FOO_BAR_177D7D3B55F53046CAD9D0DB9A6B39CCF22319BA
 
