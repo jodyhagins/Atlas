@@ -111,7 +111,7 @@ add_dependencies(atlas_tool_ut atlas)
 
 # Arithmetic modes runtime tests - comprehensive test of all arithmetic modes
 # Generate types for arithmetic modes runtime test
-set(ARITHMETIC_MODES_INPUT "${CMAKE_CURRENT_SOURCE_DIR}/arithmetic_modes_test_input.txt")
+set(ARITHMETIC_MODES_INPUT "${CMAKE_CURRENT_SOURCE_DIR}/arithmetic_modes_test_input.atlas")
 set(ARITHMETIC_MODES_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/arithmetic_modes_test_types.hpp")
 
 add_custom_command(
@@ -143,7 +143,7 @@ add_dependencies(arithmetic_modes_runtime_ut atlas)
 # ======================================================================
 # CONSTRAINT INTEGRATION TESTS
 # ======================================================================
-set(INPUT "${CMAKE_CURRENT_SOURCE_DIR}/constraint_integration_test_types.txt")
+set(INPUT "${CMAKE_CURRENT_SOURCE_DIR}/constraint_integration_test_types.atlas")
 set(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/constraint_integration_types.hpp")
 add_custom_command(
     OUTPUT ${OUTPUT}
@@ -166,7 +166,7 @@ target_include_directories(constraint_integration_ut
         ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-set(INPUT "${CMAKE_CURRENT_SOURCE_DIR}/constraint_integration2_test_types.txt")
+set(INPUT "${CMAKE_CURRENT_SOURCE_DIR}/constraint_integration2_test_types.atlas")
 set(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/constraint_integration2_test_types.hpp")
 add_custom_command(
     OUTPUT ${OUTPUT}

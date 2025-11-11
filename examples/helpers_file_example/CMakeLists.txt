@@ -26,7 +26,7 @@ add_library(file_types INTERFACE)
 # This approach is best for larger projects with many types,
 # or when you want to share type definitions across projects
 add_atlas_strong_types_from_file(
-    INPUT ${CMAKE_CURRENT_SOURCE_DIR}/types.txt
+    INPUT ${CMAKE_CURRENT_SOURCE_DIR}/types.atlas
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/DomainTypes.hpp
     TARGET file_types)
 
