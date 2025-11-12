@@ -2,7 +2,7 @@
 
 #include "atlas/generation/core/ITemplate.hpp"
 
-namespace wjh::atlas::generation { inline namespace v1 {
+namespace wjh::atlas::generation {
 
 /**
  * @brief Template class for generating bool conversion operator
@@ -34,4 +34,4 @@ protected:
     bool should_apply_impl(ClassInfo const & info) const override;
 };
 
-}} // namespace wjh::atlas::generation::v1
+} // namespace wjh::atlas::generation

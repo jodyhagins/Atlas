@@ -9,7 +9,7 @@
 
 #include "atlas/generation/core/ITemplate.hpp"
 
-namespace wjh::atlas::generation { inline namespace v1 {
+namespace wjh::atlas::generation {
 
 /**
  * Template assignment operator
@@ -57,6 +57,6 @@ protected:
     bool should_apply_impl(ClassInfo const & info) const override;
 };
 
-}} // namespace wjh::atlas::generation::v1
+} // namespace wjh::atlas::generation
 
 #endif // WJH_ATLAS_E7B2F8C3D4A1E6F9B8C7D2E5F1A4B3C6

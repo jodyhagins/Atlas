@@ -9,7 +9,7 @@
 
 #include "atlas/generation/core/ITemplate.hpp"
 
-namespace wjh::atlas::generation { inline namespace v1 {
+namespace wjh::atlas::generation {
 
 // Forward declarations
 struct ClassInfo;
@@ -198,6 +198,6 @@ protected:
     bool should_apply_impl(ClassInfo const & info) const override;
 };
 
-}} // namespace wjh::atlas::generation::v1
+} // namespace wjh::atlas::generation
 
 #endif // WJH_ATLAS_A439AF2F4C8044719C8B9A1196A0815B

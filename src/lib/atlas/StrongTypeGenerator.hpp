@@ -11,11 +11,11 @@
 #include <string>
 #include <vector>
 
-namespace wjh::atlas::generation { inline namespace v1 {
+namespace wjh::atlas::generation {
 struct ClassInfo;
-}}
+}
 
-namespace wjh::atlas { inline namespace v1 {
+namespace wjh::atlas {
 
 struct StrongTypeDescription
 {
@@ -371,6 +371,6 @@ std::string generate_strong_types_file(
     std::string const & guard_separator = "_",
     bool upcase_guard = true);
 
-}} // namespace wjh::atlas::v1
+} // namespace wjh::atlas
 
 #endif // WJH_ATLAS_4F59B4312A2E4CF9BE42CEE05C67CEC3

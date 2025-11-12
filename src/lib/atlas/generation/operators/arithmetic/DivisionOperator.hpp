@@ -10,7 +10,7 @@
 #include "atlas/generation/core/ITemplate.hpp"
 #include "atlas/generation/parsing/OperatorParser.hpp"
 
-namespace wjh::atlas::generation { inline namespace v1 {
+namespace wjh::atlas::generation {
 
 /**
  * Base class for division operator templates
@@ -91,6 +91,6 @@ protected:
     bool should_apply_impl(ClassInfo const & info) const override;
 };
 
-}} // namespace wjh::atlas::generation::v1
+} // namespace wjh::atlas::generation
 
 #endif // WJH_ATLAS_6A3F8D2E9C7B4F1D5A8E3C7B2F9D4A6E

@@ -10,7 +10,7 @@
 #include "atlas/generation/core/ITemplate.hpp"
 #include "atlas/generation/parsing/OperatorParser.hpp"
 
-namespace wjh::atlas::generation { inline namespace v1 {
+namespace wjh::atlas::generation {
 
 /**
  * Base class for multiplication operator templates
@@ -120,6 +120,6 @@ protected:
     bool should_apply_impl(ClassInfo const & info) const override;
 };
 
-}} // namespace wjh::atlas::generation::v1
+} // namespace wjh::atlas::generation
 
 #endif // WJH_ATLAS_2D8F7A3E9C6B4F1D5A8E7C2B9F4D3A6E

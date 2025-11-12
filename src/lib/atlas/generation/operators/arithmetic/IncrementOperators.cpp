@@ -14,7 +14,7 @@
 
 #include <sstream>
 
-namespace wjh::atlas::generation { inline namespace v1 {
+namespace wjh::atlas::generation {
 
 // ============================================================================
 // IncrementOperatorsTemplate Implementation
@@ -122,4 +122,4 @@ TemplateRegistrar<IncrementOperatorsTemplate> register_increment_operators;
 
 } // anonymous namespace
 
-}} // namespace wjh::atlas::generation::v1
+} // namespace wjh::atlas::generation

@@ -9,7 +9,7 @@
 #include "atlas/generation/core/ClassInfo.hpp"
 #include "atlas/generation/core/TemplateRegistry.hpp"
 
-namespace wjh::atlas::generation { inline namespace v1 {
+namespace wjh::atlas::generation {
 
 // ConstantDeclarationsTemplate - for inside the class body
 std::string_view
@@ -75,4 +75,4 @@ TemplateRegistrar<ConstantDeclarationsTemplate> constant_declarations_registrar;
 TemplateRegistrar<ConstantDefinitionsTemplate> constant_definitions_registrar;
 }
 
-}} // namespace wjh::atlas::generation::v1
+} // namespace wjh::atlas::generation

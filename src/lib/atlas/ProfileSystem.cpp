@@ -10,7 +10,7 @@
 #include <cctype>
 #include <stdexcept>
 
-namespace wjh::atlas { inline namespace v1 {
+namespace wjh::atlas {
 
 bool
 ProfileSystem::
@@ -91,4 +91,4 @@ clear()
     profiles_.clear();
 }
 
-}} // namespace wjh::atlas::v1
+} // namespace wjh::atlas

@@ -20,11 +20,11 @@ class object;
 class value;
 }
 
-namespace wjh::atlas { inline namespace v1 {
+namespace wjh::atlas {
 struct StrongTypeGenerator;
-}}
+}
 
-namespace wjh::atlas::generation { inline namespace v1 {
+namespace wjh::atlas::generation {
 
 /**
  * @brief Represents a binary or unary operator for code generation
@@ -268,7 +268,7 @@ struct ClassInfo
     ArithmeticMode arithmetic_mode = ArithmeticMode::Default;
 
     // Original description (contains metadata)
-    wjh::atlas::v1::StrongTypeDescription desc = {};
+    wjh::atlas::StrongTypeDescription desc = {};
 
     // Constraint validation
     bool has_constraint = false;
@@ -292,11 +292,11 @@ struct ClassInfo
      * @return Parsed ClassInfo ready for template rendering
      */
     static ClassInfo parse(
-        wjh::atlas::v1::StrongTypeDescription const & desc,
-        std::vector<wjh::atlas::v1::StrongTypeGenerator::Warning> * warnings =
+        wjh::atlas::StrongTypeDescription const & desc,
+        std::vector<wjh::atlas::StrongTypeGenerator::Warning> * warnings =
             nullptr);
 };
 
-}} // namespace wjh::atlas::generation::v1
+} // namespace wjh::atlas::generation
 
 #endif // WJH_ATLAS_2A78E6C83F92454FA0B5BC113E11CF1A

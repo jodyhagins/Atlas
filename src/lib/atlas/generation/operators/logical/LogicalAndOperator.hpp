@@ -9,7 +9,7 @@
 
 #include "atlas/generation/core/ITemplate.hpp"
 
-namespace wjh::atlas::generation { inline namespace v1 {
+namespace wjh::atlas::generation {
 
 /**
  * Logical AND operator template (&&)
@@ -83,6 +83,6 @@ protected:
         ClassInfo const & info) const override;
 };
 
-}} // namespace wjh::atlas::generation::v1
+} // namespace wjh::atlas::generation
 
 #endif // WJH_ATLAS_D7F2A9B4C8E1D6F3A7B2D5E8F1A9C4D7

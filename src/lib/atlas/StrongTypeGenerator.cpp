@@ -31,16 +31,16 @@
 
 #include <iostream>
 
-namespace wjh::atlas { inline namespace v1 {
+namespace wjh::atlas {
 
 using namespace wjh::atlas::generation;
 
 // Bring header types into scope
-using wjh::atlas::generation::v1::CastOperator;
-using wjh::atlas::generation::v1::ClassInfo;
-using wjh::atlas::generation::v1::Constant;
-using wjh::atlas::generation::v1::ForwardedMemfn;
-using wjh::atlas::generation::v1::Operator;
+using wjh::atlas::generation::CastOperator;
+using wjh::atlas::generation::ClassInfo;
+using wjh::atlas::generation::Constant;
+using wjh::atlas::generation::ForwardedMemfn;
+using wjh::atlas::generation::Operator;
 
 namespace {
 
@@ -271,4 +271,4 @@ generate_strong_types_file(
 }
 
 
-}} // namespace wjh::atlas::v1
+} // namespace wjh::atlas

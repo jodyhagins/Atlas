@@ -15,7 +15,7 @@
 #include <string>
 #include <string_view>
 
-namespace wjh::atlas::generation { inline namespace v1 {
+namespace wjh::atlas::generation {
 
 // Helper to strip leading and trailing colons from a string_view
 static constexpr std::string_view
@@ -131,4 +131,4 @@ make_guard(StrongTypeDescription const & desc, std::string const & code)
     return result;
 }
 
-}} // namespace wjh::atlas::generation::v1
+} // namespace wjh::atlas::generation

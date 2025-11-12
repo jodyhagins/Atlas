@@ -16,7 +16,7 @@
 #include <sstream>
 #include <string>
 
-namespace wjh::atlas::generation { inline namespace v1 {
+namespace wjh::atlas::generation {
 
 namespace {
 
@@ -520,4 +520,4 @@ render(ClassInfo const & info)
     return output.str();
 }
 
-}} // namespace wjh::atlas::generation::v1
+} // namespace wjh::atlas::generation

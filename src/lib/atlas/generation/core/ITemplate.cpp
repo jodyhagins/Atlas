@@ -12,7 +12,7 @@
 #include <sstream>
 #include <stdexcept>
 
-namespace wjh::atlas::generation { inline namespace v1 {
+namespace wjh::atlas::generation {
 
 // ============================================================================
 // ITemplate Implementation
@@ -188,4 +188,4 @@ render_impl(ClassInfo const & info) const
     }
 }
 
-}} // namespace wjh::atlas::generation::v1
+} // namespace wjh::atlas::generation

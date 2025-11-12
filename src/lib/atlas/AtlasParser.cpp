@@ -14,7 +14,7 @@
 #include <fstream>
 #include <sstream>
 
-namespace wjh::atlas { inline namespace v1 {
+namespace wjh::atlas {
 
 namespace {
 
@@ -1284,4 +1284,4 @@ arguments_to_description(AtlasCommandLine::Arguments const & args)
         .forwarded_memfns = args.forwarded_memfns};
 }
 
-}} // namespace wjh::atlas::v1
+} // namespace wjh::atlas

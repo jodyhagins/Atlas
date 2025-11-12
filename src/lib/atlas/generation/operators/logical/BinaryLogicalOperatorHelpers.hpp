@@ -12,12 +12,11 @@
 #include <string_view>
 
 // Forward declaration
-namespace wjh::atlas::generation { inline namespace v1 {
+namespace wjh::atlas::generation {
 struct ClassInfo;
-}}
+}
 
-namespace wjh::atlas::generation { inline namespace v1 {
-namespace logical_helpers {
+namespace wjh::atlas::generation { namespace logical_helpers {
 
 /**
  * Check if a specific binary logical operator is enabled
@@ -60,6 +59,6 @@ boost::json::object prepare_binary_logical_operator_variables(
 [[nodiscard]]
 std::string_view get_binary_logical_operator_template() noexcept;
 
-}}} // namespace wjh::atlas::generation::v1::logical_helpers
+}} // namespace wjh::atlas::generation::logical_helpers
 
 #endif // WJH_ATLAS_F9A3D7E2B6C4F1A8D5E3B9C2F7A4D1E6

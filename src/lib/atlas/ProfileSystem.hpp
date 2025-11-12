@@ -14,7 +14,7 @@
 #include <unordered_set>
 #include <vector>
 
-namespace wjh::atlas { inline namespace v1 {
+namespace wjh::atlas {
 
 /**
  * @brief Simple profile system for user-defined feature bundles
@@ -73,6 +73,6 @@ private:
     std::unordered_map<std::string, ParsedSpecification> profiles_;
 };
 
-}} // namespace wjh::atlas::v1
+} // namespace wjh::atlas
 
 #endif // WJH_ATLAS_B4F2E8A1C9D64E7FA2B5C3D8E1F4A7B2

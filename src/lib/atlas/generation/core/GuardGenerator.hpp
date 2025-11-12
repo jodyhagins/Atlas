@@ -11,7 +11,7 @@
 
 #include <string>
 
-namespace wjh::atlas::generation { inline namespace v1 {
+namespace wjh::atlas::generation {
 
 /**
  * @brief Generates header guards and notice banners for strong type code
@@ -142,6 +142,6 @@ public:
         std::string const & code);
 };
 
-}} // namespace wjh::atlas::generation::v1
+} // namespace wjh::atlas::generation
 
 #endif // WJH_ATLAS_9E8D7C6B5A4F3E2D1C0B9A8E7D6C5B4A

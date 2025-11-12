@@ -15,7 +15,7 @@
 #include <string>
 #include <vector>
 
-namespace wjh::atlas { inline namespace v1 {
+namespace wjh::atlas {
 
 class AtlasCommandLineError
 : public std::runtime_error
@@ -82,6 +82,6 @@ private:
     static void validate_arguments(Arguments const & args);
 };
 
-}} // namespace wjh::atlas::v1
+} // namespace wjh::atlas
 
 #endif // WJH_ATLAS_D12E103EDCC54717A84227722361BE22

@@ -13,14 +13,14 @@
 #include <string>
 #include <string_view>
 
-namespace wjh::atlas::generation { inline namespace v1 {
+namespace wjh::atlas::generation {
 
 // Forward declaration
 struct ClassInfo;
 
-}} // namespace wjh::atlas::generation::v1
+} // namespace wjh::atlas::generation
 
-namespace wjh::atlas::generation { inline namespace v1 {
+namespace wjh::atlas::generation {
 
 /**
  * Base interface for all template classes using Non-Virtual Interface (NVI)
@@ -215,6 +215,6 @@ protected:
     virtual std::string render_impl(ClassInfo const &) const;
 };
 
-}} // namespace wjh::atlas::generation::v1
+} // namespace wjh::atlas::generation
 
 #endif // WJH_ATLAS_7A3F9E2C8B4D5F6A1C9E7B3D8A5F2C4E

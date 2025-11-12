@@ -2,7 +2,7 @@
 
 #include "atlas/generation/core/ITemplate.hpp"
 
-namespace wjh::atlas::generation { inline namespace v1 {
+namespace wjh::atlas::generation {
 
 /**
  * @brief Template class for generating std::formatter specialization
@@ -64,4 +64,4 @@ protected:
         ClassInfo const & info) const override;
 };
 
-}} // namespace wjh::atlas::generation::v1
+} // namespace wjh::atlas::generation

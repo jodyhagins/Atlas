@@ -10,7 +10,7 @@
 #include <algorithm>
 #include <cctype>
 
-namespace wjh::atlas { inline namespace v1 {
+namespace wjh::atlas {
 
 std::vector<std::string>
 tokenize_type(std::string_view type_str)
@@ -98,4 +98,4 @@ deduce_headers_from_type(std::string_view type_str)
     return headers;
 }
 
-}} // namespace wjh::atlas::v1
+} // namespace wjh::atlas

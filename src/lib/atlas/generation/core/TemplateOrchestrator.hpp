@@ -12,14 +12,14 @@
 #include <string>
 #include <vector>
 
-namespace wjh::atlas::generation { inline namespace v1 {
+namespace wjh::atlas::generation {
 
 // Forward declaration
 struct ClassInfo;
 
-}} // namespace wjh::atlas::generation::v1
+} // namespace wjh::atlas::generation
 
-namespace wjh::atlas::generation { inline namespace v1 {
+namespace wjh::atlas::generation {
 
 /**
  * Coordinates template rendering for strong type code generation
@@ -172,6 +172,6 @@ private:
     std::vector<Warning> warnings_;
 };
 
-}} // namespace wjh::atlas::generation::v1
+} // namespace wjh::atlas::generation
 
 #endif // WJH_ATLAS_3C7A9F2E1D5B4E6A8C1F3D7E9B2A5F4C

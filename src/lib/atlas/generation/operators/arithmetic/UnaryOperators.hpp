@@ -9,7 +9,7 @@
 
 #include "atlas/generation/core/ITemplate.hpp"
 
-namespace wjh::atlas::generation { inline namespace v1 {
+namespace wjh::atlas::generation {
 
 /**
  * Template for unary operators (+, -, ~)
@@ -81,6 +81,6 @@ protected:
         std::string_view op_symbol) const;
 };
 
-}} // namespace wjh::atlas::generation::v1
+} // namespace wjh::atlas::generation
 
 #endif // WJH_ATLAS_7C5F2D8E4A9B6F3D1E8A5C2B7F4D9A3E

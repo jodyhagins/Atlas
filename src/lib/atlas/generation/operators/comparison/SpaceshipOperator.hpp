@@ -9,7 +9,7 @@
 
 #include "atlas/generation/core/ITemplate.hpp"
 
-namespace wjh::atlas::generation { inline namespace v1 {
+namespace wjh::atlas::generation {
 
 /**
  * Spaceship operator (<=>) template
@@ -78,6 +78,6 @@ protected:
     std::set<std::string> required_includes_impl() const override;
 };
 
-}} // namespace wjh::atlas::generation::v1
+} // namespace wjh::atlas::generation
 
 #endif // WJH_ATLAS_D8F3E1A6C5B4D9E2F7A3B1C8D6E9F2A5

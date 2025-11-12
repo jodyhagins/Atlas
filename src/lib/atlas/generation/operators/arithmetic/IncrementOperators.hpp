@@ -9,7 +9,7 @@
 
 #include "atlas/generation/core/ITemplate.hpp"
 
-namespace wjh::atlas::generation { inline namespace v1 {
+namespace wjh::atlas::generation {
 
 /**
  * Template for increment/decrement operators (++, --)
@@ -81,6 +81,6 @@ protected:
         std::string_view op_symbol) const;
 };
 
-}} // namespace wjh::atlas::generation::v1
+} // namespace wjh::atlas::generation
 
 #endif // WJH_ATLAS_8D6F3A2E9C7B5F4D1A8E6C3B2F9D7A4E

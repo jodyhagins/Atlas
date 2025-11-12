@@ -14,9 +14,7 @@
 
 #include <string_view>
 
-namespace wjh::atlas::generation { inline namespace v1 {
-
-namespace arithmetic_helpers {
+namespace wjh::atlas::generation { namespace arithmetic_helpers {
 
 /**
  * Check if a specific binary operator is present in the description
@@ -79,6 +77,6 @@ boost::json::object prepare_binary_operator_variables(
     ClassInfo const & info,
     std::string_view op_symbol);
 
-}}} // namespace wjh::atlas::generation::v1::arithmetic_helpers
+}} // namespace wjh::atlas::generation::arithmetic_helpers
 
 #endif // WJH_ATLAS_49A3B7E8_4D91_4F26_9A10_3C8E9F6A2D47

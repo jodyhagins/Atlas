@@ -12,7 +12,7 @@
 #include <sstream>
 #include <stdexcept>
 
-namespace wjh::atlas::generation { inline namespace v1 {
+namespace wjh::atlas::generation {
 
 // ============================================================================
 // TemplateRegistry Implementation
@@ -72,4 +72,4 @@ clear()
     templates_.clear();
 }
 
-}} // namespace wjh::atlas::generation::v1
+} // namespace wjh::atlas::generation

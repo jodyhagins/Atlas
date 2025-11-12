@@ -21,7 +21,7 @@
     #include <unistd.h>
 #endif
 
-namespace wjh::atlas { inline namespace v1 {
+namespace wjh::atlas {
 
 // ============================================================================
 // String parsing utilities
@@ -2559,4 +2559,4 @@ generate_cpp_standard_assertion(int standard)
     return strm.str();
 }
 
-}} // namespace wjh::atlas::v1
+} // namespace wjh::atlas

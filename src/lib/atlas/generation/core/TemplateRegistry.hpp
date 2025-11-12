@@ -19,7 +19,7 @@
 #include <utility>
 #include <vector>
 
-namespace wjh::atlas::generation { inline namespace v1 {
+namespace wjh::atlas::generation {
 
 /**
  * Singleton registry for template self-registration
@@ -236,6 +236,6 @@ public:
     TemplateRegistrar & operator = (TemplateRegistrar &&) noexcept = delete;
 };
 
-}} // namespace wjh::atlas::generation::v1
+} // namespace wjh::atlas::generation
 
 #endif // WJH_ATLAS_5D8F3A7E9C2B4F6D1A8E5C7B9F3D2A6E
