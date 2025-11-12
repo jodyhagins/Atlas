@@ -39,9 +39,9 @@ file(MAKE_DIRECTORY ${SHOWCASE_OUTPUT_DIR})
 add_custom_command(
     OUTPUT ${SHOWCASE_OUTPUT_DIR}/strong_types_showcase.hpp
     COMMAND atlas
-        --input=${CMAKE_CURRENT_SOURCE_DIR}/strong_types_showcase.txt
+        --input=${CMAKE_CURRENT_SOURCE_DIR}/strong_types_showcase.atlas
         --output=${SHOWCASE_OUTPUT_DIR}/strong_types_showcase.hpp
-    DEPENDS atlas ${CMAKE_CURRENT_SOURCE_DIR}/strong_types_showcase.txt
+    DEPENDS atlas ${CMAKE_CURRENT_SOURCE_DIR}/strong_types_showcase.atlas
     COMMENT "Generating strong_types_showcase.hpp"
     VERBATIM)
 
@@ -49,9 +49,9 @@ add_custom_command(
     OUTPUT ${SHOWCASE_OUTPUT_DIR}/interactions_showcase.hpp
     COMMAND atlas
         --interactions=true
-        --input=${CMAKE_CURRENT_SOURCE_DIR}/interactions_showcase.txt
+        --input=${CMAKE_CURRENT_SOURCE_DIR}/interactions_showcase.atlas
         --output=${SHOWCASE_OUTPUT_DIR}/interactions_showcase.hpp
-    DEPENDS atlas ${CMAKE_CURRENT_SOURCE_DIR}/interactions_showcase.txt
+    DEPENDS atlas ${CMAKE_CURRENT_SOURCE_DIR}/interactions_showcase.atlas
     COMMENT "Generating interactions_showcase.hpp"
     VERBATIM)
 

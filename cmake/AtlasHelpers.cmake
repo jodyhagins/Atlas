@@ -208,7 +208,7 @@ endfunction()
 #
 # Example:
 #   add_atlas_strong_types_from_file(
-#       INPUT strong_types.txt
+#       INPUT strong_types.atlas
 #       OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/GeneratedTypes.hpp
 #       TARGET my_library)
 #
@@ -314,7 +314,7 @@ function(add_atlas_strong_types_inline)
 
     # Create a unique temporary input file in the build directory
     get_filename_component(output_name ${ARG_OUTPUT} NAME_WE)
-    set(TEMP_INPUT "${CMAKE_CURRENT_BINARY_DIR}/.atlas_inline_${output_name}.txt")
+    set(TEMP_INPUT "${CMAKE_CURRENT_BINARY_DIR}/.atlas_inline_${output_name}.atlas")
 
     # Join CONTENT list with semicolons (since CMake splits on semicolons during parsing)
     # We need to restore the semicolons that were used as list separators
@@ -419,7 +419,7 @@ endfunction()
 #
 # Example:
 #   add_atlas_interactions_from_file(
-#       INPUT interactions.txt
+#       INPUT interactions.atlas
 #       OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/Interactions.hpp
 #       TARGET my_library)
 #
@@ -522,7 +522,7 @@ function(add_atlas_interactions_inline)
 
     # Create a unique temporary input file in the build directory
     get_filename_component(output_name ${ARG_OUTPUT} NAME_WE)
-    set(TEMP_INPUT "${CMAKE_CURRENT_BINARY_DIR}/.atlas_inline_${output_name}.txt")
+    set(TEMP_INPUT "${CMAKE_CURRENT_BINARY_DIR}/.atlas_inline_${output_name}.atlas")
 
     # Join CONTENT list with semicolons (since CMake splits on semicolons during parsing)
     string(REPLACE ";" ";" CONTENT_JOINED "${ARG_CONTENT}")
