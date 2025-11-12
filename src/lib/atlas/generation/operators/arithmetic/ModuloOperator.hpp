@@ -10,7 +10,7 @@
 #include "atlas/generation/core/ITemplate.hpp"
 #include "atlas/generation/parsing/OperatorParser.hpp"
 
-namespace wjh::atlas::generation { inline namespace v1 {
+namespace wjh::atlas::generation {
 
 /**
  * Base class for modulo operator templates
@@ -91,6 +91,6 @@ protected:
     bool should_apply_impl(ClassInfo const & info) const override;
 };
 
-}} // namespace wjh::atlas::generation::v1
+} // namespace wjh::atlas::generation
 
 #endif // WJH_ATLAS_9B4F7D3E2A8C6F1D5E7A4C9B3F8D2A6E

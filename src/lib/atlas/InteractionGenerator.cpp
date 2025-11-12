@@ -17,7 +17,7 @@
 #include <sstream>
 #include <stdexcept>
 
-namespace wjh::atlas { inline namespace v1 {
+namespace wjh::atlas {
 
 namespace {
 
@@ -769,4 +769,4 @@ namespace atlas {
     return output.str();
 }
 
-}} // namespace wjh::atlas::v1
+} // namespace wjh::atlas

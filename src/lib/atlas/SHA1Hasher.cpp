@@ -11,7 +11,7 @@
 #include <cstdio>
 #include <string>
 
-namespace wjh::atlas { inline namespace v1 {
+namespace wjh::atlas {
 
 std::string
 get_sha1(std::string const & s)
@@ -30,4 +30,4 @@ get_sha1(std::string const & s)
     return result;
 }
 
-}} // namespace wjh::atlas::v1
+} // namespace wjh::atlas

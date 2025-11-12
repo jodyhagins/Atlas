@@ -16,7 +16,7 @@
 #include <string>
 #include <vector>
 
-namespace wjh::atlas { inline namespace v1 {
+namespace wjh::atlas {
 
 /**
  * Base exception for all parser-related errors.
@@ -181,6 +181,6 @@ public:
         AtlasCommandLine::Arguments const & args);
 };
 
-}} // namespace wjh::atlas::v1
+} // namespace wjh::atlas
 
 #endif // WJH_ATLAS_B8F3D4E7A1C54E2B9D6F8A2C3E5F7B9D

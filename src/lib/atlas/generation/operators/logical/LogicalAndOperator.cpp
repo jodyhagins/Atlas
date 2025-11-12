@@ -9,7 +9,7 @@
 
 #include "atlas/generation/core/TemplateRegistry.hpp"
 
-namespace wjh::atlas::generation { inline namespace v1 {
+namespace wjh::atlas::generation {
 
 using namespace logical_helpers;
 
@@ -39,4 +39,4 @@ namespace {
 TemplateRegistrar<LogicalAndOperator> logical_and_operator_registrar;
 }
 
-}} // namespace wjh::atlas::generation::v1
+} // namespace wjh::atlas::generation

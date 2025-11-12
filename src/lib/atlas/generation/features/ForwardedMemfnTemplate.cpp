@@ -13,7 +13,7 @@
 
 #include <sstream>
 
-namespace wjh::atlas::generation { inline namespace v1 {
+namespace wjh::atlas::generation {
 
 std::string_view
 ForwardedMemfnTemplate::
@@ -235,4 +235,4 @@ namespace {
 TemplateRegistrar<ForwardedMemfnTemplate> forwarded_memfn_template_registrar;
 }
 
-}} // namespace wjh::atlas::generation::v1
+} // namespace wjh::atlas::generation

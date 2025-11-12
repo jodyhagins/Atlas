@@ -9,7 +9,7 @@
 #include "atlas/generation/core/ClassInfo.hpp"
 #include "atlas/generation/core/TemplateRegistry.hpp"
 
-namespace wjh::atlas::generation { inline namespace v1 {
+namespace wjh::atlas::generation {
 
 std::string_view
 NullaryOperator::
@@ -45,4 +45,4 @@ namespace {
 TemplateRegistrar<NullaryOperator> nullary_operator_registrar;
 }
 
-}} // namespace wjh::atlas::generation::v1
+} // namespace wjh::atlas::generation

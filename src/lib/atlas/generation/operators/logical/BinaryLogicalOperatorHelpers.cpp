@@ -10,8 +10,7 @@
 
 #include <algorithm>
 
-namespace wjh::atlas::generation { inline namespace v1 {
-namespace logical_helpers {
+namespace wjh::atlas::generation { namespace logical_helpers {
 
 bool
 has_binary_logical_operator(ClassInfo const & info, std::string_view op_symbol)
@@ -58,4 +57,4 @@ get_binary_logical_operator_template() noexcept
     return tmpl;
 }
 
-}}} // namespace wjh::atlas::generation::v1::logical_helpers
+}} // namespace wjh::atlas::generation::logical_helpers

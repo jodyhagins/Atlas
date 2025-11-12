@@ -9,7 +9,7 @@
 
 #include "atlas/generation/core/TemplateRegistry.hpp"
 
-namespace wjh::atlas::generation { inline namespace v1 {
+namespace wjh::atlas::generation {
 
 using namespace arithmetic_helpers;
 
@@ -236,4 +236,4 @@ TemplateRegistrar<WrappingSubtractionOperator> register_wrapping_subtraction;
 
 } // anonymous namespace
 
-}} // namespace wjh::atlas::generation::v1
+} // namespace wjh::atlas::generation

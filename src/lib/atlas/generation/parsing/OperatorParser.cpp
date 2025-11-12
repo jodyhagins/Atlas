@@ -9,7 +9,7 @@
 #include <cctype>
 #include <stdexcept>
 
-namespace wjh::atlas::generation { inline namespace v1 {
+namespace wjh::atlas::generation {
 
 // Helper to strip leading and trailing whitespace from a string_view
 static std::string_view
@@ -69,4 +69,4 @@ parse_cast_syntax(std::string_view token, bool & is_implicit)
     return std::string(strip(token.substr(start, end - start)));
 }
 
-}} // namespace wjh::atlas::generation::v1
+} // namespace wjh::atlas::generation

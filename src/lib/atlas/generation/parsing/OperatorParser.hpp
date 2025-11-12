@@ -11,7 +11,7 @@
 #include <string>
 #include <string_view>
 
-namespace wjh::atlas::generation { inline namespace v1 {
+namespace wjh::atlas::generation {
 
 /**
  * @brief Arithmetic computation modes for operator generation
@@ -30,18 +30,18 @@ enum class ArithmeticMode
     Wrapping // Explicit wraparound
 };
 
-}} // namespace wjh::atlas::generation::v1
+} // namespace wjh::atlas::generation
 
 // BOOST_DESCRIBE_ENUM must be at namespace scope
 #include <boost/describe/enum.hpp>
 BOOST_DESCRIBE_ENUM(
-    wjh::atlas::generation::v1::ArithmeticMode,
+    wjh::atlas::generation::ArithmeticMode,
     Default,
     Checked,
     Saturating,
     Wrapping)
 
-namespace wjh::atlas::generation { inline namespace v1 {
+namespace wjh::atlas::generation {
 
 /**
  * @brief Parses and classifies operator specifications for strong type
@@ -286,6 +286,6 @@ is_relational_operator(std::string_view sv) noexcept
     return false;
 }
 
-}} // namespace wjh::atlas::generation::v1
+} // namespace wjh::atlas::generation
 
 #endif // WJH_ATLAS_F7A6B9C3D8E4F1A2B7C6D5E4F3A2B1C0

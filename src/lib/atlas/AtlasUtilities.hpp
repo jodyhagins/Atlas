@@ -12,7 +12,7 @@
 #include <string_view>
 #include <vector>
 
-namespace wjh::atlas { inline namespace v1 {
+namespace wjh::atlas {
 
 /**
  * @brief Unified structure for parsed specifications (descriptions and
@@ -144,6 +144,6 @@ constexpr char const * yellow = "\033[33m";
 constexpr char const * reset = "\033[0m";
 } // namespace color
 
-}} // namespace wjh::atlas::v1
+} // namespace wjh::atlas
 
 #endif // WJH_ATLAS_8651ABC1F7E740D3960747B1195C51A7

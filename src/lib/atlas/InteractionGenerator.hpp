@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-namespace wjh::atlas { inline namespace v1 {
+namespace wjh::atlas {
 
 /**
  * @brief Type constraint specification for template parameters
@@ -211,6 +211,6 @@ struct InteractionGenerator
 
 inline constexpr auto generate_interactions = InteractionGenerator{};
 
-}} // namespace wjh::atlas::v1
+} // namespace wjh::atlas
 
 #endif // WJH_ATLAS_A4073A493A5C451B8E8D6DDF07C4596A

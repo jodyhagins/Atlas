@@ -7,7 +7,7 @@
 #ifndef WJH_ATLAS_DF79E5E22A2B41289AC1FDAB24AB3378
 #define WJH_ATLAS_DF79E5E22A2B41289AC1FDAB24AB3378
 
-namespace wjh::atlas { inline namespace v1 {
+namespace wjh::atlas {
 
 /**
  * Main logic for the atlas tool.
@@ -34,6 +34,6 @@ namespace wjh::atlas { inline namespace v1 {
 [[nodiscard]]
 int atlas_main(int argc, char ** argv);
 
-}} // namespace wjh::atlas::v1
+} // namespace wjh::atlas
 
 #endif // WJH_ATLAS_DF79E5E22A2B41289AC1FDAB24AB3378

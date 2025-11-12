@@ -8,7 +8,7 @@
 
 using namespace wjh::atlas;
 using namespace wjh::atlas::generation;
-using generation::v1::ClassInfo;
+using generation::ClassInfo;
 
 TEST_SUITE("HashSpecialization")
 {

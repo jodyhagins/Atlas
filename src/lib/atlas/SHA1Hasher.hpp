@@ -9,7 +9,7 @@
 
 #include <string>
 
-namespace wjh::atlas { inline namespace v1 {
+namespace wjh::atlas {
 
 /**
  * @brief Generate SHA1 hash of a string
@@ -19,6 +19,6 @@ namespace wjh::atlas { inline namespace v1 {
  */
 std::string get_sha1(std::string const & s);
 
-}} // namespace wjh::atlas::v1
+} // namespace wjh::atlas
 
 #endif // WJH_ATLAS_E2A965BF728E4AF4830FA2458F1477A5

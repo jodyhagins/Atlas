@@ -3,7 +3,7 @@
 #include "atlas/generation/core/ClassInfo.hpp"
 #include "atlas/generation/core/ITemplate.hpp"
 
-namespace wjh::atlas::generation { inline namespace v1 {
+namespace wjh::atlas::generation {
 
 /**
  * @brief Template class for generating explicit cast operators
@@ -63,4 +63,4 @@ private:
         CastOperator const & cast) const;
 };
 
-}} // namespace wjh::atlas::generation::v1
+} // namespace wjh::atlas::generation

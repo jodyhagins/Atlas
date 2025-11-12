@@ -23,7 +23,7 @@
 #include <string_view>
 #include <vector>
 
-namespace wjh::atlas::generation { inline namespace v1 {
+namespace wjh::atlas::generation {
 
 namespace {
 
@@ -125,7 +125,7 @@ check_for_redundant_operators(
     bool has_equality_ops,
     bool has_relational_ops,
     ClassInfo const & info,
-    std::vector<wjh::atlas::v1::StrongTypeGenerator::Warning> * warnings)
+    std::vector<wjh::atlas::StrongTypeGenerator::Warning> * warnings)
 {
     if (not has_spaceship || not warnings) {
         return;
@@ -922,7 +922,7 @@ finalize_spaceship_operators(
 void
 finalize_default_values(
     ClassInfo & info,
-    wjh::atlas::v1::StrongTypeDescription const & desc)
+    wjh::atlas::StrongTypeDescription const & desc)
 {
     if (not desc.default_value.empty()) {
         info.has_default_value = true;
@@ -1468,8 +1468,8 @@ to_json() const
 ClassInfo
 ClassInfo::
 parse(
-    wjh::atlas::v1::StrongTypeDescription const & desc,
-    std::vector<wjh::atlas::v1::StrongTypeGenerator::Warning> * warnings)
+    wjh::atlas::StrongTypeDescription const & desc,
+    std::vector<wjh::atlas::StrongTypeGenerator::Warning> * warnings)
 {
     ClassInfo info;
     info.desc = desc;
@@ -1546,4 +1546,4 @@ parse(
     return info;
 }
 
-}} // namespace wjh::atlas::generation::v1
+} // namespace wjh::atlas::generation

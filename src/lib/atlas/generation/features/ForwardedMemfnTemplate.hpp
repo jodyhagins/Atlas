@@ -9,7 +9,7 @@
 
 #include "atlas/generation/core/ITemplate.hpp"
 
-namespace wjh::atlas::generation { inline namespace v1 {
+namespace wjh::atlas::generation {
 
 // Forward declaration
 struct ForwardedMemfn;
@@ -97,6 +97,6 @@ private:
         ForwardedMemfn const & fwd) const;
 };
 
-}} // namespace wjh::atlas::generation::v1
+} // namespace wjh::atlas::generation
 
 #endif // WJH_ATLAS_A8F3E9B7C2D6E4F1A9B8C5D7E3F2A6B1

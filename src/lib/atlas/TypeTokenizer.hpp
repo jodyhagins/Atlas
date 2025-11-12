@@ -11,7 +11,7 @@
 #include <string_view>
 #include <vector>
 
-namespace wjh::atlas { inline namespace v1 {
+namespace wjh::atlas {
 
 /**
  * Extract all identifiers and namespace-qualified tokens from a type
@@ -63,6 +63,6 @@ std::vector<std::string> tokenize_type(std::string_view type_str);
  */
 std::vector<std::string> deduce_headers_from_type(std::string_view type_str);
 
-}} // namespace wjh::atlas::v1
+} // namespace wjh::atlas
 
 #endif // WJH_ATLAS_D41A5B3E8F2C4A9B1F7E3C6A9D2B5E8F

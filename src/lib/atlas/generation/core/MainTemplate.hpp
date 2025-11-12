@@ -12,7 +12,7 @@
 #include <string>
 #include <string_view>
 
-namespace wjh::atlas::generation { inline namespace v1 {
+namespace wjh::atlas::generation {
 
 /**
  * Main structure template for strong type generation
@@ -150,6 +150,6 @@ protected:
     std::set<std::string> required_includes_impl() const noexcept override;
 };
 
-}} // namespace wjh::atlas::generation::v1
+} // namespace wjh::atlas::generation
 
 #endif // WJH_ATLAS_9B2E4D6F8A1C5E3B7D9A2F4C6E8B1D3F

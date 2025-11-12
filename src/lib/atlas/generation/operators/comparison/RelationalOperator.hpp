@@ -9,7 +9,7 @@
 
 #include "atlas/generation/core/ITemplate.hpp"
 
-namespace wjh::atlas::generation { inline namespace v1 {
+namespace wjh::atlas::generation {
 
 /**
  * Relational operator template
@@ -103,6 +103,6 @@ private:
         std::string_view op_symbol) const;
 };
 
-}} // namespace wjh::atlas::generation::v1
+} // namespace wjh::atlas::generation
 
 #endif // WJH_ATLAS_E4A7B3C9D2F1E8A6B5C4D3E2F1A0B9C8

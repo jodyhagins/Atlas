@@ -16,7 +16,7 @@
 // This must be in a header so that boost::json::value_from can use it
 // in any translation unit that needs to serialize StrongTypeDescription
 BOOST_DESCRIBE_STRUCT(
-    wjh::atlas::v1::StrongTypeDescription,
+    wjh::atlas::StrongTypeDescription,
     (),
     (kind,
      type_namespace,

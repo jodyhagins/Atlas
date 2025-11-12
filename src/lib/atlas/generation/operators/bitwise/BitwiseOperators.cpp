@@ -13,7 +13,7 @@
 
 #include <algorithm>
 
-namespace wjh::atlas::generation { inline namespace v1 {
+namespace wjh::atlas::generation {
 
 // ============================================================================
 // Helper Functions
@@ -258,4 +258,4 @@ TemplateRegistrar<DefaultRightShiftOperator> register_right_shift;
 
 } // anonymous namespace
 
-}} // namespace wjh::atlas::generation::v1
+} // namespace wjh::atlas::generation

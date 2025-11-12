@@ -8,7 +8,7 @@
 
 #include <algorithm>
 
-namespace wjh::atlas { inline namespace v1 {
+namespace wjh::atlas {
 
 HeaderMapper::
 HeaderMapper()
@@ -201,4 +201,4 @@ check_namespace_prefix(std::string_view token) const
     return result;
 }
 
-}} // namespace wjh::atlas::v1
+} // namespace wjh::atlas

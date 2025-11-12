@@ -13,7 +13,7 @@
 
 #include <sstream>
 
-namespace wjh::atlas::generation { inline namespace v1 {
+namespace wjh::atlas::generation {
 
 std::string_view
 RelationalOperator::
@@ -111,4 +111,4 @@ TemplateRegistrar<RelationalOperator> register_relational_operator;
 
 } // anonymous namespace
 
-}} // namespace wjh::atlas::generation::v1
+} // namespace wjh::atlas::generation

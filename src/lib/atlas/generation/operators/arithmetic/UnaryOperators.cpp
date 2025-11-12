@@ -14,7 +14,7 @@
 
 #include <sstream>
 
-namespace wjh::atlas::generation { inline namespace v1 {
+namespace wjh::atlas::generation {
 
 // ============================================================================
 // UnaryOperatorsTemplate Implementation
@@ -113,4 +113,4 @@ TemplateRegistrar<UnaryOperatorsTemplate> register_unary_operators;
 
 } // anonymous namespace
 
-}} // namespace wjh::atlas::generation::v1
+} // namespace wjh::atlas::generation

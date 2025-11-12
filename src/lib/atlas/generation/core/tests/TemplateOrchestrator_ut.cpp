@@ -36,7 +36,7 @@ namespace {
 
 using namespace wjh::atlas;
 using namespace wjh::atlas::generation;
-using generation::v1::ClassInfo;
+using generation::ClassInfo;
 
 // Force linking of MainTemplate and other template classes by referencing them
 // This ensures static registrars are linked in from the library

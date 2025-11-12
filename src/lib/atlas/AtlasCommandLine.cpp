@@ -10,7 +10,7 @@
 #include <algorithm>
 #include <sstream>
 
-namespace wjh::atlas { inline namespace v1 {
+namespace wjh::atlas {
 
 AtlasCommandLine::Arguments
 AtlasCommandLine::
@@ -386,4 +386,4 @@ parse_interaction_file(std::string const & filename)
     }
 }
 
-}} // namespace wjh::atlas::v1
+} // namespace wjh::atlas

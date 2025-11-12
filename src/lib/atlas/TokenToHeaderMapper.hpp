@@ -12,7 +12,7 @@
 #include <string_view>
 #include <vector>
 
-namespace wjh::atlas { inline namespace v1 {
+namespace wjh::atlas {
 
 /**
  * Maps C++ type tokens to their required standard library headers.
@@ -63,6 +63,6 @@ private:
     std::vector<std::string> check_namespace_prefix(std::string_view) const;
 };
 
-}} // namespace wjh::atlas::v1
+} // namespace wjh::atlas
 
 #endif // WJH_ATLAS_A1B2C3D4E5F6G7H8I9J0K1L2M3N4O5P6

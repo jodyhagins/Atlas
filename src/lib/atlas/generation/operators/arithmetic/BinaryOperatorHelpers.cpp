@@ -8,9 +8,7 @@
 
 #include <algorithm>
 
-namespace wjh::atlas::generation { inline namespace v1 {
-
-namespace arithmetic_helpers {
+namespace wjh::atlas::generation { namespace arithmetic_helpers {
 
 bool
 has_binary_operator(ClassInfo const & info, std::string_view op_symbol)
@@ -50,4 +48,4 @@ prepare_binary_operator_variables(
     return vars;
 }
 
-}}} // namespace wjh::atlas::generation::v1::arithmetic_helpers
+}} // namespace wjh::atlas::generation::arithmetic_helpers

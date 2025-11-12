@@ -13,7 +13,7 @@
 
 #include <sstream>
 
-namespace wjh::atlas::generation { inline namespace v1 {
+namespace wjh::atlas::generation {
 
 std::string
 ExplicitCastOperator::
@@ -113,4 +113,4 @@ TemplateRegistrar<ExplicitCastOperator> register_explicit_cast_operator;
 
 } // anonymous namespace
 
-}} // namespace wjh::atlas::generation::v1
+} // namespace wjh::atlas::generation

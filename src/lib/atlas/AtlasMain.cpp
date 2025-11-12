@@ -23,7 +23,7 @@
     #include <unistd.h>
 #endif
 
-namespace wjh::atlas { inline namespace v1 {
+namespace wjh::atlas {
 
 int
 atlas_main(int argc, char ** argv)
@@ -112,4 +112,4 @@ atlas_main(int argc, char ** argv)
     return EXIT_SUCCESS;
 }
 
-}} // namespace wjh::atlas::v1
+} // namespace wjh::atlas

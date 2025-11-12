@@ -10,7 +10,7 @@
 #include "atlas/generation/core/ITemplate.hpp"
 #include "atlas/generation/parsing/OperatorParser.hpp"
 
-namespace wjh::atlas::generation { inline namespace v1 {
+namespace wjh::atlas::generation {
 
 /**
  * Base class for subtraction operator templates
@@ -144,6 +144,6 @@ protected:
     bool should_apply_impl(ClassInfo const & info) const override;
 };
 
-}} // namespace wjh::atlas::generation::v1
+} // namespace wjh::atlas::generation
 
 #endif // WJH_ATLAS_3E7D9B2F6A8C4E1D5F7A9C3B8E2D6F4A

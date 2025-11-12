@@ -7,7 +7,7 @@
 #ifndef WJH_ATLAS_8E2CA1E8EE8D441EA15480D91FDDC491
 #define WJH_ATLAS_8E2CA1E8EE8D441EA15480D91FDDC491
 
-namespace wjh::atlas { inline namespace v1 { namespace codegen {
+namespace wjh::atlas::codegen {
 
 // Semantic versioning: MAJOR.MINOR.PATCH
 // - MAJOR: Incompatible API/output changes
@@ -24,6 +24,6 @@ constexpr char const * version_string = "0.1.0";
 // Full version string for display
 constexpr char const * version_full = "Atlas Code Generator v0.1.0";
 
-}}} // namespace wjh::atlas::v1::codegen
+} // namespace wjh::atlas::codegen
 
 #endif // WJH_ATLAS_8E2CA1E8EE8D441EA15480D91FDDC491
