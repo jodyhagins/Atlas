@@ -1,0 +1,142 @@
+# atlas::Nilable Test Types
+# These types are used to test the atlas::Nilable<T> template class
+# which provides std::optional-like semantics using sentinel values.
+
+# Basic nullable integer for general testing
+[type]
+kind=struct
+namespace=test
+name=SimpleInt
+description=int; ==, <
+constants=nil_value:0
+default_value=0
+
+# File descriptor pattern (valid value can be 0)
+[type]
+kind=struct
+namespace=test
+name=FileDescriptor
+description=int; ==; <
+constants=nil_value:-1
+default_value=-1
+
+# String with empty sentinel
+[type]
+kind=struct
+namespace=test
+name=Name
+description=std::string; no-constexpr; ==; <
+constants=nil_value:""
+default_value=nil_value
+
+# Double with NaN sentinel
+[type]
+kind=struct
+namespace=test
+name=Temperature
+description=double; ==; <
+constants=nil_value:std::numeric_limits<double>::quiet_NaN()
+default_value=nil_value
+
+# Type with max sentinel
+[type]
+kind=struct
+namespace=test
+name=MaxSentinel
+description=int; ==; <
+constants=nil_value:std::numeric_limits<int>::max()
+default_value=std::numeric_limits<int>::max()
+
+# Type with min sentinel
+[type]
+kind=struct
+namespace=test
+name=MinSentinel
+description=int; ==; <
+constants=nil_value:std::numeric_limits<int>::min()
+default_value=std::numeric_limits<int>::min()
+
+# Type with arithmetic operators
+[type]
+kind=struct
+namespace=test
+name=Counter
+description=int; ==; <; +; -; *
+constants=nil_value:-1
+default_value=nil_value
+
+# Type with spaceship operator (C++20)
+[type]
+kind=struct
+namespace=test
+name=SpaceshipType
+description=int; <=>
+constants=nil_value:0
+default_value=nil_value
+
+# Type with constraints (bounded)
+[type]
+kind=struct
+namespace=test
+name=Age
+description=int; bounded<0,150>; ==; <
+constants=nil_value:-1
+default_value=-1
+
+# Type with constraints (positive)
+[type]
+kind=struct
+namespace=test
+name=PositiveInt
+description=int; positive; ==; <
+constants=nil_value:0
+default_value=nil_value
+
+# Move-only type (unique_ptr)
+[type]
+kind=struct
+namespace=test
+name=UniqueHandle
+description=std::unique_ptr<int>; no-constexpr, ==, ->, @
+forward=get
+constants=nil_value:nullptr
+default_value=nil_value
+
+# Type with default value (should still support Optional)
+[type]
+kind=struct
+namespace=test
+name=Score
+description=int; ==
+constants=nil_value:-1
+default_value=0
+
+# Long type for hash testing
+[type]
+kind=struct
+namespace=test
+name=Id
+description=long; ==; <
+constants=nil_value:-1
+default_value=nil_value
+
+# Unsigned type
+[type]
+kind=struct
+namespace=test
+name=UnsignedId
+description=unsigned int; ==; <
+constants=nil_value:0
+default_value=nil_value
+
+# Pointer type
+[type]
+kind=struct
+namespace=test
+name=RawPointer
+description=int*; ==; no-constexpr
+constants=nil_value:nullptr
+default_value=nil_value
+
+[test::NoInvalidValue]
+description=int; <=>

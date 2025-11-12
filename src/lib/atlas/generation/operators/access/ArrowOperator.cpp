@@ -56,15 +56,6 @@ should_apply_impl(ClassInfo const & info) const
     return info.arrow_operator;
 }
 
-boost::json::object
-ArrowOperator::
-prepare_variables_impl(ClassInfo const & info) const
-{
-    boost::json::object variables;
-    variables["const_expr"] = info.const_expr;
-    return variables;
-}
-
 // Self-registration with the template registry
 namespace {
 TemplateRegistrar<ArrowOperator> arrow_operator_registrar;

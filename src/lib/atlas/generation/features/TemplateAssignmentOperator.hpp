@@ -55,21 +55,6 @@ protected:
      */
     [[nodiscard]]
     bool should_apply_impl(ClassInfo const & info) const override;
-
-    /**
-     * Prepare variables for template assignment operator rendering
-     *
-     * Creates a JSON object with variables needed for rendering:
-     * - const_expr: "constexpr " or empty based on C++ standard
-     * - class_name: name of the strong type class
-     * - underlying_type: the wrapped type
-     *
-     * @param info Strong type class information
-     * @return JSON object with template variables
-     */
-    [[nodiscard]]
-    boost::json::object prepare_variables_impl(
-        ClassInfo const & info) const override;
 };
 
 }} // namespace wjh::atlas::generation::v1

@@ -59,16 +59,6 @@ should_apply_impl(ClassInfo const & info) const
     return info.subscript_operator;
 }
 
-boost::json::object
-SubscriptOperator::
-prepare_variables_impl(ClassInfo const & info) const
-{
-    boost::json::object variables;
-    variables["const_expr"] = info.const_expr;
-
-    return variables;
-}
-
 // Self-registration with the template registry
 namespace {
 TemplateRegistrar<SubscriptOperator> subscript_operator_registrar;

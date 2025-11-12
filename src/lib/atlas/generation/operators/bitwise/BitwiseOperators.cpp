@@ -85,9 +85,9 @@ get_template_impl() const noexcept
 #endif
 {{/has_constraint}}
     {
-        lhs.value {{{op}}}= rhs.value;
+        lhs.{{{value}}} {{{op}}}= rhs.{{{value}}};
         {{#has_constraint}}
-        if (not atlas_constraint::check(lhs.value)) {
+        if (not atlas_constraint::check(lhs.{{{value}}})) {
             throw atlas::ConstraintError(
                 "{{{class_name}}}: arithmetic result violates constraint"
                 " ({{{constraint_message}}})");

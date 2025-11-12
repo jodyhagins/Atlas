@@ -57,10 +57,10 @@ get_template_impl() const noexcept
 : private atlas::strong_type_tag
 {
 {{#has_default_value}}
-    {{{underlying_type}}} value{{{default_initializer}}};
+    {{{underlying_type}}} {{{value}}}{{{default_initializer}}};
 {{/has_default_value}}
 {{^has_default_value}}
-    {{{underlying_type}}} value;
+    {{{underlying_type}}} {{{value}}};
 {{/has_default_value}}
 
 {{#public_specifier}}
@@ -102,13 +102,13 @@ get_template_impl() const noexcept
             std::is_constructible<{{{underlying_type}}}, ArgTs...>::value,
             bool>::type = true>
     {{{const_expr}}}explicit {{{class_name}}}(ArgTs && ... args)
-    : value(std::forward<ArgTs>(args)...)
+    : {{{value}}}(std::forward<ArgTs>(args)...)
     {{#has_constraint}}
     {
-        if (not atlas_constraint::check(value)) {
+        if (not atlas::constraints::check<{{{class_name}}}>({{{value}}})) {
             throw atlas::ConstraintError(
                 "{{{class_name}}}: " +
-                atlas::constraints::detail::format_value(value) +
+                atlas::constraints::detail::format_value({{{value}}}) +
                 " violates constraint: {{{constraint_message}}}");
         }
     }
@@ -123,8 +123,8 @@ get_template_impl() const noexcept
     /**
      * The explicit cast operator provides a reference to the wrapped object.
      */
-    {{{const_expr}}}explicit operator {{{underlying_type}}} const & () const { return value; }
-    {{{const_expr}}}explicit operator {{{underlying_type}}} & () { return value; }
+    {{{const_expr}}}explicit operator {{{underlying_type}}} const & () const { return {{{value}}}; }
+    {{{const_expr}}}explicit operator {{{underlying_type}}} & () { return {{{value}}}; }
     {{#explicit_cast_operators}}
     {{>explicit_cast_operator}}
     {{/explicit_cast_operators}}

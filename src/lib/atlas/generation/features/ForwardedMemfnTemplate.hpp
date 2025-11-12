@@ -69,32 +69,6 @@ protected:
     bool should_apply_impl(ClassInfo const & info) const override;
 
     /**
-     * Prepare variables for forwarded member function rendering
-     *
-     * Creates a JSON object with variables needed for rendering a single
-     * forwarded member function:
-     * - const_expr: "constexpr " or empty
-     * - class_name: name of the strong type (for constraint messages)
-     * - has_constraint: true if type has constraints
-     * - memfn_name: original function name
-     * - alias_name: alternate name (optional)
-     * - return_type: wrapping type for return value (optional)
-     * - const_only: if true, only const overloads
-     * - generate_const_no_ref, generate_const_lvalue, etc.: control which
-     * overloads
-     *
-     * This method is still required by the interface, but it's not used
-     * since we override render_impl(). For completeness, return base variables
-     * without the per-function fields.
-     *
-     * @param info Strong type class information
-     * @return JSON object with template variables
-     */
-    [[nodiscard]]
-    boost::json::object prepare_variables_impl(
-        ClassInfo const & info) const override;
-
-    /**
      * Render all forwarded member functions
      *
      * Overrides the default render_impl() to iterate through all

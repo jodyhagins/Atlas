@@ -1,0 +1,4 @@
+[class test::Int]
+description=int; <=>
+constants=nil_value:min
+default_value=nil_value

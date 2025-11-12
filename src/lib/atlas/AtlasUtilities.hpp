@@ -87,6 +87,7 @@ struct PreambleOptions
     bool include_checked_helpers = false;
     bool include_saturating_helpers = false;
     bool include_constraints = false;
+    bool include_nilable_support = false;
 };
 
 /**

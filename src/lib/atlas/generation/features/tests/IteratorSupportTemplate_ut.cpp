@@ -80,7 +80,7 @@ TEST_CASE("IteratorSupportTemplate template content")
         CHECK(template_str.find("using value_type") != std::string_view::npos);
     }
 
-    SUBCASE("Template contains begin() and end() methods") {
+    SUBCASE("Template contains begin() and end()") {
         auto template_str = tmpl.get_template();
         CHECK(template_str.find("begin()") != std::string_view::npos);
         CHECK(template_str.find("end()") != std::string_view::npos);

@@ -62,16 +62,6 @@ should_apply_impl(ClassInfo const & info) const
     return info.callable;
 }
 
-boost::json::object
-CallableOperator::
-prepare_variables_impl(ClassInfo const & info) const
-{
-    boost::json::object variables;
-    variables["const_expr"] = info.const_expr;
-
-    return variables;
-}
-
 // Self-registration with the template registry
 namespace {
 TemplateRegistrar<CallableOperator> callable_operator_registrar;

@@ -48,17 +48,6 @@ protected:
     bool should_apply_impl(ClassInfo const & info) const override;
 
     [[nodiscard]]
-    boost::json::object prepare_variables_impl(
-        ClassInfo const & info) const override;
-
-    /**
-     * @brief Override render to iterate over all implicit cast operators
-     *
-     * This method iterates over info.implicit_cast_operators and renders
-     * each cast operator individually, accumulating all results into a
-     * single string.
-     */
-    [[nodiscard]]
     std::string render_impl(ClassInfo const & info) const override;
 
 private:

@@ -189,3 +189,44 @@ target_include_directories(constraint_integration2_ut
         ${CMAKE_CURRENT_BINARY_DIR}
 )
 
+set(OPTIONAL_INPUT "${CMAKE_CURRENT_SOURCE_DIR}/nilable_test_types.atlas")
+set(OPTIONAL_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/nilable_test_types.hpp")
+add_custom_command(
+    OUTPUT ${OPTIONAL_OUTPUT}
+    COMMAND atlas --input=${OPTIONAL_INPUT} --output=${OPTIONAL_OUTPUT}
+    DEPENDS atlas ${OPTIONAL_INPUT}
+    COMMENT "Generating atlas::Nilable test types"
+)
+
+add_executable(nilable_ut
+    nilable_ut.cpp
+    ${OPTIONAL_OUTPUT}
+)
+target_link_libraries(nilable_ut PRIVATE doctest::doctest)
+target_include_directories(nilable_ut PRIVATE
+    ${CMAKE_CURRENT_BINARY_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/lib/atlas
+)
+add_test(NAME NilableTests COMMAND nilable_ut)
+
+# C++20-specific optional tests
+set(OPTIONAL_CPP20_INPUT "${CMAKE_CURRENT_SOURCE_DIR}/nilable_cpp20_test_types.atlas")
+set(OPTIONAL_CPP20_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/nilable_cpp20_test_types.hpp")
+add_custom_command(
+    OUTPUT ${OPTIONAL_CPP20_OUTPUT}
+    COMMAND atlas --input=${OPTIONAL_CPP20_INPUT} --output=${OPTIONAL_CPP20_OUTPUT}
+    DEPENDS atlas ${OPTIONAL_CPP20_INPUT}
+    COMMENT "Generating atlas::Nilable C++20 test types"
+)
+
+add_executable(nilable_cpp20_ut
+    nilable_cpp20_ut.cpp
+    ${OPTIONAL_CPP20_OUTPUT}
+)
+target_link_libraries(nilable_cpp20_ut PRIVATE doctest::doctest)
+target_include_directories(nilable_cpp20_ut PRIVATE
+    ${CMAKE_CURRENT_BINARY_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/lib/atlas
+)
+add_test(NAME NilableCpp20Tests COMMAND nilable_cpp20_ut)
+

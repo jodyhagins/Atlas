@@ -68,19 +68,6 @@ protected:
      */
     [[nodiscard]]
     bool should_apply_impl(ClassInfo const & info) const override;
-
-    /**
-     * Prepare variables for indirection operator rendering
-     *
-     * Creates a JSON object with variables needed for rendering:
-     * - const_expr: "constexpr" or empty string based on settings
-     *
-     * @param info Strong type class information
-     * @return JSON object with template variables
-     */
-    [[nodiscard]]
-    boost::json::object prepare_variables_impl(
-        ClassInfo const & info) const override;
 };
 
 }} // namespace wjh::atlas::generation::v1

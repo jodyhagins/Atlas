@@ -95,7 +95,8 @@ operator () (StrongTypeDescription const & desc)
             (info.arithmetic_mode == ArithmeticMode::Checked),
         .include_saturating_helpers =
             (info.arithmetic_mode == ArithmeticMode::Saturating),
-        .include_constraints = info.has_constraint};
+        .include_constraints = info.has_constraint,
+        .include_nilable_support = info.nil_value_is_constant};
 
     auto preamble_includes = get_preamble_includes(preamble_opts);
 
@@ -152,40 +153,39 @@ generate_strong_types_file(
     bool any_checked_arithmetic = false;
     bool any_saturating_arithmetic = false;
     bool any_constraints = false;
+    bool any_nil_value = false;
     int max_cpp_standard = 11;
 
     // Generate each type WITHOUT preamble, and collect includes
     for (auto const & desc : descriptions) {
         auto info = ClassInfo::parse(desc, &warnings);
 
-        // Track the maximum C++ standard across all types
         if (info.cpp_standard > max_cpp_standard) {
             max_cpp_standard = info.cpp_standard;
         }
 
-        // Check if this type uses arrow operator
         if (info.arrow_operator) {
             any_arrow_operator = true;
         }
 
-        // Check if this type uses indirection operator
         if (info.indirection_operator) {
             any_indirection_operator = true;
         }
 
-        // Check if any type uses checked arithmetic
         if (info.arithmetic_mode == ArithmeticMode::Checked) {
             any_checked_arithmetic = true;
         }
 
-        // Check if any type uses saturating arithmetic
         if (info.arithmetic_mode == ArithmeticMode::Saturating) {
             any_saturating_arithmetic = true;
         }
 
-        // Check if any type uses constraints
         if (info.has_constraint) {
             any_constraints = true;
+        }
+
+        if (info.nil_value_is_constant) {
+            any_nil_value = true;
         }
 
         // Collect includes and guards from this type
@@ -196,8 +196,7 @@ generate_strong_types_file(
             all_guards[header] = guard;
         }
 
-        // Generate just the type code (no preamble, no header guards, no
-        // includes)
+        // Generate just the type code
         combined_code << render_code(info);
     }
 
@@ -224,7 +223,8 @@ generate_strong_types_file(
         .include_dereference_operator_traits = any_indirection_operator,
         .include_checked_helpers = any_checked_arithmetic,
         .include_saturating_helpers = any_saturating_arithmetic,
-        .include_constraints = any_constraints};
+        .include_constraints = any_constraints,
+        .include_nilable_support = any_nil_value};
     auto preamble_includes = get_preamble_includes(preamble_opts);
     for (auto const & include : preamble_includes) {
         all_includes.insert(include);

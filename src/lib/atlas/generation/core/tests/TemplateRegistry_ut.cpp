@@ -505,7 +505,7 @@ TEST_SUITE("TemplateRegistry Tests")
         registry.visit_applicable(info, [&](ITemplate const & tmpl) {
             visited = true;
 
-            // Verify we can call various template methods
+            // Verify we can call various template member functions
             CHECK(tmpl.id() == "test.with_includes");
             CHECK(tmpl.should_apply(info) == true);
 

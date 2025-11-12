@@ -1,0 +1,65 @@
+# atlas::Nilable C++20 Feature Test Types
+# These types test spaceship operators and C++20-specific behavior
+
+# Type with spaceship operator (C++20)
+[type]
+kind=struct
+namespace=test
+name=WithSpaceship
+description=int; <=>
+constants=nil_value:0
+default_value=0
+
+# Type with only < and == (no spaceship)
+[type]
+kind=struct
+namespace=test
+name=OnlyLessThan
+description=int; ==; <
+constants=nil_value:0
+default_value=0
+
+# Type with only == (no ordering)
+[type]
+kind=struct
+namespace=test
+name=OnlyEquality
+description=int; ==
+constants=nil_value:0
+default_value=0
+
+# Type with no comparison operators at all
+[type]
+kind=struct
+namespace=test
+name=NoComparison
+description=int
+constants=nil_value:0
+default_value=0
+
+# Type with spaceship and a different sentinel
+[type]
+kind=struct
+namespace=test
+name=SpaceshipNegative
+description=int; <=>
+constants=nil_value:-1
+default_value=-1
+
+# String type with spaceship
+[type]
+kind=struct
+namespace=test
+name=SpaceshipString
+description=std::string; <=>, no-constexpr
+constants=nil_value:""
+default_value=""
+
+# Type with spaceship and constraints
+[type]
+kind=struct
+namespace=test
+name=SpaceshipBounded
+description=int; <=>; bounded<0,100>
+constants=nil_value:-1
+default_value=-1

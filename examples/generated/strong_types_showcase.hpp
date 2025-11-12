@@ -1,5 +1,5 @@
-#ifndef EXAMPLE_0C57C67C46F41E8D357F7FF0C34D7BF351925616
-#define EXAMPLE_0C57C67C46F41E8D357F7FF0C34D7BF351925616
+#ifndef EXAMPLE_391A769CC2271ACFAA2B16FB95E610DF704DA35B
+#define EXAMPLE_391A769CC2271ACFAA2B16FB95E610DF704DA35B
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -1346,6 +1346,26 @@ template <typename ConstraintT, typename T>
 auto constraint_guard(T & t, char const * op) noexcept
 {
     return detail::ConstraintGuard<T, ConstraintT>(t, op);
+}
+
+template <typename T>
+constexpr auto is_nil_value(typename T::atlas_value_type const * value)
+-> decltype(atlas::value(T::nil_value) == *value)
+{
+    return atlas::value(T::nil_value) == *value;
+}
+
+template <typename T>
+constexpr bool is_nil_value(void const *)
+{
+    return false;
+}
+
+template <typename T>
+constexpr bool check(typename T::atlas_value_type const & value)
+{
+    return is_nil_value<T>(std::addressof(value)) ||
+        T::atlas_constraint::check(value);
 }
 
 /**
@@ -8618,7 +8638,7 @@ struct Price
     constexpr explicit Price(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     {
-        if (not atlas_constraint::check(value)) {
+        if (not atlas::constraints::check<Price>(value)) {
             throw atlas::ConstraintError(
                 "Price: " +
                 atlas::constraints::detail::format_value(value) +
@@ -8859,7 +8879,7 @@ struct Distance
     constexpr explicit Distance(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     {
-        if (not atlas_constraint::check(value)) {
+        if (not atlas::constraints::check<Distance>(value)) {
             throw atlas::ConstraintError(
                 "Distance: " +
                 atlas::constraints::detail::format_value(value) +
@@ -9046,7 +9066,7 @@ struct Divisor
     constexpr explicit Divisor(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     {
-        if (not atlas_constraint::check(value)) {
+        if (not atlas::constraints::check<Divisor>(value)) {
             throw atlas::ConstraintError(
                 "Divisor: " +
                 atlas::constraints::detail::format_value(value) +
@@ -9185,7 +9205,7 @@ struct Volume
     constexpr explicit Volume(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     {
-        if (not atlas_constraint::check(value)) {
+        if (not atlas::constraints::check<Volume>(value)) {
             throw atlas::ConstraintError(
                 "Volume: " +
                 atlas::constraints::detail::format_value(value) +
@@ -9385,7 +9405,7 @@ struct ServerPort
     constexpr explicit ServerPort(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     {
-        if (not atlas_constraint::check(value)) {
+        if (not atlas::constraints::check<ServerPort>(value)) {
             throw atlas::ConstraintError(
                 "ServerPort: " +
                 atlas::constraints::detail::format_value(value) +
@@ -9531,7 +9551,7 @@ struct Percentage
     constexpr explicit Percentage(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     {
-        if (not atlas_constraint::check(value)) {
+        if (not atlas::constraints::check<Percentage>(value)) {
             throw atlas::ConstraintError(
                 "Percentage: " +
                 atlas::constraints::detail::format_value(value) +
@@ -9718,7 +9738,7 @@ struct Username
     constexpr explicit Username(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     {
-        if (not atlas_constraint::check(value)) {
+        if (not atlas::constraints::check<Username>(value)) {
             throw atlas::ConstraintError(
                 "Username: " +
                 atlas::constraints::detail::format_value(value) +
@@ -9847,7 +9867,7 @@ struct NonEmptyList
     constexpr explicit NonEmptyList(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     {
-        if (not atlas_constraint::check(value)) {
+        if (not atlas::constraints::check<NonEmptyList>(value)) {
             throw atlas::ConstraintError(
                 "NonEmptyList: " +
                 atlas::constraints::detail::format_value(value) +
@@ -9985,7 +10005,7 @@ struct ResourceHandle
     constexpr explicit ResourceHandle(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     {
-        if (not atlas_constraint::check(value)) {
+        if (not atlas::constraints::check<ResourceHandle>(value)) {
             throw atlas::ConstraintError(
                 "ResourceHandle: " +
                 atlas::constraints::detail::format_value(value) +
@@ -10070,7 +10090,7 @@ struct BoundedChecked
     constexpr explicit BoundedChecked(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     {
-        if (not atlas_constraint::check(value)) {
+        if (not atlas::constraints::check<BoundedChecked>(value)) {
             throw atlas::ConstraintError(
                 "BoundedChecked: " +
                 atlas::constraints::detail::format_value(value) +
@@ -10220,7 +10240,7 @@ struct PositiveSaturating
     constexpr explicit PositiveSaturating(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     {
-        if (not atlas_constraint::check(value)) {
+        if (not atlas::constraints::check<PositiveSaturating>(value)) {
             throw atlas::ConstraintError(
                 "PositiveSaturating: " +
                 atlas::constraints::detail::format_value(value) +
@@ -10320,7 +10340,7 @@ struct NonNegativeWrapping
     constexpr explicit NonNegativeWrapping(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     {
-        if (not atlas_constraint::check(value)) {
+        if (not atlas::constraints::check<NonNegativeWrapping>(value)) {
             throw atlas::ConstraintError(
                 "NonNegativeWrapping: " +
                 atlas::constraints::detail::format_value(value) +
@@ -10383,7 +10403,7 @@ struct HealthPoints
     constexpr explicit HealthPoints(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     {
-        if (not atlas_constraint::check(value)) {
+        if (not atlas::constraints::check<HealthPoints>(value)) {
             throw atlas::ConstraintError(
                 "HealthPoints: " +
                 atlas::constraints::detail::format_value(value) +
@@ -10480,7 +10500,7 @@ struct CelsiusTemp
     constexpr explicit CelsiusTemp(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     {
-        if (not atlas_constraint::check(value)) {
+        if (not atlas::constraints::check<CelsiusTemp>(value)) {
             throw atlas::ConstraintError(
                 "CelsiusTemp: " +
                 atlas::constraints::detail::format_value(value) +
@@ -10613,7 +10633,7 @@ struct Age
     constexpr explicit Age(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     {
-        if (not atlas_constraint::check(value)) {
+        if (not atlas::constraints::check<Age>(value)) {
             throw atlas::ConstraintError(
                 "Age: " +
                 atlas::constraints::detail::format_value(value) +
@@ -10736,7 +10756,7 @@ struct ColorChannel
     constexpr explicit ColorChannel(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     {
-        if (not atlas_constraint::check(value)) {
+        if (not atlas::constraints::check<ColorChannel>(value)) {
             throw atlas::ConstraintError(
                 "ColorChannel: " +
                 atlas::constraints::detail::format_value(value) +
@@ -10936,7 +10956,7 @@ struct BatteryLevel
     constexpr explicit BatteryLevel(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     {
-        if (not atlas_constraint::check(value)) {
+        if (not atlas::constraints::check<BatteryLevel>(value)) {
             throw atlas::ConstraintError(
                 "BatteryLevel: " +
                 atlas::constraints::detail::format_value(value) +
@@ -11068,7 +11088,7 @@ struct TimeoutSeconds
     constexpr explicit TimeoutSeconds(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     {
-        if (not atlas_constraint::check(value)) {
+        if (not atlas::constraints::check<TimeoutSeconds>(value)) {
             throw atlas::ConstraintError(
                 "TimeoutSeconds: " +
                 atlas::constraints::detail::format_value(value) +
@@ -11202,7 +11222,7 @@ public:
     constexpr explicit ApiKey(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     {
-        if (not atlas_constraint::check(value)) {
+        if (not atlas::constraints::check<ApiKey>(value)) {
             throw atlas::ConstraintError(
                 "ApiKey: " +
                 atlas::constraints::detail::format_value(value) +
@@ -11306,7 +11326,7 @@ struct ThreadPriority
     constexpr explicit ThreadPriority(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     {
-        if (not atlas_constraint::check(value)) {
+        if (not atlas::constraints::check<ThreadPriority>(value)) {
             throw atlas::ConstraintError(
                 "ThreadPriority: " +
                 atlas::constraints::detail::format_value(value) +
@@ -11439,7 +11459,7 @@ struct RetryCount
     constexpr explicit RetryCount(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     {
-        if (not atlas_constraint::check(value)) {
+        if (not atlas::constraints::check<RetryCount>(value)) {
             throw atlas::ConstraintError(
                 "RetryCount: " +
                 atlas::constraints::detail::format_value(value) +
@@ -11561,7 +11581,7 @@ struct Latitude
     constexpr explicit Latitude(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     {
-        if (not atlas_constraint::check(value)) {
+        if (not atlas::constraints::check<Latitude>(value)) {
             throw atlas::ConstraintError(
                 "Latitude: " +
                 atlas::constraints::detail::format_value(value) +
@@ -11707,7 +11727,7 @@ struct Longitude
     constexpr explicit Longitude(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     {
-        if (not atlas_constraint::check(value)) {
+        if (not atlas::constraints::check<Longitude>(value)) {
             throw atlas::ConstraintError(
                 "Longitude: " +
                 atlas::constraints::detail::format_value(value) +
@@ -11853,7 +11873,7 @@ struct QoSLevel
     constexpr explicit QoSLevel(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     {
-        if (not atlas_constraint::check(value)) {
+        if (not atlas::constraints::check<QoSLevel>(value)) {
             throw atlas::ConstraintError(
                 "QoSLevel: " +
                 atlas::constraints::detail::format_value(value) +
@@ -11999,7 +12019,7 @@ struct ZoomLevel
     constexpr explicit ZoomLevel(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     {
-        if (not atlas_constraint::check(value)) {
+        if (not atlas::constraints::check<ZoomLevel>(value)) {
             throw atlas::ConstraintError(
                 "ZoomLevel: " +
                 atlas::constraints::detail::format_value(value) +
@@ -12180,7 +12200,7 @@ struct SafeDivisor
     constexpr explicit SafeDivisor(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     {
-        if (not atlas_constraint::check(value)) {
+        if (not atlas::constraints::check<SafeDivisor>(value)) {
             throw atlas::ConstraintError(
                 "SafeDivisor: " +
                 atlas::constraints::detail::format_value(value) +
@@ -12306,7 +12326,7 @@ struct Speed
     constexpr explicit Speed(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     {
-        if (not atlas_constraint::check(value)) {
+        if (not atlas::constraints::check<Speed>(value)) {
             throw atlas::ConstraintError(
                 "Speed: " +
                 atlas::constraints::detail::format_value(value) +
@@ -12547,7 +12567,7 @@ struct Filename
     constexpr explicit Filename(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     {
-        if (not atlas_constraint::check(value)) {
+        if (not atlas::constraints::check<Filename>(value)) {
             throw atlas::ConstraintError(
                 "Filename: " +
                 atlas::constraints::detail::format_value(value) +
@@ -12686,7 +12706,7 @@ struct StatusCode
     constexpr explicit StatusCode(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     {
-        if (not atlas_constraint::check(value)) {
+        if (not atlas::constraints::check<StatusCode>(value)) {
             throw atlas::ConstraintError(
                 "StatusCode: " +
                 atlas::constraints::detail::format_value(value) +
@@ -12786,4 +12806,4 @@ struct StatusCode
 } // namespace protocol
 } // namespace http
 
-#endif // EXAMPLE_0C57C67C46F41E8D357F7FF0C34D7BF351925616
+#endif // EXAMPLE_391A769CC2271ACFAA2B16FB95E610DF704DA35B

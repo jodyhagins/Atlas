@@ -233,6 +233,15 @@ get_preamble_includes(PreambleOptions const & options)
         includes.push_back("<string>");
     }
 
+    if (options.include_nilable_support) {
+        includes.push_back("<cassert>");
+        includes.push_back("<functional>");
+        includes.push_back("<memory>");
+        includes.push_back("<optional>");
+        includes.push_back("<type_traits>");
+        includes.push_back("<utility>");
+    }
+
     return includes;
 }
 
@@ -1557,6 +1566,26 @@ auto constraint_guard(T & t, char const * op) noexcept
     return detail::ConstraintGuard<T, ConstraintT>(t, op);
 }
 
+template <typename T>
+constexpr auto is_nil_value(typename T::atlas_value_type const * value)
+-> decltype(atlas::value(T::nil_value) == *value)
+{
+    return atlas::value(T::nil_value) == *value;
+}
+
+template <typename T>
+constexpr bool is_nil_value(void const *)
+{
+    return false;
+}
+
+template <typename T>
+constexpr bool check(typename T::atlas_value_type const & value)
+{
+    return is_nil_value<T>(std::addressof(value)) ||
+        T::atlas_constraint::check(value);
+}
+
 /**
  * @brief Constraint: value must be > 0
  */
@@ -1699,6 +1728,707 @@ struct non_null
 #endif // WJH_ATLAS_173D2C4FC9AA46929AD14C8BDF75D829
 )__";
 
+    static constexpr char const optional_support[] = R"(
+#ifndef WJH_ATLAS_04D0CC2BF798478DBE3CA9BFFCC24233
+#define WJH_ATLAS_04D0CC2BF798478DBE3CA9BFFCC24233
+
+namespace atlas {
+
+template <typename T>
+using remove_cv_t = typename std::remove_cv<T>::type;
+template <typename T>
+using remove_reference_t = typename std::remove_reference<T>::type;
+template <typename T>
+using remove_cvref_t = remove_cv_t<remove_reference_t<T>>;
+template <bool B, typename T>
+using enable_if_t = typename std::enable_if<B, T>::type;
+template <bool B>
+using when = enable_if_t<B, bool>;
+
+template <typename T, typename = void>
+struct can_be_nilable
+: std::false_type
+{ };
+
+template <typename T>
+struct can_be_nilable<
+    T,
+    typename std::enable_if<std::is_same<
+        remove_cv_t<T>,
+        remove_cv_t<decltype(T::nil_value)>>::value>::type>
+: std::true_type
+{ };
+
+/**
+ * Exception thrown when an atlas::Nilable is accessed without a value.
+ */
+class BadNilableAccess
+: public std::logic_error
+{
+public:
+    using std::logic_error::logic_error;
+    explicit BadNilableAccess()
+    : std::logic_error("bad atlas::Nilable access")
+    { }
+    virtual ~BadNilableAccess() noexcept = default;
+};
+
+namespace detail {
+
+template <typename T, typename = void>
+class BasicNilable;
+
+template <typename T>
+class BasicNilable<T, typename std::enable_if<can_be_nilable<T>::value>::type>
+{
+    T value_;
+
+public:
+    explicit BasicNilable() = default;
+
+    constexpr explicit BasicNilable(std::nullopt_t) noexcept(
+        std::is_nothrow_copy_constructible<T>::value)
+    : value_(T::nil_value)
+    { }
+
+    template <
+        typename U,
+        when<
+            std::is_constructible<T, U>::value &&
+            not std::is_convertible<U, T>::value> = true>
+    constexpr explicit BasicNilable(U && u)
+    : value_(std::forward<U>(u))
+    { }
+
+    template <typename U, when<std::is_convertible<U, T>::value> = true>
+    constexpr BasicNilable(U && u)
+    : value_(std::forward<U>(u))
+    { }
+
+    template <
+        typename... ArgTs,
+        when<std::is_constructible<T, ArgTs...>::value> = true>
+    constexpr explicit BasicNilable(
+        std::in_place_t,
+        ArgTs &&... args) noexcept(std::is_nothrow_constructible<T, ArgTs...>::
+                                       value)
+    : value_(std::forward<ArgTs>(args)...)
+    { }
+
+    constexpr explicit operator bool () const noexcept
+    {
+        return not (atlas::value(value_) == atlas::value(T::nil_value));
+    }
+
+    constexpr bool has_value() const noexcept { return bool(*this); }
+
+    constexpr T * operator -> () noexcept { return std::addressof(value_); }
+
+    constexpr T const * operator -> () const noexcept
+    {
+        return std::addressof(value_);
+    }
+
+    constexpr T const & operator * () const & noexcept { return value_; }
+
+    constexpr T & operator * () & noexcept { return value_; }
+
+    constexpr T const && operator * () const && noexcept
+    {
+        return static_cast<T const &&>(value_);
+    }
+
+    constexpr T && operator * () && noexcept
+    {
+        return static_cast<T &&>(value_);
+    }
+
+#if __cplusplus >= 201402L
+    #define WJH_ATLAS_tmp constexpr
+#else
+    #define WJH_ATLAS_tmp
+#endif
+    WJH_ATLAS_tmp T & value() &
+    {
+        if (has_value()) {
+            return value_;
+        }
+        throw BadNilableAccess();
+    }
+
+    WJH_ATLAS_tmp T const & value() const &
+    {
+        if (has_value()) {
+            return value_;
+        }
+        throw BadNilableAccess();
+    }
+
+    WJH_ATLAS_tmp T && value() &&
+    {
+        if (has_value()) {
+            return static_cast<T &&>(value_);
+        }
+        throw BadNilableAccess();
+    }
+
+    WJH_ATLAS_tmp T const && value() const &&
+    {
+        if (has_value()) {
+            return static_cast<T const &&>(value_);
+        }
+        throw BadNilableAccess();
+    }
+
+#undef WJH_ATLAS_tmp
+};
+
+} // namespace detail
+
+template <typename T>
+class Nilable
+: public detail::BasicNilable<T>
+{
+public:
+    using detail::BasicNilable<T>::BasicNilable;
+
+    Nilable(Nilable const &) = default;
+    Nilable(Nilable &&) = default;
+    Nilable & operator = (Nilable const &) = default;
+    Nilable & operator = (Nilable &&) = default;
+
+    Nilable & operator = (std::nullopt_t)
+    {
+        **this = T::nil_value;
+        return *this;
+    }
+
+    Nilable & operator = (T const & t)
+    {
+        **this = t;
+        return *this;
+    }
+
+    Nilable & operator = (T && t) noexcept
+    {
+        **this = std::move(t);
+        return *this;
+    }
+
+    void swap(Nilable & that) noexcept
+    {
+        auto & self = *this;
+        if (self.has_value()) {
+            if (that.has_value()) {
+                using std::swap;
+                swap(*self, *that);
+            } else {
+                *that = std::move(*self);
+                self = T::nil_value;
+            }
+        } else if (that.has_value()) {
+            *self = std::move(*that);
+            that = T::nil_value;
+        }
+    }
+
+    void reset() noexcept { *this = T::nil_value; }
+
+    template <
+        typename... ArgTs,
+        when<std::is_constructible<T, ArgTs...>::value> = true>
+    T & emplace(ArgTs &&... args) noexcept(
+        std::is_nothrow_constructible<T, ArgTs...>::value)
+    {
+        *this = T(std::forward<ArgTs>(args)...);
+        return **this;
+    }
+
+    template <typename U = remove_cv_t<T>>
+    constexpr enable_if_t<
+        std::is_copy_constructible<T>::value &&
+            std::is_convertible<U &&, T>::value,
+        T>
+    value_or(U && default_value) const & noexcept(
+        std::is_nothrow_copy_constructible<T>::value)
+    {
+        if (this->has_value()) {
+            return **this;
+        } else {
+            return static_cast<T>(std::forward<U>(default_value));
+        }
+    }
+
+    template <typename U = remove_cv_t<T>>
+    constexpr enable_if_t<
+        std::is_move_constructible<T>::value &&
+            std::is_convertible<U &&, T>::value,
+        T>
+    value_or(U && default_value) && noexcept(
+        std::is_nothrow_move_constructible<T>::value)
+    {
+        if (this->has_value()) {
+            return T(std::move(**this));
+        } else {
+            return static_cast<T>(std::forward<U>(default_value));
+        }
+    }
+
+private:
+#if defined(__cpp_lib_invoke) && (__cpp_lib_invoke >= 201411L) && \
+    defined(__cpp_lib_is_invocable) && (__cpp_lib_is_invocable >= 201703L)
+    template <
+        typename SelfT,
+        typename F,
+        typename R = remove_cvref_t<std::invoke_result_t<
+            F,
+            decltype(std::declval<SelfT>().operator * ())>>>
+    static constexpr R and_then_(SelfT && self, F && f)
+    {
+        if (self.has_value()) {
+            return std::invoke(
+                std::forward<F>(f),
+                std::forward<SelfT>(self).operator * ());
+        } else {
+            return R{};
+        }
+    }
+#else
+    template <
+        typename SelfT,
+        typename F,
+        typename R = remove_cvref_t<
+            decltype(std::forward<F>(f)(std::declval<SelfT>().operator * ()))>>
+    static constexpr R and_then_(SelfT && self, F && f)
+    {
+        if (self.has_value()) {
+            return std::forward<F>(f)(std::forward<SelfT>(self).operator * ());
+        } else {
+            return R{};
+        }
+    }
+#endif
+
+public:
+    template <typename F>
+    constexpr auto and_then(F && f) &
+    {
+        return and_then_(*this, std::forward<F>(f));
+    }
+
+    template <typename F>
+    constexpr auto and_then(F && f) const &
+    {
+        return and_then_(*this, std::forward<F>(f));
+    }
+
+    template <typename F>
+    constexpr auto and_then(F && f) &&
+    {
+        return and_then_(std::move(*this), std::forward<F>(f));
+    }
+
+    template <typename F>
+    constexpr auto and_then(F && f) const &&
+    {
+        return and_then_(std::move(*this), std::forward<F>(f));
+    }
+
+    template <typename F>
+    constexpr auto or_else(F && f) const &
+    -> decltype(this->has_value() ? *this : std::forward<F>(f)())
+    {
+        return this->has_value() ? *this : std::forward<F>(f)();
+    }
+
+    template <typename F>
+    constexpr auto or_else(F && f) &&
+    -> decltype(this->has_value() ? std::move(*this) : std::forward<F>(f)())
+    {
+        return this->has_value() ? std::move(*this) : std::forward<F>(f)();
+    }
+
+private:
+    template <typename U>
+    static constexpr std::true_type matches_opt_(Nilable<U> const &);
+    template <typename U>
+    static constexpr std::true_type matches_opt_(std::optional<U> const &);
+    static constexpr std::false_type matches_opt_(...);
+
+    template <typename U>
+    struct is_an_optional
+    : decltype(matches_opt_(std::declval<U const &>()))
+    { };
+
+    // Helper to check if a type is our strong type (exactly)
+    // We want to exclude random types (like doctest expression templates)
+    // and also not allow Nilable<T> to match (which would be convertible to T)
+    template <typename U, typename = void>
+    struct is_value_comparable
+    : std::false_type
+    { };
+
+    template <typename U>
+    struct is_value_comparable<
+        U,
+        typename std::enable_if<
+            not is_an_optional<U>::value &&
+            not std::is_same<U, std::nullopt_t>::value &&
+            std::is_same<remove_cvref_t<U>, T>::value>::type>
+    : std::true_type
+    { };
+
+    // Helper to check if T and U are equality comparable
+    template <typename TT, typename UU, typename = void>
+    struct is_equality_comparable
+    : std::false_type
+    { };
+
+    template <typename TT, typename UU>
+    struct is_equality_comparable<
+        TT,
+        UU,
+        typename std::enable_if<std::is_convertible<
+            decltype(std::declval<TT const &>() == std::declval<UU const &>()),
+            bool>::value>::type>
+    : std::true_type
+    { };
+
+    // Helper to check if T and U are less-than comparable
+    template <typename TT, typename UU, typename = void>
+    struct is_less_comparable
+    : std::false_type
+    { };
+
+    template <typename TT, typename UU>
+    struct is_less_comparable<
+        TT,
+        UU,
+        typename std::enable_if<std::is_convertible<
+            decltype(std::declval<TT const &>() < std::declval<UU const &>()),
+            bool>::value>::type>
+    : std::true_type
+    { };
+
+    template <typename X, typename Y>
+    static constexpr bool equal_(X const & x, Y const & y)
+    {
+        if (x.has_value()) {
+            if (y.has_value()) {
+                return bool(*x == *y);
+            } else {
+                return false;
+            }
+        } else {
+            return not y.has_value();
+        }
+    }
+
+    template <typename U, when<is_equality_comparable<T, U>::value> = true>
+    friend constexpr auto operator == (
+        Nilable const & x,
+        Nilable<U> const & y)
+    -> decltype(bool(*x == *y))
+    {
+        return equal_(x, y);
+    }
+
+    template <typename U, when<is_equality_comparable<T, U>::value> = true>
+    friend constexpr auto operator == (
+        Nilable const & x,
+        std::optional<U> const & y)
+    -> decltype(bool(*x == *y))
+    {
+        return equal_(x, y);
+    }
+
+    friend constexpr bool operator == (Nilable const & x, std::nullopt_t)
+    {
+        return not x.has_value();
+    }
+
+    template <typename Y, when<is_value_comparable<Y>::value> = true>
+    friend constexpr auto operator == (Nilable const & x, Y const & y)
+    -> decltype(bool(*x == y))
+    {
+        if (x.has_value()) {
+            return bool(*x == y);
+        } else {
+            return false;
+        }
+    }
+
+#if defined(__cpp_impl_three_way_comparison) && \
+    (__cpp_impl_three_way_comparison >= 201907) && \
+    defined(__cpp_lib_three_way_comparison) && \
+    (__cpp_lib_three_way_comparison >= 201907)
+
+    template <typename X, typename Y>
+    static constexpr auto spaceship_(X const & x, Y const & y)
+    {
+        if (x.has_value() && y.has_value()) {
+            return *x <=> *y;
+        } else {
+            return x.has_value() <=> y.has_value();
+        }
+    }
+
+    template <std::three_way_comparable_with<T> U>
+    friend constexpr std::compare_three_way_result_t<T, U> operator <=> (
+        Nilable const & x,
+        Nilable<U> const & y)
+    {
+        return spaceship_(x, y);
+    }
+
+    template <std::three_way_comparable_with<T> U>
+    friend constexpr std::compare_three_way_result_t<T, U> operator <=> (
+        Nilable const & x,
+        std::optional<U> const & y)
+    {
+        return spaceship_(x, y);
+    }
+
+    friend constexpr std::strong_ordering operator <=> (
+        Nilable const & x,
+        std::nullopt_t) noexcept
+    {
+        return x.has_value() <=> false;
+    }
+
+    template <typename Y>
+    requires(not is_an_optional<Y>::value) &&
+        std::three_way_comparable_with<T, Y>
+    friend constexpr std::compare_three_way_result_t<T, Y> operator <=> (
+        Nilable const & x,
+        Y const & y)
+    {
+        return x.has_value() ? *x <=> y : std::strong_ordering::less;
+    }
+
+#endif
+
+    // C++11/17 comparison operators - also used as fallback in C++20
+    // when T doesn't support spaceship
+    template <
+        typename U,
+        when<
+            not std::is_same<U, T>::value &&
+            is_equality_comparable<T, U>::value> = true>
+    friend constexpr auto operator == (
+        Nilable<U> const & x,
+        Nilable const & y)
+    -> decltype(bool(*x == *y))
+    {
+        return equal_(x, y);
+    }
+
+    template <typename U, when<is_equality_comparable<T, U>::value> = true>
+    friend constexpr auto operator == (
+        std::optional<U> const & x,
+        Nilable const & y)
+    -> decltype(bool(*x == *y))
+    {
+        return equal_(x, y);
+    }
+
+    friend constexpr bool operator == (std::nullopt_t, Nilable const & y)
+    {
+        return not y.has_value();
+    }
+
+    template <typename X, when<is_value_comparable<X>::value> = true>
+    friend constexpr auto operator == (X const & x, Nilable const & y)
+    -> decltype(bool(x == *y))
+    {
+        if (y.has_value()) {
+            return bool(x == *y);
+        } else {
+            return false;
+        }
+    }
+
+    template <typename X, typename Y>
+    static constexpr bool less_(X const & x, Y const & y)
+    {
+        if (x.has_value()) {
+            if (y.has_value()) {
+                return bool(*x < *y);
+            } else {
+                return false;
+            }
+        } else {
+            return y.has_value();
+        }
+    }
+
+    template <typename U, when<is_less_comparable<T, U>::value> = true>
+    friend constexpr auto operator < (Nilable const & x, Nilable<U> const & y)
+    -> decltype(bool(*x < *y))
+    {
+        return less_(x, y);
+    }
+
+    template <typename U, when<is_less_comparable<T, U>::value> = true>
+    friend constexpr auto operator < (
+        Nilable const & x,
+        std::optional<U> const & y)
+    -> decltype(bool(*x < *y))
+    {
+        return less_(x, y);
+    }
+
+    template <
+        typename U,
+        when<not std::is_same<U, T>::value && is_less_comparable<T, U>::value> =
+            true>
+    friend constexpr auto operator < (Nilable<U> const & x, Nilable const & y)
+    -> decltype(bool(*x < *y))
+    {
+        return less_(x, y);
+    }
+
+    template <typename U, when<is_less_comparable<T, U>::value> = true>
+    friend constexpr auto operator < (
+        std::optional<U> const & x,
+        Nilable const & y)
+    -> decltype(bool(*x < *y))
+    {
+        return less_(x, y);
+    }
+
+    friend constexpr bool operator < (Nilable const & x, std::nullopt_t)
+    {
+        return false;
+    }
+
+    friend constexpr bool operator < (std::nullopt_t, Nilable const & y)
+    {
+        return y.has_value();
+    }
+
+    template <
+        typename Y,
+        when<is_value_comparable<Y>::value && is_less_comparable<T, Y>::value> =
+            true>
+    friend constexpr auto operator < (Nilable const & x, Y const & y)
+    -> decltype(bool(*x < y))
+    {
+        if (x.has_value()) {
+            return bool(*x < y);
+        } else {
+            return true;
+        }
+    }
+
+    template <
+        typename X,
+        when<is_value_comparable<X>::value && is_less_comparable<X, T>::value> =
+            true>
+    friend constexpr auto operator < (X const & x, Nilable const & y)
+    -> decltype(bool(x < *y))
+    {
+        if (y.has_value()) {
+            return bool(x < *y);
+        } else {
+            return false;
+        }
+    }
+
+    template <typename U>
+    using is_me = std::is_same<U, Nilable>;
+
+// In C++20, != is synthesized from ==
+// Only provide it explicitly in pre-C++20
+#if not defined(__cpp_impl_three_way_comparison) || \
+    (__cpp_impl_three_way_comparison < 201907)
+
+    template <typename Y>
+    friend constexpr auto operator != (Nilable const & x, Y const & y)
+    -> decltype(not (x == y))
+    {
+        return not (x == y);
+    }
+
+    template <typename X, when<not is_me<X>::value> = true>
+    friend constexpr auto operator != (X const & x, Nilable const & y)
+    -> decltype(not (x == y))
+    {
+        return not (x == y);
+    }
+
+#endif
+
+    // In C++20, >, <=, >= CAN be synthesized from <=> if it exists
+    // BUT if <=> doesn't exist, they need to be defined explicitly
+    // So we provide them in ALL modes, defined in terms of <
+    template <typename Y>
+    friend constexpr auto operator > (Nilable const & x, Y const & y)
+    -> decltype(y < x)
+    {
+        return y < x;
+    }
+
+    template <typename X, when<not is_me<X>::value> = true>
+    friend constexpr auto operator > (X const & x, Nilable const & y)
+    -> decltype(y < x)
+    {
+        return y < x;
+    }
+
+    template <typename Y>
+    friend constexpr auto operator <= (Nilable const & x, Y const & y)
+    -> decltype(not (y < x))
+    {
+        return not (y < x);
+    }
+
+    template <typename X, when<not is_me<X>::value> = true>
+    friend constexpr auto operator <= (X const & x, Nilable const & y)
+    -> decltype(not (y < x))
+    {
+        return not (y < x);
+    }
+
+    template <typename Y>
+    friend constexpr auto operator >= (Nilable const & x, Y const & y)
+    -> decltype(not (x < y))
+    {
+        return not (x < y);
+    }
+
+    template <typename X, when<not is_me<X>::value> = true>
+    friend constexpr auto operator >= (X const & x, Nilable const & y)
+    -> decltype(not (x < y))
+    {
+        return not (x < y);
+    }
+};
+} // namespace atlas
+
+template <typename T>
+struct std::hash<atlas::Nilable<T>>
+{
+private:
+    // Hash the underlying value type, not the strong type wrapper
+    using value_type = typename T::atlas_value_type;
+
+public:
+    auto operator () (atlas::Nilable<T> const & x) const noexcept(
+        noexcept(std::hash<value_type>{}(std::declval<value_type const &>())))
+    -> decltype(std::hash<value_type>{}(std::declval<value_type const &>()))
+    {
+        if (x.has_value()) {
+            return std::hash<value_type>{}(atlas::value(*x));
+        } else {
+            return std::hash<value_type *>{}(nullptr);
+        }
+    }
+};
+
+#endif // WJH_ATLAS_04D0CC2BF798478DBE3CA9BFFCC24233
+)";
+
     static constexpr char const droids[] = R"(
 
 //////////////////////////////////////////////////////////////////////
@@ -1729,6 +2459,9 @@ struct non_null
     }
     if (options.include_constraints) {
         result += constraints_helpers;
+    }
+    if (options.include_nilable_support) {
+        result += optional_support;
     }
     result += droids;
     return result;

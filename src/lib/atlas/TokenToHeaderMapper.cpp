@@ -82,6 +82,7 @@ init_exact_matches()
     exact_matches_["std::expected"] = "<expected>";
     exact_matches_["std::function"] = "<functional>";
     exact_matches_["std::hash"] = "<functional>";
+    exact_matches_["std::numeric_limits"] = "<limits>";
     exact_matches_["std::pair"] = "<utility>";
     exact_matches_["std::shared_ptr"] = "<memory>";
     exact_matches_["std::stop_callback"] = "<stop_token>";

@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_5FB988760E2057F60AEC02A37C9A0762643EA431
-#define FOO_BAR_5FB988760E2057F60AEC02A37C9A0762643EA431
+#ifndef FOO_BAR_964FEA8CB1EE902C2FDEF8F0D71A411D447D8E78
+#define FOO_BAR_964FEA8CB1EE902C2FDEF8F0D71A411D447D8E78
 
 static_assert(__cplusplus >= 202002L,
     "This file requires C++20 or later. Compile with -std=c++20 or higher.");
@@ -815,6 +815,26 @@ auto constraint_guard(T & t, char const * op) noexcept
     return detail::ConstraintGuard<T, ConstraintT>(t, op);
 }
 
+template <typename T>
+constexpr auto is_nil_value(typename T::atlas_value_type const * value)
+-> decltype(atlas::value(T::nil_value) == *value)
+{
+    return atlas::value(T::nil_value) == *value;
+}
+
+template <typename T>
+constexpr bool is_nil_value(void const *)
+{
+    return false;
+}
+
+template <typename T>
+constexpr bool check(typename T::atlas_value_type const & value)
+{
+    return is_nil_value<T>(std::addressof(value)) ||
+        T::atlas_constraint::check(value);
+}
+
 /**
  * @brief Constraint: value must be > 0
  */
@@ -1008,7 +1028,7 @@ struct Percentage
     constexpr explicit Percentage(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     {
-        if (not atlas_constraint::check(value)) {
+        if (not atlas::constraints::check<Percentage>(value)) {
             throw atlas::ConstraintError(
                 "Percentage: " +
                 atlas::constraints::detail::format_value(value) +
@@ -1152,7 +1172,7 @@ struct Temperature
     constexpr explicit Temperature(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     {
-        if (not atlas_constraint::check(value)) {
+        if (not atlas::constraints::check<Temperature>(value)) {
             throw atlas::ConstraintError(
                 "Temperature: " +
                 atlas::constraints::detail::format_value(value) +
@@ -1321,7 +1341,7 @@ struct BoundedChecked
     constexpr explicit BoundedChecked(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     {
-        if (not atlas_constraint::check(value)) {
+        if (not atlas::constraints::check<BoundedChecked>(value)) {
             throw atlas::ConstraintError(
                 "BoundedChecked: " +
                 atlas::constraints::detail::format_value(value) +
@@ -1426,7 +1446,7 @@ struct FortyTwo
     constexpr explicit FortyTwo(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     {
-        if (not atlas_constraint::check(value)) {
+        if (not atlas::constraints::check<FortyTwo>(value)) {
             throw atlas::ConstraintError(
                 "FortyTwo: " +
                 atlas::constraints::detail::format_value(value) +
@@ -1498,7 +1518,7 @@ struct BoundedString
     explicit BoundedString(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     {
-        if (not atlas_constraint::check(value)) {
+        if (not atlas::constraints::check<BoundedString>(value)) {
             throw atlas::ConstraintError(
                 "BoundedString: " +
                 atlas::constraints::detail::format_value(value) +
@@ -1597,5 +1617,5 @@ struct BoundedString
 };
 } // namespace test
 
-#endif // FOO_BAR_5FB988760E2057F60AEC02A37C9A0762643EA431
+#endif // FOO_BAR_964FEA8CB1EE902C2FDEF8F0D71A411D447D8E78
 

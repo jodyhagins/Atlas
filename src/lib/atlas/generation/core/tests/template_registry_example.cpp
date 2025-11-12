@@ -22,7 +22,7 @@
 namespace wjh::atlas::generation::examples {
 
 /**
- * Example template that generates a simple getter method
+ * Example template that generates a simple getter
  *
  * This demonstrates the minimal implementation needed for a concrete template.
  */

@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_80C31D636BA33A582801BEBED248133A41F624BC
-#define FOO_BAR_80C31D636BA33A582801BEBED248133A41F624BC
+#ifndef FOO_BAR_8A1ADBB6F6514044D42978325A5D10B947CE93D0
+#define FOO_BAR_8A1ADBB6F6514044D42978325A5D10B947CE93D0
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -431,6 +431,26 @@ auto constraint_guard(T & t, char const * op) noexcept
     return detail::ConstraintGuard<T, ConstraintT>(t, op);
 }
 
+template <typename T>
+constexpr auto is_nil_value(typename T::atlas_value_type const * value)
+-> decltype(atlas::value(T::nil_value) == *value)
+{
+    return atlas::value(T::nil_value) == *value;
+}
+
+template <typename T>
+constexpr bool is_nil_value(void const *)
+{
+    return false;
+}
+
+template <typename T>
+constexpr bool check(typename T::atlas_value_type const & value)
+{
+    return is_nil_value<T>(std::addressof(value)) ||
+        T::atlas_constraint::check(value);
+}
+
 /**
  * @brief Constraint: value must be > 0
  */
@@ -611,7 +631,7 @@ struct Handle
     constexpr explicit Handle(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     {
-        if (not atlas_constraint::check(value)) {
+        if (not atlas::constraints::check<Handle>(value)) {
             throw atlas::ConstraintError(
                 "Handle: " +
                 atlas::constraints::detail::format_value(value) +
@@ -681,7 +701,7 @@ struct DataPointer
     constexpr explicit DataPointer(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     {
-        if (not atlas_constraint::check(value)) {
+        if (not atlas::constraints::check<DataPointer>(value)) {
             throw atlas::ConstraintError(
                 "DataPointer: " +
                 atlas::constraints::detail::format_value(value) +
@@ -781,7 +801,7 @@ struct UniquePointer
     explicit UniquePointer(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     {
-        if (not atlas_constraint::check(value)) {
+        if (not atlas::constraints::check<UniquePointer>(value)) {
             throw atlas::ConstraintError(
                 "UniquePointer: " +
                 atlas::constraints::detail::format_value(value) +
@@ -881,7 +901,7 @@ struct SharedPointer
     explicit SharedPointer(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     {
-        if (not atlas_constraint::check(value)) {
+        if (not atlas::constraints::check<SharedPointer>(value)) {
             throw atlas::ConstraintError(
                 "SharedPointer: " +
                 atlas::constraints::detail::format_value(value) +
@@ -981,7 +1001,7 @@ struct Optional
     explicit Optional(ArgTs && ... args)
     : value(std::forward<ArgTs>(args)...)
     {
-        if (not atlas_constraint::check(value)) {
+        if (not atlas::constraints::check<Optional>(value)) {
             throw atlas::ConstraintError(
                 "Optional: " +
                 atlas::constraints::detail::format_value(value) +
@@ -1049,5 +1069,5 @@ struct Optional
 };
 } // namespace data
 
-#endif // FOO_BAR_80C31D636BA33A582801BEBED248133A41F624BC
+#endif // FOO_BAR_8A1ADBB6F6514044D42978325A5D10B947CE93D0
 

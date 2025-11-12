@@ -49,19 +49,6 @@ should_apply_impl(ClassInfo const & info) const
 
 boost::json::object
 ImplicitCastOperator::
-prepare_variables_impl(ClassInfo const & info) const
-{
-    // This method is still required by the interface, but it's not used
-    // since we override render_impl(). For completeness, return base variables
-    // without the "cast_type" field.
-    boost::json::object variables;
-    variables["const_expr"] = info.const_expr;
-    variables["underlying_type"] = info.underlying_type;
-    return variables;
-}
-
-boost::json::object
-ImplicitCastOperator::
 prepare_variables_for_cast(ClassInfo const & info, CastOperator const & cast)
     const
 {
