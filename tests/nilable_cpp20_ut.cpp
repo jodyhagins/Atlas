@@ -354,12 +354,22 @@ TEST_SUITE("Optional Size and Performance")
             sizeof(test::SpaceshipString));
     }
 
-    TEST_CASE("Optional preserves triviality when possible")
+    TEST_CASE("Optional has user-defined move operations")
     {
         // WithSpaceship wraps int, should be trivial
         CHECK(std::is_trivially_copyable<test::WithSpaceship>::value);
-        // Optional should preserve this
-        CHECK(std::is_trivially_copyable<
+        // Optional is NOT trivially copyable because it has custom move
+        // operations that reset moved-from objects to nil_value
+        CHECK_FALSE(std::is_trivially_copyable<
+              atlas::Nilable<test::WithSpaceship>>::value);
+        // But it should still be copyable and movable
+        CHECK(std::is_copy_constructible<
+              atlas::Nilable<test::WithSpaceship>>::value);
+        CHECK(std::is_move_constructible<
+              atlas::Nilable<test::WithSpaceship>>::value);
+        CHECK(std::is_copy_assignable<
+              atlas::Nilable<test::WithSpaceship>>::value);
+        CHECK(std::is_move_assignable<
               atlas::Nilable<test::WithSpaceship>>::value);
     }
 }

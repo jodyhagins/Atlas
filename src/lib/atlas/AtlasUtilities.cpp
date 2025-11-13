@@ -1786,6 +1786,36 @@ class BasicNilable<T, typename std::enable_if<can_be_nilable<T>::value>::type>
 public:
     explicit BasicNilable() = default;
 
+    BasicNilable(BasicNilable const &) = default;
+
+    BasicNilable & operator = (BasicNilable const &) = default;
+
+#if __cplusplus >= 201402L
+    constexpr
+#endif
+    BasicNilable(BasicNilable && other) noexcept(
+        std::is_nothrow_move_constructible<T>::value &&
+        std::is_nothrow_copy_assignable<T>::value)
+    : value_(std::move(other.value_))
+    {
+        other.value_ = T::nil_value;
+    }
+
+#if __cplusplus >= 201402L
+    constexpr
+#endif
+    BasicNilable & operator = (BasicNilable && other) noexcept(
+        std::is_nothrow_move_assignable<T>::value &&
+        std::is_nothrow_copy_assignable<T>::value)
+    {
+        if (this != std::addressof(other)) {
+            value_ = std::move(other.value_);
+            other.value_ = T::nil_value;
+        }
+        return *this;
+    }
+
+
     constexpr explicit BasicNilable(std::nullopt_t) noexcept(
         std::is_nothrow_copy_constructible<T>::value)
     : value_(T::nil_value)

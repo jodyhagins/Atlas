@@ -165,6 +165,43 @@ TEST_SUITE("Optional Construction")
         CHECK(*opt2 == test::Name{std::string("Alice")});
     }
 
+    TEST_CASE("Move construction leaves moved-from object in nil state")
+    {
+        atlas::Nilable<test::SimpleInt> opt1(test::SimpleInt{42});
+        atlas::Nilable<test::SimpleInt> opt2(std::move(opt1));
+
+        REQUIRE(opt2.has_value());
+        CHECK(*opt2 == test::SimpleInt{42});
+        // Moved-from object should be in nil state
+        CHECK_FALSE(opt1.has_value());
+        CHECK(*opt1 == test::SimpleInt::nil_value);
+    }
+
+    TEST_CASE("Move construction leaves moved-from object in nil state - string type")
+    {
+        atlas::Nilable<test::Name> opt1(test::Name{std::string("Alice")});
+        atlas::Nilable<test::Name> opt2(std::move(opt1));
+
+        REQUIRE(opt2.has_value());
+        CHECK(*opt2 == test::Name{std::string("Alice")});
+        // Moved-from object should be in nil state
+        CHECK_FALSE(opt1.has_value());
+        CHECK(*opt1 == test::Name::nil_value);
+    }
+
+    TEST_CASE("Move construction leaves moved-from object in nil state - with default_value")
+    {
+        // Test with Score which has a default_value
+        atlas::Nilable<test::Score> opt1(test::Score{100});
+        atlas::Nilable<test::Score> opt2(std::move(opt1));
+
+        REQUIRE(opt2.has_value());
+        CHECK(*opt2 == test::Score{100});
+        // Moved-from object should be in nil state regardless of default_value
+        CHECK_FALSE(opt1.has_value());
+        CHECK(*opt1 == test::Score::nil_value);
+    }
+
     TEST_CASE("Move-only type construction")
     {
         atlas::Nilable<test::UniqueHandle> opt(
@@ -307,6 +344,48 @@ TEST_SUITE("Optional Assignment")
 
         REQUIRE(opt2.has_value());
         CHECK(*opt2 == test::Name{std::string("Alice")});
+    }
+
+    TEST_CASE("Move assignment leaves moved-from object in nil state")
+    {
+        atlas::Nilable<test::SimpleInt> opt1(test::SimpleInt{42});
+        atlas::Nilable<test::SimpleInt> opt2;
+
+        opt2 = std::move(opt1);
+
+        REQUIRE(opt2.has_value());
+        CHECK(*opt2 == test::SimpleInt{42});
+        // Moved-from object should be in nil state
+        CHECK_FALSE(opt1.has_value());
+        CHECK(*opt1 == test::SimpleInt::nil_value);
+    }
+
+    TEST_CASE("Move assignment leaves moved-from object in nil state - non-empty to non-empty")
+    {
+        atlas::Nilable<test::SimpleInt> opt1(test::SimpleInt{42});
+        atlas::Nilable<test::SimpleInt> opt2(test::SimpleInt{17});
+
+        opt2 = std::move(opt1);
+
+        REQUIRE(opt2.has_value());
+        CHECK(*opt2 == test::SimpleInt{42});
+        // Moved-from object should be in nil state
+        CHECK_FALSE(opt1.has_value());
+        CHECK(*opt1 == test::SimpleInt::nil_value);
+    }
+
+    TEST_CASE("Move assignment leaves moved-from object in nil state - with default_value")
+    {
+        atlas::Nilable<test::Score> opt1(test::Score{100});
+        atlas::Nilable<test::Score> opt2;
+
+        opt2 = std::move(opt1);
+
+        REQUIRE(opt2.has_value());
+        CHECK(*opt2 == test::Score{100});
+        // Moved-from object should be in nil state regardless of default_value
+        CHECK_FALSE(opt1.has_value());
+        CHECK(*opt1 == test::Score::nil_value);
     }
 
     TEST_CASE("Self-assignment copy")
