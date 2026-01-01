@@ -267,7 +267,6 @@ public:
     explicit BadNilableAccess()
     : std::logic_error("bad atlas::Nilable access")
     { }
-    virtual ~BadNilableAccess() noexcept = default;
 };
 
 namespace detail {

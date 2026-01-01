@@ -301,7 +301,6 @@ class ConstraintError
 {
 public:
     using std::logic_error::logic_error;
-    virtual ~ConstraintError() noexcept = default;
 };
 
 namespace constraints {

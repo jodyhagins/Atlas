@@ -570,7 +570,6 @@ class ArithmeticError
 {
 public:
     using std::runtime_error::runtime_error;
-    virtual ~ArithmeticError() noexcept = default;
 };
 
 /**
@@ -597,7 +596,6 @@ class CheckedOverflowError
 {
 public:
     using ArithmeticError::ArithmeticError;
-    virtual ~CheckedOverflowError() noexcept = default;
 };
 
 /**
@@ -625,7 +623,6 @@ class CheckedUnderflowError
 {
 public:
     using ArithmeticError::ArithmeticError;
-    virtual ~CheckedUnderflowError() noexcept = default;
 };
 
 /**
@@ -647,7 +644,6 @@ class CheckedDivisionByZeroError
 {
 public:
     using ArithmeticError::ArithmeticError;
-    virtual ~CheckedDivisionByZeroError() noexcept = default;
 };
 
 /**
@@ -673,7 +669,6 @@ class CheckedInvalidOperationError
 {
 public:
     using ArithmeticError::ArithmeticError;
-    virtual ~CheckedInvalidOperationError() noexcept = default;
 };
 
 namespace atlas_detail {
@@ -1436,7 +1431,6 @@ class ConstraintError
 {
 public:
     using std::logic_error::logic_error;
-    virtual ~ConstraintError() noexcept = default;
 };
 
 namespace constraints {
@@ -1770,7 +1764,6 @@ public:
     explicit BadNilableAccess()
     : std::logic_error("bad atlas::Nilable access")
     { }
-    virtual ~BadNilableAccess() noexcept = default;
 };
 
 namespace detail {
