@@ -469,13 +469,18 @@ generate_operator_function(
     // Add conditional noexcept specification
     oss << ")\nnoexcept(\n"
         << "    noexcept(" << lhs_value << " " << interaction.op_symbol << " "
-        << rhs_value << ") &&\n"
-        << "    std::is_nothrow_constructible<" << interaction.result_type
-        << ", decltype(" << lhs_value << " " << interaction.op_symbol << " "
-        << rhs_value << ")>::value)\n{\n";
-
-    oss << "    return " << interaction.result_type << "{" << lhs_value << " "
-        << interaction.op_symbol << " " << rhs_value << "};\n";
+        << rhs_value << ")";
+    if (interaction.result_type == "auto") {
+        oss << ")\n{\n    return " << lhs_value << " " << interaction.op_symbol
+            << " " << rhs_value << ";\n";
+    } else {
+        oss << " &&\n"
+            << "    std::is_nothrow_constructible<" << interaction.result_type
+            << ", decltype(" << lhs_value << " " << interaction.op_symbol << " "
+            << rhs_value << ")>::value)\n{\n    return "
+            << interaction.result_type << "{" << lhs_value << " "
+            << interaction.op_symbol << " " << rhs_value << "};\n";
+    }
     oss << "}\n";
 
     return oss.str();
