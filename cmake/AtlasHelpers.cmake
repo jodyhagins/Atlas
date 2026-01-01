@@ -162,7 +162,11 @@ function(add_atlas_strong_type)
         VERBATIM)
 
     # Create custom target for this generation
-    set(target_name "generate_${ARG_NAME}")
+    if(ARG_TARGET)
+        set(target_name "generate_${ARG_TARGET}_${ARG_NAME}")
+    else()
+        set(target_name "generate_${ARG_NAME}")
+    endif()
     add_custom_target(${target_name} DEPENDS ${ARG_OUTPUT})
 
     # Add dependency to the specified target (if provided)
@@ -253,7 +257,11 @@ function(add_atlas_strong_types_from_file)
 
     # Create custom target for this generation
     get_filename_component(output_name ${ARG_OUTPUT} NAME_WE)
-    set(target_name "generate_${output_name}")
+    if(ARG_TARGET)
+        set(target_name "generate_${ARG_TARGET}_${output_name}")
+    else()
+        set(target_name "generate_${output_name}")
+    endif()
     add_custom_target(${target_name} DEPENDS ${ARG_OUTPUT})
 
     # Add dependency to the specified target (if provided)
@@ -344,7 +352,11 @@ function(add_atlas_strong_types_inline)
         VERBATIM)
 
     # Create custom target for this generation
-    set(target_name "generate_${output_name}")
+    if(ARG_TARGET)
+        set(target_name "generate_${ARG_TARGET}_${output_name}")
+    else()
+        set(target_name "generate_${output_name}")
+    endif()
     add_custom_target(${target_name} DEPENDS ${ARG_OUTPUT})
 
     # Add dependency to the specified target (if provided)
@@ -464,7 +476,11 @@ function(add_atlas_interactions_from_file)
 
     # Create custom target for this generation
     get_filename_component(output_name ${ARG_OUTPUT} NAME_WE)
-    set(target_name "generate_${output_name}")
+    if(ARG_TARGET)
+        set(target_name "generate_${ARG_TARGET}_${output_name}")
+    else()
+        set(target_name "generate_${output_name}")
+    endif()
     add_custom_target(${target_name} DEPENDS ${ARG_OUTPUT})
 
     # Add dependency to the specified target (if provided)
@@ -551,7 +567,11 @@ function(add_atlas_interactions_inline)
         VERBATIM)
 
     # Create custom target for this generation
-    set(target_name "generate_${output_name}")
+    if(ARG_TARGET)
+        set(target_name "generate_${ARG_TARGET}_${output_name}")
+    else()
+        set(target_name "generate_${output_name}")
+    endif()
     add_custom_target(${target_name} DEPENDS ${ARG_OUTPUT})
 
     # Add dependency to the specified target (if provided)
