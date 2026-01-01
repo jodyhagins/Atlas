@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_DA338993102887017987B8DCBD81579C9ABD19F7
-#define FOO_BAR_DA338993102887017987B8DCBD81579C9ABD19F7
+#ifndef FOO_BAR_E7B41226D4399C2FE3019D34030BC8B470730F64
+#define FOO_BAR_E7B41226D4399C2FE3019D34030BC8B470730F64
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -978,7 +978,7 @@ namespace test {
 class Int
 : private atlas::strong_type_tag
 {
-    int value{std::numeric_limits<int>::min()};
+    int value = static_cast<int>(std::numeric_limits<int>::min());
 
 public:
     using atlas_value_type = int;
@@ -1089,5 +1089,5 @@ public:
 inline constexpr test::Int test::Int::nil_value = test::Int(std::numeric_limits<int>::min());
 } // namespace test
 
-#endif // FOO_BAR_DA338993102887017987B8DCBD81579C9ABD19F7
+#endif // FOO_BAR_E7B41226D4399C2FE3019D34030BC8B470730F64
 

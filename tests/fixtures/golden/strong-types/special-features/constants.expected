@@ -1,5 +1,5 @@
-#ifndef TEST_CONSTANTS_B02032125B136B20A21EBC13BE8F7FCCBB75B8BB
-#define TEST_CONSTANTS_B02032125B136B20A21EBC13BE8F7FCCBB75B8BB
+#ifndef TEST_CONSTANTS_637AA315B3EC88B9EF819CE2AB42222B1FB2D9FB
+#define TEST_CONSTANTS_637AA315B3EC88B9EF819CE2AB42222B1FB2D9FB
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -450,7 +450,7 @@ namespace test {
 struct NumericValue
 : private atlas::strong_type_tag
 {
-    int value{50};
+    int value = static_cast<int>(50);
 
     using atlas_value_type = int;
 
@@ -672,5 +672,5 @@ inline const test::NoConstexprType test::NoConstexprType::one = test::NoConstexp
 inline const test::NoConstexprType test::NoConstexprType::zero = test::NoConstexprType(0);
 } // namespace test
 
-#endif // TEST_CONSTANTS_B02032125B136B20A21EBC13BE8F7FCCBB75B8BB
+#endif // TEST_CONSTANTS_637AA315B3EC88B9EF819CE2AB42222B1FB2D9FB
 

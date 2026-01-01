@@ -937,7 +937,7 @@ finalize_default_values(
             }
         }
 
-        info.default_initializer = "{" + resolved_value + "}";
+        info.default_initializer = "(" + resolved_value + ")";
     }
 }
 

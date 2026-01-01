@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_76C1AA5C1E5A5FF3807E75DC56393FDE0CA578AC
-#define FOO_BAR_76C1AA5C1E5A5FF3807E75DC56393FDE0CA578AC
+#ifndef FOO_BAR_2687919FE2EC8960DF481B51706ABF7F357EB6E7
+#define FOO_BAR_2687919FE2EC8960DF481B51706ABF7F357EB6E7
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -245,7 +245,7 @@ namespace test {
 struct DefaultValueInt
 : private atlas::strong_type_tag
 {
-    int value{42};
+    int value = static_cast<int>(42);
 
     using atlas_value_type = int;
 
@@ -279,5 +279,5 @@ struct DefaultValueInt
 };
 } // namespace test
 
-#endif // FOO_BAR_76C1AA5C1E5A5FF3807E75DC56393FDE0CA578AC
+#endif // FOO_BAR_2687919FE2EC8960DF481B51706ABF7F357EB6E7
 

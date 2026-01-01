@@ -1,5 +1,5 @@
-#ifndef WJH_IPC_3A7C2DAA259D11871545A722B918E10734A854D9
-#define WJH_IPC_3A7C2DAA259D11871545A722B918E10734A854D9
+#ifndef WJH_IPC_89C84C3CF0BB8C80DDFA4F8EFC2729B4D4DE1436
+#define WJH_IPC_89C84C3CF0BB8C80DDFA4F8EFC2729B4D4DE1436
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -308,7 +308,7 @@ namespace ipc {
 struct Distance
 : private atlas::strong_type_tag
 {
-    double value{0.0};
+    double value = static_cast<double>(0.0);
 
     using atlas_value_type = double;
 
@@ -639,5 +639,5 @@ struct Handle
 } // namespace ipc
 } // namespace wjh
 
-#endif // WJH_IPC_3A7C2DAA259D11871545A722B918E10734A854D9
+#endif // WJH_IPC_89C84C3CF0BB8C80DDFA4F8EFC2729B4D4DE1436
 

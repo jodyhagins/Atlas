@@ -1,5 +1,5 @@
-#ifndef EXAMPLE_391A769CC2271ACFAA2B16FB95E610DF704DA35B
-#define EXAMPLE_391A769CC2271ACFAA2B16FB95E610DF704DA35B
+#ifndef EXAMPLE_C2FDB598C1D37B989374B5420528A12F17AB92A2
+#define EXAMPLE_C2FDB598C1D37B989374B5420528A12F17AB92A2
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -1528,7 +1528,7 @@ namespace profiles {
 struct Price
 : private atlas::strong_type_tag
 {
-    double value{0.0};
+    double value = static_cast<double>(0.0);
 
     using atlas_value_type = double;
 
@@ -1775,7 +1775,7 @@ namespace profiles {
 struct Quantity
 : private atlas::strong_type_tag
 {
-    int value{0};
+    int value = static_cast<int>(0);
 
     using atlas_value_type = int;
 
@@ -2081,7 +2081,7 @@ namespace core {
 struct Money
 : private atlas::strong_type_tag
 {
-    double value{0.0};
+    double value = static_cast<double>(0.0);
 
     using atlas_value_type = double;
 
@@ -2358,7 +2358,7 @@ namespace v1 {
 class UserId
 : private atlas::strong_type_tag
 {
-    unsigned long value{0};
+    unsigned long value = static_cast<unsigned long>(0);
 
 public:
     using atlas_value_type = unsigned long;
@@ -3282,7 +3282,7 @@ namespace data {
 struct ByteCount
 : private atlas::strong_type_tag
 {
-    size_t value{0};
+    size_t value = static_cast<size_t>(0);
 
     using atlas_value_type = size_t;
 
@@ -3617,7 +3617,7 @@ namespace color {
 struct RedChannel
 : private atlas::strong_type_tag
 {
-    uint8_t value{0};
+    uint8_t value = static_cast<uint8_t>(0);
 
     using atlas_value_type = uint8_t;
 
@@ -4078,7 +4078,7 @@ namespace geo {
 struct Latitude
 : private atlas::strong_type_tag
 {
-    double value{0.0};
+    double value = static_cast<double>(0.0);
 
     using atlas_value_type = double;
 
@@ -4229,7 +4229,7 @@ namespace geo {
 struct Longitude
 : private atlas::strong_type_tag
 {
-    double value{0.0};
+    double value = static_cast<double>(0.0);
 
     using atlas_value_type = double;
 
@@ -4707,7 +4707,7 @@ namespace rational {
 struct Denominator
 : private atlas::strong_type_tag
 {
-    long value{1};
+    long value = static_cast<long>(1);
 
     using atlas_value_type = long;
 
@@ -4892,7 +4892,7 @@ namespace ipv4 {
 struct Octet
 : private atlas::strong_type_tag
 {
-    uint8_t value{0};
+    uint8_t value = static_cast<uint8_t>(0);
 
     using atlas_value_type = uint8_t;
 
@@ -5308,7 +5308,7 @@ namespace containers {
 struct IterableString
 : private atlas::strong_type_tag
 {
-    std::string value{""};
+    std::string value = static_cast<std::string>("");
 
     using atlas_value_type = std::string;
 
@@ -6301,7 +6301,7 @@ namespace optional_strong {
 struct Temperature
 : private atlas::strong_type_tag
 {
-    double value{20.0};
+    double value = static_cast<double>(20.0);
 
     using atlas_value_type = double;
 
@@ -8617,7 +8617,7 @@ namespace pricing {
 struct Price
 : private atlas::strong_type_tag
 {
-    double value{1.0};
+    double value = static_cast<double>(1.0);
 
     using atlas_value_type = double;
     using atlas_constraint = atlas::constraints::positive<double>;
@@ -8858,7 +8858,7 @@ namespace measurements {
 struct Distance
 : private atlas::strong_type_tag
 {
-    double value{0.0};
+    double value = static_cast<double>(0.0);
 
     using atlas_value_type = double;
     using atlas_constraint = atlas::constraints::non_negative<double>;
@@ -9045,7 +9045,7 @@ namespace rational {
 struct Divisor
 : private atlas::strong_type_tag
 {
-    int value{1};
+    int value = static_cast<int>(1);
 
     using atlas_value_type = int;
     using atlas_constraint = atlas::constraints::non_zero<int>;
@@ -9171,7 +9171,7 @@ namespace controls {
 struct Volume
 : private atlas::strong_type_tag
 {
-    int value{50};
+    int value = static_cast<int>(50);
 
     using atlas_value_type = int;
     struct atlas_bounds
@@ -9371,7 +9371,7 @@ namespace config {
 struct ServerPort
 : private atlas::strong_type_tag
 {
-    uint16_t value{8080};
+    uint16_t value = static_cast<uint16_t>(8080);
 
     using atlas_value_type = uint16_t;
     struct atlas_bounds
@@ -9517,7 +9517,7 @@ namespace stats {
 struct Percentage
 : private atlas::strong_type_tag
 {
-    int value{0};
+    int value = static_cast<int>(0);
 
     using atlas_value_type = int;
     struct atlas_bounds
@@ -10185,7 +10185,35 @@ namespace color {
 struct PositiveSaturating
 : private atlas::strong_type_tag
 {
-    uint8_t value{1
+    uint8_t value = static_cast<uint8_t>(1);
+
+    using atlas_value_type = uint8_t;
+    using atlas_constraint = atlas::constraints::positive<uint8_t>;
+
+    constexpr explicit PositiveSaturating() = default;
+
+    template <
+        typename... ArgTs,
+        typename std::enable_if<
+            std::is_constructible<uint8_t, ArgTs...>::value,
+            bool>::type = true>
+    constexpr explicit PositiveSaturating(ArgTs && ... args)
+    : value(std::forward<ArgTs>(args)...)
+    {
+        if (not atlas::constraints::check<PositiveSaturating>(value)) {
+            throw atlas::ConstraintError(
+                "PositiveSaturating: " +
+                atlas::constraints::detail::format_value(value) +
+                " violates constraint: value must be positive (> 0)");
+        }
+    }
+
+    /**
+     * The explicit cast operator provides a reference to the wrapped object.
+     */
+    constexpr explicit operator uint8_t const & () const { return value; }
+    constexpr explicit operator uint8_t & () { return value; }
+
     /**
      * @brief Saturating addition - clamps to type limits
      * @note noexcept - overflow/underflow clamps to limits instead of throwing
@@ -10220,34 +10248,6 @@ struct PositiveSaturating
         return lhs;
     }
 };
-
-    using atlas_value_type = uint8_t;
-    using atlas_constraint = atlas::constraints::positive<uint8_t>;
-
-    constexpr explicit PositiveSaturating() = default;
-
-    template <
-        typename... ArgTs,
-        typename std::enable_if<
-            std::is_constructible<uint8_t, ArgTs...>::value,
-            bool>::type = true>
-    constexpr explicit PositiveSaturating(ArgTs && ... args)
-    : value(std::forward<ArgTs>(args)...)
-    {
-        if (not atlas::constraints::check<PositiveSaturating>(value)) {
-            throw atlas::ConstraintError(
-                "PositiveSaturating: " +
-                atlas::constraints::detail::format_value(value) +
-                " violates constraint: value must be positive (> 0)");
-        }
-    }
-
-    /**
-     * The explicit cast operator provides a reference to the wrapped object.
-     */
-    constexpr explicit operator uint8_t const & () const { return value; }
-    constexpr explicit operator uint8_t & () { return value; }
-};
 } // namespace color
 } // namespace graphics
 
@@ -10269,7 +10269,35 @@ namespace metrics {
 struct NonNegativeWrapping
 : private atlas::strong_type_tag
 {
-    uint8_t value{0
+    uint8_t value = static_cast<uint8_t>(0);
+
+    using atlas_value_type = uint8_t;
+    using atlas_constraint = atlas::constraints::non_negative<uint8_t>;
+
+    constexpr explicit NonNegativeWrapping() = default;
+
+    template <
+        typename... ArgTs,
+        typename std::enable_if<
+            std::is_constructible<uint8_t, ArgTs...>::value,
+            bool>::type = true>
+    constexpr explicit NonNegativeWrapping(ArgTs && ... args)
+    : value(std::forward<ArgTs>(args)...)
+    {
+        if (not atlas::constraints::check<NonNegativeWrapping>(value)) {
+            throw atlas::ConstraintError(
+                "NonNegativeWrapping: " +
+                atlas::constraints::detail::format_value(value) +
+                " violates constraint: value must be non-negative (>= 0)");
+        }
+    }
+
+    /**
+     * The explicit cast operator provides a reference to the wrapped object.
+     */
+    constexpr explicit operator uint8_t const & () const { return value; }
+    constexpr explicit operator uint8_t & () { return value; }
+
     /**
      * @brief Wrapping arithmetic - explicit, well-defined overflow
      * @note Marked noexcept - overflow is intentional and well-defined
@@ -10320,34 +10348,6 @@ struct NonNegativeWrapping
         return lhs;
     }
 };
-
-    using atlas_value_type = uint8_t;
-    using atlas_constraint = atlas::constraints::non_negative<uint8_t>;
-
-    constexpr explicit NonNegativeWrapping() = default;
-
-    template <
-        typename... ArgTs,
-        typename std::enable_if<
-            std::is_constructible<uint8_t, ArgTs...>::value,
-            bool>::type = true>
-    constexpr explicit NonNegativeWrapping(ArgTs && ... args)
-    : value(std::forward<ArgTs>(args)...)
-    {
-        if (not atlas::constraints::check<NonNegativeWrapping>(value)) {
-            throw atlas::ConstraintError(
-                "NonNegativeWrapping: " +
-                atlas::constraints::detail::format_value(value) +
-                " violates constraint: value must be non-negative (>= 0)");
-        }
-    }
-
-    /**
-     * The explicit cast operator provides a reference to the wrapped object.
-     */
-    constexpr explicit operator uint8_t const & () const { return value; }
-    constexpr explicit operator uint8_t & () { return value; }
-};
 } // namespace metrics
 } // namespace counter
 
@@ -10369,7 +10369,7 @@ namespace stats {
 struct HealthPoints
 : private atlas::strong_type_tag
 {
-    uint16_t value{100};
+    uint16_t value = static_cast<uint16_t>(100);
 
     using atlas_value_type = uint16_t;
     struct atlas_bounds
@@ -10466,7 +10466,7 @@ namespace sensors {
 struct CelsiusTemp
 : private atlas::strong_type_tag
 {
-    int value{20};
+    int value = static_cast<int>(20);
 
     using atlas_value_type = int;
     struct atlas_bounds
@@ -10612,7 +10612,7 @@ namespace data {
 struct Age
 : private atlas::strong_type_tag
 {
-    unsigned int value{1};
+    unsigned int value = static_cast<unsigned int>(1);
 
     using atlas_value_type = unsigned int;
     using atlas_constraint = atlas::constraints::positive<unsigned int>;
@@ -10722,7 +10722,7 @@ namespace rendering {
 struct ColorChannel
 : private atlas::strong_type_tag
 {
-    uint8_t value{0};
+    uint8_t value = static_cast<uint8_t>(0);
 
     using atlas_value_type = uint8_t;
     struct atlas_bounds
@@ -10922,7 +10922,7 @@ namespace power {
 struct BatteryLevel
 : private atlas::strong_type_tag
 {
-    uint8_t value{100};
+    uint8_t value = static_cast<uint8_t>(100);
 
     using atlas_value_type = uint8_t;
     struct atlas_bounds
@@ -11067,7 +11067,7 @@ namespace config {
 struct TimeoutSeconds
 : private atlas::strong_type_tag
 {
-    unsigned int value{30};
+    unsigned int value = static_cast<unsigned int>(30);
 
     using atlas_value_type = unsigned int;
     using atlas_constraint = atlas::constraints::positive<unsigned int>;
@@ -11292,7 +11292,7 @@ namespace scheduling {
 struct ThreadPriority
 : private atlas::strong_type_tag
 {
-    int value{0};
+    int value = static_cast<int>(0);
 
     using atlas_value_type = int;
     struct atlas_bounds
@@ -11438,7 +11438,7 @@ namespace resilience {
 struct RetryCount
 : private atlas::strong_type_tag
 {
-    unsigned int value{0};
+    unsigned int value = static_cast<unsigned int>(0);
 
     using atlas_value_type = unsigned int;
     using atlas_constraint = atlas::constraints::non_negative<unsigned int>;
@@ -11547,7 +11547,7 @@ namespace coordinates {
 struct Latitude
 : private atlas::strong_type_tag
 {
-    double value{0.0};
+    double value = static_cast<double>(0.0);
 
     using atlas_value_type = double;
     struct atlas_bounds
@@ -11693,7 +11693,7 @@ namespace coordinates {
 struct Longitude
 : private atlas::strong_type_tag
 {
-    double value{0.0};
+    double value = static_cast<double>(0.0);
 
     using atlas_value_type = double;
     struct atlas_bounds
@@ -11839,7 +11839,7 @@ namespace qos {
 struct QoSLevel
 : private atlas::strong_type_tag
 {
-    uint8_t value{0};
+    uint8_t value = static_cast<uint8_t>(0);
 
     using atlas_value_type = uint8_t;
     struct atlas_bounds
@@ -11985,7 +11985,7 @@ namespace display {
 struct ZoomLevel
 : private atlas::strong_type_tag
 {
-    uint8_t value{10};
+    uint8_t value = static_cast<uint8_t>(10);
 
     using atlas_value_type = uint8_t;
     struct atlas_bounds
@@ -12179,7 +12179,7 @@ namespace calculations {
 struct SafeDivisor
 : private atlas::strong_type_tag
 {
-    double value{1.0};
+    double value = static_cast<double>(1.0);
 
     using atlas_value_type = double;
     using atlas_constraint = atlas::constraints::non_zero<double>;
@@ -12305,7 +12305,7 @@ namespace kinematics {
 struct Speed
 : private atlas::strong_type_tag
 {
-    double value{1.0};
+    double value = static_cast<double>(1.0);
 
     using atlas_value_type = double;
     using atlas_constraint = atlas::constraints::positive<double>;
@@ -12672,7 +12672,7 @@ namespace protocol {
 struct StatusCode
 : private atlas::strong_type_tag
 {
-    uint16_t value{200};
+    uint16_t value = static_cast<uint16_t>(200);
 
     using atlas_value_type = uint16_t;
     struct atlas_bounds
@@ -12800,4 +12800,4 @@ struct StatusCode
 } // namespace protocol
 } // namespace http
 
-#endif // EXAMPLE_391A769CC2271ACFAA2B16FB95E610DF704DA35B
+#endif // EXAMPLE_C2FDB598C1D37B989374B5420528A12F17AB92A2

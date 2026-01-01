@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_AE73B2FA8315C46892401D5936328241B462072B
-#define FOO_BAR_AE73B2FA8315C46892401D5936328241B462072B
+#ifndef FOO_BAR_D43D55D9966755E47F00E1648F61BCC37B8AD7DF
+#define FOO_BAR_D43D55D9966755E47F00E1648F61BCC37B8AD7DF
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -246,7 +246,7 @@ namespace test {
 struct DefaultValueString
 : private atlas::strong_type_tag
 {
-    std::string value{"hello"};
+    std::string value = static_cast<std::string>("hello");
 
     using atlas_value_type = std::string;
 
@@ -280,5 +280,5 @@ struct DefaultValueString
 };
 } // namespace test
 
-#endif // FOO_BAR_AE73B2FA8315C46892401D5936328241B462072B
+#endif // FOO_BAR_D43D55D9966755E47F00E1648F61BCC37B8AD7DF
 

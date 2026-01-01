@@ -57,7 +57,7 @@ get_template_impl() const noexcept
 : private atlas::strong_type_tag
 {
 {{#has_default_value}}
-    {{{underlying_type}}} {{{value}}}{{{default_initializer}}};
+    {{{underlying_type}}} {{{value}}} = static_cast<{{{underlying_type}}}>{{{default_initializer}}};
 {{/has_default_value}}
 {{^has_default_value}}
     {{{underlying_type}}} {{{value}}};
