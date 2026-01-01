@@ -1,5 +1,5 @@
-#ifndef TEST_5DDD0A7FFFE4FA10FFFC4060522B3E96B65B0478
-#define TEST_5DDD0A7FFFE4FA10FFFC4060522B3E96B65B0478
+#ifndef TEST_D0E351D35B8ACA1572D9139BC2122A35A9F63E17
+#define TEST_D0E351D35B8ACA1572D9139BC2122A35A9F63E17
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -92,16 +92,6 @@ struct make_void
 template <typename... Ts>
 using void_t = typename make_void<Ts...>::type;
 
-template <typename T, typename = void>
-struct IsAtlasType
-: std::false_type
-{ };
-
-template <typename T>
-struct IsAtlasType<T, void_t<typename T::atlas_value_type>>
-: std::true_type
-{ };
-
 template <std::size_t N>
 struct PriorityTag
 : PriorityTag<N - 1>
@@ -123,65 +113,145 @@ template <typename T, typename U>
 using and_ = bool_c<T::value && U::value>;
 template <typename T>
 using is_lref = std::is_lvalue_reference<T>;
-template <typename T, typename U = void>
-using enable_if = typename std::enable_if<T::value, U>::type;
+
+template <typename T>
+using remove_cv_t = typename std::remove_cv<T>::type;
+template <typename T>
+using remove_reference_t = typename std::remove_reference<T>::type;
+template <typename T>
+using remove_cvref_t = remove_cv_t<remove_reference_t<T>>;
+template <bool B, typename T = void>
+using enable_if_t = typename std::enable_if<B, T>::type;
+template <bool B>
+using when = enable_if_t<B, bool>;
 
 template <typename T>
 using _t = typename T::type;
 
-void atlas_value();
+template <typename T, typename = void>
+struct has_atlas_value_type
+: std::false_type
+{ };
 
+template <typename T>
+struct has_atlas_value_type<
+    T,
+    enable_if_t<not std::is_same<
+        typename remove_cvref_t<T>::atlas_value_type,
+        void>::value>>
+: std::true_type
+{ };
+
+void atlas_value();
+struct value_by_ref
+{ };
+struct value_by_val
+{ };
+
+// ----------------------------------------------------------------------------
+// Base case: T does not have atlas_value_type
+// These are the termination cases for the recursion.
+// ----------------------------------------------------------------------------
 template <typename T>
 constexpr T &
-value(T & val, PriorityTag<0>)
+value_impl(T & t, PriorityTag<0>, value_by_ref)
 {
-    return val;
+    return t;
+}
+template <typename T>
+constexpr T const &
+value_impl(T const & t, PriorityTag<0>, value_by_ref)
+{
+    return t;
+}
+template <typename T>
+constexpr T
+value_impl(T & t, PriorityTag<0>, value_by_val)
+{
+    return std::move(t);
+}
+template <typename T>
+constexpr T
+value_impl(T const & t, PriorityTag<0>, value_by_val)
+{
+    return t;
 }
 
-template <typename T, typename U = typename T::atlas_value_type>
-using val_t = _t<std::conditional<std::is_const<T>::value, U const &, U &>>;
-
-template <typename T, typename U = val_t<T>>
-constexpr auto
-value(T & val, PriorityTag<1>)
--> decltype(atlas::atlas_detail::value(static_cast<U>(val), value_tag{}))
-{
-    return atlas::atlas_detail::value(static_cast<U>(val), value_tag{});
-}
-
+// ----------------------------------------------------------------------------
+// Recursive case: T has atlas_value_type
+// Drill down one level and recurse.
+// ----------------------------------------------------------------------------
 template <typename T>
 constexpr auto
-value(T const & t, PriorityTag<2>)
--> decltype(atlas_value(t, atlas::value_tag{}))
+value_impl(T & t, PriorityTag<1>, value_by_ref)
+-> decltype(value_impl(
+    static_cast<typename T::atlas_value_type &>(t),
+    value_tag{},
+    value_by_ref{}))
 {
-    return atlas_value(t, atlas::value_tag{});
+    using A = typename T::atlas_value_type;
+    return value_impl(static_cast<A &>(t), value_tag{}, value_by_ref{});
 }
-
 template <typename T>
 constexpr auto
-value(T const & t, PriorityTag<3>)
--> decltype(atlas_value(t))
+value_impl(T const & t, PriorityTag<1>, value_by_ref)
+-> decltype(value_impl(
+    static_cast<typename T::atlas_value_type const &>(t),
+    value_tag{},
+    value_by_ref{}))
 {
-    return atlas_value(t);
+    using A = typename T::atlas_value_type;
+    return value_impl(static_cast<A const &>(t), value_tag{}, value_by_ref{});
+}
+template <typename T>
+constexpr auto
+value_impl(T & t, PriorityTag<1>, value_by_val)
+-> decltype(value_impl(
+    static_cast<typename T::atlas_value_type &>(t),
+    value_tag{},
+    value_by_val{}))
+{
+    using A = typename T::atlas_value_type;
+    return value_impl(static_cast<A &>(t), value_tag{}, value_by_val{});
+}
+template <typename T>
+constexpr auto
+value_impl(T const & t, PriorityTag<1>, value_by_val)
+-> decltype(value_impl(
+    static_cast<typename T::atlas_value_type const &>(t),
+    value_tag{},
+    value_by_val{}))
+{
+    using A = typename T::atlas_value_type;
+    return value_impl(static_cast<A const &>(t), value_tag{}, value_by_val{});
 }
 
-class Value
+struct Value
 {
-    template <
-        typename U,
-        typename T,
-        typename V = _t<std::conditional<is_lref<U &&>::value, T &, T>>>
-    static constexpr V rval(T && t)
+    template <typename T>
+    constexpr auto
+    operator () (T & t) const
+    -> decltype(atlas_detail::value_impl(t, value_tag{}, value_by_ref{}))
     {
-        return t;
+        return atlas_detail::value_impl(t, value_tag{}, value_by_ref{});
     }
 
-public:
     template <typename T>
-    constexpr auto operator () (T && t) const
-    -> decltype(rval<T>(atlas_detail::value(t, atlas_detail::value_tag{})))
+    constexpr auto
+    operator () (T const & t) const
+    -> decltype(atlas_detail::value_impl(t, value_tag{}, value_by_ref{}))
     {
-        return rval<T>(atlas_detail::value(t, atlas_detail::value_tag{}));
+        return atlas_detail::value_impl(t, value_tag{}, value_by_ref{});
+    }
+
+    template <
+        typename T,
+        when<not std::is_lvalue_reference<T>::value> = true>
+    constexpr auto
+    operator () (T && t) const
+    -> decltype(atlas_detail::value_impl(t, value_tag{}, value_by_val{}))
+    {
+        return atlas_detail::value_impl(t, value_tag{}, value_by_val{});
     }
 };
 
@@ -205,6 +275,19 @@ end_(T && t) noexcept(noexcept(end(std::forward<T>(t))))
 }
 
 } // namespace atlas_detail
+
+using atlas_detail::enable_if_t;
+using atlas_detail::remove_cv_t;
+using atlas_detail::remove_cvref_t;
+using atlas_detail::when;
+
+template <typename T>
+using is_atlas_type = atlas_detail::has_atlas_value_type<T>;
+
+#if defined(__cpp_concepts) && __cpp_concepts >= 201907L
+template <typename T>
+concept AtlasTypeC = is_atlas_type<T>::value;
+#endif
 
 #if defined(__cpp_inline_variables) && __cpp_inline_variables >= 201606L
 inline constexpr auto value = atlas_detail::Value{};
@@ -393,5 +476,5 @@ noexcept(
 
 } // namespace physics::units
 
-#endif // TEST_5DDD0A7FFFE4FA10FFFC4060522B3E96B65B0478
+#endif // TEST_D0E351D35B8ACA1572D9139BC2122A35A9F63E17
 
