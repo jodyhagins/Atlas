@@ -20,6 +20,8 @@ add_library(atlas_lib STATIC
     AtlasCommandLine.hpp
     ProfileSystem.cpp
     ProfileSystem.hpp
+    TemplateSystem.cpp
+    TemplateSystem.hpp
     AtlasMain.cpp
     AtlasMain.hpp
 

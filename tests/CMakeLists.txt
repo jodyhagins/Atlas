@@ -81,6 +81,7 @@ add_atlas_test(TARGET atlas_main_ut TEST_NAME AtlasMainTests)
 add_atlas_test(TARGET interaction_generator_ut TEST_NAME InteractionGeneratorTests USE_RAPIDCHECK)
 add_atlas_test(TARGET property_ut TEST_NAME PropertyTests USE_RAPIDCHECK)
 add_atlas_test(TARGET error_ut TEST_NAME ErrorConditionTests)
+add_atlas_test(TARGET template_system_ut TEST_NAME TemplateSystemTests)
 add_atlas_test(TARGET type_tokenizer_ut TEST_NAME TypeTokenizerTests)
 add_atlas_test(TARGET token_to_header_mapper_ut TEST_NAME TokenToHeaderMapperTests)
 

@@ -202,6 +202,97 @@ description=strong int; {ARITH}, {CMP}, hash
 # Expands to: +, -, *, /, +=, -=, *=, /=, ==, !=, <, <=, >, >=, hash
 ```
 
+## Templates
+
+Templates define reusable parameterized type patterns. Define once, instantiate multiple times with different underlying types.
+
+### Defining Templates
+
+```
+[template Optional T]
+kind=struct
+description=strong std::optional<{T}>; <=>, bool
+```
+
+Template definitions support:
+- `kind=` - struct or class (default: struct)
+- `namespace=` - default namespace for instances
+- `description=` - type pattern with `{PARAM}` placeholders (required)
+- `default_value=` - default value pattern
+- `constants=` - constant definitions
+- `forward=` - forwarded member functions
+
+### Instantiating Templates
+
+```
+# Auto-generated name: Optional_int
+[use Optional int]
+
+# Custom name with 'as' keyword
+[use Optional double as OptionalDouble]
+
+# Multiple parameters
+[template Pair K V]
+kind=struct
+description=strong std::pair<{K}, {V}>; ==
+
+[use Pair int std::string as IntStringPair]
+```
+
+### Instance Overrides
+
+Instances can override template defaults:
+
+```
+[template GenericType T]
+kind=struct
+namespace=templates::base
+description=strong {T}; ==
+
+# Override namespace
+[use GenericType int as CustomInt]
+namespace=my::custom::ns
+
+# Override kind
+[use GenericType double as DoubleClass]
+kind=class
+
+# Add constants (merged with template constants)
+[template BaseValue T]
+constants=is_template:1
+
+[use BaseValue int as EnhancedInt]
+constants=special:42
+# Result has both is_template and special constants
+```
+
+### Profiles in Templates
+
+Templates can use profile references:
+
+```
+profile=NUMERIC; +, -, *, /
+
+[template ArithmeticValue T]
+kind=struct
+description=strong {T}; {NUMERIC}, ==
+
+[use ArithmeticValue long as ArithmeticLong]
+# Gets all NUMERIC operators plus ==
+```
+
+### Template Argument Limitations
+
+Template arguments are space-separated. For complex types containing spaces (like `std::pair<int, double>`), omit the space after commas:
+
+```
+# CORRECT - no space after comma
+[use Wrapper std::pair<int,double> as PairWrapper]
+
+# INCORRECT - space after comma breaks parsing
+[use Wrapper std::pair<int, double> as PairWrapper]
+```
+
 ## Member Function Forwarding
 
 Member function forwarding allows strong types to selectively expose member functions from their wrapped type, maintaining type safety while providing convenient access to underlying functionality.

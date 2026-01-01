@@ -296,6 +296,32 @@ PROFILES:
     Profiles can be composed and features are automatically deduplicated.
     Profiles must be defined before use in type definitions.
 
+TEMPLATES:
+    Templates define reusable parameterized type patterns:
+
+    # Define a template
+    [template Optional T]
+    kind=struct
+    description=strong std::optional<{T}>; <=>, bool
+
+    # Instantiate with auto-generated name (Optional_int)
+    [use Optional int]
+
+    # Instantiate with custom name
+    [use Optional double as OptionalDouble]
+
+    Template features:
+    - Parameters are substituted using {PARAM} syntax in description,
+      default_value, constants, and forward fields
+    - Multiple parameters: [template Pair K V]
+    - Instance can override: kind, namespace, default_value
+    - Instance can add constants (merged with template constants)
+    - Profiles work in template descriptions: {NUMERIC}
+
+    Note: Template arguments are space-separated. Complex types with spaces
+    (like std::pair<int, double>) should omit the space after commas:
+    [use Wrapper std::pair<int,double> as PairWrapper]
+
 CONSTANTS:
     Named constants generate static members similar to scoped enum values:
 
