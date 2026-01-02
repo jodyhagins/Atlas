@@ -328,6 +328,11 @@ struct can_be_nilable<
 : std::true_type
 { };
 
+#ifdef __clang__
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wweak-vtables"
+#endif
+
 /**
  * Exception thrown when an atlas::Nilable is accessed without a value.
  */
@@ -340,6 +345,10 @@ public:
     : std::logic_error("bad atlas::Nilable access")
     { }
 };
+
+#ifdef __clang__
+    #pragma clang diagnostic pop
+#endif
 
 namespace detail {
 

@@ -313,6 +313,11 @@ value(T && t)
 
 #include <sstream>
 
+#ifdef __clang__
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wweak-vtables"
+#endif
+
 namespace atlas {
 
 /**
@@ -610,6 +615,10 @@ struct non_null
 
 } // namespace constraints
 } // namespace atlas
+
+#ifdef __clang__
+    #pragma clang diagnostic pop
+#endif
 
 #endif // WJH_ATLAS_173D2C4FC9AA46929AD14C8BDF75D829
 

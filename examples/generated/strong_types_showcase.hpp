@@ -421,6 +421,11 @@ U & star_impl(U & u, PriorityTag<0>)
 #ifndef WJH_ATLAS_8BF8485B2F9D45ACAD473DC5B3274DDF
 #define WJH_ATLAS_8BF8485B2F9D45ACAD473DC5B3274DDF
 
+#ifdef __clang__
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wweak-vtables"
+#endif
+
 namespace atlas {
 
 /**
@@ -850,6 +855,10 @@ checked_mod(T a, T b, char const * div_by_zero)
 
 } // namespace atlas_detail
 } // namespace atlas
+
+#ifdef __clang__
+    #pragma clang diagnostic pop
+#endif
 
 #endif // WJH_ATLAS_8BF8485B2F9D45ACAD473DC5B3274DDF
 
@@ -1286,6 +1295,11 @@ saturating_rem(T a, T b) noexcept
 
 #include <sstream>
 
+#ifdef __clang__
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wweak-vtables"
+#endif
+
 namespace atlas {
 
 /**
@@ -1583,6 +1597,10 @@ struct non_null
 
 } // namespace constraints
 } // namespace atlas
+
+#ifdef __clang__
+    #pragma clang diagnostic pop
+#endif
 
 #endif // WJH_ATLAS_173D2C4FC9AA46929AD14C8BDF75D829
 
