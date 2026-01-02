@@ -275,6 +275,27 @@ struct ToUnderlying
     }
 };
 
+using cast_tag = PriorityTag<1>;
+
+// ----------------------------------------------------------------------------
+// cast_impl: Drill down to find the first type castable to TargetT
+// ----------------------------------------------------------------------------
+template <typename TargetT, typename U>
+constexpr auto
+cast_impl(U && u, PriorityTag<1>)
+-> decltype(static_cast<TargetT>(std::forward<U>(u)))
+{
+    return static_cast<TargetT>(std::forward<U>(u));
+}
+
+template <typename TargetT, typename U>
+constexpr auto
+cast_impl(U && u, PriorityTag<0>)
+-> decltype(cast_impl<TargetT>(atlas_value_for(std::forward<U>(u)), cast_tag{}))
+{
+    return cast_impl<TargetT>(atlas_value_for(std::forward<U>(u)), cast_tag{});
+}
+
 void begin();
 void end();
 
@@ -510,6 +531,18 @@ to_underlying(T && t)
     return atlas_detail::ToUnderlying{}(std::forward<T>(t));
 }
 #endif
+
+template <typename TargetT, typename U>
+constexpr auto
+cast(U && u)
+-> decltype(atlas_detail::cast_impl<TargetT>(
+    std::forward<U>(u),
+    atlas_detail::cast_tag{}))
+{
+    return atlas_detail::cast_impl<TargetT>(
+        std::forward<U>(u),
+        atlas_detail::cast_tag{});
+}
 
 } // namespace atlas
 

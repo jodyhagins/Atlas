@@ -1,5 +1,5 @@
-#ifndef TEST_772D0530873F58553A8D67F7A7621DA9B8EF8635
-#define TEST_772D0530873F58553A8D67F7A7621DA9B8EF8635
+#ifndef TEST_50847A56DD40ECAD46DE7E799B38D30E023320FE
+#define TEST_50847A56DD40ECAD46DE7E799B38D30E023320FE
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -255,6 +255,27 @@ struct ToUnderlying
     }
 };
 
+using cast_tag = PriorityTag<1>;
+
+// ----------------------------------------------------------------------------
+// cast_impl: Drill down to find the first type castable to TargetT
+// ----------------------------------------------------------------------------
+template <typename TargetT, typename U>
+constexpr auto
+cast_impl(U && u, PriorityTag<1>)
+-> decltype(static_cast<TargetT>(std::forward<U>(u)))
+{
+    return static_cast<TargetT>(std::forward<U>(u));
+}
+
+template <typename TargetT, typename U>
+constexpr auto
+cast_impl(U && u, PriorityTag<0>)
+-> decltype(cast_impl<TargetT>(atlas_value_for(std::forward<U>(u)), cast_tag{}))
+{
+    return cast_impl<TargetT>(atlas_value_for(std::forward<U>(u)), cast_tag{});
+}
+
 void begin();
 void end();
 
@@ -491,6 +512,18 @@ to_underlying(T && t)
 }
 #endif
 
+template <typename TargetT, typename U>
+constexpr auto
+cast(U && u)
+-> decltype(atlas_detail::cast_impl<TargetT>(
+    std::forward<U>(u),
+    atlas_detail::cast_tag{}))
+{
+    return atlas_detail::cast_impl<TargetT>(
+        std::forward<U>(u),
+        atlas_detail::cast_tag{});
+}
+
 } // namespace atlas
 
 #endif // WJH_ATLAS_50E620B544874CB8BE4412EE6773BF90
@@ -666,5 +699,5 @@ noexcept(
 
 } // namespace physics::units
 
-#endif // TEST_772D0530873F58553A8D67F7A7621DA9B8EF8635
+#endif // TEST_50847A56DD40ECAD46DE7E799B38D30E023320FE
 

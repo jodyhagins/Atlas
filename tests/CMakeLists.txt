@@ -251,3 +251,15 @@ target_include_directories(to_underlying_ut PRIVATE
 )
 add_test(NAME ToUnderlyingTests COMMAND to_underlying_ut)
 
+# atlas::cast<T>() tests - reuses to_underlying test types
+add_executable(cast_ut
+    cast_ut.cpp
+    ${TO_UNDERLYING_OUTPUT}
+)
+target_link_libraries(cast_ut PRIVATE doctest::doctest)
+target_include_directories(cast_ut PRIVATE
+    ${CMAKE_CURRENT_BINARY_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/lib/atlas
+)
+add_test(NAME CastTests COMMAND cast_ut)
+
