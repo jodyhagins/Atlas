@@ -3,7 +3,7 @@ guard_separator=_
 upcase_guard=true
 
 namespace=mylib
-lhs_value_access=atlas::value
+lhs_value_access=atlas::to_underlying
 rhs_value_access=.getValue()
 
 Counter + external::Delta -> Counter

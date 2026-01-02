@@ -1,5 +1,5 @@
-#ifndef TEST_FAC92D38B82CA4CE1FFC1DD3B94070E6042FC9D5
-#define TEST_FAC92D38B82CA4CE1FFC1DD3B94070E6042FC9D5
+#ifndef TEST_556B2B045D1BD7C79DB58AB655C48705A217DD9A
+#define TEST_556B2B045D1BD7C79DB58AB655C48705A217DD9A
 
 static_assert(__cplusplus >= 201402L,
     "This file requires C++14 or later. Compile with -std=c++14 or higher.");
@@ -44,7 +44,7 @@ static_assert(__cplusplus >= 201402L,
 //
 // Components:
 // - atlas::strong_type_tag: Base class for strong types
-// - atlas::value(): Universal value accessor for strong types
+// - atlas::to_underlying(): Universal value accessor for strong types
 // - atlas_detail::*: Internal implementation utilities
 //
 // For projects using multiple Atlas-generated files, this boilerplate
@@ -145,7 +145,7 @@ struct has_atlas_value_type<
 : std::true_type
 { };
 
-void atlas_value();
+void atlas_value_for();
 struct value_by_ref
 { };
 struct value_by_val
@@ -181,55 +181,51 @@ value_impl(T const & t, PriorityTag<0>, value_by_val)
 }
 
 // ----------------------------------------------------------------------------
-// Recursive case: T has atlas_value_type
-// Drill down one level and recurse.
+// Recursive case: T has atlas_value_for() hidden friend
+// Use ADL to call atlas_value_for() and recurse.
 // ----------------------------------------------------------------------------
 template <typename T>
 constexpr auto
 value_impl(T & t, PriorityTag<1>, value_by_ref)
 -> decltype(value_impl(
-    static_cast<typename T::atlas_value_type &>(t),
+    atlas_value_for(t),
     value_tag{},
     value_by_ref{}))
 {
-    using A = typename T::atlas_value_type;
-    return value_impl(static_cast<A &>(t), value_tag{}, value_by_ref{});
+    return value_impl(atlas_value_for(t), value_tag{}, value_by_ref{});
 }
 template <typename T>
 constexpr auto
 value_impl(T const & t, PriorityTag<1>, value_by_ref)
 -> decltype(value_impl(
-    static_cast<typename T::atlas_value_type const &>(t),
+    atlas_value_for(t),
     value_tag{},
     value_by_ref{}))
 {
-    using A = typename T::atlas_value_type;
-    return value_impl(static_cast<A const &>(t), value_tag{}, value_by_ref{});
+    return value_impl(atlas_value_for(t), value_tag{}, value_by_ref{});
 }
 template <typename T>
 constexpr auto
 value_impl(T & t, PriorityTag<1>, value_by_val)
 -> decltype(value_impl(
-    static_cast<typename T::atlas_value_type &>(t),
+    atlas_value_for(std::move(t)),
     value_tag{},
     value_by_val{}))
 {
-    using A = typename T::atlas_value_type;
-    return value_impl(static_cast<A &>(t), value_tag{}, value_by_val{});
+    return value_impl(atlas_value_for(std::move(t)), value_tag{}, value_by_val{});
 }
 template <typename T>
 constexpr auto
 value_impl(T const & t, PriorityTag<1>, value_by_val)
 -> decltype(value_impl(
-    static_cast<typename T::atlas_value_type const &>(t),
+    atlas_value_for(t),
     value_tag{},
     value_by_val{}))
 {
-    using A = typename T::atlas_value_type;
-    return value_impl(static_cast<A const &>(t), value_tag{}, value_by_val{});
+    return value_impl(atlas_value_for(t), value_tag{}, value_by_val{});
 }
 
-struct Value
+struct ToUnderlying
 {
     template <typename T>
     constexpr auto
@@ -293,14 +289,14 @@ concept AtlasTypeC = is_atlas_type<T>::value;
 #endif
 
 #if defined(__cpp_inline_variables) && __cpp_inline_variables >= 201606L
-inline constexpr auto value = atlas_detail::Value{};
+inline constexpr auto to_underlying = atlas_detail::ToUnderlying{};
 #else
 template <typename T>
 constexpr auto
-value(T && t)
--> decltype(atlas_detail::Value{}(std::forward<T>(t)))
+to_underlying(T && t)
+-> decltype(atlas_detail::ToUnderlying{}(std::forward<T>(t)))
 {
-    return atlas_detail::Value{}(std::forward<T>(t));
+    return atlas_detail::ToUnderlying{}(std::forward<T>(t));
 }
 #endif
 
@@ -314,6 +310,20 @@ value(T && t)
 /// These are the droids you are looking for!
 ///
 //////////////////////////////////////////////////////////////////////
+
+
+// Custom value accessors for non-Atlas types
+// These allow atlas::to_underlying() to work with external library types
+// Users can override by providing atlas_value_for(T const&) without the tag parameter
+namespace atlas {
+inline constexpr auto
+atlas_value_for(::test::Counter const& v, value_tag)
+-> decltype(atlas::value(v))
+{
+    return atlas::value(v);
+}
+
+} // namespace atlas
 
 
 // Compound assignment operators for cross-type interactions
@@ -331,26 +341,26 @@ template <typename L, typename R>
 struct has_compound_op_plus<
     L,
     R,
-    decltype((void)(atlas::value(std::declval<L&>()) +=
-        atlas::value(std::declval<R const&>())))>
+    decltype((void)(atlas::to_underlying(std::declval<L&>()) +=
+        atlas::to_underlying(std::declval<R const&>())))>
 : std::true_type
 { };
 
 template <typename L, typename R>
 constexpr L &
 compound_assign_impl_plus(L & lhs, R const & rhs, std::true_type)
-noexcept(noexcept(atlas::value(lhs) += atlas::value(rhs)))
+noexcept(noexcept(atlas::to_underlying(lhs) += atlas::to_underlying(rhs)))
 {
-    atlas::value(lhs) += atlas::value(rhs);
+    atlas::to_underlying(lhs) += atlas::to_underlying(rhs);
     return lhs;
 }
 
 template <typename L, typename R>
 constexpr L &
 compound_assign_impl_plus(L & lhs, R const & rhs, std::false_type)
-noexcept(noexcept(atlas::value(lhs) = atlas::value(lhs + rhs)))
+noexcept(noexcept(atlas::to_underlying(lhs) = atlas::to_underlying(lhs + rhs)))
 {
-    atlas::value(lhs) = atlas::value(lhs + rhs);
+    atlas::to_underlying(lhs) = atlas::to_underlying(lhs + rhs);
     return lhs;
 }
 }
@@ -399,5 +409,5 @@ noexcept(
 
 } // namespace test
 
-#endif // TEST_FAC92D38B82CA4CE1FFC1DD3B94070E6042FC9D5
+#endif // TEST_556B2B045D1BD7C79DB58AB655C48705A217DD9A
 

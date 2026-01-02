@@ -210,7 +210,7 @@ TEST_SUITE("Optional Construction")
         REQUIRE(opt.has_value());
         test::UniqueHandle const & h = *opt;
         // Note: .get() forwarding is disabled for nullable types
-        CHECK(atlas::value(h).get() != nullptr);
+        CHECK(atlas::to_underlying(h).get() != nullptr);
     }
 
     TEST_CASE("Different sentinel values")
@@ -225,7 +225,7 @@ TEST_SUITE("Optional Construction")
             atlas::Nilable<test::FileDescriptor> opt;
             CHECK_FALSE(opt.has_value());
             // When default-constructed, should have nil_value
-            CHECK(atlas::value(*opt) == -1);
+            CHECK(atlas::to_underlying(*opt) == -1);
         }
 
         SUBCASE("Empty string sentinel") {
@@ -620,7 +620,7 @@ TEST_SUITE("Optional Modifiers")
         SUBCASE("with value") {
             test::SimpleInt & ref = opt.emplace(42);
             REQUIRE(opt.has_value());
-            CHECK(42 == atlas::value(*opt));
+            CHECK(42 == atlas::to_underlying(*opt));
         }
 
         SUBCASE("with nothing") {
@@ -731,7 +731,7 @@ TEST_SUITE("Optional Monadic Operations")
 
         auto result = opt.and_then([](test::SimpleInt val) {
             return atlas::Nilable<test::SimpleInt>{
-                test::SimpleInt{static_cast<int>(val) * 2}};
+                test::SimpleInt{atlas::to_underlying(val) * 2}};
         });
 
         REQUIRE(result.has_value());
@@ -744,7 +744,7 @@ TEST_SUITE("Optional Monadic Operations")
 
         auto result = opt.and_then([](test::SimpleInt val) {
             return atlas::Nilable<test::Name>{
-                test::Name{std::to_string(static_cast<int>(val))}};
+                test::Name{std::to_string(atlas::to_underlying(val))}};
         });
 
         REQUIRE(result.has_value());
@@ -767,11 +767,11 @@ TEST_SUITE("Optional Monadic Operations")
 
         auto result = opt.and_then([](test::SimpleInt val) {
                              return atlas::Nilable<test::SimpleInt>{
-                                 test::SimpleInt{static_cast<int>(val) * 2}};
+                                 test::SimpleInt{atlas::to_underlying(val) * 2}};
                          })
                           .and_then([](test::SimpleInt val) {
                               return atlas::Nilable<test::SimpleInt>{
-                                  test::SimpleInt{static_cast<int>(val) + 5}};
+                                  test::SimpleInt{atlas::to_underlying(val) + 5}};
                           });
 
         REQUIRE(result.has_value());
@@ -846,7 +846,7 @@ TEST_SUITE("Optional Monadic Operations")
                          })
                           .and_then([](test::SimpleInt val) {
                               return atlas::Nilable<test::SimpleInt>{
-                                  test::SimpleInt{static_cast<int>(val) * 2}};
+                                  test::SimpleInt{atlas::to_underlying(val) * 2}};
                           });
 
         REQUIRE(result.has_value());
@@ -873,11 +873,11 @@ TEST_SUITE("Optional Monadic Operations")
         auto result = opt.and_then([](test::SimpleInt val) {
                              // Double it
                              return atlas::Nilable<test::SimpleInt>{
-                                 test::SimpleInt{static_cast<int>(val) * 2}};
+                                 test::SimpleInt{atlas::to_underlying(val) * 2}};
                          })
                           .and_then([](test::SimpleInt val) {
                               // Return empty if greater than 15
-                              if (static_cast<int>(val) > 15) {
+                              if (atlas::to_underlying(val) > 15) {
                                   return atlas::Nilable<test::SimpleInt>{};
                               }
                               return atlas::Nilable<test::SimpleInt>{val};
@@ -899,11 +899,11 @@ TEST_SUITE("Optional Monadic Operations")
         auto result = opt.and_then([](test::SimpleInt val) {
                              // Double it
                              return atlas::Nilable<test::SimpleInt>{
-                                 test::SimpleInt{static_cast<int>(val) * 2}};
+                                 test::SimpleInt{atlas::to_underlying(val) * 2}};
                          })
                           .and_then([](test::SimpleInt val) {
                               // Return empty if greater than 15
-                              if (static_cast<int>(val) > 15) {
+                              if (atlas::to_underlying(val) > 15) {
                                   return atlas::Nilable<test::SimpleInt>{};
                               }
                               return atlas::Nilable<test::SimpleInt>{val};
@@ -1337,13 +1337,13 @@ TEST_SUITE("Optional Edge Cases")
 
         REQUIRE(opt.has_value());
         // Note: .get() forwarding is disabled for nullable types
-        CHECK(atlas::value(*opt).get() != nullptr);
-        CHECK(*atlas::value(*opt) == 42);
+        CHECK(atlas::to_underlying(*opt).get() != nullptr);
+        CHECK(*atlas::to_underlying(*opt) == 42);
 
         // Move out of optional
         auto handle = std::move(*opt);
-        CHECK(atlas::value(handle).get() != nullptr);
-        CHECK(*atlas::value(handle) == 42);
+        CHECK(atlas::to_underlying(handle).get() != nullptr);
+        CHECK(*atlas::to_underlying(handle) == 42);
     }
 
     TEST_CASE("Optional with arithmetic type")
@@ -1445,7 +1445,7 @@ TEST_SUITE("Optional Generic Programming")
         auto double_value = [](atlas::Nilable<test::SimpleInt> opt) {
             if (opt) {
                 return atlas::Nilable<test::SimpleInt>{
-                    test::SimpleInt{static_cast<int>(*opt) * 2}};
+                    test::SimpleInt{atlas::to_underlying(*opt) * 2}};
             }
             return atlas::Nilable<test::SimpleInt>{};
         };
@@ -1489,7 +1489,7 @@ TEST_SUITE("Optional Generic Programming")
         int sum = 0;
         for (auto const & opt : vec) {
             if (opt) {
-                sum += static_cast<int>(*opt);
+                sum += atlas::to_underlying(*opt);
             }
         }
 

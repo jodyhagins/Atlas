@@ -149,7 +149,7 @@ TEST_SUITE("Positive Constraint")
         CHECK_NOTHROW(a - b); // 50 is positive
 
         auto result = a - b;
-        CHECK(static_cast<uint8_t>(result) == 50);
+        CHECK(atlas::to_underlying(result) == 50);
     }
 
     TEST_CASE("positive constraint - copy and move don't re-check")
@@ -205,7 +205,7 @@ TEST_SUITE("Positive Constraint")
         CHECK_NOTHROW(a - b);
 
         auto result = a - b;
-        CHECK(static_cast<uint8_t>(result) == 50);
+        CHECK(atlas::to_underlying(result) == 50);
     }
 
     TEST_CASE("positive constraint with saturating - valid addition")
@@ -217,7 +217,7 @@ TEST_SUITE("Positive Constraint")
         CHECK_NOTHROW(a + b);
 
         auto result = a + b;
-        CHECK(static_cast<uint8_t>(result) == 150);
+        CHECK(atlas::to_underlying(result) == 150);
     }
 
     TEST_CASE("positive constraint with saturating - overflow stays positive")
@@ -230,7 +230,7 @@ TEST_SUITE("Positive Constraint")
         CHECK_NOTHROW(a + b);
 
         auto result = a + b;
-        CHECK(static_cast<uint8_t>(result) == 255);
+        CHECK(atlas::to_underlying(result) == 255);
     }
 
     TEST_CASE("positive constraint with wrapping - valid construction")
@@ -257,7 +257,7 @@ TEST_SUITE("Positive Constraint")
         CHECK_NOTHROW(a - b);
 
         auto result = a - b;
-        CHECK(static_cast<uint8_t>(result) == 251);
+        CHECK(atlas::to_underlying(result) == 251);
     }
 
     TEST_CASE("positive constraint with wrapping - wraps to zero throws")
@@ -278,7 +278,7 @@ TEST_SUITE("Positive Constraint")
         CHECK_NOTHROW(a - b);
 
         auto result = a - b;
-        CHECK(static_cast<uint8_t>(result) == 50);
+        CHECK(atlas::to_underlying(result) == 50);
     }
 
     TEST_CASE("positive constraint with wrapping - valid addition")
@@ -290,7 +290,7 @@ TEST_SUITE("Positive Constraint")
         CHECK_NOTHROW(a + b);
 
         auto result = a + b;
-        CHECK(static_cast<uint8_t>(result) == 150);
+        CHECK(atlas::to_underlying(result) == 150);
     }
 
     TEST_CASE("positive constraint with wrapping - overflow wraps around")
@@ -303,7 +303,7 @@ TEST_SUITE("Positive Constraint")
         CHECK_NOTHROW(a + b);
 
         auto result = a + b;
-        CHECK(static_cast<uint8_t>(result) == 44);
+        CHECK(atlas::to_underlying(result) == 44);
     }
 }
 
@@ -360,7 +360,7 @@ TEST_SUITE("Non-Negative Constraint")
         test::constraints::NonNegativeInt b{5};
         CHECK_NOTHROW(a - b); // 0 is non-negative
         auto result = a - b;
-        CHECK(static_cast<int>(result) == 0);
+        CHECK(atlas::to_underlying(result) == 0);
     }
 
     TEST_CASE("non_negative constraint - exception message")
@@ -412,7 +412,7 @@ TEST_SUITE("Non-Negative Constraint")
         CHECK_NOTHROW(a - b); // 50 is non-negative
 
         auto result = a - b;
-        CHECK(static_cast<uint8_t>(result) == 50);
+        CHECK(atlas::to_underlying(result) == 50);
     }
 
     TEST_CASE(
@@ -423,7 +423,7 @@ TEST_SUITE("Non-Negative Constraint")
 
         CHECK_NOTHROW(a - b); // 0 is non-negative
         auto result = a - b;
-        CHECK(static_cast<uint8_t>(result) == 0);
+        CHECK(atlas::to_underlying(result) == 0);
     }
 
     TEST_CASE("non_negative constraint - copy and move don't re-check")
@@ -465,7 +465,7 @@ TEST_SUITE("Non-Negative Constraint")
         CHECK_NOTHROW(a - b);
 
         auto result = a - b;
-        CHECK(static_cast<uint8_t>(result) == 0);
+        CHECK(atlas::to_underlying(result) == 0);
     }
 
     TEST_CASE("non_negative constraint with saturating - valid subtraction")
@@ -477,7 +477,7 @@ TEST_SUITE("Non-Negative Constraint")
         CHECK_NOTHROW(a - b);
 
         auto result = a - b;
-        CHECK(static_cast<uint8_t>(result) == 50);
+        CHECK(atlas::to_underlying(result) == 50);
     }
 
     TEST_CASE("non_negative constraint with saturating - valid addition")
@@ -489,7 +489,7 @@ TEST_SUITE("Non-Negative Constraint")
         CHECK_NOTHROW(a + b);
 
         auto result = a + b;
-        CHECK(static_cast<uint8_t>(result) == 150);
+        CHECK(atlas::to_underlying(result) == 150);
     }
 
     TEST_CASE(
@@ -503,7 +503,7 @@ TEST_SUITE("Non-Negative Constraint")
         CHECK_NOTHROW(a + b);
 
         auto result = a + b;
-        CHECK(static_cast<uint8_t>(result) == 255);
+        CHECK(atlas::to_underlying(result) == 255);
     }
 }
 
@@ -565,7 +565,7 @@ TEST_SUITE("Non-Zero Constraint")
 
         int numerator = 20;
         int result = numerator /
-            static_cast<int>(divisor); // Safe - divisor can't be zero
+            atlas::to_underlying(divisor); // Safe - divisor can't be zero
         CHECK(result == 4);
     }
 
@@ -629,16 +629,16 @@ TEST_SUITE("Non-Zero Constraint")
         test::constraints::Denominator denom{4};
 
         int value = 20;
-        int quotient = value / static_cast<int>(denom);
+        int quotient = value / atlas::to_underlying(denom);
         CHECK(quotient == 5);
 
         // Can multiply to scale
         auto scaled = denom * test::constraints::Denominator{3};
-        CHECK(static_cast<int>(scaled) == 12);
+        CHECK(atlas::to_underlying(scaled) == 12);
 
         // Can divide to reduce
         auto reduced = denom / test::constraints::Denominator{2};
-        CHECK(static_cast<int>(reduced) == 2);
+        CHECK(atlas::to_underlying(reduced) == 2);
     }
 
     TEST_CASE("non_zero constraint - edge case with 1 and -1")
@@ -652,7 +652,7 @@ TEST_SUITE("Non-Zero Constraint")
 
         // Multiplication preserves non-zero
         auto result = one * neg_one;
-        CHECK(static_cast<int>(result) == -1);
+        CHECK(atlas::to_underlying(result) == -1);
     }
 
     TEST_CASE("non_zero constraint - unsigned wraparound to zero is caught")
@@ -813,10 +813,10 @@ TEST_SUITE("Bounded Constraint")
         CHECK_NOTHROW(a - b); // 30 is in [0,100]
 
         auto add_result = a + b;
-        CHECK(static_cast<uint8_t>(add_result) == 90);
+        CHECK(atlas::to_underlying(add_result) == 90);
 
         auto sub_result = a - b;
-        CHECK(static_cast<uint8_t>(sub_result) == 30);
+        CHECK(atlas::to_underlying(sub_result) == 30);
     }
 
     TEST_CASE("bounded constraint with checked arithmetic - underflow")
@@ -860,7 +860,7 @@ TEST_SUITE("Bounded Constraint")
         CHECK_NOTHROW(a / b); // 2.0 is valid
 
         auto add_result = a + b;
-        CHECK(static_cast<double>(add_result) == 150.0);
+        CHECK(atlas::to_underlying(add_result) == 150.0);
     }
 
     TEST_CASE("bounded constraint - string - valid construction")
@@ -1179,10 +1179,10 @@ TEST_SUITE("Bounded Range Constraint (Half-Open)")
         CHECK_NOTHROW(a - b); // 30 is in [0,100)
 
         auto add_result = a + b;
-        CHECK(static_cast<uint8_t>(add_result) == 90);
+        CHECK(atlas::to_underlying(add_result) == 90);
 
         auto sub_result = a - b;
-        CHECK(static_cast<uint8_t>(sub_result) == 30);
+        CHECK(atlas::to_underlying(sub_result) == 30);
     }
 
     TEST_CASE("bounded_range constraint with checked arithmetic - underflow")
@@ -1236,7 +1236,7 @@ TEST_SUITE("Bounded Range Constraint (Half-Open)")
         CHECK_NOTHROW(a / b); // 2.0 is valid
 
         auto add_result = a + b;
-        CHECK(static_cast<double>(add_result) == 75.0);
+        CHECK(atlas::to_underlying(add_result) == 75.0);
 
         // Multiplication that exceeds bounds should throw
         CHECK_THROWS_AS(
@@ -1447,11 +1447,11 @@ TEST_SUITE("Non-Empty Constraint")
 
         // Copy constructor
         test::constraints::Username b{a};
-        CHECK(static_cast<std::string>(b) == "alice");
+        CHECK(atlas::to_underlying(b) == "alice");
 
         // Move constructor
         test::constraints::Username c{std::move(a)};
-        CHECK(static_cast<std::string>(c) == "alice");
+        CHECK(atlas::to_underlying(c) == "alice");
     }
 
     TEST_CASE("non_empty - copy and move assignment work")
@@ -1461,12 +1461,12 @@ TEST_SUITE("Non-Empty Constraint")
 
         // Copy assignment
         b = a;
-        CHECK(static_cast<std::string>(b) == "alice");
+        CHECK(atlas::to_underlying(b) == "alice");
 
         test::constraints::Username d{"dave"};
         // Move assignment
         d = std::move(a);
-        CHECK(static_cast<std::string>(d) == "alice");
+        CHECK(atlas::to_underlying(d) == "alice");
     }
 
     TEST_CASE("non_empty - comparison operators work")
@@ -1538,7 +1538,7 @@ TEST_SUITE("Non-Empty Constraint")
         // This demonstrates the post-condition checking limitation
         // We must access the underlying value directly since empty() also
         // checks constraints
-        CHECK(static_cast<std::vector<int> const &>(v).empty());
+        CHECK(atlas::to_underlying(v).empty());
     }
 
     TEST_CASE("non_empty - clear violates constraint")
@@ -1553,7 +1553,7 @@ TEST_SUITE("Non-Empty Constraint")
         // This is an inherent limitation of post-condition constraint checking
         // We must access the underlying value directly since empty() also
         // checks constraints
-        CHECK(static_cast<std::vector<int> const &>(v).empty());
+        CHECK(atlas::to_underlying(v).empty());
     }
 
     TEST_CASE("non_empty - exception message for constraint violation after "
@@ -1760,11 +1760,11 @@ TEST_SUITE("Non-Null Constraint")
 
         // Copy constructor
         test::constraints::DataPointer b{a};
-        CHECK(static_cast<int *>(b) == &value);
+        CHECK(atlas::to_underlying(b) == &value);
 
         // Move constructor
         test::constraints::DataPointer c{std::move(a)};
-        CHECK(static_cast<int *>(c) == &value);
+        CHECK(atlas::to_underlying(c) == &value);
     }
 
     TEST_CASE("non_null - copy and move assignment work")
@@ -1776,13 +1776,13 @@ TEST_SUITE("Non-Null Constraint")
 
         // Copy assignment
         b = a;
-        CHECK(static_cast<int *>(b) == &value1);
+        CHECK(atlas::to_underlying(b) == &value1);
 
         int value3 = 123;
         test::constraints::DataPointer d{&value3};
         // Move assignment
         d = std::move(a);
-        CHECK(static_cast<int *>(d) == &value1);
+        CHECK(atlas::to_underlying(d) == &value1);
     }
 
     TEST_CASE("non_null - move-from limitation with unique_ptr")
@@ -1798,13 +1798,12 @@ TEST_SUITE("Non-Null Constraint")
 
         // Move the unique_ptr out - this leaves the strong type in a moved-from
         // state
-        auto underlying = std::move(static_cast<std::unique_ptr<int> &>(ptr));
+        auto underlying = std::move(atlas::to_underlying(ptr));
 
         // The moved-from strong type now contains a null pointer, violating the
         // invariant This is a known limitation and users should avoid accessing
         // moved-from objects
-        auto const & moved_from_ptr = static_cast<std::unique_ptr<int> const &>(
-            ptr);
+        auto const & moved_from_ptr = atlas::to_underlying(ptr);
         CHECK(moved_from_ptr == nullptr); // Invariant violated!
 
         // Note: This is the same behavior as with regular unique_ptr.

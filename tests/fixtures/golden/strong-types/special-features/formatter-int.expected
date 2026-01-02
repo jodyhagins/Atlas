@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_570C7ABAAFC6FB88704C4C4E7390C241219729F4
-#define FOO_BAR_570C7ABAAFC6FB88704C4C4E7390C241219729F4
+#ifndef FOO_BAR_6394031A39A9B0CB69C924458F242EDBC89F8DF4
+#define FOO_BAR_6394031A39A9B0CB69C924458F242EDBC89F8DF4
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -43,7 +43,7 @@
 //
 // Components:
 // - atlas::strong_type_tag: Base class for strong types
-// - atlas::value(): Universal value accessor for strong types
+// - atlas::to_underlying(): Universal value accessor for strong types
 // - atlas_detail::*: Internal implementation utilities
 //
 // For projects using multiple Atlas-generated files, this boilerplate
@@ -144,7 +144,7 @@ struct has_atlas_value_type<
 : std::true_type
 { };
 
-void atlas_value();
+void atlas_value_for();
 struct value_by_ref
 { };
 struct value_by_val
@@ -180,55 +180,51 @@ value_impl(T const & t, PriorityTag<0>, value_by_val)
 }
 
 // ----------------------------------------------------------------------------
-// Recursive case: T has atlas_value_type
-// Drill down one level and recurse.
+// Recursive case: T has atlas_value_for() hidden friend
+// Use ADL to call atlas_value_for() and recurse.
 // ----------------------------------------------------------------------------
 template <typename T>
 constexpr auto
 value_impl(T & t, PriorityTag<1>, value_by_ref)
 -> decltype(value_impl(
-    static_cast<typename T::atlas_value_type &>(t),
+    atlas_value_for(t),
     value_tag{},
     value_by_ref{}))
 {
-    using A = typename T::atlas_value_type;
-    return value_impl(static_cast<A &>(t), value_tag{}, value_by_ref{});
+    return value_impl(atlas_value_for(t), value_tag{}, value_by_ref{});
 }
 template <typename T>
 constexpr auto
 value_impl(T const & t, PriorityTag<1>, value_by_ref)
 -> decltype(value_impl(
-    static_cast<typename T::atlas_value_type const &>(t),
+    atlas_value_for(t),
     value_tag{},
     value_by_ref{}))
 {
-    using A = typename T::atlas_value_type;
-    return value_impl(static_cast<A const &>(t), value_tag{}, value_by_ref{});
+    return value_impl(atlas_value_for(t), value_tag{}, value_by_ref{});
 }
 template <typename T>
 constexpr auto
 value_impl(T & t, PriorityTag<1>, value_by_val)
 -> decltype(value_impl(
-    static_cast<typename T::atlas_value_type &>(t),
+    atlas_value_for(std::move(t)),
     value_tag{},
     value_by_val{}))
 {
-    using A = typename T::atlas_value_type;
-    return value_impl(static_cast<A &>(t), value_tag{}, value_by_val{});
+    return value_impl(atlas_value_for(std::move(t)), value_tag{}, value_by_val{});
 }
 template <typename T>
 constexpr auto
 value_impl(T const & t, PriorityTag<1>, value_by_val)
 -> decltype(value_impl(
-    static_cast<typename T::atlas_value_type const &>(t),
+    atlas_value_for(t),
     value_tag{},
     value_by_val{}))
 {
-    using A = typename T::atlas_value_type;
-    return value_impl(static_cast<A const &>(t), value_tag{}, value_by_val{});
+    return value_impl(atlas_value_for(t), value_tag{}, value_by_val{});
 }
 
-struct Value
+struct ToUnderlying
 {
     template <typename T>
     constexpr auto
@@ -292,14 +288,14 @@ concept AtlasTypeC = is_atlas_type<T>::value;
 #endif
 
 #if defined(__cpp_inline_variables) && __cpp_inline_variables >= 201606L
-inline constexpr auto value = atlas_detail::Value{};
+inline constexpr auto to_underlying = atlas_detail::ToUnderlying{};
 #else
 template <typename T>
 constexpr auto
-value(T && t)
--> decltype(atlas_detail::Value{}(std::forward<T>(t)))
+to_underlying(T && t)
+-> decltype(atlas_detail::ToUnderlying{}(std::forward<T>(t)))
 {
-    return atlas_detail::Value{}(std::forward<T>(t));
+    return atlas_detail::ToUnderlying{}(std::forward<T>(t));
 }
 #endif
 
@@ -347,10 +343,21 @@ struct FormatterIntType
     { }
 
     /**
-     * The explicit cast operator provides a reference to the wrapped object.
+     * Access to immediate underlying value via ADL.
      */
-    constexpr explicit operator int const & () const { return value; }
-    constexpr explicit operator int & () { return value; }
+    friend constexpr int const & atlas_value_for(FormatterIntType const & self) noexcept {
+        return self.value;
+    }
+    friend constexpr int & atlas_value_for(FormatterIntType & self) noexcept {
+        return self.value;
+    }
+    friend constexpr auto atlas_value_for(FormatterIntType && self) noexcept
+        -> typename std::enable_if<
+            std::is_move_constructible<int>::value,
+            int>::type
+    {
+        return std::move(self.value);
+    }
 };
 } // namespace test
 
@@ -371,10 +378,9 @@ struct std::formatter<test::FormatterIntType> : std::formatter<int>
 {
     auto format(test::FormatterIntType const & t, std::format_context & ctx) const
     {
-        return std::formatter<int>::format(
-            static_cast<int const &>(t), ctx);
+        return std::formatter<int>::format(atlas_value_for(t), ctx);
     }
 };
 #endif // defined(__cpp_lib_format) && __cpp_lib_format >= 202110L
-#endif // FOO_BAR_570C7ABAAFC6FB88704C4C4E7390C241219729F4
+#endif // FOO_BAR_6394031A39A9B0CB69C924458F242EDBC89F8DF4
 

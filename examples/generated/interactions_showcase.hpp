@@ -1,5 +1,5 @@
-#ifndef EXAMPLE_INTERACTIONS_F16B2BE8575E003728F7B69D06448AD59A576FAC
-#define EXAMPLE_INTERACTIONS_F16B2BE8575E003728F7B69D06448AD59A576FAC
+#ifndef EXAMPLE_INTERACTIONS_1AB343CBC5434AD4642936BA9AA57B2F7E3A399B
+#define EXAMPLE_INTERACTIONS_1AB343CBC5434AD4642936BA9AA57B2F7E3A399B
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -41,7 +41,7 @@
 //
 // Components:
 // - atlas::strong_type_tag: Base class for strong types
-// - atlas::value(): Universal value accessor for strong types
+// - atlas::to_underlying(): Universal value accessor for strong types
 // - atlas_detail::*: Internal implementation utilities
 //
 // For projects using multiple Atlas-generated files, this boilerplate
@@ -142,7 +142,7 @@ struct has_atlas_value_type<
 : std::true_type
 { };
 
-void atlas_value();
+void atlas_value_for();
 struct value_by_ref
 { };
 struct value_by_val
@@ -178,55 +178,51 @@ value_impl(T const & t, PriorityTag<0>, value_by_val)
 }
 
 // ----------------------------------------------------------------------------
-// Recursive case: T has atlas_value_type
-// Drill down one level and recurse.
+// Recursive case: T has atlas_value_for() hidden friend
+// Use ADL to call atlas_value_for() and recurse.
 // ----------------------------------------------------------------------------
 template <typename T>
 constexpr auto
 value_impl(T & t, PriorityTag<1>, value_by_ref)
 -> decltype(value_impl(
-    static_cast<typename T::atlas_value_type &>(t),
+    atlas_value_for(t),
     value_tag{},
     value_by_ref{}))
 {
-    using A = typename T::atlas_value_type;
-    return value_impl(static_cast<A &>(t), value_tag{}, value_by_ref{});
+    return value_impl(atlas_value_for(t), value_tag{}, value_by_ref{});
 }
 template <typename T>
 constexpr auto
 value_impl(T const & t, PriorityTag<1>, value_by_ref)
 -> decltype(value_impl(
-    static_cast<typename T::atlas_value_type const &>(t),
+    atlas_value_for(t),
     value_tag{},
     value_by_ref{}))
 {
-    using A = typename T::atlas_value_type;
-    return value_impl(static_cast<A const &>(t), value_tag{}, value_by_ref{});
+    return value_impl(atlas_value_for(t), value_tag{}, value_by_ref{});
 }
 template <typename T>
 constexpr auto
 value_impl(T & t, PriorityTag<1>, value_by_val)
 -> decltype(value_impl(
-    static_cast<typename T::atlas_value_type &>(t),
+    atlas_value_for(std::move(t)),
     value_tag{},
     value_by_val{}))
 {
-    using A = typename T::atlas_value_type;
-    return value_impl(static_cast<A &>(t), value_tag{}, value_by_val{});
+    return value_impl(atlas_value_for(std::move(t)), value_tag{}, value_by_val{});
 }
 template <typename T>
 constexpr auto
 value_impl(T const & t, PriorityTag<1>, value_by_val)
 -> decltype(value_impl(
-    static_cast<typename T::atlas_value_type const &>(t),
+    atlas_value_for(t),
     value_tag{},
     value_by_val{}))
 {
-    using A = typename T::atlas_value_type;
-    return value_impl(static_cast<A const &>(t), value_tag{}, value_by_val{});
+    return value_impl(atlas_value_for(t), value_tag{}, value_by_val{});
 }
 
-struct Value
+struct ToUnderlying
 {
     template <typename T>
     constexpr auto
@@ -290,14 +286,14 @@ concept AtlasTypeC = is_atlas_type<T>::value;
 #endif
 
 #if defined(__cpp_inline_variables) && __cpp_inline_variables >= 201606L
-inline constexpr auto value = atlas_detail::Value{};
+inline constexpr auto to_underlying = atlas_detail::ToUnderlying{};
 #else
 template <typename T>
 constexpr auto
-value(T && t)
--> decltype(atlas_detail::Value{}(std::forward<T>(t)))
+to_underlying(T && t)
+-> decltype(atlas_detail::ToUnderlying{}(std::forward<T>(t)))
 {
-    return atlas_detail::Value{}(std::forward<T>(t));
+    return atlas_detail::ToUnderlying{}(std::forward<T>(t));
 }
 #endif
 
@@ -314,95 +310,95 @@ value(T && t)
 
 
 // Custom value accessors for non-Atlas types
-// These allow atlas::value() to work with external library types
-// Users can override by providing atlas_value(T const&) without the tag parameter
+// These allow atlas::to_underlying() to work with external library types
+// Users can override by providing atlas_value_for(T const&) without the tag parameter
 namespace atlas {
 inline auto
-atlas_value(::concurrency::ThreadId const& v, value_tag)
+atlas_value_for(::concurrency::ThreadId const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
 }
 
 inline constexpr auto
-atlas_value(::data::ByteCount const& v, value_tag)
+atlas_value_for(::data::ByteCount const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
 }
 
 inline constexpr auto
-atlas_value(::finance::core::Money const& v, value_tag)
+atlas_value_for(::finance::core::Money const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
 }
 
 inline constexpr auto
-atlas_value(::geo::Latitude const& v, value_tag)
+atlas_value_for(::geo::Latitude const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
 }
 
 inline constexpr auto
-atlas_value(::geo::Longitude const& v, value_tag)
+atlas_value_for(::geo::Longitude const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
 }
 
 inline constexpr auto
-atlas_value(::graphics::color::RedChannel const& v, value_tag)
+atlas_value_for(::graphics::color::RedChannel const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
 }
 
 inline constexpr auto
-atlas_value(::math::rational::Denominator const& v, value_tag)
+atlas_value_for(::math::rational::Denominator const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
 }
 
 inline constexpr auto
-atlas_value(::math::rational::Numerator const& v, value_tag)
+atlas_value_for(::math::rational::Numerator const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
 }
 
 inline constexpr auto
-atlas_value(::net::ipv4::Octet const& v, value_tag)
+atlas_value_for(::net::ipv4::Octet const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
 }
 
 inline constexpr auto
-atlas_value(::physics::units::Meters const& v, value_tag)
+atlas_value_for(::physics::units::Meters const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
 }
 
 inline constexpr auto
-atlas_value(::physics::units::MetersPerSecond const& v, value_tag)
+atlas_value_for(::physics::units::MetersPerSecond const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
 }
 
 inline constexpr auto
-atlas_value(::physics::units::Seconds const& v, value_tag)
+atlas_value_for(::physics::units::Seconds const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
 }
 
 inline constexpr auto
-atlas_value(::security::EncryptedData const& v, value_tag)
+atlas_value_for(::security::EncryptedData const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
@@ -426,26 +422,26 @@ template <typename L, typename R>
 struct has_compound_op_modulo<
     L,
     R,
-    decltype((void)(atlas::value(std::declval<L&>()) %=
-        atlas::value(std::declval<R const&>())))>
+    decltype((void)(atlas::to_underlying(std::declval<L&>()) %=
+        atlas::to_underlying(std::declval<R const&>())))>
 : std::true_type
 { };
 
 template <typename L, typename R>
 constexpr L &
 compound_assign_impl_modulo(L & lhs, R const & rhs, std::true_type)
-noexcept(noexcept(atlas::value(lhs) %= atlas::value(rhs)))
+noexcept(noexcept(atlas::to_underlying(lhs) %= atlas::to_underlying(rhs)))
 {
-    atlas::value(lhs) %= atlas::value(rhs);
+    atlas::to_underlying(lhs) %= atlas::to_underlying(rhs);
     return lhs;
 }
 
 template <typename L, typename R>
 constexpr L &
 compound_assign_impl_modulo(L & lhs, R const & rhs, std::false_type)
-noexcept(noexcept(atlas::value(lhs) = atlas::value(lhs % rhs)))
+noexcept(noexcept(atlas::to_underlying(lhs) = atlas::to_underlying(lhs % rhs)))
 {
-    atlas::value(lhs) = atlas::value(lhs % rhs);
+    atlas::to_underlying(lhs) = atlas::to_underlying(lhs % rhs);
     return lhs;
 }
 }
@@ -483,26 +479,26 @@ template <typename L, typename R>
 struct has_compound_op_bitand<
     L,
     R,
-    decltype((void)(atlas::value(std::declval<L&>()) &=
-        atlas::value(std::declval<R const&>())))>
+    decltype((void)(atlas::to_underlying(std::declval<L&>()) &=
+        atlas::to_underlying(std::declval<R const&>())))>
 : std::true_type
 { };
 
 template <typename L, typename R>
 constexpr L &
 compound_assign_impl_bitand(L & lhs, R const & rhs, std::true_type)
-noexcept(noexcept(atlas::value(lhs) &= atlas::value(rhs)))
+noexcept(noexcept(atlas::to_underlying(lhs) &= atlas::to_underlying(rhs)))
 {
-    atlas::value(lhs) &= atlas::value(rhs);
+    atlas::to_underlying(lhs) &= atlas::to_underlying(rhs);
     return lhs;
 }
 
 template <typename L, typename R>
 constexpr L &
 compound_assign_impl_bitand(L & lhs, R const & rhs, std::false_type)
-noexcept(noexcept(atlas::value(lhs) = atlas::value(lhs & rhs)))
+noexcept(noexcept(atlas::to_underlying(lhs) = atlas::to_underlying(lhs & rhs)))
 {
-    atlas::value(lhs) = atlas::value(lhs & rhs);
+    atlas::to_underlying(lhs) = atlas::to_underlying(lhs & rhs);
     return lhs;
 }
 }
@@ -540,26 +536,26 @@ template <typename L, typename R>
 struct has_compound_op_times<
     L,
     R,
-    decltype((void)(atlas::value(std::declval<L&>()) *=
-        atlas::value(std::declval<R const&>())))>
+    decltype((void)(atlas::to_underlying(std::declval<L&>()) *=
+        atlas::to_underlying(std::declval<R const&>())))>
 : std::true_type
 { };
 
 template <typename L, typename R>
 constexpr L &
 compound_assign_impl_times(L & lhs, R const & rhs, std::true_type)
-noexcept(noexcept(atlas::value(lhs) *= atlas::value(rhs)))
+noexcept(noexcept(atlas::to_underlying(lhs) *= atlas::to_underlying(rhs)))
 {
-    atlas::value(lhs) *= atlas::value(rhs);
+    atlas::to_underlying(lhs) *= atlas::to_underlying(rhs);
     return lhs;
 }
 
 template <typename L, typename R>
 constexpr L &
 compound_assign_impl_times(L & lhs, R const & rhs, std::false_type)
-noexcept(noexcept(atlas::value(lhs) = atlas::value(lhs * rhs)))
+noexcept(noexcept(atlas::to_underlying(lhs) = atlas::to_underlying(lhs * rhs)))
 {
-    atlas::value(lhs) = atlas::value(lhs * rhs);
+    atlas::to_underlying(lhs) = atlas::to_underlying(lhs * rhs);
     return lhs;
 }
 }
@@ -597,26 +593,26 @@ template <typename L, typename R>
 struct has_compound_op_plus<
     L,
     R,
-    decltype((void)(atlas::value(std::declval<L&>()) +=
-        atlas::value(std::declval<R const&>())))>
+    decltype((void)(atlas::to_underlying(std::declval<L&>()) +=
+        atlas::to_underlying(std::declval<R const&>())))>
 : std::true_type
 { };
 
 template <typename L, typename R>
 constexpr L &
 compound_assign_impl_plus(L & lhs, R const & rhs, std::true_type)
-noexcept(noexcept(atlas::value(lhs) += atlas::value(rhs)))
+noexcept(noexcept(atlas::to_underlying(lhs) += atlas::to_underlying(rhs)))
 {
-    atlas::value(lhs) += atlas::value(rhs);
+    atlas::to_underlying(lhs) += atlas::to_underlying(rhs);
     return lhs;
 }
 
 template <typename L, typename R>
 constexpr L &
 compound_assign_impl_plus(L & lhs, R const & rhs, std::false_type)
-noexcept(noexcept(atlas::value(lhs) = atlas::value(lhs + rhs)))
+noexcept(noexcept(atlas::to_underlying(lhs) = atlas::to_underlying(lhs + rhs)))
 {
-    atlas::value(lhs) = atlas::value(lhs + rhs);
+    atlas::to_underlying(lhs) = atlas::to_underlying(lhs + rhs);
     return lhs;
 }
 }
@@ -654,26 +650,26 @@ template <typename L, typename R>
 struct has_compound_op_minus<
     L,
     R,
-    decltype((void)(atlas::value(std::declval<L&>()) -=
-        atlas::value(std::declval<R const&>())))>
+    decltype((void)(atlas::to_underlying(std::declval<L&>()) -=
+        atlas::to_underlying(std::declval<R const&>())))>
 : std::true_type
 { };
 
 template <typename L, typename R>
 constexpr L &
 compound_assign_impl_minus(L & lhs, R const & rhs, std::true_type)
-noexcept(noexcept(atlas::value(lhs) -= atlas::value(rhs)))
+noexcept(noexcept(atlas::to_underlying(lhs) -= atlas::to_underlying(rhs)))
 {
-    atlas::value(lhs) -= atlas::value(rhs);
+    atlas::to_underlying(lhs) -= atlas::to_underlying(rhs);
     return lhs;
 }
 
 template <typename L, typename R>
 constexpr L &
 compound_assign_impl_minus(L & lhs, R const & rhs, std::false_type)
-noexcept(noexcept(atlas::value(lhs) = atlas::value(lhs - rhs)))
+noexcept(noexcept(atlas::to_underlying(lhs) = atlas::to_underlying(lhs - rhs)))
 {
-    atlas::value(lhs) = atlas::value(lhs - rhs);
+    atlas::to_underlying(lhs) = atlas::to_underlying(lhs - rhs);
     return lhs;
 }
 }
@@ -711,26 +707,26 @@ template <typename L, typename R>
 struct has_compound_op_divide<
     L,
     R,
-    decltype((void)(atlas::value(std::declval<L&>()) /=
-        atlas::value(std::declval<R const&>())))>
+    decltype((void)(atlas::to_underlying(std::declval<L&>()) /=
+        atlas::to_underlying(std::declval<R const&>())))>
 : std::true_type
 { };
 
 template <typename L, typename R>
 constexpr L &
 compound_assign_impl_divide(L & lhs, R const & rhs, std::true_type)
-noexcept(noexcept(atlas::value(lhs) /= atlas::value(rhs)))
+noexcept(noexcept(atlas::to_underlying(lhs) /= atlas::to_underlying(rhs)))
 {
-    atlas::value(lhs) /= atlas::value(rhs);
+    atlas::to_underlying(lhs) /= atlas::to_underlying(rhs);
     return lhs;
 }
 
 template <typename L, typename R>
 constexpr L &
 compound_assign_impl_divide(L & lhs, R const & rhs, std::false_type)
-noexcept(noexcept(atlas::value(lhs) = atlas::value(lhs / rhs)))
+noexcept(noexcept(atlas::to_underlying(lhs) = atlas::to_underlying(lhs / rhs)))
 {
-    atlas::value(lhs) = atlas::value(lhs / rhs);
+    atlas::to_underlying(lhs) = atlas::to_underlying(lhs / rhs);
     return lhs;
 }
 }
@@ -768,26 +764,26 @@ template <typename L, typename R>
 struct has_compound_op_lshift<
     L,
     R,
-    decltype((void)(atlas::value(std::declval<L&>()) <<=
-        atlas::value(std::declval<R const&>())))>
+    decltype((void)(atlas::to_underlying(std::declval<L&>()) <<=
+        atlas::to_underlying(std::declval<R const&>())))>
 : std::true_type
 { };
 
 template <typename L, typename R>
 constexpr L &
 compound_assign_impl_lshift(L & lhs, R const & rhs, std::true_type)
-noexcept(noexcept(atlas::value(lhs) <<= atlas::value(rhs)))
+noexcept(noexcept(atlas::to_underlying(lhs) <<= atlas::to_underlying(rhs)))
 {
-    atlas::value(lhs) <<= atlas::value(rhs);
+    atlas::to_underlying(lhs) <<= atlas::to_underlying(rhs);
     return lhs;
 }
 
 template <typename L, typename R>
 constexpr L &
 compound_assign_impl_lshift(L & lhs, R const & rhs, std::false_type)
-noexcept(noexcept(atlas::value(lhs) = atlas::value(lhs << rhs)))
+noexcept(noexcept(atlas::to_underlying(lhs) = atlas::to_underlying(lhs << rhs)))
 {
-    atlas::value(lhs) = atlas::value(lhs << rhs);
+    atlas::to_underlying(lhs) = atlas::to_underlying(lhs << rhs);
     return lhs;
 }
 }
@@ -825,26 +821,26 @@ template <typename L, typename R>
 struct has_compound_op_rshift<
     L,
     R,
-    decltype((void)(atlas::value(std::declval<L&>()) >>=
-        atlas::value(std::declval<R const&>())))>
+    decltype((void)(atlas::to_underlying(std::declval<L&>()) >>=
+        atlas::to_underlying(std::declval<R const&>())))>
 : std::true_type
 { };
 
 template <typename L, typename R>
 constexpr L &
 compound_assign_impl_rshift(L & lhs, R const & rhs, std::true_type)
-noexcept(noexcept(atlas::value(lhs) >>= atlas::value(rhs)))
+noexcept(noexcept(atlas::to_underlying(lhs) >>= atlas::to_underlying(rhs)))
 {
-    atlas::value(lhs) >>= atlas::value(rhs);
+    atlas::to_underlying(lhs) >>= atlas::to_underlying(rhs);
     return lhs;
 }
 
 template <typename L, typename R>
 constexpr L &
 compound_assign_impl_rshift(L & lhs, R const & rhs, std::false_type)
-noexcept(noexcept(atlas::value(lhs) = atlas::value(lhs >> rhs)))
+noexcept(noexcept(atlas::to_underlying(lhs) = atlas::to_underlying(lhs >> rhs)))
 {
-    atlas::value(lhs) = atlas::value(lhs >> rhs);
+    atlas::to_underlying(lhs) = atlas::to_underlying(lhs >> rhs);
     return lhs;
 }
 }
@@ -882,26 +878,26 @@ template <typename L, typename R>
 struct has_compound_op_bitxor<
     L,
     R,
-    decltype((void)(atlas::value(std::declval<L&>()) ^=
-        atlas::value(std::declval<R const&>())))>
+    decltype((void)(atlas::to_underlying(std::declval<L&>()) ^=
+        atlas::to_underlying(std::declval<R const&>())))>
 : std::true_type
 { };
 
 template <typename L, typename R>
 constexpr L &
 compound_assign_impl_bitxor(L & lhs, R const & rhs, std::true_type)
-noexcept(noexcept(atlas::value(lhs) ^= atlas::value(rhs)))
+noexcept(noexcept(atlas::to_underlying(lhs) ^= atlas::to_underlying(rhs)))
 {
-    atlas::value(lhs) ^= atlas::value(rhs);
+    atlas::to_underlying(lhs) ^= atlas::to_underlying(rhs);
     return lhs;
 }
 
 template <typename L, typename R>
 constexpr L &
 compound_assign_impl_bitxor(L & lhs, R const & rhs, std::false_type)
-noexcept(noexcept(atlas::value(lhs) = atlas::value(lhs ^ rhs)))
+noexcept(noexcept(atlas::to_underlying(lhs) = atlas::to_underlying(lhs ^ rhs)))
 {
-    atlas::value(lhs) = atlas::value(lhs ^ rhs);
+    atlas::to_underlying(lhs) = atlas::to_underlying(lhs ^ rhs);
     return lhs;
 }
 }
@@ -939,26 +935,26 @@ template <typename L, typename R>
 struct has_compound_op_bitor<
     L,
     R,
-    decltype((void)(atlas::value(std::declval<L&>()) |=
-        atlas::value(std::declval<R const&>())))>
+    decltype((void)(atlas::to_underlying(std::declval<L&>()) |=
+        atlas::to_underlying(std::declval<R const&>())))>
 : std::true_type
 { };
 
 template <typename L, typename R>
 constexpr L &
 compound_assign_impl_bitor(L & lhs, R const & rhs, std::true_type)
-noexcept(noexcept(atlas::value(lhs) |= atlas::value(rhs)))
+noexcept(noexcept(atlas::to_underlying(lhs) |= atlas::to_underlying(rhs)))
 {
-    atlas::value(lhs) |= atlas::value(rhs);
+    atlas::to_underlying(lhs) |= atlas::to_underlying(rhs);
     return lhs;
 }
 
 template <typename L, typename R>
 constexpr L &
 compound_assign_impl_bitor(L & lhs, R const & rhs, std::false_type)
-noexcept(noexcept(atlas::value(lhs) = atlas::value(lhs | rhs)))
+noexcept(noexcept(atlas::to_underlying(lhs) = atlas::to_underlying(lhs | rhs)))
 {
-    atlas::value(lhs) = atlas::value(lhs | rhs);
+    atlas::to_underlying(lhs) = atlas::to_underlying(lhs | rhs);
     return lhs;
 }
 }
@@ -1017,10 +1013,10 @@ noexcept(
 inline constexpr ConfigKey
 operator+(std::string lhs, ConfigKey rhs)
 noexcept(
-    noexcept(lhs + atlas::value(rhs)) &&
-    std::is_nothrow_constructible<ConfigKey, decltype(lhs + atlas::value(rhs))>::value)
+    noexcept(lhs + atlas::to_underlying(rhs)) &&
+    std::is_nothrow_constructible<ConfigKey, decltype(lhs + atlas::to_underlying(rhs))>::value)
 {
-    return ConfigKey{lhs + atlas::value(rhs)};
+    return ConfigKey{lhs + atlas::to_underlying(rhs)};
 }
 
 } // namespace app::config
@@ -1222,20 +1218,20 @@ template <std::integral T>
 constexpr T
 operator+(T lhs, T rhs)
 noexcept(
-    noexcept(lhs.value + atlas::value(rhs)) &&
-    std::is_nothrow_constructible<T, decltype(lhs.value + atlas::value(rhs))>::value)
+    noexcept(lhs.value + atlas::to_underlying(rhs)) &&
+    std::is_nothrow_constructible<T, decltype(lhs.value + atlas::to_underlying(rhs))>::value)
 {
-    return T{lhs.value + atlas::value(rhs)};
+    return T{lhs.value + atlas::to_underlying(rhs)};
 }
 
 template <typename U, typename std::enable_if<std::is_floating_point<U>::value, bool>::type = true>
 constexpr U
 operator*(U lhs, U rhs)
 noexcept(
-    noexcept(lhs.value * atlas::value(rhs)) &&
-    std::is_nothrow_constructible<U, decltype(lhs.value * atlas::value(rhs))>::value)
+    noexcept(lhs.value * atlas::to_underlying(rhs)) &&
+    std::is_nothrow_constructible<U, decltype(lhs.value * atlas::to_underlying(rhs))>::value)
 {
-    return U{lhs.value * atlas::value(rhs)};
+    return U{lhs.value * atlas::to_underlying(rhs)};
 }
 
 #if __cpp_concepts >= 201907L
@@ -1246,10 +1242,10 @@ template <typename V, typename std::enable_if<sizeof(V) <= 8, bool>::type = true
 constexpr V
 operator-(V lhs, V rhs)
 noexcept(
-    noexcept(lhs.value - atlas::value(rhs)) &&
-    std::is_nothrow_constructible<V, decltype(lhs.value - atlas::value(rhs))>::value)
+    noexcept(lhs.value - atlas::to_underlying(rhs)) &&
+    std::is_nothrow_constructible<V, decltype(lhs.value - atlas::to_underlying(rhs))>::value)
 {
-    return V{lhs.value - atlas::value(rhs)};
+    return V{lhs.value - atlas::to_underlying(rhs)};
 }
 
 } // namespace math
@@ -1504,4 +1500,4 @@ noexcept(
 
 } // namespace security
 
-#endif // EXAMPLE_INTERACTIONS_F16B2BE8575E003728F7B69D06448AD59A576FAC
+#endif // EXAMPLE_INTERACTIONS_1AB343CBC5434AD4642936BA9AA57B2F7E3A399B

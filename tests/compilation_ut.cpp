@@ -39,10 +39,10 @@ int main() {
     auto prod = x * y;
     auto quot = x / y;
 
-    assert(static_cast<int>(sum) == 13);
-    assert(static_cast<int>(diff) == 7);
-    assert(static_cast<int>(prod) == 30);
-    assert(static_cast<int>(quot) == 3);
+    assert(atlas_value_for(sum) == 13);
+    assert(atlas_value_for(diff) == 7);
+    assert(atlas_value_for(prod) == 30);
+    assert(atlas_value_for(quot) == 3);
 
     return 0;
 }
@@ -110,20 +110,20 @@ int main() {
     test::Counter x{10};
 
     auto pre_inc = ++x;
-    assert(static_cast<int>(x) == 11);
-    assert(static_cast<int>(pre_inc) == 11);
+    assert(atlas_value_for(x) == 11);
+    assert(atlas_value_for(pre_inc) == 11);
 
     auto post_inc = x++;
-    assert(static_cast<int>(x) == 12);
-    assert(static_cast<int>(post_inc) == 11);
+    assert(atlas_value_for(x) == 12);
+    assert(atlas_value_for(post_inc) == 11);
 
     auto pre_dec = --x;
-    assert(static_cast<int>(x) == 11);
-    assert(static_cast<int>(pre_dec) == 11);
+    assert(atlas_value_for(x) == 11);
+    assert(atlas_value_for(pre_dec) == 11);
 
     auto post_dec = x--;
-    assert(static_cast<int>(x) == 10);
-    assert(static_cast<int>(post_dec) == 11);
+    assert(atlas_value_for(x) == 10);
+    assert(atlas_value_for(post_dec) == 11);
 
     return 0;
 }
@@ -188,13 +188,13 @@ default_value=42
 
 int main() {
     test::DefaultValue x;
-    assert(static_cast<int>(x) == 42);
+    assert(atlas_value_for(x) == 42);
 
     test::DefaultValue y{10};
-    assert(static_cast<int>(y) == 10);
+    assert(atlas_value_for(y) == 10);
 
     test::DefaultValue z{};
-    assert(static_cast<int>(z) == 42);
+    assert(atlas_value_for(z) == 42);
 
     return 0;
 }
@@ -225,17 +225,17 @@ int main() {
     test::UnaryType y{-5};
 
     auto pos = +x;
-    assert(static_cast<int>(pos) == 10);
+    assert(atlas_value_for(pos) == 10);
 
     auto neg = -x;
-    assert(static_cast<int>(neg) == -10);
+    assert(atlas_value_for(neg) == -10);
 
     auto neg_y = -y;
-    assert(static_cast<int>(neg_y) == 5);
+    assert(atlas_value_for(neg_y) == 5);
 
     test::UnaryType bits{15};  // 0x0F
     auto inverted = ~bits;
-    assert(static_cast<int>(inverted) == ~15);
+    assert(atlas_value_for(inverted) == ~15);
 
     return 0;
 }
@@ -308,8 +308,8 @@ description=strong int; ==, no-constexpr
 int main() {
     test::StrongInt x{42};
 
-    // Can explicitly cast
-    int raw = static_cast<int>(x);
+    // Can access underlying value via atlas_value_for()
+    int raw = atlas_value_for(x);
     assert(raw == 42);
 
     // Can compare strong types
@@ -326,7 +326,7 @@ int main() {
         CHECK(result.success);
     }
 
-    TEST_CASE("Explicit cast is required to access underlying value")
+    TEST_CASE("atlas_value_for() is required to access underlying value")
     {
         CompilationTester tester;
 
@@ -343,8 +343,8 @@ description=strong int; no-constexpr
 int main() {
     test::Wrapped x{100};
 
-    // Must use explicit cast
-    int value = static_cast<int>(x);
+    // Must use atlas_value_for() to access underlying value
+    int value = atlas_value_for(x);
     assert(value == 100);
 
     return 0;
@@ -386,11 +386,11 @@ int main() {
     // Same types can be compared and added
     assert(p1 == test::Price{100});
     auto total_price = p1 + p2;
-    assert(static_cast<int>(total_price) == 300);
+    assert(atlas_value_for(total_price) == 300);
 
     assert(q1 == test::Quantity{5});
     auto total_qty = q1 + q2;
-    assert(static_cast<int>(total_qty) == 15);
+    assert(atlas_value_for(total_qty) == 15);
 
     // Different strong types are type-safe
     return 0;
@@ -472,7 +472,7 @@ int main() {
     std::istringstream iss("100");
     test::Streamable y{0};
     iss >> y;
-    assert(static_cast<int>(y) == 100);
+    assert(atlas_value_for(y) == 100);
 
     return 0;
 }
@@ -509,9 +509,9 @@ int main() {
 
     std::sort(vec.begin(), vec.end());
 
-    assert(static_cast<int>(vec[0]) == 10);
-    assert(static_cast<int>(vec[1]) == 20);
-    assert(static_cast<int>(vec[2]) == 30);
+    assert(atlas_value_for(vec[0]) == 10);
+    assert(atlas_value_for(vec[1]) == 20);
+    assert(atlas_value_for(vec[2]) == 30);
 
     auto it = std::find(vec.begin(), vec.end(), test::Sortable{20});
     assert(it != vec.end());
@@ -549,17 +549,17 @@ int main() {
     test::Cpp11Type y{5};
 
     auto sum = x + y;
-    assert(static_cast<int>(sum) == 15);
+    assert(atlas_value_for(sum) == 15);
 
     auto diff = x - y;
-    assert(static_cast<int>(diff) == 5);
+    assert(atlas_value_for(diff) == 5);
 
     assert(x != y);
     assert(x == test::Cpp11Type{10});
     assert(y < x);
 
     ++x;
-    assert(static_cast<int>(x) == 11);
+    assert(atlas_value_for(x) == 11);
 
     return 0;
 }
@@ -592,10 +592,10 @@ int main() {
     test::Cpp14Type y{5};
 
     auto sum = x + y;
-    assert(static_cast<int>(sum) == 15);
+    assert(atlas_value_for(sum) == 15);
 
     auto product = x * y;
-    assert(static_cast<int>(product) == 50);
+    assert(atlas_value_for(product) == 50);
 
     return 0;
 }
@@ -628,7 +628,7 @@ int main() {
     test::Cpp17Type y{5};
 
     auto sum = x + y;
-    assert(static_cast<int>(sum) == 15);
+    assert(atlas_value_for(sum) == 15);
 
     assert(y < x);
     assert(x != y);
@@ -771,16 +771,16 @@ int main() {
     kitchen::Distance d2{50.0};
 
     auto d_sum = d1 + d2;
-    assert(static_cast<double>(d_sum) == 150.0);
+    assert(atlas_value_for(d_sum) == 150.0);
 
     auto d_diff = d1 - d2;
-    assert(static_cast<double>(d_diff) == 50.0);
+    assert(atlas_value_for(d_diff) == 50.0);
 
     auto d_scaled = d1 * 2.0;
-    assert(static_cast<double>(d_scaled) == 200.0);
+    assert(atlas_value_for(d_scaled) == 200.0);
 
     auto d_neg = -d1;
-    assert(static_cast<double>(d_neg) == -100.0);
+    assert(atlas_value_for(d_neg) == -100.0);
 
     assert(d1 != d2);
     assert(d2 < d1);
@@ -788,7 +788,7 @@ int main() {
 
     kitchen::Distance d3{1.0};
     ++d3;
-    assert(static_cast<double>(d3) == 2.0);
+    assert(atlas_value_for(d3) == 2.0);
 
     if (d1) { /* non-zero is true */ }
 
@@ -805,7 +805,7 @@ int main() {
     kitchen::Time t2{5.0};
 
     auto t_sum = t1 + t2;
-    assert(static_cast<double>(t_sum) == 15.0);
+    assert(atlas_value_for(t_sum) == 15.0);
 
     assert(t1 > t2);
 
@@ -814,25 +814,25 @@ int main() {
     kitchen::Time time{10.0};
 
     auto velocity = dist / time;
-    assert(static_cast<double>(velocity) == 10.0);
+    assert(atlas_value_for(velocity) == 10.0);
 
     // Velocity * Time = Distance
     auto dist2 = velocity * time;
-    assert(static_cast<double>(dist2) == 100.0);
+    assert(atlas_value_for(dist2) == 100.0);
 
     // Distance / Velocity = Time
     auto time2 = dist / velocity;
-    assert(static_cast<double>(time2) == 10.0);
+    assert(atlas_value_for(time2) == 10.0);
 
     // Test interactions: Distance + Distance
     kitchen::Distance d_a{30.0};
     kitchen::Distance d_b{20.0};
     auto d_c = d_a + d_b;
-    assert(static_cast<double>(d_c) == 50.0);
+    assert(atlas_value_for(d_c) == 50.0);
 
     // Test interactions: Distance * scalar
     auto d_double = 2.0 * d_a;  // scalar * Distance
-    assert(static_cast<double>(d_double) == 60.0);
+    assert(atlas_value_for(d_double) == 60.0);
 
     // Test Container: subscript operator and iteration
     std::vector<int> vec = {10, 20, 30};
@@ -1061,9 +1061,9 @@ int main() {
     vec.push_back(test::SpaceshipType{20});
     std::sort(vec.begin(), vec.end());
 
-    assert(static_cast<int>(vec[0]) == 10);
-    assert(static_cast<int>(vec[1]) == 20);
-    assert(static_cast<int>(vec[2]) == 30);
+    assert(atlas_value_for(vec[0]) == 10);
+    assert(atlas_value_for(vec[1]) == 20);
+    assert(atlas_value_for(vec[2]) == 30);
 
     return 0;
 }
@@ -1116,9 +1116,9 @@ int main() {
     vec.push_back(test::SpaceshipTypeCpp20{20});
     std::sort(vec.begin(), vec.end());
 
-    assert(static_cast<int>(vec[0]) == 10);
-    assert(static_cast<int>(vec[1]) == 20);
-    assert(static_cast<int>(vec[2]) == 30);
+    assert(atlas_value_for(vec[0]) == 10);
+    assert(atlas_value_for(vec[1]) == 20);
+    assert(atlas_value_for(vec[2]) == 30);
 
     return 0;
 }

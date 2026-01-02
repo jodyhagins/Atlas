@@ -37,26 +37,26 @@ template <typename L, typename R>
 struct has_compound_op_{{{op_id}}}<
     L,
     R,
-    decltype((void)(atlas::value(std::declval<L&>()) {{{compound_op}}}
-        atlas::value(std::declval<R const&>())))>
+    decltype((void)(atlas::to_underlying(std::declval<L&>()) {{{compound_op}}}
+        atlas::to_underlying(std::declval<R const&>())))>
 : std::true_type
 { };
 
 template <typename L, typename R>
 constexpr L &
 compound_assign_impl_{{{op_id}}}(L & lhs, R const & rhs, std::true_type)
-noexcept(noexcept(atlas::value(lhs) {{{compound_op}}} atlas::value(rhs)))
+noexcept(noexcept(atlas::to_underlying(lhs) {{{compound_op}}} atlas::to_underlying(rhs)))
 {
-    atlas::value(lhs) {{{compound_op}}} atlas::value(rhs);
+    atlas::to_underlying(lhs) {{{compound_op}}} atlas::to_underlying(rhs);
     return lhs;
 }
 
 template <typename L, typename R>
 constexpr L &
 compound_assign_impl_{{{op_id}}}(L & lhs, R const & rhs, std::false_type)
-noexcept(noexcept(atlas::value(lhs) = atlas::value(lhs {{{binary_op}}} rhs)))
+noexcept(noexcept(atlas::to_underlying(lhs) = atlas::to_underlying(lhs {{{binary_op}}} rhs)))
 {
-    atlas::value(lhs) = atlas::value(lhs {{{binary_op}}} rhs);
+    atlas::to_underlying(lhs) = atlas::to_underlying(lhs {{{binary_op}}} rhs);
     return lhs;
 }
 }
@@ -242,7 +242,7 @@ generate_value_access(
     std::string value_access = specific_access.empty() ? default_access
                                                        : specific_access;
     if (value_access.empty()) {
-        value_access = "atlas::value";
+        value_access = "atlas::to_underlying";
     }
     if (value_access[0] == '.') {
         // Member access: .value, .get(), etc.
@@ -251,7 +251,7 @@ generate_value_access(
         // Function call operator
         return var_name + "()";
     } else {
-        // Function call: get_value, extract, atlas::value, etc.
+        // Function call: get_value, extract, atlas::to_underlying, etc.
         return value_access + "(" + var_name + ")";
     }
 }
@@ -510,7 +510,7 @@ operator () (InteractionFileDescription const & desc) const
     }
     body << "\n";
 
-    // Embed atlas::value implementation
+    // Embed atlas::to_underlying implementation
     body << preamble();
 
     // Collect RHS types that need custom atlas_value functions
@@ -530,15 +530,15 @@ operator () (InteractionFileDescription const & desc) const
             interaction.interaction_namespace);
 
         // Only generate if RHS has a custom value access that's not
-        // atlas::value
+        // atlas::to_underlying
         std::string value_access_expr;
         if (not interaction.rhs_value_access.empty() &&
-            interaction.rhs_value_access != "atlas::value")
+            interaction.rhs_value_access != "atlas::to_underlying")
         {
             value_access_expr = interaction.rhs_value_access;
         } else if (
             not interaction.value_access.empty() &&
-            interaction.value_access != "atlas::value" &&
+            interaction.value_access != "atlas::to_underlying" &&
             interaction.rhs_value_access.empty())
         {
             // Fallback to value_access if rhs_value_access not specified
@@ -560,7 +560,7 @@ operator () (InteractionFileDescription const & desc) const
                         interaction.is_constexpr};
                 } else {
                     // Type already exists - if ANY interaction is
-                    // non-constexpr, the atlas_value must be non-constexpr
+                    // non-constexpr, the atlas_value_for must be non-constexpr
                     if (not interaction.is_constexpr) {
                         it->second.is_constexpr = false;
                     }
@@ -569,12 +569,12 @@ operator () (InteractionFileDescription const & desc) const
         }
     }
 
-    // Generate atlas_value functions for RHS types with custom accessors
+    // Generate atlas_value_for functions for RHS types with custom accessors
     if (not rhs_value_accessors.empty()) {
         body << R"(
 // Custom value accessors for non-Atlas types
-// These allow atlas::value() to work with external library types
-// Users can override by providing atlas_value(T const&) without the tag parameter
+// These allow atlas::to_underlying() to work with external library types
+// Users can override by providing atlas_value_for(T const&) without the tag parameter
 namespace atlas {
 )";
 
@@ -583,7 +583,7 @@ namespace atlas {
             if (info.is_constexpr) {
                 body << "constexpr ";
             }
-            body << "auto\natlas_value(" << rhs_type
+            body << "auto\natlas_value_for(" << rhs_type
                 << " const& v, value_tag)\n";
             body << "-> decltype("
                 << generate_value_access("v", rhs_type, info.access_expr, "")

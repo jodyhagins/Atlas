@@ -33,8 +33,7 @@ struct std::formatter<{{{full_qualified_name}}}> : std::formatter<{{{underlying_
 {
     auto format({{{full_qualified_name}}} const & t, std::format_context & ctx) const
     {
-        return std::formatter<{{{underlying_type}}}>::format(
-            static_cast<{{{underlying_type}}} const &>(t), ctx);
+        return std::formatter<{{{underlying_type}}}>::format(atlas_value_for(t), ctx);
     }
 };
 #endif // defined(__cpp_lib_format) && __cpp_lib_format >= 202110L

@@ -31,8 +31,7 @@ struct std::hash<{{{full_qualified_name}}}>
         noexcept(std::hash<{{{underlying_type}}}>{}(
             std::declval<{{{underlying_type}}} const &>())))
     {
-        return std::hash<{{{underlying_type}}}>{}(
-            static_cast<{{{underlying_type}}} const &>(t));
+        return std::hash<{{{underlying_type}}}>{}(atlas_value_for(t));
     }
 };
 )";

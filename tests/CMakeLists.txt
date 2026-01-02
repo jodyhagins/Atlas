@@ -231,3 +231,23 @@ target_include_directories(nilable_cpp20_ut PRIVATE
 )
 add_test(NAME NilableCpp20Tests COMMAND nilable_cpp20_ut)
 
+# atlas::to_underlying() tests
+set(TO_UNDERLYING_INPUT "${CMAKE_CURRENT_SOURCE_DIR}/to_underlying_test_types.atlas")
+set(TO_UNDERLYING_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/to_underlying_test_types.hpp")
+add_custom_command(
+    OUTPUT ${TO_UNDERLYING_OUTPUT}
+    COMMAND atlas --input=${TO_UNDERLYING_INPUT} --output=${TO_UNDERLYING_OUTPUT}
+    DEPENDS atlas ${TO_UNDERLYING_INPUT}
+    COMMENT "Generating atlas::to_underlying test types"
+)
+add_executable(to_underlying_ut
+    to_underlying_ut.cpp
+    ${TO_UNDERLYING_OUTPUT}
+)
+target_link_libraries(to_underlying_ut PRIVATE doctest::doctest)
+target_include_directories(to_underlying_ut PRIVATE
+    ${CMAKE_CURRENT_BINARY_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/lib/atlas
+)
+add_test(NAME ToUnderlyingTests COMMAND to_underlying_ut)
+

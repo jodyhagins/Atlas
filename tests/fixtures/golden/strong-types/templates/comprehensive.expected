@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_62FBD164EA4260290A1053EAD54B7A8BA652AF1E
-#define FOO_BAR_62FBD164EA4260290A1053EAD54B7A8BA652AF1E
+#ifndef FOO_BAR_AB3D1230B660C0140B68D08B41183158BE56DFC6
+#define FOO_BAR_AB3D1230B660C0140B68D08B41183158BE56DFC6
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -43,7 +43,7 @@
 //
 // Components:
 // - atlas::strong_type_tag: Base class for strong types
-// - atlas::value(): Universal value accessor for strong types
+// - atlas::to_underlying(): Universal value accessor for strong types
 // - atlas_detail::*: Internal implementation utilities
 //
 // For projects using multiple Atlas-generated files, this boilerplate
@@ -144,7 +144,7 @@ struct has_atlas_value_type<
 : std::true_type
 { };
 
-void atlas_value();
+void atlas_value_for();
 struct value_by_ref
 { };
 struct value_by_val
@@ -180,55 +180,51 @@ value_impl(T const & t, PriorityTag<0>, value_by_val)
 }
 
 // ----------------------------------------------------------------------------
-// Recursive case: T has atlas_value_type
-// Drill down one level and recurse.
+// Recursive case: T has atlas_value_for() hidden friend
+// Use ADL to call atlas_value_for() and recurse.
 // ----------------------------------------------------------------------------
 template <typename T>
 constexpr auto
 value_impl(T & t, PriorityTag<1>, value_by_ref)
 -> decltype(value_impl(
-    static_cast<typename T::atlas_value_type &>(t),
+    atlas_value_for(t),
     value_tag{},
     value_by_ref{}))
 {
-    using A = typename T::atlas_value_type;
-    return value_impl(static_cast<A &>(t), value_tag{}, value_by_ref{});
+    return value_impl(atlas_value_for(t), value_tag{}, value_by_ref{});
 }
 template <typename T>
 constexpr auto
 value_impl(T const & t, PriorityTag<1>, value_by_ref)
 -> decltype(value_impl(
-    static_cast<typename T::atlas_value_type const &>(t),
+    atlas_value_for(t),
     value_tag{},
     value_by_ref{}))
 {
-    using A = typename T::atlas_value_type;
-    return value_impl(static_cast<A const &>(t), value_tag{}, value_by_ref{});
+    return value_impl(atlas_value_for(t), value_tag{}, value_by_ref{});
 }
 template <typename T>
 constexpr auto
 value_impl(T & t, PriorityTag<1>, value_by_val)
 -> decltype(value_impl(
-    static_cast<typename T::atlas_value_type &>(t),
+    atlas_value_for(std::move(t)),
     value_tag{},
     value_by_val{}))
 {
-    using A = typename T::atlas_value_type;
-    return value_impl(static_cast<A &>(t), value_tag{}, value_by_val{});
+    return value_impl(atlas_value_for(std::move(t)), value_tag{}, value_by_val{});
 }
 template <typename T>
 constexpr auto
 value_impl(T const & t, PriorityTag<1>, value_by_val)
 -> decltype(value_impl(
-    static_cast<typename T::atlas_value_type const &>(t),
+    atlas_value_for(t),
     value_tag{},
     value_by_val{}))
 {
-    using A = typename T::atlas_value_type;
-    return value_impl(static_cast<A const &>(t), value_tag{}, value_by_val{});
+    return value_impl(atlas_value_for(t), value_tag{}, value_by_val{});
 }
 
-struct Value
+struct ToUnderlying
 {
     template <typename T>
     constexpr auto
@@ -292,14 +288,14 @@ concept AtlasTypeC = is_atlas_type<T>::value;
 #endif
 
 #if defined(__cpp_inline_variables) && __cpp_inline_variables >= 201606L
-inline constexpr auto value = atlas_detail::Value{};
+inline constexpr auto to_underlying = atlas_detail::ToUnderlying{};
 #else
 template <typename T>
 constexpr auto
-value(T && t)
--> decltype(atlas_detail::Value{}(std::forward<T>(t)))
+to_underlying(T && t)
+-> decltype(atlas_detail::ToUnderlying{}(std::forward<T>(t)))
 {
-    return atlas_detail::Value{}(std::forward<T>(t));
+    return atlas_detail::ToUnderlying{}(std::forward<T>(t));
 }
 #endif
 
@@ -348,10 +344,21 @@ struct Optional_int
     { }
 
     /**
-     * The explicit cast operator provides a reference to the wrapped object.
+     * Access to immediate underlying value via ADL.
      */
-    constexpr explicit operator std::optional<int> const & () const { return value; }
-    constexpr explicit operator std::optional<int> & () { return value; }
+    friend constexpr std::optional<int> const & atlas_value_for(Optional_int const & self) noexcept {
+        return self.value;
+    }
+    friend constexpr std::optional<int> & atlas_value_for(Optional_int & self) noexcept {
+        return self.value;
+    }
+    friend constexpr auto atlas_value_for(Optional_int && self) noexcept
+        -> typename std::enable_if<
+            std::is_move_constructible<std::optional<int>>::value,
+            std::optional<int>>::type
+    {
+        return std::move(self.value);
+    }
 
     /**
      * Return the result of casting the wrapped object to bool.
@@ -483,10 +490,21 @@ struct OptionalDouble
     { }
 
     /**
-     * The explicit cast operator provides a reference to the wrapped object.
+     * Access to immediate underlying value via ADL.
      */
-    constexpr explicit operator std::optional<double> const & () const { return value; }
-    constexpr explicit operator std::optional<double> & () { return value; }
+    friend constexpr std::optional<double> const & atlas_value_for(OptionalDouble const & self) noexcept {
+        return self.value;
+    }
+    friend constexpr std::optional<double> & atlas_value_for(OptionalDouble & self) noexcept {
+        return self.value;
+    }
+    friend constexpr auto atlas_value_for(OptionalDouble && self) noexcept
+        -> typename std::enable_if<
+            std::is_move_constructible<std::optional<double>>::value,
+            std::optional<double>>::type
+    {
+        return std::move(self.value);
+    }
 
     /**
      * Return the result of casting the wrapped object to bool.
@@ -618,10 +636,21 @@ struct IntStringPair
     { }
 
     /**
-     * The explicit cast operator provides a reference to the wrapped object.
+     * Access to immediate underlying value via ADL.
      */
-    constexpr explicit operator std::pair<int, std::string> const & () const { return value; }
-    constexpr explicit operator std::pair<int, std::string> & () { return value; }
+    friend constexpr std::pair<int, std::string> const & atlas_value_for(IntStringPair const & self) noexcept {
+        return self.value;
+    }
+    friend constexpr std::pair<int, std::string> & atlas_value_for(IntStringPair & self) noexcept {
+        return self.value;
+    }
+    friend constexpr auto atlas_value_for(IntStringPair && self) noexcept
+        -> typename std::enable_if<
+            std::is_move_constructible<std::pair<int, std::string>>::value,
+            std::pair<int, std::string>>::type
+    {
+        return std::move(self.value);
+    }
 
     /**
      * Is @p lhs.value == @p rhs.value?
@@ -675,10 +704,21 @@ struct BoundedInt
     { }
 
     /**
-     * The explicit cast operator provides a reference to the wrapped object.
+     * Access to immediate underlying value via ADL.
      */
-    constexpr explicit operator int const & () const { return value; }
-    constexpr explicit operator int & () { return value; }
+    friend constexpr int const & atlas_value_for(BoundedInt const & self) noexcept {
+        return self.value;
+    }
+    friend constexpr int & atlas_value_for(BoundedInt & self) noexcept {
+        return self.value;
+    }
+    friend constexpr auto atlas_value_for(BoundedInt && self) noexcept
+        -> typename std::enable_if<
+            std::is_move_constructible<int>::value,
+            int>::type
+    {
+        return std::move(self.value);
+    }
 
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
@@ -804,10 +844,21 @@ struct IntContainer
     { }
 
     /**
-     * The explicit cast operator provides a reference to the wrapped object.
+     * Access to immediate underlying value via ADL.
      */
-    constexpr explicit operator std::vector<int> const & () const { return value; }
-    constexpr explicit operator std::vector<int> & () { return value; }
+    friend constexpr std::vector<int> const & atlas_value_for(IntContainer const & self) noexcept {
+        return self.value;
+    }
+    friend constexpr std::vector<int> & atlas_value_for(IntContainer & self) noexcept {
+        return self.value;
+    }
+    friend constexpr auto atlas_value_for(IntContainer && self) noexcept
+        -> typename std::enable_if<
+            std::is_move_constructible<std::vector<int>>::value,
+            std::vector<int>>::type
+    {
+        return std::move(self.value);
+    }
 
     /**
      * @brief Forward empty to wrapped object
@@ -961,10 +1012,21 @@ struct DefaultInt
     { }
 
     /**
-     * The explicit cast operator provides a reference to the wrapped object.
+     * Access to immediate underlying value via ADL.
      */
-    constexpr explicit operator int const & () const { return value; }
-    constexpr explicit operator int & () { return value; }
+    friend constexpr int const & atlas_value_for(DefaultInt const & self) noexcept {
+        return self.value;
+    }
+    friend constexpr int & atlas_value_for(DefaultInt & self) noexcept {
+        return self.value;
+    }
+    friend constexpr auto atlas_value_for(DefaultInt && self) noexcept
+        -> typename std::enable_if<
+            std::is_move_constructible<int>::value,
+            int>::type
+    {
+        return std::move(self.value);
+    }
 
     /**
      * Is @p lhs.value == @p rhs.value?
@@ -1014,10 +1076,21 @@ struct NamespacedInt
     { }
 
     /**
-     * The explicit cast operator provides a reference to the wrapped object.
+     * Access to immediate underlying value via ADL.
      */
-    constexpr explicit operator int const & () const { return value; }
-    constexpr explicit operator int & () { return value; }
+    friend constexpr int const & atlas_value_for(NamespacedInt const & self) noexcept {
+        return self.value;
+    }
+    friend constexpr int & atlas_value_for(NamespacedInt & self) noexcept {
+        return self.value;
+    }
+    friend constexpr auto atlas_value_for(NamespacedInt && self) noexcept
+        -> typename std::enable_if<
+            std::is_move_constructible<int>::value,
+            int>::type
+    {
+        return std::move(self.value);
+    }
 
     /**
      * Is @p lhs.value == @p rhs.value?
@@ -1068,10 +1141,21 @@ public:
     { }
 
     /**
-     * The explicit cast operator provides a reference to the wrapped object.
+     * Access to immediate underlying value via ADL.
      */
-    constexpr explicit operator int const & () const { return value; }
-    constexpr explicit operator int & () { return value; }
+    friend constexpr int const & atlas_value_for(ClassWrapper const & self) noexcept {
+        return self.value;
+    }
+    friend constexpr int & atlas_value_for(ClassWrapper & self) noexcept {
+        return self.value;
+    }
+    friend constexpr auto atlas_value_for(ClassWrapper && self) noexcept
+        -> typename std::enable_if<
+            std::is_move_constructible<int>::value,
+            int>::type
+    {
+        return std::move(self.value);
+    }
 
     /**
      * Is @p lhs.value == @p rhs.value?
@@ -1121,10 +1205,21 @@ struct ArithmeticLong
     { }
 
     /**
-     * The explicit cast operator provides a reference to the wrapped object.
+     * Access to immediate underlying value via ADL.
      */
-    constexpr explicit operator long const & () const { return value; }
-    constexpr explicit operator long & () { return value; }
+    friend constexpr long const & atlas_value_for(ArithmeticLong const & self) noexcept {
+        return self.value;
+    }
+    friend constexpr long & atlas_value_for(ArithmeticLong & self) noexcept {
+        return self.value;
+    }
+    friend constexpr auto atlas_value_for(ArithmeticLong && self) noexcept
+        -> typename std::enable_if<
+            std::is_move_constructible<long>::value,
+            long>::type
+    {
+        return std::move(self.value);
+    }
 
     /**
      * Apply * assignment to the wrapped objects.
@@ -1298,10 +1393,21 @@ struct EnhancedInt
     { }
 
     /**
-     * The explicit cast operator provides a reference to the wrapped object.
+     * Access to immediate underlying value via ADL.
      */
-    constexpr explicit operator int const & () const { return value; }
-    constexpr explicit operator int & () { return value; }
+    friend constexpr int const & atlas_value_for(EnhancedInt const & self) noexcept {
+        return self.value;
+    }
+    friend constexpr int & atlas_value_for(EnhancedInt & self) noexcept {
+        return self.value;
+    }
+    friend constexpr auto atlas_value_for(EnhancedInt && self) noexcept
+        -> typename std::enable_if<
+            std::is_move_constructible<int>::value,
+            int>::type
+    {
+        return std::move(self.value);
+    }
 
     /**
      * Is @p lhs.value == @p rhs.value?
@@ -1355,10 +1461,21 @@ struct VectorWrapper
     { }
 
     /**
-     * The explicit cast operator provides a reference to the wrapped object.
+     * Access to immediate underlying value via ADL.
      */
-    constexpr explicit operator std::vector<int> const & () const { return value; }
-    constexpr explicit operator std::vector<int> & () { return value; }
+    friend constexpr std::vector<int> const & atlas_value_for(VectorWrapper const & self) noexcept {
+        return self.value;
+    }
+    friend constexpr std::vector<int> & atlas_value_for(VectorWrapper & self) noexcept {
+        return self.value;
+    }
+    friend constexpr auto atlas_value_for(VectorWrapper && self) noexcept
+        -> typename std::enable_if<
+            std::is_move_constructible<std::vector<int>>::value,
+            std::vector<int>>::type
+    {
+        return std::move(self.value);
+    }
 
     /**
      * Is @p lhs.value == @p rhs.value?
@@ -1374,5 +1491,5 @@ struct VectorWrapper
 } // namespace templates
 } // namespace test
 
-#endif // FOO_BAR_62FBD164EA4260290A1053EAD54B7A8BA652AF1E
+#endif // FOO_BAR_AB3D1230B660C0140B68D08B41183158BE56DFC6
 
