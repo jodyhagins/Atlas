@@ -7,9 +7,10 @@
 #include "AtlasUtilities.hpp"
 #include "InteractionGenerator.hpp"
 #include "SHA1Hasher.hpp"
-#include "version.hpp"
 
 #include <boost/mustache.hpp>
+
+#include "atlas/version.hpp"
 
 #include <algorithm>
 #include <map>
@@ -37,26 +38,26 @@ template <typename L, typename R>
 struct has_compound_op_{{{op_id}}}<
     L,
     R,
-    decltype((void)(atlas::to_underlying(std::declval<L&>()) {{{compound_op}}}
-        atlas::to_underlying(std::declval<R const&>())))>
+    decltype((void)(atlas::undress(std::declval<L&>()) {{{compound_op}}}
+        atlas::undress(std::declval<R const&>())))>
 : std::true_type
 { };
 
 template <typename L, typename R>
 constexpr L &
 compound_assign_impl_{{{op_id}}}(L & lhs, R const & rhs, std::true_type)
-noexcept(noexcept(atlas::to_underlying(lhs) {{{compound_op}}} atlas::to_underlying(rhs)))
+noexcept(noexcept(atlas::undress(lhs) {{{compound_op}}} atlas::undress(rhs)))
 {
-    atlas::to_underlying(lhs) {{{compound_op}}} atlas::to_underlying(rhs);
+    atlas::undress(lhs) {{{compound_op}}} atlas::undress(rhs);
     return lhs;
 }
 
 template <typename L, typename R>
 constexpr L &
 compound_assign_impl_{{{op_id}}}(L & lhs, R const & rhs, std::false_type)
-noexcept(noexcept(atlas::to_underlying(lhs) = atlas::to_underlying(lhs {{{binary_op}}} rhs)))
+noexcept(noexcept(atlas::undress(lhs) = atlas::undress(lhs {{{binary_op}}} rhs)))
 {
-    atlas::to_underlying(lhs) = atlas::to_underlying(lhs {{{binary_op}}} rhs);
+    atlas::undress(lhs) = atlas::undress(lhs {{{binary_op}}} rhs);
     return lhs;
 }
 }
@@ -242,7 +243,7 @@ generate_value_access(
     std::string value_access = specific_access.empty() ? default_access
                                                        : specific_access;
     if (value_access.empty()) {
-        value_access = "atlas::to_underlying";
+        value_access = "atlas::undress";
     }
     if (value_access[0] == '.') {
         // Member access: .value, .get(), etc.
@@ -251,7 +252,7 @@ generate_value_access(
         // Function call operator
         return var_name + "()";
     } else {
-        // Function call: get_value, extract, atlas::to_underlying, etc.
+        // Function call: get_value, extract, atlas::undress, etc.
         return value_access + "(" + var_name + ")";
     }
 }
@@ -510,7 +511,7 @@ operator () (InteractionFileDescription const & desc) const
     }
     body << "\n";
 
-    // Embed atlas::to_underlying implementation
+    // Embed atlas::undress implementation
     body << preamble();
 
     // Collect RHS types that need custom atlas_value functions
@@ -530,15 +531,15 @@ operator () (InteractionFileDescription const & desc) const
             interaction.interaction_namespace);
 
         // Only generate if RHS has a custom value access that's not
-        // atlas::to_underlying
+        // atlas::undress
         std::string value_access_expr;
         if (not interaction.rhs_value_access.empty() &&
-            interaction.rhs_value_access != "atlas::to_underlying")
+            interaction.rhs_value_access != "atlas::undress")
         {
             value_access_expr = interaction.rhs_value_access;
         } else if (
             not interaction.value_access.empty() &&
-            interaction.value_access != "atlas::to_underlying" &&
+            interaction.value_access != "atlas::undress" &&
             interaction.rhs_value_access.empty())
         {
             // Fallback to value_access if rhs_value_access not specified
@@ -573,7 +574,7 @@ operator () (InteractionFileDescription const & desc) const
     if (not rhs_value_accessors.empty()) {
         body << R"(
 // Custom value accessors for non-Atlas types
-// These allow atlas::to_underlying() to work with external library types
+// These allow atlas::undress() to work with external library types
 // Users can override by providing atlas_value_for(T const&) without the tag parameter
 namespace atlas {
 )";

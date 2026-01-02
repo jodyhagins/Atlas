@@ -17,12 +17,12 @@
 // ----------------------------------------------------------------------
 
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include "doctest.hpp"
-
-#include "to_underlying_test_types.hpp"
+#include "undress_test_types.hpp"
 
 #include <string>
 #include <type_traits>
+
+#include "doctest.hpp"
 
 // ======================================================================
 // TEST SUITE: DIRECT CAST (NO DRILLING)
@@ -138,7 +138,7 @@ TEST_SUITE("atlas::cast - Multi Level Drilling")
         test::NestedInt x{test::SimpleInt{42}};
         auto result = atlas::cast<test::SimpleInt>(x);
 
-        CHECK(atlas::to_underlying(result) == 42);
+        CHECK(atlas::undress(result) == 42);
         CHECK(std::is_same<decltype(result), test::SimpleInt>::value);
     }
 
@@ -147,7 +147,7 @@ TEST_SUITE("atlas::cast - Multi Level Drilling")
         test::TripleNestedInt x{test::NestedInt{test::SimpleInt{42}}};
         auto result = atlas::cast<test::NestedInt>(x);
 
-        CHECK(atlas::to_underlying(result) == 42);
+        CHECK(atlas::undress(result) == 42);
         CHECK(std::is_same<decltype(result), test::NestedInt>::value);
     }
 
@@ -156,7 +156,7 @@ TEST_SUITE("atlas::cast - Multi Level Drilling")
         test::TripleNestedInt x{test::NestedInt{test::SimpleInt{42}}};
         auto result = atlas::cast<test::SimpleInt>(x);
 
-        CHECK(atlas::to_underlying(result) == 42);
+        CHECK(atlas::undress(result) == 42);
         CHECK(std::is_same<decltype(result), test::SimpleInt>::value);
     }
 }
@@ -177,7 +177,7 @@ TEST_SUITE("atlas::cast - Reference Casts")
 
         // Modify through reference
         result = 100;
-        CHECK(atlas::to_underlying(x) == 100);
+        CHECK(atlas::undress(x) == 100);
     }
 
     TEST_CASE("Cast const SimpleInt to int const&")
@@ -199,7 +199,7 @@ TEST_SUITE("atlas::cast - Reference Casts")
 
         // Modify through reference
         result = 100;
-        CHECK(atlas::to_underlying(x) == 100);
+        CHECK(atlas::undress(x) == 100);
     }
 
     TEST_CASE("Cast NestedInt to SimpleInt& (one level)")
@@ -207,7 +207,7 @@ TEST_SUITE("atlas::cast - Reference Casts")
         test::NestedInt x{test::SimpleInt{42}};
         auto & result = atlas::cast<test::SimpleInt &>(x);
 
-        CHECK(atlas::to_underlying(result) == 42);
+        CHECK(atlas::undress(result) == 42);
         CHECK(std::is_same<decltype(result), test::SimpleInt &>::value);
     }
 }
@@ -276,32 +276,115 @@ TEST_SUITE("atlas::cast - Non-Atlas Types")
 }
 
 // ======================================================================
+// TEST SUITE: TYPE WITH EXPLICIT CAST OPERATOR
+// ======================================================================
+
+namespace {
+// A type unrelated to the wrapped int - used to prove cast tries the type first
+struct UnrelatedTarget
+{
+    int marker;
+    constexpr explicit UnrelatedTarget(int m) : marker{m} { }
+};
+
+// An atlas-like type that wraps int but also has a cast operator to
+// UnrelatedTarget
+// This proves atlas::cast tries the type itself before drilling down
+struct TypeWithCastOperator : private atlas::strong_type_tag
+{
+    int value;
+    using atlas_value_type = int;
+
+    constexpr explicit TypeWithCastOperator(int v) : value{v} { }
+
+    // Cast operator to UnrelatedTarget - uses a DIFFERENT value to prove
+    // we used this operator rather than drilling to the int
+    constexpr explicit operator UnrelatedTarget() const
+    {
+        return UnrelatedTarget{value * 1000 + 42};
+    }
+
+    // Hidden friend for atlas machinery
+    friend constexpr int const &
+    atlas_value_for(TypeWithCastOperator const & self) noexcept
+    {
+        return self.value;
+    }
+    friend constexpr int & atlas_value_for(TypeWithCastOperator & self) noexcept
+    {
+        return self.value;
+    }
+};
+} // anonymous namespace
+
+TEST_SUITE("atlas::cast - Type With Cast Operator")
+{
+    TEST_CASE("Cast uses type's own cast operator before drilling")
+    {
+        TypeWithCastOperator x{7};
+
+        // Cast to UnrelatedTarget should use the type's cast operator
+        // NOT drill down to int (which can't cast to UnrelatedTarget)
+        auto result = atlas::cast<UnrelatedTarget>(x);
+
+        // The cast operator returns value * 1000 + 42
+        // So for value=7, we expect 7042
+        CHECK(result.marker == 7042);
+    }
+
+    TEST_CASE("Cast still drills when type itself can't cast")
+    {
+        TypeWithCastOperator x{7};
+
+        // Cast to int - the type itself can't be directly cast to int
+        // (no operator int()), so it drills down to the wrapped int
+        auto result = atlas::cast<int>(x);
+
+        CHECK(result == 7);
+    }
+
+    TEST_CASE("Cast to double drills through to wrapped int")
+    {
+        TypeWithCastOperator x{7};
+
+        // Type has no operator double(), so drills to int, then casts to double
+        auto result = atlas::cast<double>(x);
+
+        CHECK(result == 7.0);
+    }
+}
+
+// ======================================================================
 // TEST SUITE: SFINAE BEHAVIOR
 // ======================================================================
 
 namespace {
 // Helper to test SFINAE - returns true if cast is valid
 template <typename To, typename From>
-constexpr auto is_castable_impl(int)
-    -> decltype(atlas::cast<To>(std::declval<From>()), std::true_type{})
+constexpr auto
+is_castable_impl(int)
+-> decltype(atlas::cast<To>(std::declval<From>()), std::true_type{})
 {
     return {};
 }
 
 template <typename To, typename From>
-constexpr std::false_type is_castable_impl(...)
+constexpr std::false_type
+is_castable_impl(...)
 {
     return {};
 }
 
 template <typename To, typename From>
-constexpr bool is_castable()
+constexpr bool
+is_castable()
 {
     return decltype(is_castable_impl<To, From>(0))::value;
 }
 
-struct Unrelated {};
-} // namespace
+struct Unrelated
+{ };
+} // anonymous namespace
 
 TEST_SUITE("atlas::cast - SFINAE Behavior")
 {

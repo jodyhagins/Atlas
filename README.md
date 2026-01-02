@@ -23,7 +23,7 @@ The easiest way to use Atlas in your CMake project:
 include(FetchContent)
 FetchContent_Declare(Atlas
     GIT_REPOSITORY https://github.com/jodyhagins/Atlas.git
-    GIT_TAG main)
+    GIT_TAG v1.0.0)  # Or use 'main' for latest
 FetchContent_MakeAvailable(Atlas)
 
 # Generate a strong type with minimal syntax
@@ -40,7 +40,7 @@ That's it! The helper function automatically:
 ```cmake
 # Generate multiple types from a file
 add_atlas_strong_types_from_file(
-    INPUT types.txt
+    INPUT types.atlas
     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/Types.hpp
     TARGET my_library)
 
@@ -105,10 +105,10 @@ atlas --kind=struct --namespace=geom --name=Distance \
 
 Generate multiple types from a file (batch processing your type safety):
 ```bash
-atlas --input=types.txt --output=strong_types.hpp
+atlas --input=types.atlas --output=strong_types.hpp
 ```
 
-**types.txt:**
+**types.atlas:**
 ```
 # Optional file-level configuration
 guard_prefix=MY_TYPES
@@ -132,10 +132,10 @@ description=int; ++, --, out
 
 Make types play nicely with each other (like all humans do):
 ```bash
-atlas --input=interactions.txt --interactions=true --output=ops.hpp
+atlas --input=interactions.atlas --interactions=true --output=ops.hpp
 ```
 
-**interactions.txt:**
+**interactions.atlas:**
 ```
 include "price.hpp"
 include "quantity.hpp"
@@ -246,6 +246,7 @@ std::string header = wjh::atlas::generate_interactions(desc);
 ## Documentation
 
 - **[Description Language Reference](docs/description-language.md)** - Complete syntax guide
+- **[Runtime Utilities](docs/description-language.md#runtime-utilities)** - `unwrap`, `undress`, `cast` for accessing wrapped values
 - **[CMake Integration](docs/cmake-integration.md)** - Usage in CMake projects
 - **[Code Coverage](docs/COVERAGE.md)** - Coverage analysis guide
 - **[Header Guards](docs/generated-header-guards.md)** - Customizing generated guards

@@ -378,5 +378,5 @@ forward=size:length  # Clear intent
 ## See Also
 
 - [Description Language Reference](description-language.md#memfn-forwarding) - Complete syntax reference
-- [Examples](../examples/strong_types_showcase.txt) - More real-world examples
+- [Examples](../examples/strong_types_showcase.atlas) - More real-world examples
 - [Generated Header Guards](generated-header-guards.md) - Understanding generated code

@@ -235,11 +235,13 @@ get_preamble_includes(PreambleOptions const & options)
 
     if (options.include_nilable_support) {
         includes.push_back("<cassert>");
-        includes.push_back("<functional>");
         includes.push_back("<memory>");
         includes.push_back("<optional>");
-        includes.push_back("<type_traits>");
-        includes.push_back("<utility>");
+    }
+
+    // <functional> is needed for std::hash in hash drilling
+    if (options.include_hash_drill || options.include_nilable_support) {
+        includes.push_back("<functional>");
     }
 
     return includes;
@@ -267,7 +269,7 @@ preamble(PreambleOptions options)
 //
 // Components:
 // - atlas::strong_type_tag: Base class for strong types
-// - atlas::to_underlying(): Universal value accessor for strong types
+// - atlas::undress(): Universal value accessor for strong types
 // - atlas_detail::*: Internal implementation utilities
 //
 // For projects using multiple Atlas-generated files, this boilerplate
@@ -481,6 +483,79 @@ struct ToUnderlying
     }
 };
 
+// ----------------------------------------------------------------------------
+// Unwrap: Remove exactly one layer from atlas types or enums
+// Unlike undress, this does NOT recurse.
+// ----------------------------------------------------------------------------
+
+template <typename T>
+constexpr auto
+unwrap_impl(T & t, PriorityTag<2>)
+-> decltype(atlas_value_for(t))
+{
+    return atlas_value_for(t);
+}
+
+template <typename T>
+constexpr auto
+unwrap_impl(T const & t, PriorityTag<2>)
+-> decltype(atlas_value_for(t))
+{
+    return atlas_value_for(t);
+}
+
+template <typename T>
+constexpr auto
+unwrap_impl(T && t, PriorityTag<2>)
+-> typename std::enable_if<
+    not std::is_lvalue_reference<T>::value,
+    decltype(atlas_value_for(std::move(t)))>::type
+{
+    return atlas_value_for(std::move(t));
+}
+
+// Enum fallback - convert to underlying type
+template <typename T>
+constexpr auto
+unwrap_impl(T t, PriorityTag<1>)
+-> typename std::enable_if<
+    std::is_enum<T>::value,
+    typename std::underlying_type<T>::type>::type
+{
+    return static_cast<typename std::underlying_type<T>::type>(t);
+}
+
+// No PriorityTag<0> - SFINAE failure for non-atlas/non-enum types
+
+struct Unwrap
+{
+    template <typename T>
+    constexpr auto
+    operator () (T & t) const
+    -> decltype(unwrap_impl(t, PriorityTag<2>{}))
+    {
+        return unwrap_impl(t, PriorityTag<2>{});
+    }
+
+    template <typename T>
+    constexpr auto
+    operator () (T const & t) const
+    -> decltype(unwrap_impl(t, PriorityTag<2>{}))
+    {
+        return unwrap_impl(t, PriorityTag<2>{});
+    }
+
+    template <
+        typename T,
+        when<not std::is_lvalue_reference<T>::value> = true>
+    constexpr auto
+    operator () (T && t) const
+    -> decltype(unwrap_impl(std::forward<T>(t), PriorityTag<2>{}))
+    {
+        return unwrap_impl(std::forward<T>(t), PriorityTag<2>{});
+    }
+};
+
 using cast_tag = PriorityTag<1>;
 
 // ----------------------------------------------------------------------------
@@ -502,6 +577,18 @@ cast_impl(U && u, PriorityTag<0>)
     return cast_impl<TargetT>(atlas_value_for(std::forward<U>(u)), cast_tag{});
 }
 
+template <typename TargetT>
+struct CastTo
+{
+    template <typename U>
+    constexpr auto
+    operator () (U && u) const
+    -> decltype(cast_impl<TargetT>(std::forward<U>(u), cast_tag{}))
+    {
+        return cast_impl<TargetT>(std::forward<U>(u), cast_tag{});
+    }
+};
+
 void begin();
 void end();
 
@@ -520,9 +607,13 @@ end_(T && t) noexcept(noexcept(end(std::forward<T>(t))))
 {
     return end(std::forward<T>(t));
 }
+)";
 
+    // Hash drilling boilerplate - only included when hash specialization is
+    // needed
+    static constexpr char const hash_drill_boilerplate[] = R"(
 // ----------------------------------------------------------------------------
-// Detection traits for drilling operations
+// Hash drilling support
 // ----------------------------------------------------------------------------
 
 // is_hashable<T>: detects if std::hash<T> is valid
@@ -537,37 +628,6 @@ struct is_hashable<
     void_t<decltype(std::hash<T>{}(std::declval<T const &>()))>>
 : std::true_type
 { };
-
-// is_ostreamable<T>: detects if T can be written to std::ostream
-template <typename T, typename = void>
-struct is_ostreamable
-: std::false_type
-{ };
-
-template <typename T>
-struct is_ostreamable<
-    T,
-    void_t<decltype(std::declval<std::ostream &>() << std::declval<T const &>())>>
-: std::true_type
-{ };
-
-// is_istreamable<T>: detects if T can be read from std::istream
-template <typename T, typename = void>
-struct is_istreamable
-: std::false_type
-{ };
-
-template <typename T>
-struct is_istreamable<
-    T,
-    void_t<decltype(std::declval<std::istream &>() >> std::declval<T &>())>>
-: std::true_type
-{ };
-
-// ----------------------------------------------------------------------------
-// Drilling functions for hash
-// Drill down to find the first hashable type, with enum fallback
-// ----------------------------------------------------------------------------
 
 // Base case: T is directly hashable
 template <typename T>
@@ -598,10 +658,27 @@ auto hash_drill(T const & t, PriorityTag<0>)
 {
     return hash_drill(atlas_value_for(t), PriorityTag<2>{});
 }
+)";
 
+    // OStream drilling boilerplate - only included when ostream operator is
+    // needed
+    static constexpr char const ostream_drill_boilerplate[] = R"(
 // ----------------------------------------------------------------------------
-// Drilling functions for ostream
+// OStream drilling support
 // ----------------------------------------------------------------------------
+
+// is_ostreamable<T>: detects if T can be written to std::ostream
+template <typename T, typename = void>
+struct is_ostreamable
+: std::false_type
+{ };
+
+template <typename T>
+struct is_ostreamable<
+    T,
+    void_t<decltype(std::declval<std::ostream &>() << std::declval<T const &>())>>
+: std::true_type
+{ };
 
 // Base case: T is directly ostreamable
 template <typename T>
@@ -631,10 +708,27 @@ auto ostream_drill(std::ostream & strm, T const & t, PriorityTag<0>)
 {
     return ostream_drill(strm, atlas_value_for(t), PriorityTag<2>{});
 }
+)";
 
+    // IStream drilling boilerplate - only included when istream operator is
+    // needed
+    static constexpr char const istream_drill_boilerplate[] = R"(
 // ----------------------------------------------------------------------------
-// Drilling functions for istream
+// IStream drilling support
 // ----------------------------------------------------------------------------
+
+// is_istreamable<T>: detects if T can be read from std::istream
+template <typename T, typename = void>
+struct is_istreamable
+: std::false_type
+{ };
+
+template <typename T>
+struct is_istreamable<
+    T,
+    void_t<decltype(std::declval<std::istream &>() >> std::declval<T &>())>>
+: std::true_type
+{ };
 
 // Base case: T is directly istreamable
 template <typename T>
@@ -667,10 +761,13 @@ auto istream_drill(std::istream & strm, T & t, PriorityTag<0>)
 {
     return istream_drill(strm, atlas_value_for(t), PriorityTag<2>{});
 }
+)";
 
+    // Format drilling boilerplate - only included when formatter specialization
+    // is needed
+    static constexpr char const format_drill_boilerplate[] = R"(
 // ----------------------------------------------------------------------------
-// Drilling functions for std::formatter (C++20+)
-// Uses C++20 concepts and if constexpr for cleaner implementation
+// Format drilling support (C++20+)
 // ----------------------------------------------------------------------------
 #if defined(__cpp_lib_format) && __cpp_lib_format >= 202110L
 
@@ -710,7 +807,10 @@ using format_drilled_type_t =
     std::remove_cvref_t<decltype(format_value_drill(std::declval<T const &>()))>;
 
 #endif // __cpp_lib_format
+)";
 
+    // Closing section of the basic boilerplate
+    static constexpr char const basic_closing[] = R"(
 } // namespace atlas_detail
 
 using atlas_detail::enable_if_t;
@@ -727,17 +827,34 @@ concept AtlasTypeC = is_atlas_type<T>::value;
 #endif
 
 #if defined(__cpp_inline_variables) && __cpp_inline_variables >= 201606L
-inline constexpr auto to_underlying = atlas_detail::ToUnderlying{};
+inline constexpr auto undress = atlas_detail::ToUnderlying{};
+#elif defined(__cpp_variable_templates) && __cpp_variable_templates >= 201304L
+constexpr auto undress = atlas_detail::ToUnderlying{};
 #else
-template <typename T>
-constexpr auto
-to_underlying(T && t)
--> decltype(atlas_detail::ToUnderlying{}(std::forward<T>(t)))
-{
-    return atlas_detail::ToUnderlying{}(std::forward<T>(t));
+// fallback: not nice, but not terrible and prevents ADL
+namespace {
+constexpr atlas_detail::ToUnderlying undress{};
 }
 #endif
 
+#if defined(__cpp_inline_variables) && __cpp_inline_variables >= 201606L
+inline constexpr auto unwrap = atlas_detail::Unwrap{};
+#elif defined(__cpp_variable_templates) && __cpp_variable_templates >= 201304L
+constexpr auto unwrap = atlas_detail::Unwrap{};
+#else
+namespace {
+constexpr atlas_detail::Unwrap unwrap{};
+}
+#endif
+
+#if defined(__cpp_inline_variables) && __cpp_inline_variables >= 201606L
+template <typename TargetT>
+inline constexpr atlas_detail::CastTo<TargetT> cast{};
+#elif defined(__cpp_variable_templates) && __cpp_variable_templates >= 201304L
+template <typename TargetT>
+constexpr atlas_detail::CastTo<TargetT> cast{};
+#else
+// fallback: function template (ADL still possible, but unavoidable in C++11)
 template <typename TargetT, typename U>
 constexpr auto
 cast(U && u)
@@ -749,6 +866,7 @@ cast(U && u)
         std::forward<U>(u),
         atlas_detail::cast_tag{});
 }
+#endif
 
 } // namespace atlas
 
@@ -1882,9 +2000,9 @@ auto constraint_guard(T & t, char const * op) noexcept
 
 template <typename T>
 constexpr auto is_nil_value(typename T::atlas_value_type const * value)
--> decltype(atlas::to_underlying(T::nil_value) == *value)
+-> decltype(atlas::undress(T::nil_value) == *value)
 {
-    return atlas::to_underlying(T::nil_value) == *value;
+    return atlas::undress(T::nil_value) == *value;
 }
 
 template <typename T>
@@ -2162,7 +2280,7 @@ public:
 
     constexpr explicit operator bool () const noexcept
     {
-        return not (atlas::to_underlying(value_) == atlas::to_underlying(T::nil_value));
+        return not (atlas::undress(value_) == atlas::undress(T::nil_value));
     }
 
     constexpr bool has_value() const noexcept { return bool(*this); }
@@ -2764,7 +2882,7 @@ public:
     -> decltype(std::hash<value_type>{}(std::declval<value_type const &>()))
     {
         if (x.has_value()) {
-            return std::hash<value_type>{}(atlas::to_underlying(*x));
+            return std::hash<value_type>{}(atlas::undress(*x));
         } else {
             return std::hash<value_type *>{}(nullptr);
         }
@@ -2785,6 +2903,25 @@ public:
 )";
 
     std::string result = basic + 1;
+
+    // Add drilling sections before closing the basic boilerplate
+    if (options.include_hash_drill) {
+        result += hash_drill_boilerplate;
+    }
+    if (options.include_ostream_drill) {
+        result += ostream_drill_boilerplate;
+    }
+    if (options.include_istream_drill) {
+        result += istream_drill_boilerplate;
+    }
+    if (options.include_format_drill) {
+        result += format_drill_boilerplate;
+    }
+
+    // Close the basic boilerplate
+    result += basic_closing;
+
+    // Add other optional sections
     if (options.include_arrow_operator_traits ||
         options.include_dereference_operator_traits)
     {

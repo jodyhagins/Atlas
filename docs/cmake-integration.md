@@ -50,7 +50,7 @@ add_atlas_strong_type(
 
 ```cmake
 add_atlas_strong_types_from_file(
-    INPUT types.txt
+    INPUT types.atlas
     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/Types.hpp
     TARGET my_library)
 ```
@@ -78,7 +78,7 @@ description=strong int; ==, !=, hash
 
 ```cmake
 add_atlas_interactions_from_file(
-    INPUT interactions.txt
+    INPUT interactions.atlas
     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/Interactions.hpp
     TARGET my_library)
 ```
@@ -169,14 +169,14 @@ For cross-type interactions without helper functions:
 add_custom_command(
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/interactions.hpp
     COMMAND ${Atlas_EXECUTABLE}
-        --input=${CMAKE_CURRENT_SOURCE_DIR}/interactions.txt
+        --input=${CMAKE_CURRENT_SOURCE_DIR}/interactions.atlas
         --interactions=true
         --output=${CMAKE_CURRENT_BINARY_DIR}/interactions.hpp
-    DEPENDS Atlas::atlas ${CMAKE_CURRENT_SOURCE_DIR}/interactions.txt
+    DEPENDS Atlas::atlas ${CMAKE_CURRENT_SOURCE_DIR}/interactions.atlas
     VERBATIM)
 ```
 
-**interactions.txt:**
+**interactions.atlas:**
 ```
 include "Price.hpp"
 include "Quantity.hpp"
@@ -228,7 +228,7 @@ add_atlas_strong_type(
 
 # Or in a file-based approach
 add_atlas_strong_types_from_file(
-    INPUT types.txt
+    INPUT types.atlas
     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/Types.hpp
     TARGET my_lib)
 ```

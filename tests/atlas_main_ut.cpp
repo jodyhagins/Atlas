@@ -189,6 +189,7 @@ TEST_SUITE("Atlas Main Tests")
                                        "kind=struct\n") +
                 description + "\n";
             ::write(fd, s.data(), s.size());
+            ::close(fd);
             return file_template;
         }();
 

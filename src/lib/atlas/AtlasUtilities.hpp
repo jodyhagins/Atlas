@@ -88,6 +88,10 @@ struct PreambleOptions
     bool include_saturating_helpers = false;
     bool include_constraints = false;
     bool include_nilable_support = false;
+    bool include_hash_drill = false;
+    bool include_ostream_drill = false;
+    bool include_istream_drill = false;
+    bool include_format_drill = false;
 };
 
 /**

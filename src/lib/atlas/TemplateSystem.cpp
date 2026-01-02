@@ -4,9 +4,8 @@
 // See accompanying file LICENSE or copy at
 // https://opensource.org/licenses/MIT
 // ----------------------------------------------------------------------
-#include "TemplateSystem.hpp"
-
 #include "ProfileSystem.hpp"
+#include "TemplateSystem.hpp"
 
 #include <algorithm>
 #include <cctype>
@@ -15,15 +14,15 @@
 namespace wjh::atlas {
 
 bool
-TemplateSystem::is_valid_template_name(std::string const & name)
+TemplateSystem::
+is_valid_template_name(std::string const & name)
 {
     if (name.empty()) {
         return false;
     }
 
     // Must start with letter or underscore
-    if (not std::isalpha(static_cast<unsigned char>(name[0])) &&
-        name[0] != '_')
+    if (not std::isalpha(static_cast<unsigned char>(name[0])) && name[0] != '_')
     {
         return false;
     }
@@ -39,14 +38,16 @@ TemplateSystem::is_valid_template_name(std::string const & name)
 }
 
 bool
-TemplateSystem::is_valid_parameter_name(std::string const & name)
+TemplateSystem::
+is_valid_parameter_name(std::string const & name)
 {
     // Same rules as template name
     return is_valid_template_name(name);
 }
 
 void
-TemplateSystem::register_template(
+TemplateSystem::
+register_template(
     TypeTemplate const & tmpl,
     ProfileSystem const & profile_system)
 {
@@ -77,8 +78,7 @@ TemplateSystem::register_template(
         // Check for collision with profile names
         if (profile_system.has_profile(param)) {
             throw std::runtime_error(
-                "Template parameter '" + param + "' in template '" +
-                tmpl.name +
+                "Template parameter '" + param + "' in template '" + tmpl.name +
                 "' conflicts with an existing profile of the same name");
         }
     }
@@ -97,13 +97,15 @@ TemplateSystem::register_template(
 }
 
 bool
-TemplateSystem::has_template(std::string const & name) const
+TemplateSystem::
+has_template(std::string const & name) const
 {
     return templates_.find(name) != templates_.end();
 }
 
 TypeTemplate const &
-TemplateSystem::get_template(std::string const & name) const
+TemplateSystem::
+get_template(std::string const & name) const
 {
     auto it = templates_.find(name);
     if (it == templates_.end()) {
@@ -115,7 +117,8 @@ TemplateSystem::get_template(std::string const & name) const
 }
 
 std::vector<std::string>
-TemplateSystem::get_template_names() const
+TemplateSystem::
+get_template_names() const
 {
     std::vector<std::string> names;
     names.reserve(templates_.size());
@@ -127,7 +130,8 @@ TemplateSystem::get_template_names() const
 }
 
 void
-TemplateSystem::clear()
+TemplateSystem::
+clear()
 {
     templates_.clear();
 }

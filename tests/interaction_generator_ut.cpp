@@ -287,7 +287,7 @@ TEST_SUITE("InteractionGenerator")
                       .rhs_is_template = false,
                       .is_constexpr = true,
                       .interaction_namespace = "test",
-                      .lhs_value_access = "atlas::to_underlying",
+                      .lhs_value_access = "atlas::undress",
                       .rhs_value_access = ".getValue()",
                       .value_access = ""},
                      {.op_symbol = "-",
@@ -299,7 +299,7 @@ TEST_SUITE("InteractionGenerator")
                       .rhs_is_template = false,
                       .is_constexpr = false,
                       .interaction_namespace = "test",
-                      .lhs_value_access = "atlas::to_underlying",
+                      .lhs_value_access = "atlas::undress",
                       .rhs_value_access = ".getValue()",
                       .value_access = ""}},
                 .guard_prefix = "",
@@ -308,15 +308,16 @@ TEST_SUITE("InteractionGenerator")
 
             auto code = generate_interactions(desc);
 
-            // Should have non-constexpr atlas_value_for because one interaction is
-            // non-constexpr
+            // Should have non-constexpr atlas_value_for because one interaction
+            // is non-constexpr
             CHECK(contains(
                 code,
                 "inline auto\natlas_value_for(::external::Shared const& v, "
                 "value_tag)"));
             CHECK_FALSE(contains(
                 code,
-                "inline constexpr auto\natlas_value_for(::external::Shared const& "
+                "inline constexpr auto\natlas_value_for(::external::Shared "
+                "const& "
                 "v, value_tag)"));
         }
     }

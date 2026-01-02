@@ -8,13 +8,13 @@
 #include "StrongTypeDescriptionBoostDescribe.hpp"
 #include "StrongTypeGenerator.hpp"
 #include "TypeTokenizer.hpp"
-#include "version.hpp"
 
 #include <boost/describe.hpp>
 #include <boost/json/src.hpp>
 #include <boost/mustache.hpp>
 #include <boost/uuid/detail/sha1.hpp>
 
+#include "atlas/version.hpp"
 #include "generation/core/ClassInfo.hpp"
 #include "generation/core/GuardGenerator.hpp"
 #include "generation/core/TemplateOrchestrator.hpp"
@@ -96,7 +96,11 @@ operator () (StrongTypeDescription const & desc)
         .include_saturating_helpers =
             (info.arithmetic_mode == ArithmeticMode::Saturating),
         .include_constraints = info.has_constraint,
-        .include_nilable_support = info.nil_value_is_constant};
+        .include_nilable_support = info.nil_value_is_constant,
+        .include_hash_drill = info.hash_specialization,
+        .include_ostream_drill = info.ostream_operator,
+        .include_istream_drill = info.istream_operator,
+        .include_format_drill = info.formatter_specialization};
 
     auto preamble_includes = get_preamble_includes(preamble_opts);
 
@@ -154,6 +158,10 @@ generate_strong_types_file(
     bool any_saturating_arithmetic = false;
     bool any_constraints = false;
     bool any_nil_value = false;
+    bool any_hash_specialization = false;
+    bool any_ostream_operator = false;
+    bool any_istream_operator = false;
+    bool any_formatter_specialization = false;
     int max_cpp_standard = 11;
 
     // Generate each type WITHOUT preamble, and collect includes
@@ -186,6 +194,22 @@ generate_strong_types_file(
 
         if (info.nil_value_is_constant) {
             any_nil_value = true;
+        }
+
+        if (info.hash_specialization) {
+            any_hash_specialization = true;
+        }
+
+        if (info.ostream_operator) {
+            any_ostream_operator = true;
+        }
+
+        if (info.istream_operator) {
+            any_istream_operator = true;
+        }
+
+        if (info.formatter_specialization) {
+            any_formatter_specialization = true;
         }
 
         // Collect includes and guards from this type
@@ -224,7 +248,11 @@ generate_strong_types_file(
         .include_checked_helpers = any_checked_arithmetic,
         .include_saturating_helpers = any_saturating_arithmetic,
         .include_constraints = any_constraints,
-        .include_nilable_support = any_nil_value};
+        .include_nilable_support = any_nil_value,
+        .include_hash_drill = any_hash_specialization,
+        .include_ostream_drill = any_ostream_operator,
+        .include_istream_drill = any_istream_operator,
+        .include_format_drill = any_formatter_specialization};
     auto preamble_includes = get_preamble_includes(preamble_opts);
     for (auto const & include : preamble_includes) {
         all_includes.insert(include);

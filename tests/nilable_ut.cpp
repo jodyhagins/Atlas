@@ -177,7 +177,8 @@ TEST_SUITE("Optional Construction")
         CHECK(*opt1 == test::SimpleInt::nil_value);
     }
 
-    TEST_CASE("Move construction leaves moved-from object in nil state - string type")
+    TEST_CASE(
+        "Move construction leaves moved-from object in nil state - string type")
     {
         atlas::Nilable<test::Name> opt1(test::Name{std::string("Alice")});
         atlas::Nilable<test::Name> opt2(std::move(opt1));
@@ -189,7 +190,8 @@ TEST_SUITE("Optional Construction")
         CHECK(*opt1 == test::Name::nil_value);
     }
 
-    TEST_CASE("Move construction leaves moved-from object in nil state - with default_value")
+    TEST_CASE("Move construction leaves moved-from object in nil state - with "
+              "default_value")
     {
         // Test with Score which has a default_value
         atlas::Nilable<test::Score> opt1(test::Score{100});
@@ -210,7 +212,7 @@ TEST_SUITE("Optional Construction")
         REQUIRE(opt.has_value());
         test::UniqueHandle const & h = *opt;
         // Note: .get() forwarding is disabled for nullable types
-        CHECK(atlas::to_underlying(h).get() != nullptr);
+        CHECK(atlas::undress(h).get() != nullptr);
     }
 
     TEST_CASE("Different sentinel values")
@@ -225,7 +227,7 @@ TEST_SUITE("Optional Construction")
             atlas::Nilable<test::FileDescriptor> opt;
             CHECK_FALSE(opt.has_value());
             // When default-constructed, should have nil_value
-            CHECK(atlas::to_underlying(*opt) == -1);
+            CHECK(atlas::undress(*opt) == -1);
         }
 
         SUBCASE("Empty string sentinel") {
@@ -360,7 +362,8 @@ TEST_SUITE("Optional Assignment")
         CHECK(*opt1 == test::SimpleInt::nil_value);
     }
 
-    TEST_CASE("Move assignment leaves moved-from object in nil state - non-empty to non-empty")
+    TEST_CASE("Move assignment leaves moved-from object in nil state - "
+              "non-empty to non-empty")
     {
         atlas::Nilable<test::SimpleInt> opt1(test::SimpleInt{42});
         atlas::Nilable<test::SimpleInt> opt2(test::SimpleInt{17});
@@ -374,7 +377,8 @@ TEST_SUITE("Optional Assignment")
         CHECK(*opt1 == test::SimpleInt::nil_value);
     }
 
-    TEST_CASE("Move assignment leaves moved-from object in nil state - with default_value")
+    TEST_CASE("Move assignment leaves moved-from object in nil state - with "
+              "default_value")
     {
         atlas::Nilable<test::Score> opt1(test::Score{100});
         atlas::Nilable<test::Score> opt2;
@@ -620,7 +624,7 @@ TEST_SUITE("Optional Modifiers")
         SUBCASE("with value") {
             test::SimpleInt & ref = opt.emplace(42);
             REQUIRE(opt.has_value());
-            CHECK(42 == atlas::to_underlying(*opt));
+            CHECK(42 == atlas::undress(*opt));
         }
 
         SUBCASE("with nothing") {
@@ -731,7 +735,7 @@ TEST_SUITE("Optional Monadic Operations")
 
         auto result = opt.and_then([](test::SimpleInt val) {
             return atlas::Nilable<test::SimpleInt>{
-                test::SimpleInt{atlas::to_underlying(val) * 2}};
+                test::SimpleInt{atlas::undress(val) * 2}};
         });
 
         REQUIRE(result.has_value());
@@ -744,7 +748,7 @@ TEST_SUITE("Optional Monadic Operations")
 
         auto result = opt.and_then([](test::SimpleInt val) {
             return atlas::Nilable<test::Name>{
-                test::Name{std::to_string(atlas::to_underlying(val))}};
+                test::Name{std::to_string(atlas::undress(val))}};
         });
 
         REQUIRE(result.has_value());
@@ -767,11 +771,11 @@ TEST_SUITE("Optional Monadic Operations")
 
         auto result = opt.and_then([](test::SimpleInt val) {
                              return atlas::Nilable<test::SimpleInt>{
-                                 test::SimpleInt{atlas::to_underlying(val) * 2}};
+                                 test::SimpleInt{atlas::undress(val) * 2}};
                          })
                           .and_then([](test::SimpleInt val) {
                               return atlas::Nilable<test::SimpleInt>{
-                                  test::SimpleInt{atlas::to_underlying(val) + 5}};
+                                  test::SimpleInt{atlas::undress(val) + 5}};
                           });
 
         REQUIRE(result.has_value());
@@ -846,7 +850,7 @@ TEST_SUITE("Optional Monadic Operations")
                          })
                           .and_then([](test::SimpleInt val) {
                               return atlas::Nilable<test::SimpleInt>{
-                                  test::SimpleInt{atlas::to_underlying(val) * 2}};
+                                  test::SimpleInt{atlas::undress(val) * 2}};
                           });
 
         REQUIRE(result.has_value());
@@ -873,11 +877,11 @@ TEST_SUITE("Optional Monadic Operations")
         auto result = opt.and_then([](test::SimpleInt val) {
                              // Double it
                              return atlas::Nilable<test::SimpleInt>{
-                                 test::SimpleInt{atlas::to_underlying(val) * 2}};
+                                 test::SimpleInt{atlas::undress(val) * 2}};
                          })
                           .and_then([](test::SimpleInt val) {
                               // Return empty if greater than 15
-                              if (atlas::to_underlying(val) > 15) {
+                              if (atlas::undress(val) > 15) {
                                   return atlas::Nilable<test::SimpleInt>{};
                               }
                               return atlas::Nilable<test::SimpleInt>{val};
@@ -899,11 +903,11 @@ TEST_SUITE("Optional Monadic Operations")
         auto result = opt.and_then([](test::SimpleInt val) {
                              // Double it
                              return atlas::Nilable<test::SimpleInt>{
-                                 test::SimpleInt{atlas::to_underlying(val) * 2}};
+                                 test::SimpleInt{atlas::undress(val) * 2}};
                          })
                           .and_then([](test::SimpleInt val) {
                               // Return empty if greater than 15
-                              if (atlas::to_underlying(val) > 15) {
+                              if (atlas::undress(val) > 15) {
                                   return atlas::Nilable<test::SimpleInt>{};
                               }
                               return atlas::Nilable<test::SimpleInt>{val};
@@ -1337,13 +1341,13 @@ TEST_SUITE("Optional Edge Cases")
 
         REQUIRE(opt.has_value());
         // Note: .get() forwarding is disabled for nullable types
-        CHECK(atlas::to_underlying(*opt).get() != nullptr);
-        CHECK(*atlas::to_underlying(*opt) == 42);
+        CHECK(atlas::undress(*opt).get() != nullptr);
+        CHECK(*atlas::undress(*opt) == 42);
 
         // Move out of optional
         auto handle = std::move(*opt);
-        CHECK(atlas::to_underlying(handle).get() != nullptr);
-        CHECK(*atlas::to_underlying(handle) == 42);
+        CHECK(atlas::undress(handle).get() != nullptr);
+        CHECK(*atlas::undress(handle) == 42);
     }
 
     TEST_CASE("Optional with arithmetic type")
@@ -1445,7 +1449,7 @@ TEST_SUITE("Optional Generic Programming")
         auto double_value = [](atlas::Nilable<test::SimpleInt> opt) {
             if (opt) {
                 return atlas::Nilable<test::SimpleInt>{
-                    test::SimpleInt{atlas::to_underlying(*opt) * 2}};
+                    test::SimpleInt{atlas::undress(*opt) * 2}};
             }
             return atlas::Nilable<test::SimpleInt>{};
         };
@@ -1489,7 +1493,7 @@ TEST_SUITE("Optional Generic Programming")
         int sum = 0;
         for (auto const & opt : vec) {
             if (opt) {
-                sum += atlas::to_underlying(*opt);
+                sum += atlas::undress(*opt);
             }
         }
 

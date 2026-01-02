@@ -5,7 +5,7 @@ upcase_guard=true
 # Both concept AND enable_if - tests feature detection macro generation
 namespace=math
 constexpr
-value_access=atlas::to_underlying
+value_access=atlas::undress
 
 # Maximum compatibility - C++20 concept with C++17 SFINAE fallback
 concept=std::integral V

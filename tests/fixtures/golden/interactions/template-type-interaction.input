@@ -4,7 +4,7 @@ upcase_guard=true
 
 namespace=math
 constexpr
-value_access=atlas::to_underlying
+value_access=atlas::undress
 
 concept=std::integral T
 T + T -> T

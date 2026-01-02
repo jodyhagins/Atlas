@@ -144,8 +144,8 @@ struct SectionHeaderInfo
 
     // Template instantiation: [use TemplateName Args...]
     bool is_template_instantiation = false;
-    std::string template_name;                // Template to instantiate
-    std::vector<std::string> template_args;   // Argument values
+    std::string template_name; // Template to instantiate
+    std::vector<std::string> template_args; // Argument values
 };
 
 // Open and validate input file for parsing
@@ -247,8 +247,7 @@ parse_section_header(
     }
 
     // Template instantiation: [use TemplateName Args...]
-    if (section_content.size() >= 4 && section_content.substr(0, 4) == "use ")
-    {
+    if (section_content.size() >= 4 && section_content.substr(0, 4) == "use ") {
         info.is_template_instantiation = true;
 
         // Parse: use TemplateName Arg1 Arg2 ...
@@ -1126,8 +1125,8 @@ parse_type_definitions(
 
         // Handle template instantiations
         if (section_info.is_template_instantiation) {
-            auto const & tmpl =
-                template_system.get_template(section_info.template_name);
+            auto const & tmpl = template_system.get_template(
+                section_info.template_name);
 
             // Check argument count
             if (section_info.template_args.size() != tmpl.parameters.size()) {
@@ -1173,8 +1172,8 @@ parse_type_definitions(
             }
 
             // Override kind if specified in instance
-            std::string effective_kind =
-                current_kind.empty() ? tmpl.kind : current_kind;
+            std::string effective_kind = current_kind.empty() ? tmpl.kind
+                                                              : current_kind;
 
             // Override namespace if specified, else use template's, else global
             std::string effective_namespace = current_namespace.empty()
@@ -1370,7 +1369,7 @@ parse_interactions(std::string const & filename)
 
     // State tracking
     std::string current_namespace;
-    std::string current_value_access = "atlas::value";
+    std::string current_value_access = "atlas::undress";
     std::string current_lhs_value_access; // Empty = use current_value_access
     std::string current_rhs_value_access; // Empty = use current_value_access
     bool current_constexpr = true;

@@ -122,7 +122,7 @@ description=strong int; ==, !=
 
 **3. Command-line** (highest precedence, overrides everything):
 ```bash
-atlas --input=types.txt --cpp-standard=20
+atlas --input=types.atlas --cpp-standard=20
 ```
 
 ### Supported Standards
@@ -1056,7 +1056,7 @@ Distance * Time -> Velocity
 ### Command-Line Override
 
 ```bash
-atlas --interactions=true --input=interactions.txt --cpp-standard=20
+atlas --interactions=true --input=interactions.atlas --cpp-standard=20
 ```
 
 The `cpp_standard` directive and `--cpp-standard` flag work exactly as they do for strong type files:
@@ -1075,3 +1075,97 @@ static_assert(__cplusplus >= 202002L,
 
 // ... rest of generated code ...
 ```
+
+## Runtime Utilities
+
+Atlas provides runtime utilities for working with generated strong types. These are callable objects that help extract underlying values when absolutely necessary.
+
+> **Warning**: These utilities exist for interop scenarios where you *must* access raw values. Using them frequently defeats the purpose of strong types. If you find yourself reaching for these often, reconsider your design. Code reviewers should always ask: "Why do we need to drill into this type here?"
+
+### `atlas::unwrap`
+
+Removes exactly **one layer** of wrapping from a strong type or enum.
+
+```cpp
+#include "MyTypes.hpp"  // Generated header includes utilities
+
+// For atlas strong types: returns the immediately wrapped type
+namespace math {
+    // SimpleInt wraps int
+    // NestedInt wraps SimpleInt
+    // TripleNestedInt wraps NestedInt
+}
+
+math::TripleNestedInt x{math::NestedInt{math::SimpleInt{42}}};
+
+auto & one_layer   = atlas::unwrap(x);      // NestedInt& (just the first layer)
+auto & two_layers  = atlas::unwrap(one_layer);  // SimpleInt&
+auto & three_layers = atlas::unwrap(two_layers); // int&
+
+// For enums: returns the underlying type
+enum class Status : int { Active = 1, Inactive = 0 };
+auto raw = atlas::unwrap(Status::Active);   // int (value: 1)
+
+// SFINAE: fails to compile for non-atlas/non-enum types
+// atlas::unwrap(42);  // Error: int has no layer to unwrap
+```
+
+**Value categories are preserved:**
+- Lvalue → returns reference to underlying
+- Const lvalue → returns const reference
+- Rvalue → returns by value (moves if applicable)
+
+### `atlas::undress`
+
+Recursively drills through **all layers** to the innermost raw type. The full monty - removes all clothing until you're left with a butt-naked primitive most of the time.
+
+```cpp
+math::TripleNestedInt x{math::NestedInt{math::SimpleInt{42}}};
+
+auto & naked = atlas::undress(x);  // int& (drilled through ALL layers)
+
+// Contrast with unwrap:
+auto & clothed = atlas::unwrap(x); // NestedInt& (only removed jacket)
+
+// Also handles non-atlas types (identity):
+int y = 42;
+auto & still_int = atlas::undress(y);  // int& (unchanged)
+```
+
+### `atlas::cast<TargetT>`
+
+A semantic cast that starts with the wrapped type and drills down until a cast to `TargetT` succeeds.
+
+```cpp
+math::TripleNestedInt x{math::NestedInt{math::SimpleInt{42}}};
+
+// Drill to find castable type
+auto val = atlas::cast<int>(x);        // 42 - found int at the bottom
+auto mid = atlas::cast<math::SimpleInt>(x);  // SimpleInt{42} - stopped at SimpleInt
+
+// Reference casts
+auto & ref = atlas::cast<int &>(x);    // int& - reference to innermost
+ref = 100;                              // Modifies the wrapped value
+
+// Unlike unwrap/undress, cast has a TARGET type and finds the first
+// level where static_cast<TargetT>(...) succeeds
+```
+
+### Comparison Summary
+
+| Utility | Behavior | Use When |
+|---------|----------|----------|
+| `unwrap` | Remove exactly ONE layer | Interop with code expecting the immediate wrapped type |
+| `undress` | Remove ALL layers | Interop requiring the raw primitive (serialization, FFI) |
+| `cast<T>` | Drill until castable to T | Need a specific intermediate type from nested wrappers |
+
+### When to Use (Sparingly!)
+
+These utilities are escape hatches, not everyday tools:
+
+- **Serialization**: `atlas::undress(price)` to get the raw double for JSON/binary encoding
+- **FFI boundaries**: Passing values to C APIs that expect primitives
+- **Legacy interop**: Interfacing with code that predates your strong types
+- **Debugging**: Inspecting raw values in logs (prefer `out` stream operator instead)
+
+If you're using these inside your core domain logic, you've likely undermined your type safety. The whole point of strong types is to *prevent* mixing `Price` with `Quantity` - drilling down defeats that protection.

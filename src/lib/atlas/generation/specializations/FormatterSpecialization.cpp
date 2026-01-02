@@ -65,7 +65,8 @@ prepare_variables_impl(ClassInfo const & info) const
 {
     boost::json::object variables;
     variables["full_qualified_name"] = info.full_qualified_name;
-    variables["underlying_type"] = info.underlying_type;  // Used to determine drilled type
+    variables["underlying_type"] =
+        info.underlying_type; // Used to determine drilled type
 
     return variables;
 }

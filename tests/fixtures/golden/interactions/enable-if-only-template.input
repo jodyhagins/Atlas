@@ -5,7 +5,7 @@ upcase_guard=true
 # C++17 enable_if without C++20 concept - tests backward compatibility
 namespace=math
 constexpr
-value_access=atlas::to_underlying
+value_access=atlas::undress
 
 # SFINAE-only constraint for C++17 compatibility
 enable_if=std::is_floating_point<U>::value

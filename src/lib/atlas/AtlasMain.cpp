@@ -9,7 +9,8 @@
 #include "AtlasUtilities.hpp"
 #include "InteractionGenerator.hpp"
 #include "StrongTypeGenerator.hpp"
-#include "version.hpp"
+
+#include "atlas/version.hpp"
 
 #include <cstdlib>
 #include <fstream>

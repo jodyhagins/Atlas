@@ -231,27 +231,27 @@ target_include_directories(nilable_cpp20_ut PRIVATE
 )
 add_test(NAME NilableCpp20Tests COMMAND nilable_cpp20_ut)
 
-# atlas::to_underlying() tests
-set(TO_UNDERLYING_INPUT "${CMAKE_CURRENT_SOURCE_DIR}/to_underlying_test_types.atlas")
-set(TO_UNDERLYING_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/to_underlying_test_types.hpp")
+# atlas::undress() tests
+set(TO_UNDERLYING_INPUT "${CMAKE_CURRENT_SOURCE_DIR}/undress_test_types.atlas")
+set(TO_UNDERLYING_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/undress_test_types.hpp")
 add_custom_command(
     OUTPUT ${TO_UNDERLYING_OUTPUT}
     COMMAND atlas --input=${TO_UNDERLYING_INPUT} --output=${TO_UNDERLYING_OUTPUT}
     DEPENDS atlas ${TO_UNDERLYING_INPUT}
-    COMMENT "Generating atlas::to_underlying test types"
+    COMMENT "Generating atlas::undress test types"
 )
-add_executable(to_underlying_ut
-    to_underlying_ut.cpp
+add_executable(undress_ut
+    undress_ut.cpp
     ${TO_UNDERLYING_OUTPUT}
 )
-target_link_libraries(to_underlying_ut PRIVATE doctest::doctest)
-target_include_directories(to_underlying_ut PRIVATE
+target_link_libraries(undress_ut PRIVATE doctest::doctest)
+target_include_directories(undress_ut PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/lib/atlas
 )
-add_test(NAME ToUnderlyingTests COMMAND to_underlying_ut)
+add_test(NAME ToUnderlyingTests COMMAND undress_ut)
 
-# atlas::cast<T>() tests - reuses to_underlying test types
+# atlas::cast<T>() tests - reuses undress test types
 add_executable(cast_ut
     cast_ut.cpp
     ${TO_UNDERLYING_OUTPUT}
@@ -262,4 +262,16 @@ target_include_directories(cast_ut PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/lib/atlas
 )
 add_test(NAME CastTests COMMAND cast_ut)
+
+# atlas::unwrap() tests - reuses undress test types
+add_executable(unwrap_ut
+    unwrap_ut.cpp
+    ${TO_UNDERLYING_OUTPUT}
+)
+target_link_libraries(unwrap_ut PRIVATE doctest::doctest)
+target_include_directories(unwrap_ut PRIVATE
+    ${CMAKE_CURRENT_BINARY_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/lib/atlas
+)
+add_test(NAME UnwrapTests COMMAND unwrap_ut)
 

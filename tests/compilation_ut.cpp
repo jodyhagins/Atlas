@@ -1643,6 +1643,8 @@ description=strong test::Inner; fmt, no-constexpr, c++20
 )";
 
         auto test_code = R"(
+#include <version>
+#if defined(__cpp_lib_format) && __cpp_lib_format >= 202110L
 #include <cassert>
 #include <format>
 #include <string>
@@ -1661,6 +1663,9 @@ int main() {
 
     return 0;
 }
+#else
+int main() { return 0; }
+#endif
 )";
         auto result = tester.compile_and_run(description, test_code, "c++20");
 
@@ -1689,6 +1694,8 @@ description=strong test::Color; fmt, no-constexpr, c++20, #"format_color.hpp"
 )";
 
         auto test_code = R"(
+#include <version>
+#if defined(__cpp_lib_format) && __cpp_lib_format >= 202110L
 #include <cassert>
 #include <format>
 #include <string>
@@ -1705,6 +1712,9 @@ int main() {
 
     return 0;
 }
+#else
+int main() { return 0; }
+#endif
 )";
         auto result = tester.compile_and_run(description, test_code, "c++20");
 

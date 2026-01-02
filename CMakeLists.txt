@@ -10,6 +10,14 @@ project(Atlas
     VERSION 1.0.0
     LANGUAGES CXX)
 
+# Generate version header from template (single source of truth for version)
+set(ATLAS_GENERATED_INCLUDE_DIR ${CMAKE_CURRENT_BINARY_DIR}/generated
+    CACHE INTERNAL "Directory containing generated Atlas headers")
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/cmake/version.hpp.in
+    ${ATLAS_GENERATED_INCLUDE_DIR}/atlas/version.hpp
+    @ONLY)
+
 # Set default build type to Release if not specified
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     set(CMAKE_BUILD_TYPE "Release"

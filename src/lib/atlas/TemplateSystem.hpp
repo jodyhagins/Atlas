@@ -29,14 +29,14 @@ class ProfileSystem; // Forward declaration for validation
  */
 struct TypeTemplate
 {
-    std::string name;                    // "Optional"
+    std::string name; // "Optional"
     std::vector<std::string> parameters; // ["T"]
-    std::string kind;                    // "class" or "struct"
-    std::string type_namespace;          // optional namespace
-    std::string description;             // "std::optional<{T}>; <=>, bool"
-    std::string default_value;           // optional default value
-    std::vector<std::string> constants;  // constant definitions
-    std::vector<std::string> forwards;   // forwarded member functions
+    std::string kind; // "class" or "struct"
+    std::string type_namespace; // optional namespace
+    std::string description; // "std::optional<{T}>; <=>, bool"
+    std::string default_value; // optional default value
+    std::vector<std::string> constants; // constant definitions
+    std::vector<std::string> forwards; // forwarded member functions
 };
 
 /**

@@ -1,4 +1,4 @@
-# Test types for atlas::to_underlying() tests
+# Test types for atlas::undress() tests
 
 # Basic integer wrapper
 [type]

@@ -26,10 +26,10 @@ TEST_SUITE("Constraint × Arithmetic Mode Composition")
         CHECK_NOTHROW(a - b);
 
         auto sum = a + b;
-        CHECK(atlas::to_underlying(sum) == 150);
+        CHECK(atlas::undress(sum) == 150);
 
         auto diff = a - b;
-        CHECK(atlas::to_underlying(diff) == 50);
+        CHECK(atlas::undress(diff) == 50);
     }
 
     TEST_CASE("positive + checked - overflow detection before constraint")
@@ -59,7 +59,7 @@ TEST_SUITE("Constraint × Arithmetic Mode Composition")
         CHECK_NOTHROW(a - b);
 
         auto result = a - b;
-        CHECK(atlas::to_underlying(result) == 50);
+        CHECK(atlas::undress(result) == 50);
     }
 
     TEST_CASE("positive + saturating - saturation to 0 violates constraint")
@@ -80,7 +80,7 @@ TEST_SUITE("Constraint × Arithmetic Mode Composition")
         CHECK_NOTHROW(a + b);
 
         auto result = a + b;
-        CHECK(atlas::to_underlying(result) == 255);
+        CHECK(atlas::undress(result) == 255);
     }
 
     TEST_CASE("positive + wrapping - wrap to positive is valid")
@@ -92,7 +92,7 @@ TEST_SUITE("Constraint × Arithmetic Mode Composition")
         CHECK_NOTHROW(a + b);
 
         auto result = a + b;
-        CHECK(atlas::to_underlying(result) == 44);
+        CHECK(atlas::undress(result) == 44);
     }
 
     TEST_CASE("positive + wrapping - wrap to zero violates constraint")
@@ -131,7 +131,7 @@ TEST_SUITE("Constraint × Arithmetic Mode Composition")
         CHECK_NOTHROW(a - b);
 
         auto result = a - b;
-        CHECK(atlas::to_underlying(result) == 0);
+        CHECK(atlas::undress(result) == 0);
     }
 
     TEST_CASE("non_negative + wrapping - all uint8_t values are non-negative")
@@ -179,7 +179,7 @@ TEST_SUITE("Constraint × Arithmetic Mode Composition")
         CHECK_NOTHROW(a - b);
 
         auto result = a - b;
-        CHECK(atlas::to_underlying(result) == 50);
+        CHECK(atlas::undress(result) == 50);
     }
 
     TEST_CASE("non_zero + wrapping - wrap to zero violates")
@@ -200,7 +200,7 @@ TEST_SUITE("Constraint × Arithmetic Mode Composition")
         CHECK_NOTHROW(a + b);
 
         auto result = a + b;
-        CHECK(atlas::to_underlying(result) == 44);
+        CHECK(atlas::undress(result) == 44);
     }
 
     // ======================================================================
@@ -230,7 +230,7 @@ TEST_SUITE("Constraint × Arithmetic Mode Composition")
         // Or if handled as unsigned arithmetic, might wrap
         // The exact behavior depends on the underlying type
         auto result = a + b; // 110, within bounds
-        CHECK(atlas::to_underlying(result) == 110);
+        CHECK(atlas::undress(result) == 110);
     }
 
     TEST_CASE("bounded + checked - overflow before bounds")
@@ -250,7 +250,7 @@ TEST_SUITE("Constraint × Arithmetic Mode Composition")
         CHECK_NOTHROW(a + b); // 150, within bounds
 
         auto result = a + b;
-        CHECK(atlas::to_underlying(result) == 150);
+        CHECK(atlas::undress(result) == 150);
     }
 
     TEST_CASE("bounded + saturating - saturation can violate bounds")
@@ -279,7 +279,7 @@ TEST_SUITE("Constraint × Arithmetic Mode Composition")
         CHECK_NOTHROW(a + b); // 150, within bounds
 
         auto result = a + b;
-        CHECK(atlas::to_underlying(result) == 150);
+        CHECK(atlas::undress(result) == 150);
     }
 
     TEST_CASE("bounded + wrapping - wrapping can violate bounds")
@@ -291,7 +291,7 @@ TEST_SUITE("Constraint × Arithmetic Mode Composition")
         CHECK_NOTHROW(a + b);
 
         auto result = a + b;
-        CHECK(atlas::to_underlying(result) == 44);
+        CHECK(atlas::undress(result) == 44);
     }
 
     TEST_CASE("bounded + wrapping - wrapping below bounds")
@@ -374,7 +374,7 @@ TEST_SUITE("Constraint × Arithmetic Mode Composition")
 
         // Addition should work
         auto result = min_pos + min_pos;
-        CHECK(atlas::to_underlying(result) == 2);
+        CHECK(atlas::undress(result) == 2);
 
         // Subtraction that results in 0 should violate constraint
         // (1 - 1 = 0, which violates positive constraint)
@@ -398,8 +398,8 @@ TEST_SUITE("Constraint × Arithmetic Mode Composition")
         test::BoundedDefault at_max{200};
 
         // Values at boundaries should be valid
-        CHECK(atlas::to_underlying(at_min) == 10);
-        CHECK(atlas::to_underlying(at_max) == 200);
+        CHECK(atlas::undress(at_min) == 10);
+        CHECK(atlas::undress(at_max) == 200);
 
         // One below min should fail
         CHECK_THROWS_AS(test::BoundedDefault{9}, atlas::ConstraintError);
@@ -496,7 +496,7 @@ TEST_SUITE("Constraint × Arithmetic Mode Composition")
         // Copy assignment should work without re-checking constraints
         // (source is already valid)
         CHECK_NOTHROW(b = a);
-        CHECK(atlas::to_underlying(b) == 42);
+        CHECK(atlas::undress(b) == 42);
     }
 
     TEST_CASE("assignment - move assignment preserves constraints")
@@ -506,7 +506,7 @@ TEST_SUITE("Constraint × Arithmetic Mode Composition")
 
         // Move assignment should work without re-checking constraints
         CHECK_NOTHROW(b = std::move(a));
-        CHECK(atlas::to_underlying(b) == 42);
+        CHECK(atlas::undress(b) == 42);
     }
 
     TEST_CASE("assignment - bounded assignment respects bounds")
@@ -516,7 +516,7 @@ TEST_SUITE("Constraint × Arithmetic Mode Composition")
 
         // Assignment of valid values should work
         CHECK_NOTHROW(b = a);
-        CHECK(atlas::to_underlying(b) == 150);
+        CHECK(atlas::undress(b) == 150);
     }
 
     TEST_CASE("assignment - arithmetic result assignment")
@@ -527,7 +527,7 @@ TEST_SUITE("Constraint × Arithmetic Mode Composition")
         // Arithmetic result assigned to new variable
         test::PositiveDefault result{1};
         CHECK_NOTHROW(result = a + b);
-        CHECK(atlas::to_underlying(result) == 150);
+        CHECK(atlas::undress(result) == 150);
     }
 
     TEST_CASE("assignment - compound operations preserve constraints")
@@ -538,11 +538,11 @@ TEST_SUITE("Constraint × Arithmetic Mode Composition")
 
         // Multiple operations: (a + b) assigned to result
         auto result = a + b; // 120
-        CHECK(atlas::to_underlying(result) == 120);
+        CHECK(atlas::undress(result) == 120);
 
         // Further operation with result
         auto final_result = result + c; // 150
-        CHECK(atlas::to_underlying(final_result) == 150);
+        CHECK(atlas::undress(final_result) == 150);
     }
 }
 
@@ -557,7 +557,7 @@ TEST_SUITE("Constraint Constexpr Validation")
         // This should compile without issues
         constexpr auto valid = []() {
             test::PositiveForConstexpr p{42};
-            return atlas::to_underlying(p);
+            return atlas::undress(p);
         }();
 
         CHECK(valid == 42);
@@ -567,7 +567,7 @@ TEST_SUITE("Constraint Constexpr Validation")
     {
         // At runtime, verify constexpr construction worked
         constexpr test::PositiveForConstexpr p{100};
-        CHECK(atlas::to_underlying(p) == 100);
+        CHECK(atlas::undress(p) == 100);
     }
 
     // NOTE: The following would fail to compile (constraint violation):
@@ -580,7 +580,7 @@ TEST_SUITE("Constraint Constexpr Validation")
     {
         constexpr auto valid = []() {
             test::BoundedForConstexpr b{50};
-            return atlas::to_underlying(b);
+            return atlas::undress(b);
         }();
 
         CHECK(valid == 50);
@@ -590,11 +590,11 @@ TEST_SUITE("Constraint Constexpr Validation")
     {
         // Test at lower bound (inclusive)
         constexpr test::BoundedForConstexpr at_min{1};
-        CHECK(atlas::to_underlying(at_min) == 1);
+        CHECK(atlas::undress(at_min) == 1);
 
         // Test at upper bound (inclusive)
         constexpr test::BoundedForConstexpr at_max{100};
-        CHECK(atlas::to_underlying(at_max) == 100);
+        CHECK(atlas::undress(at_max) == 100);
     }
 
     // NOTE: The following would fail to compile:
@@ -612,10 +612,10 @@ TEST_SUITE("Constraint Constexpr Validation")
     {
         // These compile-time checks verify that valid values work
         constexpr test::PositiveForConstexpr p{42};
-        static_assert(atlas::to_underlying(p) == 42, "Should be 42");
+        static_assert(atlas::undress(p) == 42, "Should be 42");
 
         constexpr test::BoundedForConstexpr b{50};
-        static_assert(atlas::to_underlying(b) == 50, "Should be 50");
+        static_assert(atlas::undress(b) == 50, "Should be 50");
     }
 
     // ======================================================================
@@ -627,7 +627,7 @@ TEST_SUITE("Constraint Constexpr Validation")
         constexpr auto test_copy = []() {
             test::PositiveForConstexpr a{42};
             test::PositiveForConstexpr b{a}; // Copy construct
-            return atlas::to_underlying(b);
+            return atlas::undress(b);
         }();
 
         CHECK(test_copy == 42);
@@ -641,7 +641,7 @@ TEST_SUITE("Constraint Constexpr Validation")
         constexpr auto test_value = []() {
             test::PositiveForConstexpr a{42};
             test::PositiveForConstexpr b{10};
-            return atlas::to_underlying(a);
+            return atlas::undress(a);
         }();
 
         CHECK(test_value == 42);
@@ -682,7 +682,7 @@ TEST_SUITE("Constraint Constexpr Validation")
         constexpr test::PositiveForConstexpr p{42};
 
         // Can extract value at compile time
-        constexpr int value = atlas::to_underlying(p);
+        constexpr int value = atlas::undress(p);
         static_assert(value == 42, "Value should be extractable");
 
         CHECK(value == 42);
@@ -692,7 +692,7 @@ TEST_SUITE("Constraint Constexpr Validation")
     {
         constexpr test::BoundedForConstexpr b{75};
 
-        constexpr int value = atlas::to_underlying(b);
+        constexpr int value = atlas::undress(b);
         static_assert(value == 75, "Bounded value extraction");
 
         CHECK(value == 75);
@@ -707,7 +707,7 @@ TEST_SUITE("Constraint Constexpr Validation")
         constexpr test::PositiveForConstexpr compile_time{42};
 
         // Can use compile-time object at runtime
-        CHECK(atlas::to_underlying(compile_time) == 42);
+        CHECK(atlas::undress(compile_time) == 42);
 
         // Can compare with runtime objects
         test::PositiveForConstexpr runtime{42};
@@ -720,8 +720,8 @@ TEST_SUITE("Constraint Constexpr Validation")
         constexpr test::BoundedForConstexpr min_val{1};
         constexpr test::BoundedForConstexpr max_val{100};
 
-        CHECK(atlas::to_underlying(min_val) == 1);
-        CHECK(atlas::to_underlying(max_val) == 100);
+        CHECK(atlas::undress(min_val) == 1);
+        CHECK(atlas::undress(max_val) == 100);
 
         // Verify they can be compared
         static_assert(min_val < max_val, "Min should be less than max");
@@ -762,10 +762,10 @@ TEST_SUITE("Constraint Constexpr Validation")
             test::PositiveForConstexpr{2},
             test::PositiveForConstexpr{3}};
 
-        static_assert(atlas::to_underlying(values[0]) == 1, "First element is 1");
-        static_assert(atlas::to_underlying(values[2]) == 3, "Third element is 3");
+        static_assert(atlas::undress(values[0]) == 1, "First element is 1");
+        static_assert(atlas::undress(values[2]) == 3, "Third element is 3");
 
-        CHECK(atlas::to_underlying(values[1]) == 2);
+        CHECK(atlas::undress(values[1]) == 2);
     }
 
 #if defined(__cpp_constexpr) && __cpp_constexpr >= 201907L
@@ -779,7 +779,7 @@ TEST_SUITE("Constraint Constexpr Validation")
                 test::PositiveForConstexpr{3}};
 
             // In C++20, we can do more complex compile-time operations
-            return atlas::to_underlying(values[1]);
+            return atlas::undress(values[1]);
         }();
 
         CHECK(test_algo == 5);
@@ -793,7 +793,7 @@ TEST_SUITE("Constraint Constexpr Validation")
 
         // This compiles and runs fine
         constexpr test::PositiveForConstexpr valid{42};
-        CHECK(atlas::to_underlying(valid) == 42);
+        CHECK(atlas::undress(valid) == 42);
 
         // This would fail to compile (uncomment to test):
         // constexpr test::PositiveForConstexpr invalid{0};
@@ -814,7 +814,7 @@ TEST_SUITE("Constraint Edge Cases")
         test::PositiveIntMoveCopy b{std::move(a)};
 
         // b has the value
-        CHECK(atlas::to_underlying(b) == 42);
+        CHECK(atlas::undress(b) == 42);
 
         // a is in valid but unspecified state (for int, likely still 42)
         // Don't rely on a's value after move
@@ -827,7 +827,7 @@ TEST_SUITE("Constraint Edge Cases")
 
         b = std::move(a);
 
-        CHECK(atlas::to_underlying(b) == 42);
+        CHECK(atlas::undress(b) == 42);
     }
 
     TEST_CASE("move semantics - string move preserves constraint")
@@ -836,7 +836,7 @@ TEST_SUITE("Constraint Edge Cases")
         test::NonEmptyStringMoveCopy b{std::move(a)};
 
         // b gets the value
-        CHECK(atlas::to_underlying(b) == "hello");
+        CHECK(atlas::undress(b) == "hello");
 
         // a is moved-from (empty for strings)
         // But we don't re-check constraints on moved-from objects
@@ -851,8 +851,8 @@ TEST_SUITE("Constraint Edge Cases")
         test::NonNullUniquePtr b{std::move(a)};
 
         // b has the pointer (constraint satisfied)
-        CHECK(atlas::to_underlying(b).get() != nullptr);
-        CHECK(*atlas::to_underlying(b) == 42);
+        CHECK(atlas::undress(b).get() != nullptr);
+        CHECK(*atlas::undress(b) == 42);
 
         // a is moved-from (nullptr for unique_ptr)
         // Constraint is NOT re-checked on moved-from objects
@@ -880,8 +880,8 @@ TEST_SUITE("Constraint Edge Cases")
         test::PositiveIntMoveCopy a{42};
         test::PositiveIntMoveCopy b{a};
 
-        CHECK(atlas::to_underlying(a) == 42);
-        CHECK(atlas::to_underlying(b) == 42);
+        CHECK(atlas::undress(a) == 42);
+        CHECK(atlas::undress(b) == 42);
     }
 
     TEST_CASE("copy semantics - copy assignment")
@@ -891,8 +891,8 @@ TEST_SUITE("Constraint Edge Cases")
 
         b = a;
 
-        CHECK(atlas::to_underlying(a) == 42);
-        CHECK(atlas::to_underlying(b) == 42);
+        CHECK(atlas::undress(a) == 42);
+        CHECK(atlas::undress(b) == 42);
     }
 
     TEST_CASE("copy semantics - string copy preserves value")
@@ -900,8 +900,8 @@ TEST_SUITE("Constraint Edge Cases")
         test::NonEmptyStringMoveCopy a{"hello"};
         test::NonEmptyStringMoveCopy b{a};
 
-        CHECK(atlas::to_underlying(a) == "hello");
-        CHECK(atlas::to_underlying(b) == "hello");
+        CHECK(atlas::undress(a) == "hello");
+        CHECK(atlas::undress(b) == "hello");
     }
 
     TEST_CASE("copy semantics - constraint not re-checked")
@@ -933,7 +933,7 @@ TEST_SUITE("Constraint Edge Cases")
             test::PositiveForOptional{42}};
 
         REQUIRE(maybe.has_value());
-        CHECK(atlas::to_underlying(*maybe) == 42);
+        CHECK(atlas::undress(*maybe) == 42);
     }
 
     TEST_CASE("optional - emplace with valid value")
@@ -943,7 +943,7 @@ TEST_SUITE("Constraint Edge Cases")
         maybe.emplace(42);
 
         REQUIRE(maybe.has_value());
-        CHECK(atlas::to_underlying(*maybe) == 42);
+        CHECK(atlas::undress(*maybe) == 42);
     }
 
     TEST_CASE("optional - assignment with valid value")
@@ -953,7 +953,7 @@ TEST_SUITE("Constraint Edge Cases")
         maybe = test::PositiveForOptional{42};
 
         REQUIRE(maybe.has_value());
-        CHECK(atlas::to_underlying(*maybe) == 42);
+        CHECK(atlas::undress(*maybe) == 42);
     }
 
     TEST_CASE("optional - constraint violation throws before optional")
@@ -992,7 +992,7 @@ TEST_SUITE("Constraint Edge Cases")
 
         maybe = test::PositiveForOptional{100};
         CHECK(maybe.has_value());
-        CHECK(atlas::to_underlying(*maybe) == 100);
+        CHECK(atlas::undress(*maybe) == 100);
     }
 
     // ======================================================================
@@ -1019,7 +1019,7 @@ TEST_SUITE("Constraint Edge Cases")
         REQUIRE(std::holds_alternative<test::NonZeroForVariant>(v));
 
         auto & val = std::get<test::NonZeroForVariant>(v);
-        CHECK(atlas::to_underlying(val) == 42);
+        CHECK(atlas::undress(val) == 42);
     }
 
     TEST_CASE("variant - multiple constrained types")
@@ -1054,7 +1054,7 @@ TEST_SUITE("Constraint Edge Cases")
             test::NonZeroForVariant{42}};
 
         int result = std::visit(
-            [](auto const & val) { return atlas::to_underlying(val); },
+            [](auto const & val) { return atlas::undress(val); },
             v);
 
         CHECK(result == 42);
@@ -1067,7 +1067,7 @@ TEST_SUITE("Constraint Edge Cases")
         v.emplace<test::NonZeroForVariant>(42);
 
         REQUIRE(std::holds_alternative<test::NonZeroForVariant>(v));
-        CHECK(atlas::to_underlying(std::get<test::NonZeroForVariant>(v)) == 42);
+        CHECK(atlas::undress(std::get<test::NonZeroForVariant>(v)) == 42);
     }
 
     TEST_CASE("variant - emplace with invalid value throws")
@@ -1090,8 +1090,8 @@ TEST_SUITE("Constraint Edge Cases")
 
         b = a;
 
-        CHECK(atlas::to_underlying(a) == 42);
-        CHECK(atlas::to_underlying(b) == 42);
+        CHECK(atlas::undress(a) == 42);
+        CHECK(atlas::undress(b) == 42);
     }
 
     TEST_CASE("assignment - move assignment")
@@ -1101,7 +1101,7 @@ TEST_SUITE("Constraint Edge Cases")
 
         b = std::move(a);
 
-        CHECK(atlas::to_underlying(b) == 42);
+        CHECK(atlas::undress(b) == 42);
     }
 
     TEST_CASE("assignment - self assignment")
@@ -1111,7 +1111,7 @@ TEST_SUITE("Constraint Edge Cases")
         // Self-assignment should be safe (though pointless)
         a = a;
 
-        CHECK(atlas::to_underlying(a) == 42);
+        CHECK(atlas::undress(a) == 42);
     }
 
     TEST_CASE("assignment - constraint not re-checked on assignment")
@@ -1225,9 +1225,9 @@ TEST_SUITE("Constraint Edge Cases")
 
         std::sort(std::begin(values), std::end(values));
 
-        CHECK(atlas::to_underlying(values[0]) == 1);
-        CHECK(atlas::to_underlying(values[1]) == 2);
-        CHECK(atlas::to_underlying(values[2]) == 3);
+        CHECK(atlas::undress(values[0]) == 1);
+        CHECK(atlas::undress(values[1]) == 2);
+        CHECK(atlas::undress(values[2]) == 3);
     }
 }
 
@@ -1864,7 +1864,7 @@ TEST_SUITE("Constraint + Feature Interaction")
         test::ComplexComposition p{8080};
 
         // Value access
-        CHECK(atlas::to_underlying(p) == 8080);
+        CHECK(atlas::undress(p) == 8080);
 
         // Constraint enforced
         CHECK_THROWS_AS(test::ComplexComposition{1023}, atlas::ConstraintError);
@@ -1935,7 +1935,7 @@ TEST_SUITE("Constraint + Feature Interaction")
         CHECK_NOTHROW(p + q); // 15000, within bounds
 
         auto result = p + q;
-        CHECK(atlas::to_underlying(result) == 15000);
+        CHECK(atlas::undress(result) == 15000);
     }
 
     // ======================================================================
@@ -1989,9 +1989,9 @@ TEST_SUITE("Constraint + Feature Interaction")
         vec.push_back(test::NonNegativeWithComparison{10});
 
         CHECK(vec.size() == 3);
-        CHECK(atlas::to_underlying(vec[0]) == 0);
-        CHECK(atlas::to_underlying(vec[1]) == 5);
-        CHECK(atlas::to_underlying(vec[2]) == 10);
+        CHECK(atlas::undress(vec[0]) == 0);
+        CHECK(atlas::undress(vec[1]) == 5);
+        CHECK(atlas::undress(vec[2]) == 10);
     }
 
     TEST_CASE("container - vector operations preserve constraints")
@@ -2005,7 +2005,7 @@ TEST_SUITE("Constraint + Feature Interaction")
         // Copy vector
         auto vec_copy = vec;
         CHECK(vec_copy.size() == 3);
-        CHECK(atlas::to_underlying(vec_copy[0]) == 1);
+        CHECK(atlas::undress(vec_copy[0]) == 1);
 
         // Move vector
         auto vec_moved = std::move(vec);
@@ -2053,8 +2053,8 @@ TEST_SUITE("Constraint + Feature Interaction")
         vec.erase(vec.begin() + 1);
 
         CHECK(vec.size() == 2);
-        CHECK(atlas::to_underlying(vec[0]) == 1);
-        CHECK(atlas::to_underlying(vec[1]) == 3);
+        CHECK(atlas::undress(vec[0]) == 1);
+        CHECK(atlas::undress(vec[1]) == 3);
     }
 
     TEST_CASE("container - vector clear and refill")
@@ -2071,7 +2071,7 @@ TEST_SUITE("Constraint + Feature Interaction")
         vec.push_back(test::PositiveWithCast{20});
 
         CHECK(vec.size() == 2);
-        CHECK(atlas::to_underlying(vec[0]) == 10);
+        CHECK(atlas::undress(vec[0]) == 10);
     }
 
     TEST_CASE("container - vector assignment operations")
@@ -2086,7 +2086,7 @@ TEST_SUITE("Constraint + Feature Interaction")
         // Copy assignment
         vec2 = vec1;
         CHECK(vec2.size() == 2);
-        CHECK(atlas::to_underlying(vec2[0]) == 25);
+        CHECK(atlas::undress(vec2[0]) == 25);
 
         std::vector<test::BoundedWithHash> vec3;
         // Move assignment
@@ -2132,9 +2132,9 @@ TEST_SUITE("Constraint + Feature Interaction")
         // Sort ports
         std::sort(ports.begin(), ports.end());
 
-        CHECK(atlas::to_underlying(ports[0]) == 8080);
-        CHECK(atlas::to_underlying(ports[1]) == 8443);
-        CHECK(atlas::to_underlying(ports[2]) == 9000);
+        CHECK(atlas::undress(ports[0]) == 8080);
+        CHECK(atlas::undress(ports[1]) == 8443);
+        CHECK(atlas::undress(ports[2]) == 9000);
     }
 
     TEST_CASE("container - vector emplace operations")
@@ -2146,8 +2146,8 @@ TEST_SUITE("Constraint + Feature Interaction")
         vec.emplace_back(100);
 
         CHECK(vec.size() == 2);
-        CHECK(atlas::to_underlying(vec[0]) == 42);
-        CHECK(atlas::to_underlying(vec[1]) == 100);
+        CHECK(atlas::undress(vec[0]) == 42);
+        CHECK(atlas::undress(vec[1]) == 100);
     }
 }
 
