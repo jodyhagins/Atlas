@@ -1423,4 +1423,297 @@ int main() {
     }
 }
 
+TEST_SUITE("Compilation Tests: Drilling Behavior")
+{
+    TEST_CASE("Hash drills through nested strong types")
+    {
+        CompilationTester tester;
+
+        // Inner wraps int (hashable), Outer wraps Inner
+        // Hash should drill from Outer -> Inner -> int
+        auto description = R"([type]
+kind=struct
+namespace=test
+name=Inner
+description=strong int; ==, hash, no-constexpr
+
+[type]
+kind=struct
+namespace=test
+name=Outer
+description=strong test::Inner; ==, hash, no-constexpr
+)";
+
+        auto test_code = R"(
+#include <cassert>
+#include <unordered_set>
+
+int main() {
+    test::Inner inner1{42};
+    test::Inner inner2{100};
+    test::Outer outer1{inner1};
+    test::Outer outer2{inner2};
+    test::Outer outer3{inner1}; // same as outer1
+
+    // Test that hash works - use in unordered_set
+    std::unordered_set<test::Outer> set;
+    set.insert(outer1);
+    set.insert(outer2);
+    set.insert(outer3); // duplicate of outer1
+
+    assert(set.size() == 2);
+    assert(set.count(outer1) == 1);
+    assert(set.count(outer2) == 1);
+
+    // Also verify Inner works directly
+    std::unordered_set<test::Inner> inner_set;
+    inner_set.insert(inner1);
+    inner_set.insert(inner2);
+    assert(inner_set.size() == 2);
+
+    return 0;
+}
+)";
+        auto result = tester.compile_and_run(description, test_code);
+
+        CHECK(result.success);
+        if (not result.success) {
+            INFO("Hash drilling through nested types failed:");
+            INFO(result.output);
+        }
+    }
+
+    TEST_CASE("Hash drills enum to underlying type")
+    {
+        CompilationTester tester;
+
+        // First, write a header file defining the enum
+        tester.write_temp_file(
+            "color.hpp",
+            "namespace test { enum class Color { Red, Green, Blue }; }\n");
+
+        // Strong type wrapping an enum - hash should use underlying int
+        // Use #"color.hpp" to include our custom header
+        auto description = R"([type]
+kind=struct
+namespace=test
+name=ColorWrapper
+description=strong test::Color; ==, hash, no-constexpr, #"color.hpp"
+)";
+
+        auto test_code = R"(
+#include <cassert>
+#include <unordered_set>
+
+int main() {
+    test::ColorWrapper red{test::Color::Red};
+    test::ColorWrapper green{test::Color::Green};
+    test::ColorWrapper blue{test::Color::Blue};
+    test::ColorWrapper red2{test::Color::Red}; // same as red
+
+    std::unordered_set<test::ColorWrapper> set;
+    set.insert(red);
+    set.insert(green);
+    set.insert(blue);
+    set.insert(red2); // duplicate
+
+    assert(set.size() == 3);
+    assert(set.count(red) == 1);
+    assert(set.count(green) == 1);
+    assert(set.count(blue) == 1);
+
+    return 0;
+}
+)";
+        auto result = tester.compile_and_run(description, test_code);
+
+        CHECK(result.success);
+        if (not result.success) {
+            INFO("Hash drilling enum to underlying type failed:");
+            INFO(result.output);
+        }
+    }
+
+    TEST_CASE("OStream drills through nested strong types")
+    {
+        CompilationTester tester;
+
+        // Inner wraps int (streamable), Outer wraps Inner
+        // ostream should drill from Outer -> Inner -> int
+        auto description = R"([type]
+kind=struct
+namespace=test
+name=Inner
+description=strong int; out, no-constexpr
+
+[type]
+kind=struct
+namespace=test
+name=Outer
+description=strong test::Inner; out, no-constexpr
+)";
+
+        auto test_code = R"(
+#include <cassert>
+#include <sstream>
+
+int main() {
+    test::Inner inner{42};
+    test::Outer outer{inner};
+
+    std::ostringstream oss;
+    oss << outer;
+
+    // Should output "42" by drilling through both wrappers
+    assert(oss.str() == "42");
+
+    return 0;
+}
+)";
+        auto result = tester.compile_and_run(description, test_code);
+
+        CHECK(result.success);
+        if (not result.success) {
+            INFO("OStream drilling through nested types failed:");
+            INFO(result.output);
+        }
+    }
+
+    TEST_CASE("IStream drills through nested strong types")
+    {
+        CompilationTester tester;
+
+        // Inner wraps int (streamable), Outer wraps Inner
+        // istream should drill from Outer -> Inner -> int
+        auto description = R"([type]
+kind=struct
+namespace=test
+name=Inner
+description=strong int; in, no-constexpr
+
+[type]
+kind=struct
+namespace=test
+name=Outer
+description=strong test::Inner; in, no-constexpr
+)";
+
+        auto test_code = R"(
+#include <cassert>
+#include <sstream>
+
+int main() {
+    test::Outer outer{test::Inner{0}};
+
+    std::istringstream iss{"42"};
+    iss >> outer;
+
+    // Should read "42" by drilling through both wrappers
+    assert(atlas_value_for(atlas_value_for(outer)) == 42);
+
+    return 0;
+}
+)";
+        auto result = tester.compile_and_run(description, test_code);
+
+        CHECK(result.success);
+        if (not result.success) {
+            INFO("IStream drilling through nested types failed:");
+            INFO(result.output);
+        }
+    }
+
+    TEST_CASE("Formatter drills through nested strong types")
+    {
+        CompilationTester tester;
+
+        // Inner wraps int (formattable), Outer wraps Inner
+        // formatter should drill from Outer -> Inner -> int
+        auto description = R"([type]
+kind=struct
+namespace=test
+name=Inner
+description=strong int; fmt, no-constexpr, c++20
+
+[type]
+kind=struct
+namespace=test
+name=Outer
+description=strong test::Inner; fmt, no-constexpr, c++20
+)";
+
+        auto test_code = R"(
+#include <cassert>
+#include <format>
+#include <string>
+
+int main() {
+    test::Inner inner{42};
+    test::Outer outer{inner};
+
+    // Should format as "42" by drilling through both wrappers
+    std::string result = std::format("{}", outer);
+    assert(result == "42");
+
+    // Also test Inner directly
+    std::string inner_result = std::format("{}", inner);
+    assert(inner_result == "42");
+
+    return 0;
+}
+)";
+        auto result = tester.compile_and_run(description, test_code, "c++20");
+
+        CHECK(result.success);
+        if (not result.success) {
+            INFO("Formatter drilling through nested types failed:");
+            INFO(result.output);
+        }
+    }
+
+    TEST_CASE("Formatter drills enum to underlying type")
+    {
+        CompilationTester tester;
+
+        // First, write a header file defining the enum
+        tester.write_temp_file(
+            "format_color.hpp",
+            "namespace test { enum class Color { Red = 1, Green = 2, Blue = 3 }; }\n");
+
+        // Strong type wrapping an enum - formatter should use underlying int
+        auto description = R"([type]
+kind=struct
+namespace=test
+name=ColorWrapper
+description=strong test::Color; fmt, no-constexpr, c++20, #"format_color.hpp"
+)";
+
+        auto test_code = R"(
+#include <cassert>
+#include <format>
+#include <string>
+
+int main() {
+    test::ColorWrapper red{test::Color::Red};
+    test::ColorWrapper green{test::Color::Green};
+    test::ColorWrapper blue{test::Color::Blue};
+
+    // Should format as the underlying int values
+    assert(std::format("{}", red) == "1");
+    assert(std::format("{}", green) == "2");
+    assert(std::format("{}", blue) == "3");
+
+    return 0;
+}
+)";
+        auto result = tester.compile_and_run(description, test_code, "c++20");
+
+        CHECK(result.success);
+        if (not result.success) {
+            INFO("Formatter drilling enum to underlying type failed:");
+            INFO(result.output);
+        }
+    }
+}
+
 } // anonymous namespace

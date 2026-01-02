@@ -144,6 +144,14 @@ public:
         fs::remove_all(temp_dir_, ec);
     }
 
+    // Write a file to the temp directory (useful for custom headers)
+    void write_temp_file(
+        std::string const & filename,
+        std::string const & content)
+    {
+        write_file(temp_dir_ / filename, content);
+    }
+
     // Generate header from description string, compile test, return result
     CompileResult compile_and_run(
         std::string const & atlas_description,

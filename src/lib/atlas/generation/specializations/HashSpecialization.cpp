@@ -20,18 +20,21 @@ get_template_impl() const
 /**
  * @brief std::hash specialization for {{{full_qualified_name}}}
  *
- * Delegates to std::hash of the underlying type {{{underlying_type}}}
+ * Drills down to find the first hashable type in the wrapping chain.
+ * Falls back to underlying type for enums without std::hash.
  */
 template <>
 struct std::hash<{{{full_qualified_name}}}>
 {
     ATLAS_NODISCARD
-    {{{hash_const_expr}}}std::size_t operator () ({{{full_qualified_name}}} const & t) const
-    noexcept(
-        noexcept(std::hash<{{{underlying_type}}}>{}(
-            std::declval<{{{underlying_type}}} const &>())))
+    auto operator()({{{full_qualified_name}}} const & t) const
+    noexcept(noexcept(atlas::atlas_detail::hash_drill(
+        atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{})))
+    -> decltype(atlas::atlas_detail::hash_drill(
+        atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{}))
     {
-        return std::hash<{{{underlying_type}}}>{}(atlas_value_for(t));
+        return atlas::atlas_detail::hash_drill(
+            atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{});
     }
 };
 )";
@@ -51,8 +54,6 @@ prepare_variables_impl(ClassInfo const & info) const
 {
     boost::json::object variables;
     variables["full_qualified_name"] = info.full_qualified_name;
-    variables["underlying_type"] = info.underlying_type;
-    variables["hash_const_expr"] = info.hash_const_expr;
 
     return variables;
 }
