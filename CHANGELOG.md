@@ -23,7 +23,8 @@ These changes may require updates to code that uses Atlas-generated types:
 
 ### Added
 
-- **`atlas::cast<T>()`** - Type-safe casting between strong types
+- **`atlas::unwrap()`** - Single-layer unwrapping for strong types and enums (returns immediate wrapped type)
+- **`atlas::cast<T>()`** - Type-safe casting that drills until castable to target type
 - **Drill-down support for hash/format/istream/ostream** - Nested type support for standard library integration
 - **User-defined strong type templates** - Custom template definitions for advanced use cases
 - **Spaceship operator (`<=>`) in interactions** - Three-way comparison support for cross-type operations
