@@ -612,6 +612,10 @@ end_(T && t) noexcept(noexcept(end(std::forward<T>(t))))
     // Hash drilling boilerplate - only included when hash specialization is
     // needed
     static constexpr char const hash_drill_boilerplate[] = R"(
+#ifndef WJH_ATLAS_771333B44A11491895F986933BB2FB41
+#define WJH_ATLAS_771333B44A11491895F986933BB2FB41
+namespace atlas {
+namespace atlas_detail {
 // ----------------------------------------------------------------------------
 // Hash drilling support
 // ----------------------------------------------------------------------------
@@ -658,11 +662,18 @@ auto hash_drill(T const & t, PriorityTag<0>)
 {
     return hash_drill(atlas_value_for(t), PriorityTag<2>{});
 }
+} // namespace atlas_detail
+} // namespace atlas
+#endif // WJH_ATLAS_771333B44A11491895F986933BB2FB41
 )";
 
     // OStream drilling boilerplate - only included when ostream operator is
     // needed
     static constexpr char const ostream_drill_boilerplate[] = R"(
+#ifndef WJH_ATLAS_60461ED5AEEF4509B86FB80C8B1E0FE0
+#define WJH_ATLAS_60461ED5AEEF4509B86FB80C8B1E0FE0
+namespace atlas {
+namespace atlas_detail {
 // ----------------------------------------------------------------------------
 // OStream drilling support
 // ----------------------------------------------------------------------------
@@ -708,11 +719,18 @@ auto ostream_drill(std::ostream & strm, T const & t, PriorityTag<0>)
 {
     return ostream_drill(strm, atlas_value_for(t), PriorityTag<2>{});
 }
+} // namespace atlas_detail
+} // namespace atlas
+#endif // WJH_ATLAS_60461ED5AEEF4509B86FB80C8B1E0FE0
 )";
 
     // IStream drilling boilerplate - only included when istream operator is
     // needed
     static constexpr char const istream_drill_boilerplate[] = R"(
+#ifndef WJH_ATLAS_4296E303C8F846C0B958EB450C57465B
+#define WJH_ATLAS_4296E303C8F846C0B958EB450C57465B
+namespace atlas {
+namespace atlas_detail {
 // ----------------------------------------------------------------------------
 // IStream drilling support
 // ----------------------------------------------------------------------------
@@ -761,11 +779,18 @@ auto istream_drill(std::istream & strm, T & t, PriorityTag<0>)
 {
     return istream_drill(strm, atlas_value_for(t), PriorityTag<2>{});
 }
+} // namespace atlas_detail
+} // namespace atlas
+#endif // WJH_ATLAS_4296E303C8F846C0B958EB450C57465B
 )";
 
     // Format drilling boilerplate - only included when formatter specialization
     // is needed
     static constexpr char const format_drill_boilerplate[] = R"(
+#ifndef WJH_ATLAS_9B74AE244B4F4EB68DF9D80B67E1EB05
+#define WJH_ATLAS_9B74AE244B4F4EB68DF9D80B67E1EB05
+namespace atlas {
+namespace atlas_detail {
 // ----------------------------------------------------------------------------
 // Format drilling support (C++20+)
 // ----------------------------------------------------------------------------
@@ -807,6 +832,9 @@ using format_drilled_type_t =
     std::remove_cvref_t<decltype(format_value_drill(std::declval<T const &>()))>;
 
 #endif // __cpp_lib_format
+} // namespace atlas_detail
+} // namespace atlas
+#endif // WJH_ATLAS_9B74AE244B4F4EB68DF9D80B67E1EB05
 )";
 
     // Closing section of the basic boilerplate
@@ -2904,7 +2932,9 @@ public:
 
     std::string result = basic + 1;
 
-    // Add drilling sections before closing the basic boilerplate
+    // Close the basic boilerplate
+    result += basic_closing;
+
     if (options.include_hash_drill) {
         result += hash_drill_boilerplate;
     }
@@ -2917,11 +2947,6 @@ public:
     if (options.include_format_drill) {
         result += format_drill_boilerplate;
     }
-
-    // Close the basic boilerplate
-    result += basic_closing;
-
-    // Add other optional sections
     if (options.include_arrow_operator_traits ||
         options.include_dereference_operator_traits)
     {
