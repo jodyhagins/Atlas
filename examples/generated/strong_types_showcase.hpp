@@ -202,6 +202,29 @@ value_impl(T const & t, PriorityTag<0>, value_by_val)
 }
 
 // ----------------------------------------------------------------------------
+// Enum case: T is an enum - convert to underlying type
+// Always returns by value since conversion creates a distinct value.
+// ----------------------------------------------------------------------------
+template <typename T>
+constexpr auto
+value_impl(T t, PriorityTag<2>, value_by_ref)
+-> typename std::enable_if<
+    std::is_enum<T>::value,
+    typename std::underlying_type<T>::type>::type
+{
+    return static_cast<typename std::underlying_type<T>::type>(t);
+}
+template <typename T>
+constexpr auto
+value_impl(T t, PriorityTag<2>, value_by_val)
+-> typename std::enable_if<
+    std::is_enum<T>::value,
+    typename std::underlying_type<T>::type>::type
+{
+    return static_cast<typename std::underlying_type<T>::type>(t);
+}
+
+// ----------------------------------------------------------------------------
 // Recursive case: T has atlas_value_for() hidden friend
 // Use ADL to call atlas_value_for() and recurse.
 // ----------------------------------------------------------------------------

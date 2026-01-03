@@ -1,5 +1,5 @@
-#ifndef TEST_440E7C4847E28C29EA12D1E83F9895BCC7E0EA54
-#define TEST_440E7C4847E28C29EA12D1E83F9895BCC7E0EA54
+#ifndef TEST_30F854E16A3D8A5D51D2BB9DC07D8A77B4CC3C56
+#define TEST_30F854E16A3D8A5D51D2BB9DC07D8A77B4CC3C56
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -179,6 +179,29 @@ constexpr T
 value_impl(T const & t, PriorityTag<0>, value_by_val)
 {
     return t;
+}
+
+// ----------------------------------------------------------------------------
+// Enum case: T is an enum - convert to underlying type
+// Always returns by value since conversion creates a distinct value.
+// ----------------------------------------------------------------------------
+template <typename T>
+constexpr auto
+value_impl(T t, PriorityTag<2>, value_by_ref)
+-> typename std::enable_if<
+    std::is_enum<T>::value,
+    typename std::underlying_type<T>::type>::type
+{
+    return static_cast<typename std::underlying_type<T>::type>(t);
+}
+template <typename T>
+constexpr auto
+value_impl(T t, PriorityTag<2>, value_by_val)
+-> typename std::enable_if<
+    std::is_enum<T>::value,
+    typename std::underlying_type<T>::type>::type
+{
+    return static_cast<typename std::underlying_type<T>::type>(t);
 }
 
 // ----------------------------------------------------------------------------
@@ -546,5 +569,5 @@ noexcept(
 
 } // namespace mylib
 
-#endif // TEST_440E7C4847E28C29EA12D1E83F9895BCC7E0EA54
+#endif // TEST_30F854E16A3D8A5D51D2BB9DC07D8A77B4CC3C56
 

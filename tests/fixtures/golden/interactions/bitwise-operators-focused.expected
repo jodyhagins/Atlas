@@ -1,5 +1,5 @@
-#ifndef TEST_13DE83BF49602DD337FA79EEFA4134796D219189
-#define TEST_13DE83BF49602DD337FA79EEFA4134796D219189
+#ifndef TEST_CDFF14B1DB9CCC36B06698E6F3DE74511CD89069
+#define TEST_CDFF14B1DB9CCC36B06698E6F3DE74511CD89069
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -179,6 +179,29 @@ constexpr T
 value_impl(T const & t, PriorityTag<0>, value_by_val)
 {
     return t;
+}
+
+// ----------------------------------------------------------------------------
+// Enum case: T is an enum - convert to underlying type
+// Always returns by value since conversion creates a distinct value.
+// ----------------------------------------------------------------------------
+template <typename T>
+constexpr auto
+value_impl(T t, PriorityTag<2>, value_by_ref)
+-> typename std::enable_if<
+    std::is_enum<T>::value,
+    typename std::underlying_type<T>::type>::type
+{
+    return static_cast<typename std::underlying_type<T>::type>(t);
+}
+template <typename T>
+constexpr auto
+value_impl(T t, PriorityTag<2>, value_by_val)
+-> typename std::enable_if<
+    std::is_enum<T>::value,
+    typename std::underlying_type<T>::type>::type
+{
+    return static_cast<typename std::underlying_type<T>::type>(t);
 }
 
 // ----------------------------------------------------------------------------
@@ -678,5 +701,5 @@ noexcept(
 
 } // namespace graphics::color
 
-#endif // TEST_13DE83BF49602DD337FA79EEFA4134796D219189
+#endif // TEST_CDFF14B1DB9CCC36B06698E6F3DE74511CD89069
 

@@ -1,5 +1,5 @@
-#ifndef TEST_488221DD61A5B0B6BA5E2114B01612F5596CC730
-#define TEST_488221DD61A5B0B6BA5E2114B01612F5596CC730
+#ifndef TEST_78E893E8CAA6185A2E793B629D4A91520E6CB0BD
+#define TEST_78E893E8CAA6185A2E793B629D4A91520E6CB0BD
 
 static_assert(__cplusplus >= 201402L,
     "This file requires C++14 or later. Compile with -std=c++14 or higher.");
@@ -182,6 +182,29 @@ constexpr T
 value_impl(T const & t, PriorityTag<0>, value_by_val)
 {
     return t;
+}
+
+// ----------------------------------------------------------------------------
+// Enum case: T is an enum - convert to underlying type
+// Always returns by value since conversion creates a distinct value.
+// ----------------------------------------------------------------------------
+template <typename T>
+constexpr auto
+value_impl(T t, PriorityTag<2>, value_by_ref)
+-> typename std::enable_if<
+    std::is_enum<T>::value,
+    typename std::underlying_type<T>::type>::type
+{
+    return static_cast<typename std::underlying_type<T>::type>(t);
+}
+template <typename T>
+constexpr auto
+value_impl(T t, PriorityTag<2>, value_by_val)
+-> typename std::enable_if<
+    std::is_enum<T>::value,
+    typename std::underlying_type<T>::type>::type
+{
+    return static_cast<typename std::underlying_type<T>::type>(t);
 }
 
 // ----------------------------------------------------------------------------
@@ -535,5 +558,5 @@ noexcept(
 
 } // namespace test
 
-#endif // TEST_488221DD61A5B0B6BA5E2114B01612F5596CC730
+#endif // TEST_78E893E8CAA6185A2E793B629D4A91520E6CB0BD
 

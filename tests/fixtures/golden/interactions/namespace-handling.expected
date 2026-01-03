@@ -1,5 +1,5 @@
-#ifndef TEST_9872FD81258B6C2F3D043B647BA7F42049B0C284
-#define TEST_9872FD81258B6C2F3D043B647BA7F42049B0C284
+#ifndef TEST_41225B30E5D764308F77D54FD20892D3B1182076
+#define TEST_41225B30E5D764308F77D54FD20892D3B1182076
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -179,6 +179,29 @@ constexpr T
 value_impl(T const & t, PriorityTag<0>, value_by_val)
 {
     return t;
+}
+
+// ----------------------------------------------------------------------------
+// Enum case: T is an enum - convert to underlying type
+// Always returns by value since conversion creates a distinct value.
+// ----------------------------------------------------------------------------
+template <typename T>
+constexpr auto
+value_impl(T t, PriorityTag<2>, value_by_ref)
+-> typename std::enable_if<
+    std::is_enum<T>::value,
+    typename std::underlying_type<T>::type>::type
+{
+    return static_cast<typename std::underlying_type<T>::type>(t);
+}
+template <typename T>
+constexpr auto
+value_impl(T t, PriorityTag<2>, value_by_val)
+-> typename std::enable_if<
+    std::is_enum<T>::value,
+    typename std::underlying_type<T>::type>::type
+{
+    return static_cast<typename std::underlying_type<T>::type>(t);
 }
 
 // ----------------------------------------------------------------------------
@@ -542,5 +565,5 @@ noexcept(
     return finance::core::Money{lhs.value * rhs.value};
 }
 
-#endif // TEST_9872FD81258B6C2F3D043B647BA7F42049B0C284
+#endif // TEST_41225B30E5D764308F77D54FD20892D3B1182076
 

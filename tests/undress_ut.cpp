@@ -13,6 +13,7 @@
 // - Rvalue (non-moveable type) - SFINAE'd out
 // - Nested atlas types - drills down to innermost value
 // - Non-atlas types - returns value unchanged
+// - Enums - converts to underlying type (same as unwrap)
 // ----------------------------------------------------------------------
 
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
@@ -237,5 +238,77 @@ TEST_SUITE("atlas::undress - Edge Cases")
     {
         test::SimpleInt x{std::numeric_limits<int>::max()};
         CHECK(atlas::undress(x) == std::numeric_limits<int>::max());
+    }
+}
+
+// ======================================================================
+// TEST SUITE: ENUMS
+// ======================================================================
+
+// Test enums for undress
+enum class ScopedColor : int { Red = 1, Green = 2, Blue = 3 };
+enum UnscopedSize : short { Small = 10, Medium = 20, Large = 30 };
+
+TEST_SUITE("atlas::undress - Enums")
+{
+    TEST_CASE("Scoped enum returns underlying type")
+    {
+        auto result = atlas::undress(ScopedColor::Red);
+
+        CHECK(result == 1);
+        CHECK(std::is_same<decltype(result), int>::value);
+    }
+
+    TEST_CASE("Scoped enum with different values")
+    {
+        CHECK(atlas::undress(ScopedColor::Green) == 2);
+        CHECK(atlas::undress(ScopedColor::Blue) == 3);
+    }
+
+    TEST_CASE("Unscoped enum returns underlying type")
+    {
+        auto result = atlas::undress(Small);
+
+        CHECK(result == 10);
+        CHECK(std::is_same<decltype(result), short>::value);
+    }
+
+    TEST_CASE("Unscoped enum with different values")
+    {
+        CHECK(atlas::undress(Medium) == 20);
+        CHECK(atlas::undress(Large) == 30);
+    }
+
+    TEST_CASE("Enum lvalue returns underlying type by value")
+    {
+        ScopedColor color = ScopedColor::Blue;
+        auto result = atlas::undress(color);
+
+        CHECK(result == 3);
+        CHECK(std::is_same<decltype(result), int>::value);
+    }
+
+    TEST_CASE("Const enum lvalue returns underlying type by value")
+    {
+        ScopedColor const color = ScopedColor::Green;
+        auto result = atlas::undress(color);
+
+        CHECK(result == 2);
+        CHECK(std::is_same<decltype(result), int>::value);
+    }
+
+    TEST_CASE("Enum in constexpr context")
+    {
+        constexpr int result = atlas::undress(ScopedColor::Blue);
+
+        CHECK(result == 3);
+    }
+
+    TEST_CASE("undress and unwrap yield same result for enums")
+    {
+        CHECK(atlas::undress(ScopedColor::Red) == atlas::unwrap(ScopedColor::Red));
+        CHECK(atlas::undress(ScopedColor::Green) == atlas::unwrap(ScopedColor::Green));
+        CHECK(atlas::undress(Small) == atlas::unwrap(Small));
+        CHECK(atlas::undress(Large) == atlas::unwrap(Large));
     }
 }

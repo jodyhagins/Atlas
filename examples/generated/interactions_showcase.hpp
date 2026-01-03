@@ -1,5 +1,5 @@
-#ifndef EXAMPLE_INTERACTIONS_304CFDEEC6E0053F0391CCE418506E3221137F9A
-#define EXAMPLE_INTERACTIONS_304CFDEEC6E0053F0391CCE418506E3221137F9A
+#ifndef EXAMPLE_INTERACTIONS_F8884D35297059ED7FC8F391168CD425F6588ACB
+#define EXAMPLE_INTERACTIONS_F8884D35297059ED7FC8F391168CD425F6588ACB
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -179,6 +179,29 @@ constexpr T
 value_impl(T const & t, PriorityTag<0>, value_by_val)
 {
     return t;
+}
+
+// ----------------------------------------------------------------------------
+// Enum case: T is an enum - convert to underlying type
+// Always returns by value since conversion creates a distinct value.
+// ----------------------------------------------------------------------------
+template <typename T>
+constexpr auto
+value_impl(T t, PriorityTag<2>, value_by_ref)
+-> typename std::enable_if<
+    std::is_enum<T>::value,
+    typename std::underlying_type<T>::type>::type
+{
+    return static_cast<typename std::underlying_type<T>::type>(t);
+}
+template <typename T>
+constexpr auto
+value_impl(T t, PriorityTag<2>, value_by_val)
+-> typename std::enable_if<
+    std::is_enum<T>::value,
+    typename std::underlying_type<T>::type>::type
+{
+    return static_cast<typename std::underlying_type<T>::type>(t);
 }
 
 // ----------------------------------------------------------------------------
@@ -1640,4 +1663,4 @@ noexcept(
 
 } // namespace security
 
-#endif // EXAMPLE_INTERACTIONS_304CFDEEC6E0053F0391CCE418506E3221137F9A
+#endif // EXAMPLE_INTERACTIONS_F8884D35297059ED7FC8F391168CD425F6588ACB

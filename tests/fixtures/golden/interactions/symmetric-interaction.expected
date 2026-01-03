@@ -1,5 +1,5 @@
-#ifndef TEST_338AEEB9E16E16E58D8D1696A262857517CEAAE8
-#define TEST_338AEEB9E16E16E58D8D1696A262857517CEAAE8
+#ifndef TEST_C02DB9999B1F89BD6F3CD9F5CF1914F5E3E27ED1
+#define TEST_C02DB9999B1F89BD6F3CD9F5CF1914F5E3E27ED1
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -179,6 +179,29 @@ constexpr T
 value_impl(T const & t, PriorityTag<0>, value_by_val)
 {
     return t;
+}
+
+// ----------------------------------------------------------------------------
+// Enum case: T is an enum - convert to underlying type
+// Always returns by value since conversion creates a distinct value.
+// ----------------------------------------------------------------------------
+template <typename T>
+constexpr auto
+value_impl(T t, PriorityTag<2>, value_by_ref)
+-> typename std::enable_if<
+    std::is_enum<T>::value,
+    typename std::underlying_type<T>::type>::type
+{
+    return static_cast<typename std::underlying_type<T>::type>(t);
+}
+template <typename T>
+constexpr auto
+value_impl(T t, PriorityTag<2>, value_by_val)
+-> typename std::enable_if<
+    std::is_enum<T>::value,
+    typename std::underlying_type<T>::type>::type
+{
+    return static_cast<typename std::underlying_type<T>::type>(t);
 }
 
 // ----------------------------------------------------------------------------
@@ -555,5 +578,5 @@ noexcept(
 
 } // namespace physics
 
-#endif // TEST_338AEEB9E16E16E58D8D1696A262857517CEAAE8
+#endif // TEST_C02DB9999B1F89BD6F3CD9F5CF1914F5E3E27ED1
 
