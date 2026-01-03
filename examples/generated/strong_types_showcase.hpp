@@ -400,190 +400,6 @@ end_(T && t) noexcept(noexcept(end(std::forward<T>(t))))
     return end(std::forward<T>(t));
 }
 
-// ----------------------------------------------------------------------------
-// Hash drilling support
-// ----------------------------------------------------------------------------
-
-// is_hashable<T>: detects if std::hash<T> is valid
-template <typename T, typename = void>
-struct is_hashable
-: std::false_type
-{ };
-
-template <typename T>
-struct is_hashable<
-    T,
-    void_t<decltype(std::hash<T>{}(std::declval<T const &>()))>>
-: std::true_type
-{ };
-
-// Base case: T is directly hashable
-template <typename T>
-auto hash_drill(T const & t, PriorityTag<2>)
--> typename std::enable_if<
-    is_hashable<T>::value,
-    std::size_t>::type
-{
-    return std::hash<T>{}(t);
-}
-
-// Enum fallback: T is an enum without std::hash, use underlying type
-template <typename T>
-auto hash_drill(T const & t, PriorityTag<1>)
--> typename std::enable_if<
-    std::is_enum<T>::value &&
-    not is_hashable<T>::value,
-    std::size_t>::type
-{
-    return std::hash<typename std::underlying_type<T>::type>{}(
-        static_cast<typename std::underlying_type<T>::type>(t));
-}
-
-// Recursive case: T is an atlas type, drill down
-template <typename T>
-auto hash_drill(T const & t, PriorityTag<0>)
--> decltype(hash_drill(atlas_value_for(t), PriorityTag<2>{}))
-{
-    return hash_drill(atlas_value_for(t), PriorityTag<2>{});
-}
-
-// ----------------------------------------------------------------------------
-// OStream drilling support
-// ----------------------------------------------------------------------------
-
-// is_ostreamable<T>: detects if T can be written to std::ostream
-template <typename T, typename = void>
-struct is_ostreamable
-: std::false_type
-{ };
-
-template <typename T>
-struct is_ostreamable<
-    T,
-    void_t<decltype(std::declval<std::ostream &>() << std::declval<T const &>())>>
-: std::true_type
-{ };
-
-// Base case: T is directly ostreamable
-template <typename T>
-auto ostream_drill(std::ostream & strm, T const & t, PriorityTag<2>)
--> typename std::enable_if<
-    is_ostreamable<T>::value,
-    std::ostream &>::type
-{
-    return strm << t;
-}
-
-// Enum fallback: T is an enum without operator<<, use underlying type
-template <typename T>
-auto ostream_drill(std::ostream & strm, T const & t, PriorityTag<1>)
--> typename std::enable_if<
-    std::is_enum<T>::value &&
-    not is_ostreamable<T>::value,
-    std::ostream &>::type
-{
-    return strm << static_cast<typename std::underlying_type<T>::type>(t);
-}
-
-// Recursive case: T is an atlas type, drill down
-template <typename T>
-auto ostream_drill(std::ostream & strm, T const & t, PriorityTag<0>)
--> decltype(ostream_drill(strm, atlas_value_for(t), PriorityTag<2>{}))
-{
-    return ostream_drill(strm, atlas_value_for(t), PriorityTag<2>{});
-}
-
-// ----------------------------------------------------------------------------
-// IStream drilling support
-// ----------------------------------------------------------------------------
-
-// is_istreamable<T>: detects if T can be read from std::istream
-template <typename T, typename = void>
-struct is_istreamable
-: std::false_type
-{ };
-
-template <typename T>
-struct is_istreamable<
-    T,
-    void_t<decltype(std::declval<std::istream &>() >> std::declval<T &>())>>
-: std::true_type
-{ };
-
-// Base case: T is directly istreamable
-template <typename T>
-auto istream_drill(std::istream & strm, T & t, PriorityTag<2>)
--> typename std::enable_if<
-    is_istreamable<T>::value,
-    std::istream &>::type
-{
-    return strm >> t;
-}
-
-// Enum fallback: T is an enum without operator>>, read as underlying type
-template <typename T>
-auto istream_drill(std::istream & strm, T & t, PriorityTag<1>)
--> typename std::enable_if<
-    std::is_enum<T>::value &&
-    not is_istreamable<T>::value,
-    std::istream &>::type
-{
-    typename std::underlying_type<T>::type tmp;
-    strm >> tmp;
-    t = static_cast<T>(tmp);
-    return strm;
-}
-
-// Recursive case: T is an atlas type, drill down
-template <typename T>
-auto istream_drill(std::istream & strm, T & t, PriorityTag<0>)
--> decltype(istream_drill(strm, atlas_value_for(t), PriorityTag<2>{}))
-{
-    return istream_drill(strm, atlas_value_for(t), PriorityTag<2>{});
-}
-
-// ----------------------------------------------------------------------------
-// Format drilling support (C++20+)
-// ----------------------------------------------------------------------------
-#if defined(__cpp_lib_format) && __cpp_lib_format >= 202110L
-
-// Concept: T is formattable via std::formatter<T>
-template <typename T>
-concept formattable = requires(
-    std::formatter<T> f,
-    T const & t,
-    std::format_parse_context & parse_ctx,
-    std::format_context & fmt_ctx)
-{
-    f.parse(parse_ctx);
-    f.format(t, fmt_ctx);
-};
-
-// Drill to find a formattable type, returning a reference or converted value
-template <typename T>
-constexpr decltype(auto) format_value_drill(T const & t)
-{
-    if constexpr (formattable<T>) {
-        // Base case: T is directly formattable - return reference
-        return (t);
-    } else if constexpr (std::is_enum_v<T>) {
-        // Enum fallback: convert to underlying type
-        return static_cast<std::underlying_type_t<T>>(t);
-    } else if constexpr (has_atlas_value_type<T>::value) {
-        // Recursive case: drill through atlas type
-        return format_value_drill(atlas_value_for(t));
-    } else {
-        static_assert(formattable<T>, "Type is not formattable after drilling");
-    }
-}
-
-// Type trait for the drilled type
-template <typename T>
-using format_drilled_type_t =
-    std::remove_cvref_t<decltype(format_value_drill(std::declval<T const &>()))>;
-
-#endif // __cpp_lib_format
-
 } // namespace atlas_detail
 
 using atlas_detail::enable_if_t;
@@ -644,6 +460,218 @@ cast(U && u)
 } // namespace atlas
 
 #endif // WJH_ATLAS_50E620B544874CB8BE4412EE6773BF90
+
+#ifndef WJH_ATLAS_771333B44A11491895F986933BB2FB41
+#define WJH_ATLAS_771333B44A11491895F986933BB2FB41
+namespace atlas {
+namespace atlas_detail {
+// ----------------------------------------------------------------------------
+// Hash drilling support
+// ----------------------------------------------------------------------------
+
+// is_hashable<T>: detects if std::hash<T> is valid
+template <typename T, typename = void>
+struct is_hashable
+: std::false_type
+{ };
+
+template <typename T>
+struct is_hashable<
+    T,
+    void_t<decltype(std::hash<T>{}(std::declval<T const &>()))>>
+: std::true_type
+{ };
+
+// Base case: T is directly hashable
+template <typename T>
+auto hash_drill(T const & t, PriorityTag<2>)
+-> typename std::enable_if<
+    is_hashable<T>::value,
+    std::size_t>::type
+{
+    return std::hash<T>{}(t);
+}
+
+// Enum fallback: T is an enum without std::hash, use underlying type
+template <typename T>
+auto hash_drill(T const & t, PriorityTag<1>)
+-> typename std::enable_if<
+    std::is_enum<T>::value &&
+    not is_hashable<T>::value,
+    std::size_t>::type
+{
+    return std::hash<typename std::underlying_type<T>::type>{}(
+        static_cast<typename std::underlying_type<T>::type>(t));
+}
+
+// Recursive case: T is an atlas type, drill down
+template <typename T>
+auto hash_drill(T const & t, PriorityTag<0>)
+-> decltype(hash_drill(atlas_value_for(t), PriorityTag<2>{}))
+{
+    return hash_drill(atlas_value_for(t), PriorityTag<2>{});
+}
+} // namespace atlas_detail
+} // namespace atlas
+#endif // WJH_ATLAS_771333B44A11491895F986933BB2FB41
+
+#ifndef WJH_ATLAS_60461ED5AEEF4509B86FB80C8B1E0FE0
+#define WJH_ATLAS_60461ED5AEEF4509B86FB80C8B1E0FE0
+namespace atlas {
+namespace atlas_detail {
+// ----------------------------------------------------------------------------
+// OStream drilling support
+// ----------------------------------------------------------------------------
+
+// is_ostreamable<T>: detects if T can be written to std::ostream
+template <typename T, typename = void>
+struct is_ostreamable
+: std::false_type
+{ };
+
+template <typename T>
+struct is_ostreamable<
+    T,
+    void_t<decltype(std::declval<std::ostream &>() << std::declval<T const &>())>>
+: std::true_type
+{ };
+
+// Base case: T is directly ostreamable
+template <typename T>
+auto ostream_drill(std::ostream & strm, T const & t, PriorityTag<2>)
+-> typename std::enable_if<
+    is_ostreamable<T>::value,
+    std::ostream &>::type
+{
+    return strm << t;
+}
+
+// Enum fallback: T is an enum without operator<<, use underlying type
+template <typename T>
+auto ostream_drill(std::ostream & strm, T const & t, PriorityTag<1>)
+-> typename std::enable_if<
+    std::is_enum<T>::value &&
+    not is_ostreamable<T>::value,
+    std::ostream &>::type
+{
+    return strm << static_cast<typename std::underlying_type<T>::type>(t);
+}
+
+// Recursive case: T is an atlas type, drill down
+template <typename T>
+auto ostream_drill(std::ostream & strm, T const & t, PriorityTag<0>)
+-> decltype(ostream_drill(strm, atlas_value_for(t), PriorityTag<2>{}))
+{
+    return ostream_drill(strm, atlas_value_for(t), PriorityTag<2>{});
+}
+} // namespace atlas_detail
+} // namespace atlas
+#endif // WJH_ATLAS_60461ED5AEEF4509B86FB80C8B1E0FE0
+
+#ifndef WJH_ATLAS_4296E303C8F846C0B958EB450C57465B
+#define WJH_ATLAS_4296E303C8F846C0B958EB450C57465B
+namespace atlas {
+namespace atlas_detail {
+// ----------------------------------------------------------------------------
+// IStream drilling support
+// ----------------------------------------------------------------------------
+
+// is_istreamable<T>: detects if T can be read from std::istream
+template <typename T, typename = void>
+struct is_istreamable
+: std::false_type
+{ };
+
+template <typename T>
+struct is_istreamable<
+    T,
+    void_t<decltype(std::declval<std::istream &>() >> std::declval<T &>())>>
+: std::true_type
+{ };
+
+// Base case: T is directly istreamable
+template <typename T>
+auto istream_drill(std::istream & strm, T & t, PriorityTag<2>)
+-> typename std::enable_if<
+    is_istreamable<T>::value,
+    std::istream &>::type
+{
+    return strm >> t;
+}
+
+// Enum fallback: T is an enum without operator>>, read as underlying type
+template <typename T>
+auto istream_drill(std::istream & strm, T & t, PriorityTag<1>)
+-> typename std::enable_if<
+    std::is_enum<T>::value &&
+    not is_istreamable<T>::value,
+    std::istream &>::type
+{
+    typename std::underlying_type<T>::type tmp;
+    strm >> tmp;
+    t = static_cast<T>(tmp);
+    return strm;
+}
+
+// Recursive case: T is an atlas type, drill down
+template <typename T>
+auto istream_drill(std::istream & strm, T & t, PriorityTag<0>)
+-> decltype(istream_drill(strm, atlas_value_for(t), PriorityTag<2>{}))
+{
+    return istream_drill(strm, atlas_value_for(t), PriorityTag<2>{});
+}
+} // namespace atlas_detail
+} // namespace atlas
+#endif // WJH_ATLAS_4296E303C8F846C0B958EB450C57465B
+
+#ifndef WJH_ATLAS_9B74AE244B4F4EB68DF9D80B67E1EB05
+#define WJH_ATLAS_9B74AE244B4F4EB68DF9D80B67E1EB05
+namespace atlas {
+namespace atlas_detail {
+// ----------------------------------------------------------------------------
+// Format drilling support (C++20+)
+// ----------------------------------------------------------------------------
+#if defined(__cpp_lib_format) && __cpp_lib_format >= 202110L
+
+// Concept: T is formattable via std::formatter<T>
+template <typename T>
+concept formattable = requires(
+    std::formatter<T> f,
+    T const & t,
+    std::format_parse_context & parse_ctx,
+    std::format_context & fmt_ctx)
+{
+    f.parse(parse_ctx);
+    f.format(t, fmt_ctx);
+};
+
+// Drill to find a formattable type, returning a reference or converted value
+template <typename T>
+constexpr decltype(auto) format_value_drill(T const & t)
+{
+    if constexpr (formattable<T>) {
+        // Base case: T is directly formattable - return reference
+        return (t);
+    } else if constexpr (std::is_enum_v<T>) {
+        // Enum fallback: convert to underlying type
+        return static_cast<std::underlying_type_t<T>>(t);
+    } else if constexpr (has_atlas_value_type<T>::value) {
+        // Recursive case: drill through atlas type
+        return format_value_drill(atlas_value_for(t));
+    } else {
+        static_assert(formattable<T>, "Type is not formattable after drilling");
+    }
+}
+
+// Type trait for the drilled type
+template <typename T>
+using format_drilled_type_t =
+    std::remove_cvref_t<decltype(format_value_drill(std::declval<T const &>()))>;
+
+#endif // __cpp_lib_format
+} // namespace atlas_detail
+} // namespace atlas
+#endif // WJH_ATLAS_9B74AE244B4F4EB68DF9D80B67E1EB05
 
 #ifndef WJH_ATLAS_46CE143CD5E7495DAA505B54DBD417A2
 #define WJH_ATLAS_46CE143CD5E7495DAA505B54DBD417A2

@@ -1683,7 +1683,8 @@ int main() { return 0; }
         // First, write a header file defining the enum
         tester.write_temp_file(
             "format_color.hpp",
-            "namespace test { enum class Color { Red = 1, Green = 2, Blue = 3 }; }\n");
+            "namespace test { enum class Color { Red = 1, Green = 2, Blue = 3 "
+            "}; }\n");
 
         // Strong type wrapping an enum - formatter should use underlying int
         auto description = R"([type]
@@ -1723,6 +1724,625 @@ int main() { return 0; }
             INFO("Formatter drilling enum to underlying type failed:");
             INFO(result.output);
         }
+    }
+}
+
+TEST_SUITE("Compilation Tests: Drilling Multiple Files")
+{
+    // This is a set of regression tests.
+    //
+    // The drilling support for hash, format, istream, and ostream are optional.
+    // But, if a program includes multiple generated headers, each with
+    // different drilling opt-ins, then everything should still work.
+    //
+    // This was not the case, since the optional stuff was included or not in
+    // the main preamble.
+    //
+    // This caused two problems.
+    //
+    // 1. If the first header that was included did not have the support for the
+    // optional feature, but the second one did, then the definition would not
+    // be seen because it was in the basic preamble with the basic preamble
+    // guard.
+    //
+    // 2. If we break out the optional code, we need to make sure we don't see
+    // duplicate definitions. This could be a compiler error, or possibly a
+    // silent ODR violation.
+    //
+    // These tests address both questions for each of the four optional
+    // features.
+
+    // Helper to generate a header from a description
+    auto generate_header = [](fs::path const & input, fs::path const & output) {
+        std::vector<std::string> args = {
+            "atlas",
+            "--input=" + input.string(),
+            "--output=" + output.string()};
+        std::vector<char *> argv;
+        for (auto & a : args) {
+            argv.push_back(a.data());
+        }
+        return wjh::atlas::atlas_main(
+            static_cast<int>(argv.size()),
+            argv.data());
+    };
+
+    // -------------------------------------------------------------------------
+    // Hash drilling tests
+    // -------------------------------------------------------------------------
+
+    TEST_CASE("Hash: first header without, second with - drilling works")
+    {
+        // Problem 1: First header has NO hash, second header HAS hash.
+        // The hash drilling from the second header must be visible.
+        auto temp_dir = fs::temp_directory_path() /
+            ("atlas_hash_first_without_" + std::to_string(::getpid()));
+        fs::create_directories(temp_dir);
+
+        // First header: NO hash support
+        auto desc1 = R"([type]
+kind=struct
+namespace=test::drill
+name=NoHash
+description=strong int; ==, no-constexpr
+)";
+        // Second header: HAS hash support
+        auto desc2 = R"([type]
+kind=struct
+namespace=test::drill
+name=WithHash
+description=strong int; ==, hash, no-constexpr
+)";
+
+        auto input1 = temp_dir / "no_hash.txt";
+        auto input2 = temp_dir / "with_hash.txt";
+        auto header1 = temp_dir / "NoHash.hpp";
+        auto header2 = temp_dir / "WithHash.hpp";
+
+        std::ofstream(input1) << desc1;
+        std::ofstream(input2) << desc2;
+
+        REQUIRE(generate_header(input1, header1) == EXIT_SUCCESS);
+        REQUIRE(generate_header(input2, header2) == EXIT_SUCCESS);
+
+        // Include the NO-hash header first, then the WITH-hash header
+        auto test_path = temp_dir / "test.cpp";
+        std::ofstream(test_path) << R"(
+#include "NoHash.hpp"
+#include "WithHash.hpp"
+#include <cassert>
+#include <unordered_set>
+
+int main() {
+    // The hash drilling from WithHash.hpp must work even though
+    // NoHash.hpp was included first and has no hash support
+    std::unordered_set<test::drill::WithHash> set;
+    set.insert(test::drill::WithHash{42});
+    set.insert(test::drill::WithHash{42});  // duplicate
+    assert(set.size() == 1);
+
+    return 0;
+}
+)";
+
+        auto exe_path = temp_dir / "test";
+        std::ostringstream cmd;
+        cmd << "cd " << temp_dir << " && "
+            << wjh::atlas::test::find_working_compiler()
+            << " -std=c++20 -I. -o test test.cpp 2>&1";
+
+        auto result = exec_command(cmd.str());
+        INFO("Compilation output: " << result.output);
+        CHECK(result.exit_code == 0);
+
+        if (result.exit_code == 0) {
+            auto run = exec_command(exe_path.string());
+            CHECK(run.exit_code == 0);
+        }
+
+        std::error_code ec;
+        fs::remove_all(temp_dir, ec);
+    }
+
+    TEST_CASE("Hash: both headers with")
+    {
+        // Problem 2: Both headers have hash support.
+        // Must compile without duplicate definition errors.
+        auto temp_dir = fs::temp_directory_path() /
+            ("atlas_hash_both_with_" + std::to_string(::getpid()));
+        fs::create_directories(temp_dir);
+
+        auto desc1 = R"([type]
+kind=struct
+namespace=test::drill
+name=HashA
+description=strong int; ==, hash, no-constexpr
+)";
+        auto desc2 = R"([type]
+kind=struct
+namespace=test::drill
+name=HashB
+description=strong std::string; ==, hash, no-constexpr
+)";
+
+        auto input1 = temp_dir / "hash_a.txt";
+        auto input2 = temp_dir / "hash_b.txt";
+        auto header1 = temp_dir / "HashA.hpp";
+        auto header2 = temp_dir / "HashB.hpp";
+
+        std::ofstream(input1) << desc1;
+        std::ofstream(input2) << desc2;
+
+        REQUIRE(generate_header(input1, header1) == EXIT_SUCCESS);
+        REQUIRE(generate_header(input2, header2) == EXIT_SUCCESS);
+
+        auto test_path = temp_dir / "test.cpp";
+        std::ofstream(test_path) << R"(
+#include "HashA.hpp"
+#include "HashB.hpp"
+#include <cassert>
+#include <unordered_set>
+
+int main() {
+    std::unordered_set<test::drill::HashA> set_a;
+    set_a.insert(test::drill::HashA{42});
+    assert(set_a.size() == 1);
+
+    std::unordered_set<test::drill::HashB> set_b;
+    set_b.insert(test::drill::HashB{"hello"});
+    assert(set_b.size() == 1);
+
+    return 0;
+}
+)";
+
+        auto exe_path = temp_dir / "test";
+        std::ostringstream cmd;
+        cmd << "cd " << temp_dir << " && "
+            << wjh::atlas::test::find_working_compiler()
+            << " -std=c++20 -I. -o test test.cpp 2>&1";
+
+        auto result = exec_command(cmd.str());
+        INFO("Compilation output: " << result.output);
+        CHECK(result.exit_code == 0);
+
+        if (result.exit_code == 0) {
+            auto run = exec_command(exe_path.string());
+            CHECK(run.exit_code == 0);
+        }
+
+        std::error_code ec;
+        fs::remove_all(temp_dir, ec);
+    }
+
+    // -------------------------------------------------------------------------
+    // OStream drilling tests
+    // -------------------------------------------------------------------------
+
+    TEST_CASE("OStream: first header without, second with - drilling works")
+    {
+        auto temp_dir = fs::temp_directory_path() /
+            ("atlas_ostream_first_without_" + std::to_string(::getpid()));
+        fs::create_directories(temp_dir);
+
+        // First header: NO ostream support
+        auto desc1 = R"([type]
+kind=struct
+namespace=test::drill
+name=NoOut
+description=strong int; ==, no-constexpr
+)";
+        // Second header: HAS ostream support
+        auto desc2 = R"([type]
+kind=struct
+namespace=test::drill
+name=WithOut
+description=strong int; out, no-constexpr
+)";
+
+        auto input1 = temp_dir / "no_out.txt";
+        auto input2 = temp_dir / "with_out.txt";
+        auto header1 = temp_dir / "NoOut.hpp";
+        auto header2 = temp_dir / "WithOut.hpp";
+
+        std::ofstream(input1) << desc1;
+        std::ofstream(input2) << desc2;
+
+        REQUIRE(generate_header(input1, header1) == EXIT_SUCCESS);
+        REQUIRE(generate_header(input2, header2) == EXIT_SUCCESS);
+
+        auto test_path = temp_dir / "test.cpp";
+        std::ofstream(test_path) << R"(
+#include "NoOut.hpp"
+#include "WithOut.hpp"
+#include <cassert>
+#include <sstream>
+
+int main() {
+    test::drill::WithOut x{42};
+    std::ostringstream oss;
+    oss << x;
+    assert(oss.str() == "42");
+
+    return 0;
+}
+)";
+
+        auto exe_path = temp_dir / "test";
+        std::ostringstream cmd;
+        cmd << "cd " << temp_dir << " && "
+            << wjh::atlas::test::find_working_compiler()
+            << " -std=c++20 -I. -o test test.cpp 2>&1";
+
+        auto result = exec_command(cmd.str());
+        INFO("Compilation output: " << result.output);
+        CHECK(result.exit_code == 0);
+
+        if (result.exit_code == 0) {
+            auto run = exec_command(exe_path.string());
+            CHECK(run.exit_code == 0);
+        }
+
+        std::error_code ec;
+        fs::remove_all(temp_dir, ec);
+    }
+
+    TEST_CASE("OStream: both headers with")
+    {
+        auto temp_dir = fs::temp_directory_path() /
+            ("atlas_ostream_both_with_" + std::to_string(::getpid()));
+        fs::create_directories(temp_dir);
+
+        auto desc1 = R"([type]
+kind=struct
+namespace=test::drill
+name=OutA
+description=strong int; out, no-constexpr
+)";
+        auto desc2 = R"([type]
+kind=struct
+namespace=test::drill
+name=OutB
+description=strong double; out, no-constexpr
+)";
+
+        auto input1 = temp_dir / "out_a.txt";
+        auto input2 = temp_dir / "out_b.txt";
+        auto header1 = temp_dir / "OutA.hpp";
+        auto header2 = temp_dir / "OutB.hpp";
+
+        std::ofstream(input1) << desc1;
+        std::ofstream(input2) << desc2;
+
+        REQUIRE(generate_header(input1, header1) == EXIT_SUCCESS);
+        REQUIRE(generate_header(input2, header2) == EXIT_SUCCESS);
+
+        auto test_path = temp_dir / "test.cpp";
+        std::ofstream(test_path) << R"(
+#include "OutA.hpp"
+#include "OutB.hpp"
+#include <cassert>
+#include <sstream>
+
+int main() {
+    test::drill::OutA a{42};
+    test::drill::OutB b{3.14};
+
+    std::ostringstream oss;
+    oss << a << " " << b;
+    assert(!oss.str().empty());
+
+    return 0;
+}
+)";
+
+        auto exe_path = temp_dir / "test";
+        std::ostringstream cmd;
+        cmd << "cd " << temp_dir << " && "
+            << wjh::atlas::test::find_working_compiler()
+            << " -std=c++20 -I. -o test test.cpp 2>&1";
+
+        auto result = exec_command(cmd.str());
+        INFO("Compilation output: " << result.output);
+        CHECK(result.exit_code == 0);
+
+        if (result.exit_code == 0) {
+            auto run = exec_command(exe_path.string());
+            CHECK(run.exit_code == 0);
+        }
+
+        std::error_code ec;
+        fs::remove_all(temp_dir, ec);
+    }
+
+    // -------------------------------------------------------------------------
+    // IStream drilling tests
+    // -------------------------------------------------------------------------
+
+    TEST_CASE("IStream: first header without, second with - drilling works")
+    {
+        auto temp_dir = fs::temp_directory_path() /
+            ("atlas_istream_first_without_" + std::to_string(::getpid()));
+        fs::create_directories(temp_dir);
+
+        // First header: NO istream support
+        auto desc1 = R"([type]
+kind=struct
+namespace=test::drill
+name=NoIn
+description=strong int; ==, no-constexpr
+)";
+        // Second header: HAS istream support
+        auto desc2 = R"([type]
+kind=struct
+namespace=test::drill
+name=WithIn
+description=strong int; in, no-constexpr
+)";
+
+        auto input1 = temp_dir / "no_in.txt";
+        auto input2 = temp_dir / "with_in.txt";
+        auto header1 = temp_dir / "NoIn.hpp";
+        auto header2 = temp_dir / "WithIn.hpp";
+
+        std::ofstream(input1) << desc1;
+        std::ofstream(input2) << desc2;
+
+        REQUIRE(generate_header(input1, header1) == EXIT_SUCCESS);
+        REQUIRE(generate_header(input2, header2) == EXIT_SUCCESS);
+
+        auto test_path = temp_dir / "test.cpp";
+        std::ofstream(test_path) << R"(
+#include "NoIn.hpp"
+#include "WithIn.hpp"
+#include <cassert>
+#include <sstream>
+
+int main() {
+    test::drill::WithIn x{0};
+    std::istringstream iss("42");
+    iss >> x;
+    assert(atlas_value_for(x) == 42);
+
+    return 0;
+}
+)";
+
+        auto exe_path = temp_dir / "test";
+        std::ostringstream cmd;
+        cmd << "cd " << temp_dir << " && "
+            << wjh::atlas::test::find_working_compiler()
+            << " -std=c++20 -I. -o test test.cpp 2>&1";
+
+        auto result = exec_command(cmd.str());
+        INFO("Compilation output: " << result.output);
+        CHECK(result.exit_code == 0);
+
+        if (result.exit_code == 0) {
+            auto run = exec_command(exe_path.string());
+            CHECK(run.exit_code == 0);
+        }
+
+        std::error_code ec;
+        fs::remove_all(temp_dir, ec);
+    }
+
+    TEST_CASE("IStream: both headers with")
+    {
+        auto temp_dir = fs::temp_directory_path() /
+            ("atlas_istream_both_with_" + std::to_string(::getpid()));
+        fs::create_directories(temp_dir);
+
+        auto desc1 = R"([type]
+kind=struct
+namespace=test::drill
+name=InA
+description=strong int; in, no-constexpr
+)";
+        auto desc2 = R"([type]
+kind=struct
+namespace=test::drill
+name=InB
+description=strong double; in, no-constexpr
+)";
+
+        auto input1 = temp_dir / "in_a.txt";
+        auto input2 = temp_dir / "in_b.txt";
+        auto header1 = temp_dir / "InA.hpp";
+        auto header2 = temp_dir / "InB.hpp";
+
+        std::ofstream(input1) << desc1;
+        std::ofstream(input2) << desc2;
+
+        REQUIRE(generate_header(input1, header1) == EXIT_SUCCESS);
+        REQUIRE(generate_header(input2, header2) == EXIT_SUCCESS);
+
+        auto test_path = temp_dir / "test.cpp";
+        std::ofstream(test_path) << R"(
+#include "InA.hpp"
+#include "InB.hpp"
+#include <cassert>
+#include <sstream>
+
+int main() {
+    test::drill::InA a{0};
+    test::drill::InB b{0.0};
+
+    std::istringstream iss("42 3.14");
+    iss >> a >> b;
+
+    assert(atlas_value_for(a) == 42);
+    assert(atlas_value_for(b) > 3.0);
+
+    return 0;
+}
+)";
+
+        auto exe_path = temp_dir / "test";
+        std::ostringstream cmd;
+        cmd << "cd " << temp_dir << " && "
+            << wjh::atlas::test::find_working_compiler()
+            << " -std=c++20 -I. -o test test.cpp 2>&1";
+
+        auto result = exec_command(cmd.str());
+        INFO("Compilation output: " << result.output);
+        CHECK(result.exit_code == 0);
+
+        if (result.exit_code == 0) {
+            auto run = exec_command(exe_path.string());
+            CHECK(run.exit_code == 0);
+        }
+
+        std::error_code ec;
+        fs::remove_all(temp_dir, ec);
+    }
+
+    // -------------------------------------------------------------------------
+    // Format drilling tests
+    // -------------------------------------------------------------------------
+
+    TEST_CASE("Format: first header without, second with - drilling works")
+    {
+        auto temp_dir = fs::temp_directory_path() /
+            ("atlas_format_first_without_" + std::to_string(::getpid()));
+        fs::create_directories(temp_dir);
+
+        // First header: NO format support
+        auto desc1 = R"([type]
+kind=struct
+namespace=test::drill
+name=NoFmt
+description=strong int; ==, no-constexpr, c++20
+)";
+        // Second header: HAS format support
+        auto desc2 = R"([type]
+kind=struct
+namespace=test::drill
+name=WithFmt
+description=strong int; fmt, no-constexpr, c++20
+)";
+
+        auto input1 = temp_dir / "no_fmt.txt";
+        auto input2 = temp_dir / "with_fmt.txt";
+        auto header1 = temp_dir / "NoFmt.hpp";
+        auto header2 = temp_dir / "WithFmt.hpp";
+
+        std::ofstream(input1) << desc1;
+        std::ofstream(input2) << desc2;
+
+        REQUIRE(generate_header(input1, header1) == EXIT_SUCCESS);
+        REQUIRE(generate_header(input2, header2) == EXIT_SUCCESS);
+
+        auto test_path = temp_dir / "test.cpp";
+        std::ofstream(test_path) << R"(
+#include "NoFmt.hpp"
+#include "WithFmt.hpp"
+#include <version>
+#if defined(__cpp_lib_format) && __cpp_lib_format >= 202110L
+#include <cassert>
+#include <format>
+
+int main() {
+    test::drill::WithFmt x{42};
+    auto result = std::format("{}", x);
+    assert(result == "42");
+
+    return 0;
+}
+#else
+int main() { return 0; }  // Skip if format not available
+#endif
+)";
+
+        auto exe_path = temp_dir / "test";
+        std::ostringstream cmd;
+        cmd << "cd " << temp_dir << " && "
+            << wjh::atlas::test::find_working_compiler()
+            << " -std=c++20 -I. -o test test.cpp 2>&1";
+
+        auto result = exec_command(cmd.str());
+        INFO("Compilation output: " << result.output);
+        CHECK(result.exit_code == 0);
+
+        if (result.exit_code == 0) {
+            auto run = exec_command(exe_path.string());
+            CHECK(run.exit_code == 0);
+        }
+
+        std::error_code ec;
+        fs::remove_all(temp_dir, ec);
+    }
+
+    TEST_CASE("Format: both headers with")
+    {
+        auto temp_dir = fs::temp_directory_path() /
+            ("atlas_format_both_with_" + std::to_string(::getpid()));
+        fs::create_directories(temp_dir);
+
+        auto desc1 = R"([type]
+kind=struct
+namespace=test::drill
+name=FmtA
+description=strong int; fmt, no-constexpr, c++20
+)";
+        auto desc2 = R"([type]
+kind=struct
+namespace=test::drill
+name=FmtB
+description=strong double; fmt, no-constexpr, c++20
+)";
+
+        auto input1 = temp_dir / "fmt_a.txt";
+        auto input2 = temp_dir / "fmt_b.txt";
+        auto header1 = temp_dir / "FmtA.hpp";
+        auto header2 = temp_dir / "FmtB.hpp";
+
+        std::ofstream(input1) << desc1;
+        std::ofstream(input2) << desc2;
+
+        REQUIRE(generate_header(input1, header1) == EXIT_SUCCESS);
+        REQUIRE(generate_header(input2, header2) == EXIT_SUCCESS);
+
+        auto test_path = temp_dir / "test.cpp";
+        std::ofstream(test_path) << R"(
+#include "FmtA.hpp"
+#include "FmtB.hpp"
+#include <version>
+#if defined(__cpp_lib_format) && __cpp_lib_format >= 202110L
+#include <cassert>
+#include <format>
+
+int main() {
+    test::drill::FmtA a{42};
+    test::drill::FmtB b{3.14};
+
+    auto result = std::format("{} {}", a, b);
+    assert(!result.empty());
+
+    return 0;
+}
+#else
+int main() { return 0; }  // Skip if format not available
+#endif
+)";
+
+        auto exe_path = temp_dir / "test";
+        std::ostringstream cmd;
+        cmd << "cd " << temp_dir << " && "
+            << wjh::atlas::test::find_working_compiler()
+            << " -std=c++20 -I. -o test test.cpp 2>&1";
+
+        auto result = exec_command(cmd.str());
+        INFO("Compilation output: " << result.output);
+        CHECK(result.exit_code == 0);
+
+        if (result.exit_code == 0) {
+            auto run = exec_command(exe_path.string());
+            CHECK(run.exit_code == 0);
+        }
+
+        std::error_code ec;
+        fs::remove_all(temp_dir, ec);
     }
 }
 

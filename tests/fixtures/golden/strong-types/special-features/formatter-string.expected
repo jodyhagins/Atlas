@@ -383,48 +383,6 @@ end_(T && t) noexcept(noexcept(end(std::forward<T>(t))))
     return end(std::forward<T>(t));
 }
 
-// ----------------------------------------------------------------------------
-// Format drilling support (C++20+)
-// ----------------------------------------------------------------------------
-#if defined(__cpp_lib_format) && __cpp_lib_format >= 202110L
-
-// Concept: T is formattable via std::formatter<T>
-template <typename T>
-concept formattable = requires(
-    std::formatter<T> f,
-    T const & t,
-    std::format_parse_context & parse_ctx,
-    std::format_context & fmt_ctx)
-{
-    f.parse(parse_ctx);
-    f.format(t, fmt_ctx);
-};
-
-// Drill to find a formattable type, returning a reference or converted value
-template <typename T>
-constexpr decltype(auto) format_value_drill(T const & t)
-{
-    if constexpr (formattable<T>) {
-        // Base case: T is directly formattable - return reference
-        return (t);
-    } else if constexpr (std::is_enum_v<T>) {
-        // Enum fallback: convert to underlying type
-        return static_cast<std::underlying_type_t<T>>(t);
-    } else if constexpr (has_atlas_value_type<T>::value) {
-        // Recursive case: drill through atlas type
-        return format_value_drill(atlas_value_for(t));
-    } else {
-        static_assert(formattable<T>, "Type is not formattable after drilling");
-    }
-}
-
-// Type trait for the drilled type
-template <typename T>
-using format_drilled_type_t =
-    std::remove_cvref_t<decltype(format_value_drill(std::declval<T const &>()))>;
-
-#endif // __cpp_lib_format
-
 } // namespace atlas_detail
 
 using atlas_detail::enable_if_t;
@@ -485,6 +443,55 @@ cast(U && u)
 } // namespace atlas
 
 #endif // WJH_ATLAS_50E620B544874CB8BE4412EE6773BF90
+
+#ifndef WJH_ATLAS_9B74AE244B4F4EB68DF9D80B67E1EB05
+#define WJH_ATLAS_9B74AE244B4F4EB68DF9D80B67E1EB05
+namespace atlas {
+namespace atlas_detail {
+// ----------------------------------------------------------------------------
+// Format drilling support (C++20+)
+// ----------------------------------------------------------------------------
+#if defined(__cpp_lib_format) && __cpp_lib_format >= 202110L
+
+// Concept: T is formattable via std::formatter<T>
+template <typename T>
+concept formattable = requires(
+    std::formatter<T> f,
+    T const & t,
+    std::format_parse_context & parse_ctx,
+    std::format_context & fmt_ctx)
+{
+    f.parse(parse_ctx);
+    f.format(t, fmt_ctx);
+};
+
+// Drill to find a formattable type, returning a reference or converted value
+template <typename T>
+constexpr decltype(auto) format_value_drill(T const & t)
+{
+    if constexpr (formattable<T>) {
+        // Base case: T is directly formattable - return reference
+        return (t);
+    } else if constexpr (std::is_enum_v<T>) {
+        // Enum fallback: convert to underlying type
+        return static_cast<std::underlying_type_t<T>>(t);
+    } else if constexpr (has_atlas_value_type<T>::value) {
+        // Recursive case: drill through atlas type
+        return format_value_drill(atlas_value_for(t));
+    } else {
+        static_assert(formattable<T>, "Type is not formattable after drilling");
+    }
+}
+
+// Type trait for the drilled type
+template <typename T>
+using format_drilled_type_t =
+    std::remove_cvref_t<decltype(format_value_drill(std::declval<T const &>()))>;
+
+#endif // __cpp_lib_format
+} // namespace atlas_detail
+} // namespace atlas
+#endif // WJH_ATLAS_9B74AE244B4F4EB68DF9D80B67E1EB05
 
 
 //////////////////////////////////////////////////////////////////////
