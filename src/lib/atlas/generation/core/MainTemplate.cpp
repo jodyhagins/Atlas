@@ -57,7 +57,7 @@ get_template_impl() const noexcept
 : private atlas::strong_type_tag
 {
 {{#has_default_value}}
-    {{{underlying_type}}} {{{value}}}{{{default_initializer}}};
+    {{{underlying_type}}} {{{value}}} = static_cast<{{{underlying_type}}}>{{{default_initializer}}};
 {{/has_default_value}}
 {{^has_default_value}}
     {{{underlying_type}}} {{{value}}};
@@ -121,10 +121,21 @@ get_template_impl() const noexcept
     {{/template_assignment_operator}}
 
     /**
-     * The explicit cast operator provides a reference to the wrapped object.
+     * Access to immediate underlying value via ADL.
      */
-    {{{const_expr}}}explicit operator {{{underlying_type}}} const & () const { return {{{value}}}; }
-    {{{const_expr}}}explicit operator {{{underlying_type}}} & () { return {{{value}}}; }
+    friend {{{const_expr}}}{{{underlying_type}}} const & atlas_value_for({{{class_name}}} const & self) noexcept {
+        return self.{{{value}}};
+    }
+    friend {{{const_expr}}}{{{underlying_type}}} & atlas_value_for({{{class_name}}} & self) noexcept {
+        return self.{{{value}}};
+    }
+    friend {{{const_expr}}}auto atlas_value_for({{{class_name}}} && self) noexcept
+        -> typename std::enable_if<
+            std::is_move_constructible<{{{underlying_type}}}>::value,
+            {{{underlying_type}}}>::type
+    {
+        return std::move(self.{{{value}}});
+    }
     {{#explicit_cast_operators}}
     {{>explicit_cast_operator}}
     {{/explicit_cast_operators}}

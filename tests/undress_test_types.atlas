@@ -1,0 +1,36 @@
+# Test types for atlas::undress() tests
+
+# Basic integer wrapper
+[type]
+kind=struct
+namespace=test
+name=SimpleInt
+description=int
+
+# String wrapper for move testing
+[type]
+kind=struct
+namespace=test
+name=MovableString
+description=std::string; no-constexpr
+
+# Nested type - wraps SimpleInt
+[type]
+kind=struct
+namespace=test
+name=NestedInt
+description=test::SimpleInt
+
+# Triple nested type - wraps NestedInt
+[type]
+kind=struct
+namespace=test
+name=TripleNestedInt
+description=test::NestedInt; no-constexpr
+
+# Move-only type wrapper (lvalue tests only)
+[type]
+kind=struct
+namespace=test
+name=MoveOnlyWrapper
+description=std::unique_ptr<int>; no-constexpr

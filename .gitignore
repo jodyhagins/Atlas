@@ -1,9 +1,6 @@
 .claude/
 AGENTS.md
 CLAUDE.md
-do-not-commit/
-docs/api-reference.md
-docs/tutorials/
 openspec/
 build
 

@@ -18,12 +18,15 @@ get_template_impl() const noexcept
     static constexpr std::string_view tmpl = R"(
     /**
      * Extract the wrapped object from an istream.
+     * Drills down to find the first istreamable type.
      */
-    friend std::istream & operator >> (
+    friend std::istream & operator>>(
         std::istream & strm,
         {{{class_name}}} & t)
     {
-        return strm >> t.value;
+        atlas::atlas_detail::istream_drill(
+            strm, t.value, atlas::atlas_detail::PriorityTag<2>{});
+        return strm;
     }
 )";
     return tmpl;

@@ -26,7 +26,7 @@ TEST_SUITE("Checked Arithmetic Mode")
         test::CheckedInt8 a{10};
         test::CheckedInt8 b{20};
         auto c = a + b;
-        CHECK(static_cast<std::int8_t>(c) == 30);
+        CHECK(atlas::undress(c) == 30);
     }
 
     TEST_CASE("Checked Signed Int - Addition overflow")
@@ -90,7 +90,7 @@ TEST_SUITE("Checked Arithmetic Mode")
         test::CheckedUInt8 a{10};
         test::CheckedUInt8 b{20};
         auto c = a + b;
-        CHECK(static_cast<std::uint8_t>(c) == 30);
+        CHECK(atlas::undress(c) == 30);
     }
 
     TEST_CASE("Checked Unsigned Int - Addition overflow")
@@ -126,7 +126,7 @@ TEST_SUITE("Checked Arithmetic Mode")
         test::CheckedFloat a{1.5f};
         test::CheckedFloat b{2.5f};
         auto c = a + b;
-        CHECK(static_cast<float>(c) == 4.0f);
+        CHECK(atlas::undress(c) == 4.0f);
     }
 
     TEST_CASE("Checked Float - Overflow to infinity")
@@ -155,7 +155,7 @@ TEST_SUITE("Checked Arithmetic Mode")
         test::CheckedInt8 a{10};
         test::CheckedInt8 b{3};
         auto c = a % b;
-        CHECK(static_cast<std::int8_t>(c) == 1);
+        CHECK(atlas::undress(c) == 1);
     }
 
     TEST_CASE("Checked Modulo - Negative dividend")
@@ -163,7 +163,7 @@ TEST_SUITE("Checked Arithmetic Mode")
         test::CheckedInt8 a{-10};
         test::CheckedInt8 b{3};
         auto c = a % b;
-        CHECK(static_cast<std::int8_t>(c) == -1);
+        CHECK(atlas::undress(c) == -1);
     }
 
     TEST_CASE("Checked Modulo - Unsigned normal")
@@ -171,7 +171,7 @@ TEST_SUITE("Checked Arithmetic Mode")
         test::CheckedUInt8 a{10};
         test::CheckedUInt8 b{3};
         auto c = a % b;
-        CHECK(static_cast<std::uint8_t>(c) == 1);
+        CHECK(atlas::undress(c) == 1);
     }
 
     TEST_CASE("Checked Modulo - Division by zero throws")
@@ -235,7 +235,7 @@ TEST_SUITE("Checked Arithmetic Mode")
         test::CheckedDouble a{1.5};
         test::CheckedDouble b{2.5};
         auto c = a + b;
-        CHECK(static_cast<double>(c) == 4.0);
+        CHECK(atlas::undress(c) == 4.0);
     }
 
     TEST_CASE("Checked Double - Infinity arithmetic throws")
@@ -309,7 +309,7 @@ TEST_SUITE("Checked Arithmetic Mode")
         test::CheckedInt8 b{5};
         test::CheckedInt8 c{3};
         auto d = (a + b) * c;
-        CHECK(static_cast<std::int8_t>(d) == 45);
+        CHECK(atlas::undress(d) == 45);
     }
 }
 
@@ -324,7 +324,7 @@ TEST_SUITE("Saturating Arithmetic Mode")
         test::SaturatingInt8 a{10};
         test::SaturatingInt8 b{20};
         auto c = a + b;
-        CHECK(static_cast<std::int8_t>(c) == 30);
+        CHECK(atlas::undress(c) == 30);
     }
 
     TEST_CASE("Saturating Signed Int - Addition saturates to max")
@@ -332,7 +332,7 @@ TEST_SUITE("Saturating Arithmetic Mode")
         test::SaturatingInt8 a{127};
         test::SaturatingInt8 b{1};
         auto c = a + b;
-        CHECK(static_cast<std::int8_t>(c) == 127);
+        CHECK(atlas::undress(c) == 127);
     }
 
     TEST_CASE("Saturating Signed Int - Subtraction saturates to min")
@@ -340,7 +340,7 @@ TEST_SUITE("Saturating Arithmetic Mode")
         test::SaturatingInt8 a{-128};
         test::SaturatingInt8 b{1};
         auto c = a - b;
-        CHECK(static_cast<std::int8_t>(c) == -128);
+        CHECK(atlas::undress(c) == -128);
     }
 
     TEST_CASE("Saturating Signed Int - Multiplication saturates to max")
@@ -348,7 +348,7 @@ TEST_SUITE("Saturating Arithmetic Mode")
         test::SaturatingInt8 a{100};
         test::SaturatingInt8 b{2};
         auto c = a * b;
-        CHECK(static_cast<std::int8_t>(c) == 127);
+        CHECK(atlas::undress(c) == 127);
     }
 
     TEST_CASE("Saturating Signed Int - Multiplication saturates to min")
@@ -356,7 +356,7 @@ TEST_SUITE("Saturating Arithmetic Mode")
         test::SaturatingInt8 a{-100};
         test::SaturatingInt8 b{2};
         auto c = a * b;
-        CHECK(static_cast<std::int8_t>(c) == -128);
+        CHECK(atlas::undress(c) == -128);
     }
 
     TEST_CASE(
@@ -365,7 +365,7 @@ TEST_SUITE("Saturating Arithmetic Mode")
         test::SaturatingInt8 a{10};
         test::SaturatingInt8 b{0};
         auto c = a / b;
-        CHECK(static_cast<std::int8_t>(c) == 127);
+        CHECK(atlas::undress(c) == 127);
     }
 
     TEST_CASE(
@@ -374,7 +374,7 @@ TEST_SUITE("Saturating Arithmetic Mode")
         test::SaturatingInt8 a{-10};
         test::SaturatingInt8 b{0};
         auto c = a / b;
-        CHECK(static_cast<std::int8_t>(c) == -128);
+        CHECK(atlas::undress(c) == -128);
     }
 
     TEST_CASE("Saturating Signed Int - 0 / 0 returns 0")
@@ -382,7 +382,7 @@ TEST_SUITE("Saturating Arithmetic Mode")
         test::SaturatingInt8 a{0};
         test::SaturatingInt8 b{0};
         auto c = a / b;
-        CHECK(static_cast<std::int8_t>(c) == 0);
+        CHECK(atlas::undress(c) == 0);
     }
 
     TEST_CASE("Saturating Signed Int - INT_MIN / -1 saturates to max")
@@ -390,7 +390,7 @@ TEST_SUITE("Saturating Arithmetic Mode")
         test::SaturatingInt8 a{-128};
         test::SaturatingInt8 b{-1};
         auto c = a / b;
-        CHECK(static_cast<std::int8_t>(c) == 127);
+        CHECK(atlas::undress(c) == 127);
     }
 
     TEST_CASE("Saturating Unsigned Int - Normal operations")
@@ -398,7 +398,7 @@ TEST_SUITE("Saturating Arithmetic Mode")
         test::SaturatingUInt8 a{10};
         test::SaturatingUInt8 b{20};
         auto c = a + b;
-        CHECK(static_cast<std::uint8_t>(c) == 30);
+        CHECK(atlas::undress(c) == 30);
     }
 
     TEST_CASE("Saturating Unsigned Int - Addition saturates to max")
@@ -406,7 +406,7 @@ TEST_SUITE("Saturating Arithmetic Mode")
         test::SaturatingUInt8 a{255};
         test::SaturatingUInt8 b{1};
         auto c = a + b;
-        CHECK(static_cast<std::uint8_t>(c) == 255);
+        CHECK(atlas::undress(c) == 255);
     }
 
     TEST_CASE("Saturating Unsigned Int - Subtraction saturates to zero")
@@ -414,7 +414,7 @@ TEST_SUITE("Saturating Arithmetic Mode")
         test::SaturatingUInt8 a{0};
         test::SaturatingUInt8 b{1};
         auto c = a - b;
-        CHECK(static_cast<std::uint8_t>(c) == 0);
+        CHECK(atlas::undress(c) == 0);
     }
 
     TEST_CASE("Saturating Unsigned Int - Division by zero saturates to max")
@@ -422,7 +422,7 @@ TEST_SUITE("Saturating Arithmetic Mode")
         test::SaturatingUInt8 a{10};
         test::SaturatingUInt8 b{0};
         auto c = a / b;
-        CHECK(static_cast<std::uint8_t>(c) == 255);
+        CHECK(atlas::undress(c) == 255);
     }
 
     TEST_CASE("Saturating Unsigned Int - 0 / 0 returns 0")
@@ -430,7 +430,7 @@ TEST_SUITE("Saturating Arithmetic Mode")
         test::SaturatingUInt8 a{0};
         test::SaturatingUInt8 b{0};
         auto c = a / b;
-        CHECK(static_cast<std::uint8_t>(c) == 0);
+        CHECK(atlas::undress(c) == 0);
     }
 
     TEST_CASE("Saturating Float - Normal operations")
@@ -438,7 +438,7 @@ TEST_SUITE("Saturating Arithmetic Mode")
         test::SaturatingFloat a{1.5f};
         test::SaturatingFloat b{2.5f};
         auto c = a + b;
-        CHECK(static_cast<float>(c) == 4.0f);
+        CHECK(atlas::undress(c) == 4.0f);
     }
 
     TEST_CASE("Saturating Float - Overflow saturates to max")
@@ -446,7 +446,7 @@ TEST_SUITE("Saturating Arithmetic Mode")
         test::SaturatingFloat a{std::numeric_limits<float>::max()};
         test::SaturatingFloat b{std::numeric_limits<float>::max()};
         auto c = a + b;
-        CHECK(static_cast<float>(c) == std::numeric_limits<float>::max());
+        CHECK(atlas::undress(c) == std::numeric_limits<float>::max());
     }
 
     TEST_CASE("Saturating Float - Division by +0 saturates to max")
@@ -454,7 +454,7 @@ TEST_SUITE("Saturating Arithmetic Mode")
         test::SaturatingFloat a{5.0f};
         test::SaturatingFloat b{0.0f};
         auto c = a / b;
-        CHECK(static_cast<float>(c) == std::numeric_limits<float>::max());
+        CHECK(atlas::undress(c) == std::numeric_limits<float>::max());
     }
 
     TEST_CASE("Saturating Float - Division by -0 saturates to lowest")
@@ -462,7 +462,7 @@ TEST_SUITE("Saturating Arithmetic Mode")
         test::SaturatingFloat a{5.0f};
         test::SaturatingFloat b{-0.0f};
         auto c = a / b;
-        CHECK(static_cast<float>(c) == std::numeric_limits<float>::lowest());
+        CHECK(atlas::undress(c) == std::numeric_limits<float>::lowest());
     }
 
     TEST_CASE("Saturating Float - Negative / -0 saturates to max")
@@ -470,7 +470,7 @@ TEST_SUITE("Saturating Arithmetic Mode")
         test::SaturatingFloat a{-5.0f};
         test::SaturatingFloat b{-0.0f};
         auto c = a / b;
-        CHECK(static_cast<float>(c) == std::numeric_limits<float>::max());
+        CHECK(atlas::undress(c) == std::numeric_limits<float>::max());
     }
 
     TEST_CASE("Saturating Float - 0 / 0 returns 0")
@@ -478,7 +478,7 @@ TEST_SUITE("Saturating Arithmetic Mode")
         test::SaturatingFloat a{0.0f};
         test::SaturatingFloat b{0.0f};
         auto c = a / b;
-        CHECK(static_cast<float>(c) == 0.0f);
+        CHECK(atlas::undress(c) == 0.0f);
     }
 
     TEST_CASE("Saturating Modulo - Signed normal")
@@ -486,7 +486,7 @@ TEST_SUITE("Saturating Arithmetic Mode")
         test::SaturatingInt8 a{10};
         test::SaturatingInt8 b{3};
         auto c = a % b;
-        CHECK(static_cast<std::int8_t>(c) == 1);
+        CHECK(atlas::undress(c) == 1);
     }
 
     TEST_CASE("Saturating Modulo - Signed negative dividend")
@@ -494,7 +494,7 @@ TEST_SUITE("Saturating Arithmetic Mode")
         test::SaturatingInt8 a{-10};
         test::SaturatingInt8 b{3};
         auto c = a % b;
-        CHECK(static_cast<std::int8_t>(c) == -1);
+        CHECK(atlas::undress(c) == -1);
     }
 
     TEST_CASE("Saturating Modulo - Signed negative divisor")
@@ -502,7 +502,7 @@ TEST_SUITE("Saturating Arithmetic Mode")
         test::SaturatingInt8 a{10};
         test::SaturatingInt8 b{-3};
         auto c = a % b;
-        CHECK(static_cast<std::int8_t>(c) == 1);
+        CHECK(atlas::undress(c) == 1);
     }
 
     TEST_CASE("Saturating Modulo - Signed modulo by zero does not throw")
@@ -524,7 +524,7 @@ TEST_SUITE("Saturating Arithmetic Mode")
         test::SaturatingUInt8 a{10};
         test::SaturatingUInt8 b{3};
         auto c = a % b;
-        CHECK(static_cast<std::uint8_t>(c) == 1);
+        CHECK(atlas::undress(c) == 1);
     }
 
     TEST_CASE("Saturating Modulo - Unsigned large values")
@@ -532,7 +532,7 @@ TEST_SUITE("Saturating Arithmetic Mode")
         test::SaturatingUInt8 a{255};
         test::SaturatingUInt8 b{10};
         auto c = a % b;
-        CHECK(static_cast<std::uint8_t>(c) == 5);
+        CHECK(atlas::undress(c) == 5);
     }
 
     TEST_CASE("Saturating Modulo - Unsigned modulo by zero does not throw")
@@ -547,7 +547,7 @@ TEST_SUITE("Saturating Arithmetic Mode")
         test::SaturatingInt a{1000};
         test::SaturatingInt b{7};
         auto c = a % b;
-        CHECK(static_cast<int>(c) == 6);
+        CHECK(atlas::undress(c) == 6);
     }
 
     TEST_CASE("Saturating Modulo - Larger unsigned types")
@@ -555,7 +555,7 @@ TEST_SUITE("Saturating Arithmetic Mode")
         test::SaturatingUInt a{12345};
         test::SaturatingUInt b{100};
         auto c = a % b;
-        CHECK(static_cast<unsigned int>(c) == 45);
+        CHECK(atlas::undress(c) == 45);
     }
 
     TEST_CASE("Saturating No-Throw - Addition overflow")
@@ -636,7 +636,7 @@ TEST_SUITE("Saturating Arithmetic Mode")
         test::SaturatingInt a{2147483647};
         test::SaturatingInt b{1};
         auto c = a + b;
-        CHECK(static_cast<int>(c) == 2147483647);
+        CHECK(atlas::undress(c) == 2147483647);
     }
 
     TEST_CASE("Saturating 32-bit - INT_MIN - 1 saturates")
@@ -644,7 +644,7 @@ TEST_SUITE("Saturating Arithmetic Mode")
         test::SaturatingInt a{-2147483647 - 1};
         test::SaturatingInt b{1};
         auto c = a - b;
-        CHECK(static_cast<int>(c) == -2147483647 - 1);
+        CHECK(atlas::undress(c) == -2147483647 - 1);
     }
 
     TEST_CASE("Saturating 32-bit - INT_MIN / -1 saturates")
@@ -652,7 +652,7 @@ TEST_SUITE("Saturating Arithmetic Mode")
         test::SaturatingInt a{-2147483647 - 1};
         test::SaturatingInt b{-1};
         auto c = a / b;
-        CHECK(static_cast<int>(c) == 2147483647);
+        CHECK(atlas::undress(c) == 2147483647);
     }
 
     TEST_CASE("Saturating 32-bit - UINT_MAX + 1 saturates")
@@ -660,7 +660,7 @@ TEST_SUITE("Saturating Arithmetic Mode")
         test::SaturatingUInt a{4294967295U};
         test::SaturatingUInt b{1};
         auto c = a + b;
-        CHECK(static_cast<unsigned int>(c) == 4294967295U);
+        CHECK(atlas::undress(c) == 4294967295U);
     }
 
     TEST_CASE("Saturating 32-bit - 0 - 1 saturates to 0")
@@ -668,7 +668,7 @@ TEST_SUITE("Saturating Arithmetic Mode")
         test::SaturatingUInt a{0};
         test::SaturatingUInt b{1};
         auto c = a - b;
-        CHECK(static_cast<unsigned int>(c) == 0);
+        CHECK(atlas::undress(c) == 0);
     }
 
     TEST_CASE("Saturating Double - Infinity saturates")
@@ -676,7 +676,7 @@ TEST_SUITE("Saturating Arithmetic Mode")
         test::SaturatingDouble a{std::numeric_limits<double>::infinity()};
         test::SaturatingDouble b{1.0};
         auto c = a + b;
-        CHECK(static_cast<double>(c) == std::numeric_limits<double>::max());
+        CHECK(atlas::undress(c) == std::numeric_limits<double>::max());
     }
 
     TEST_CASE("Saturating Double - NaN does not throw")
@@ -691,7 +691,7 @@ TEST_SUITE("Saturating Arithmetic Mode")
         test::SaturatingDouble a{1e308};
         test::SaturatingDouble b{10.0};
         auto c = a * b;
-        CHECK(static_cast<double>(c) == std::numeric_limits<double>::max());
+        CHECK(atlas::undress(c) == std::numeric_limits<double>::max());
     }
 
     TEST_CASE("Saturating Chain - Multiple additions saturate")
@@ -700,7 +700,7 @@ TEST_SUITE("Saturating Arithmetic Mode")
         test::SaturatingInt8 b{100};
         test::SaturatingInt8 c{100};
         auto d = a + b + c;
-        CHECK(static_cast<std::int8_t>(d) == 127);
+        CHECK(atlas::undress(d) == 127);
     }
 
     TEST_CASE("Saturating Chain - Negative additions saturate")
@@ -709,7 +709,7 @@ TEST_SUITE("Saturating Arithmetic Mode")
         test::SaturatingInt8 b{-50};
         test::SaturatingInt8 c{-50};
         auto d = a + b + c;
-        CHECK(static_cast<std::int8_t>(d) == -128);
+        CHECK(atlas::undress(d) == -128);
     }
 
     TEST_CASE("Saturating Chain - Complex expression")
@@ -718,7 +718,7 @@ TEST_SUITE("Saturating Arithmetic Mode")
         test::SaturatingInt8 b{50};
         test::SaturatingInt8 c{2};
         auto d = (a + b) * c;
-        CHECK(static_cast<std::int8_t>(d) == 127);
+        CHECK(atlas::undress(d) == 127);
     }
 
     // Saturating Remainder Tests
@@ -727,7 +727,7 @@ TEST_SUITE("Saturating Arithmetic Mode")
         test::SaturatingInt8 a{17};
         test::SaturatingInt8 b{5};
         auto c = a % b;
-        CHECK(static_cast<std::int8_t>(c) == 2);
+        CHECK(atlas::undress(c) == 2);
     }
 
     TEST_CASE("Saturating Signed Int - Negative remainder")
@@ -735,7 +735,7 @@ TEST_SUITE("Saturating Arithmetic Mode")
         test::SaturatingInt8 a{-17};
         test::SaturatingInt8 b{5};
         auto c = a % b;
-        CHECK(static_cast<std::int8_t>(c) == -2);
+        CHECK(atlas::undress(c) == -2);
     }
 
     TEST_CASE("Saturating Signed Int - Remainder by zero returns 0")
@@ -743,7 +743,7 @@ TEST_SUITE("Saturating Arithmetic Mode")
         test::SaturatingInt8 a{10};
         test::SaturatingInt8 b{0};
         auto c = a % b;
-        CHECK(static_cast<std::int8_t>(c) == 0);
+        CHECK(atlas::undress(c) == 0);
     }
 
     TEST_CASE("Saturating Signed Int - 0 % 0 returns 0")
@@ -751,7 +751,7 @@ TEST_SUITE("Saturating Arithmetic Mode")
         test::SaturatingInt8 a{0};
         test::SaturatingInt8 b{0};
         auto c = a % b;
-        CHECK(static_cast<std::int8_t>(c) == 0);
+        CHECK(atlas::undress(c) == 0);
     }
 
     TEST_CASE("Saturating Signed Int - INT_MIN % -1 returns 0")
@@ -759,7 +759,7 @@ TEST_SUITE("Saturating Arithmetic Mode")
         test::SaturatingInt8 a{-128};
         test::SaturatingInt8 b{-1};
         auto c = a % b;
-        CHECK(static_cast<std::int8_t>(c) == 0);
+        CHECK(atlas::undress(c) == 0);
     }
 
     TEST_CASE("Saturating Unsigned Int - Normal remainder")
@@ -767,7 +767,7 @@ TEST_SUITE("Saturating Arithmetic Mode")
         test::SaturatingUInt8 a{17};
         test::SaturatingUInt8 b{5};
         auto c = a % b;
-        CHECK(static_cast<std::uint8_t>(c) == 2);
+        CHECK(atlas::undress(c) == 2);
     }
 
     TEST_CASE("Saturating Unsigned Int - Remainder by zero returns 0")
@@ -775,7 +775,7 @@ TEST_SUITE("Saturating Arithmetic Mode")
         test::SaturatingUInt8 a{10};
         test::SaturatingUInt8 b{0};
         auto c = a % b;
-        CHECK(static_cast<std::uint8_t>(c) == 0);
+        CHECK(atlas::undress(c) == 0);
     }
 
     TEST_CASE("Saturating Unsigned Int - 0 % 0 returns 0")
@@ -783,7 +783,7 @@ TEST_SUITE("Saturating Arithmetic Mode")
         test::SaturatingUInt8 a{0};
         test::SaturatingUInt8 b{0};
         auto c = a % b;
-        CHECK(static_cast<std::uint8_t>(c) == 0);
+        CHECK(atlas::undress(c) == 0);
     }
 }
 
@@ -798,7 +798,7 @@ TEST_SUITE("Wrapping Arithmetic Mode")
         test::WrappingInt8 a{10};
         test::WrappingInt8 b{20};
         auto c = a + b;
-        CHECK(static_cast<std::int8_t>(c) == 30);
+        CHECK(atlas::undress(c) == 30);
     }
 
     TEST_CASE("Wrapping Signed Int - Addition wraps to negative")
@@ -806,7 +806,7 @@ TEST_SUITE("Wrapping Arithmetic Mode")
         test::WrappingInt8 a{127};
         test::WrappingInt8 b{1};
         auto c = a + b;
-        CHECK(static_cast<std::int8_t>(c) == -128);
+        CHECK(atlas::undress(c) == -128);
     }
 
     TEST_CASE("Wrapping Signed Int - Subtraction wraps to positive")
@@ -814,7 +814,7 @@ TEST_SUITE("Wrapping Arithmetic Mode")
         test::WrappingInt8 a{-128};
         test::WrappingInt8 b{1};
         auto c = a - b;
-        CHECK(static_cast<std::int8_t>(c) == 127);
+        CHECK(atlas::undress(c) == 127);
     }
 
     TEST_CASE("Wrapping Signed Int - Multiplication wraps")
@@ -822,7 +822,7 @@ TEST_SUITE("Wrapping Arithmetic Mode")
         test::WrappingInt8 a{100};
         test::WrappingInt8 b{2};
         auto c = a * b;
-        CHECK(static_cast<std::int8_t>(c) == static_cast<std::int8_t>(200));
+        CHECK(atlas::undress(c) == static_cast<std::int8_t>(200));
     }
 
     TEST_CASE("Wrapping Unsigned Int - Normal operations")
@@ -830,7 +830,7 @@ TEST_SUITE("Wrapping Arithmetic Mode")
         test::WrappingUInt8 a{10};
         test::WrappingUInt8 b{20};
         auto c = a + b;
-        CHECK(static_cast<std::uint8_t>(c) == 30);
+        CHECK(atlas::undress(c) == 30);
     }
 
     TEST_CASE("Wrapping Unsigned Int - Addition wraps to zero")
@@ -838,7 +838,7 @@ TEST_SUITE("Wrapping Arithmetic Mode")
         test::WrappingUInt8 a{255};
         test::WrappingUInt8 b{1};
         auto c = a + b;
-        CHECK(static_cast<std::uint8_t>(c) == 0);
+        CHECK(atlas::undress(c) == 0);
     }
 
     TEST_CASE("Wrapping Unsigned Int - Subtraction wraps to max")
@@ -846,7 +846,7 @@ TEST_SUITE("Wrapping Arithmetic Mode")
         test::WrappingUInt8 a{0};
         test::WrappingUInt8 b{1};
         auto c = a - b;
-        CHECK(static_cast<std::uint8_t>(c) == 255);
+        CHECK(atlas::undress(c) == 255);
     }
 
     TEST_CASE("Wrapping Unsigned Int - Multiplication wraps")
@@ -854,7 +854,7 @@ TEST_SUITE("Wrapping Arithmetic Mode")
         test::WrappingUInt8 a{200};
         test::WrappingUInt8 b{2};
         auto c = a * b;
-        CHECK(static_cast<std::uint8_t>(c) == static_cast<std::uint8_t>(400));
+        CHECK(atlas::undress(c) == static_cast<std::uint8_t>(400));
     }
 
     TEST_CASE("Wrapping No-Throw - All operations")
@@ -872,7 +872,7 @@ TEST_SUITE("Wrapping Arithmetic Mode")
         test::WrappingInt a{2147483647};
         test::WrappingInt b{1};
         auto c = a + b;
-        CHECK(static_cast<int>(c) == -2147483647 - 1);
+        CHECK(atlas::undress(c) == -2147483647 - 1);
     }
 
     TEST_CASE("Wrapping 32-bit - INT_MIN - 1 wraps")
@@ -880,7 +880,7 @@ TEST_SUITE("Wrapping Arithmetic Mode")
         test::WrappingInt a{-2147483647 - 1};
         test::WrappingInt b{1};
         auto c = a - b;
-        CHECK(static_cast<int>(c) == 2147483647);
+        CHECK(atlas::undress(c) == 2147483647);
     }
 
     TEST_CASE("Wrapping 32-bit - UINT_MAX + 1 wraps")
@@ -888,7 +888,7 @@ TEST_SUITE("Wrapping Arithmetic Mode")
         test::WrappingUInt a{4294967295U};
         test::WrappingUInt b{1};
         auto c = a + b;
-        CHECK(static_cast<unsigned int>(c) == 0);
+        CHECK(atlas::undress(c) == 0);
     }
 
     TEST_CASE("Wrapping 32-bit - 0 - 1 wraps")
@@ -896,7 +896,7 @@ TEST_SUITE("Wrapping Arithmetic Mode")
         test::WrappingUInt a{0};
         test::WrappingUInt b{1};
         auto c = a - b;
-        CHECK(static_cast<unsigned int>(c) == 4294967295U);
+        CHECK(atlas::undress(c) == 4294967295U);
     }
 
     TEST_CASE("Wrapping Chain - Multiple additions")
@@ -905,7 +905,7 @@ TEST_SUITE("Wrapping Arithmetic Mode")
         test::WrappingInt8 b{100};
         test::WrappingInt8 c{100};
         auto d = a + b + c;
-        CHECK(static_cast<std::int8_t>(d) == 44);
+        CHECK(atlas::undress(d) == 44);
     }
 
     TEST_CASE("Wrapping Chain - Unsigned multiple additions")
@@ -914,7 +914,7 @@ TEST_SUITE("Wrapping Arithmetic Mode")
         test::WrappingUInt8 b{200};
         test::WrappingUInt8 c{200};
         auto d = a + b + c;
-        CHECK(static_cast<std::uint8_t>(d) == 88);
+        CHECK(atlas::undress(d) == 88);
     }
 
     TEST_CASE("Wrapping Chain - Complex expression")
@@ -923,7 +923,7 @@ TEST_SUITE("Wrapping Arithmetic Mode")
         test::WrappingInt8 b{50};
         test::WrappingInt8 c{2};
         auto d = (a + b) * c;
-        CHECK(static_cast<std::int8_t>(d) == static_cast<std::int8_t>(300));
+        CHECK(atlas::undress(d) == static_cast<std::int8_t>(300));
     }
 }
 
@@ -938,7 +938,7 @@ TEST_SUITE("Edge Cases")
         test::CheckedInt a{1000000};
         test::CheckedInt b{2000000};
         auto c = a + b;
-        CHECK(static_cast<int>(c) == 3000000);
+        CHECK(atlas::undress(c) == 3000000);
     }
 
     TEST_CASE("Double precision works")
@@ -946,6 +946,6 @@ TEST_SUITE("Edge Cases")
         test::CheckedDouble a{1.5};
         test::CheckedDouble b{2.5};
         auto c = a + b;
-        CHECK(static_cast<double>(c) == 4.0);
+        CHECK(atlas::undress(c) == 4.0);
     }
 }

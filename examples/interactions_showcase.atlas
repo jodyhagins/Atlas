@@ -81,14 +81,14 @@ Denominator * Denominator -> Denominator
 # String operations with custom types
 namespace=app::config
 lhs_value_access=.value
-rhs_value_access=atlas::value
+rhs_value_access=atlas::undress
 
 ConfigKey + std::string -> ConfigKey
 std::string + ConfigKey -> ConfigKey
 
 # Template interactions with concepts
 namespace=math
-value_access=atlas::value
+value_access=atlas::undress
 
 # C++20 concept
 concept=std::integral T

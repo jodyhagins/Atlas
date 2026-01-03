@@ -8,6 +8,7 @@
 #include "AtlasParser.hpp"
 #include "AtlasUtilities.hpp"
 #include "ProfileSystem.hpp"
+#include "TemplateSystem.hpp"
 
 #include <algorithm>
 #include <cctype>
@@ -136,6 +137,15 @@ struct SectionHeaderInfo
     std::string kind;
     std::string type_namespace;
     std::string name;
+
+    // Template definition: [template Name Params...]
+    bool is_template_definition = false;
+    std::vector<std::string> template_params; // Parameter names
+
+    // Template instantiation: [use TemplateName Args...]
+    bool is_template_instantiation = false;
+    std::string template_name; // Template to instantiate
+    std::vector<std::string> template_args; // Argument values
 };
 
 // Open and validate input file for parsing
@@ -175,6 +185,146 @@ parse_section_header(
     // Legacy syntax: [type]
     if (section_content == "type") {
         // Name and namespace will be specified in the section body
+        return info;
+    }
+
+    // Template definition: [template Name Params...]
+    if (section_content.size() >= 9 &&
+        section_content.substr(0, 9) == "template ")
+    {
+        info.is_template_definition = true;
+
+        // Parse: template Name Param1 Param2 ...
+        std::string rest = trim(section_content.substr(9));
+        if (rest.empty()) {
+            throw AtlasParserError(
+                "Missing template name in section header at line " +
+                std::to_string(line_number) + " in " + filename);
+        }
+
+        // Split by whitespace
+        std::vector<std::string> tokens;
+        std::istringstream iss(rest);
+        std::string token;
+        while (iss >> token) {
+            tokens.push_back(token);
+        }
+
+        if (tokens.empty()) {
+            throw AtlasParserError(
+                "Missing template name in section header at line " +
+                std::to_string(line_number) + " in " + filename);
+        }
+
+        info.name = tokens[0]; // Template name
+
+        if (not is_valid_cpp_identifier(info.name)) {
+            throw AtlasParserError(
+                "Invalid template name in section header at line " +
+                std::to_string(line_number) + " in " + filename + ": '" +
+                info.name + "'");
+        }
+
+        if (tokens.size() < 2) {
+            throw AtlasParserError(
+                "Template '" + info.name +
+                "' must have at least one parameter at line " +
+                std::to_string(line_number) + " in " + filename);
+        }
+
+        // Remaining tokens are parameters
+        for (size_t i = 1; i < tokens.size(); ++i) {
+            if (not is_valid_cpp_identifier(tokens[i])) {
+                throw AtlasParserError(
+                    "Invalid parameter name '" + tokens[i] +
+                    "' in template header at line " +
+                    std::to_string(line_number) + " in " + filename);
+            }
+            info.template_params.push_back(tokens[i]);
+        }
+
+        return info;
+    }
+
+    // Template instantiation: [use TemplateName Args...]
+    if (section_content.size() >= 4 && section_content.substr(0, 4) == "use ") {
+        info.is_template_instantiation = true;
+
+        // Parse: use TemplateName Arg1 Arg2 ...
+        std::string rest = trim(section_content.substr(4));
+        if (rest.empty()) {
+            throw AtlasParserError(
+                "Missing template name in 'use' section header at line " +
+                std::to_string(line_number) + " in " + filename);
+        }
+
+        // Split by whitespace
+        std::vector<std::string> tokens;
+        std::istringstream iss(rest);
+        std::string token;
+        while (iss >> token) {
+            tokens.push_back(token);
+        }
+
+        if (tokens.empty()) {
+            throw AtlasParserError(
+                "Missing template name in 'use' section header at line " +
+                std::to_string(line_number) + " in " + filename);
+        }
+
+        info.template_name = tokens[0]; // Template name to instantiate
+
+        if (not is_valid_cpp_identifier(info.template_name)) {
+            throw AtlasParserError(
+                "Invalid template name in 'use' section header at line " +
+                std::to_string(line_number) + " in " + filename + ": '" +
+                info.template_name + "'");
+        }
+
+        // Look for 'as' keyword for custom name
+        // Syntax: [use Template Arg1 Arg2 as CustomName]
+        size_t as_pos = tokens.size();
+        for (size_t i = 1; i < tokens.size(); ++i) {
+            if (tokens[i] == "as") {
+                as_pos = i;
+                break;
+            }
+        }
+
+        if (as_pos < tokens.size()) {
+            // Arguments are tokens[1..as_pos)
+            for (size_t i = 1; i < as_pos; ++i) {
+                info.template_args.push_back(tokens[i]);
+            }
+            // Name is the token after 'as'
+            if (as_pos + 1 < tokens.size()) {
+                info.name = tokens[as_pos + 1];
+                if (not is_valid_cpp_identifier(info.name)) {
+                    throw AtlasParserError(
+                        "Invalid type name after 'as' in 'use' section header "
+                        "at line " +
+                        std::to_string(line_number) + " in " + filename +
+                        ": '" + info.name + "'");
+                }
+                // Warn if extra tokens after name
+                if (as_pos + 2 < tokens.size()) {
+                    throw AtlasParserError(
+                        "Unexpected tokens after name in 'use' section header "
+                        "at line " +
+                        std::to_string(line_number) + " in " + filename);
+                }
+            } else {
+                throw AtlasParserError(
+                    "Missing name after 'as' in 'use' section header at line " +
+                    std::to_string(line_number) + " in " + filename);
+            }
+        } else {
+            // No 'as' - all remaining tokens are arguments
+            for (size_t i = 1; i < tokens.size(); ++i) {
+                info.template_args.push_back(tokens[i]);
+            }
+        }
+
         return info;
     }
 
@@ -688,6 +838,7 @@ parse_interaction_line(
         "!=",
         "<=",
         ">=",
+        "<=>",
         "&&",
         "||",
         "+",
@@ -914,6 +1065,9 @@ parse_type_definitions(
     // Profile system for user-defined profiles
     ProfileSystem profile_system;
 
+    // Template system for user-defined type templates
+    TemplateSystem template_system;
+
     std::string line;
     int line_number = 0;
     bool in_type_section = false;
@@ -936,7 +1090,156 @@ parse_type_definitions(
     SectionHeaderInfo section_info;
 
     auto finalize_type = [&]() {
-        // Check if we have started a type definition
+        // Handle template definitions: register instead of adding to types
+        if (section_info.is_template_definition) {
+            // Require description for templates
+            if (current_description.empty()) {
+                throw AtlasParserError(
+                    "Template '" + section_info.name +
+                    "' missing required description near line " +
+                    std::to_string(line_number) + " in " + filename);
+            }
+
+            TypeTemplate tmpl;
+            tmpl.name = section_info.name;
+            tmpl.parameters = section_info.template_params;
+            tmpl.kind = current_kind.empty() ? "struct" : current_kind;
+            tmpl.type_namespace = current_namespace;
+            tmpl.description = current_description;
+            tmpl.default_value = current_default_value;
+            tmpl.constants = current_constants;
+            tmpl.forwards = current_forward;
+
+            template_system.register_template(tmpl, profile_system);
+
+            current_kind.clear();
+            current_namespace.clear();
+            current_name.clear();
+            current_description.clear();
+            current_default_value.clear();
+            current_constants.clear();
+            current_forward.clear();
+            section_info = SectionHeaderInfo{};
+            return;
+        }
+
+        // Handle template instantiations
+        if (section_info.is_template_instantiation) {
+            auto const & tmpl = template_system.get_template(
+                section_info.template_name);
+
+            // Check argument count
+            if (section_info.template_args.size() != tmpl.parameters.size()) {
+                throw AtlasParserError(
+                    "Template '" + section_info.template_name + "' expects " +
+                    std::to_string(tmpl.parameters.size()) +
+                    " argument(s) but got " +
+                    std::to_string(section_info.template_args.size()) +
+                    " near line " + std::to_string(line_number) + " in " +
+                    filename);
+            }
+
+            // Substitute parameters in template fields
+            std::string expanded_desc = substitute_template_params(
+                tmpl.description,
+                tmpl.parameters,
+                section_info.template_args);
+
+            std::string expanded_default = substitute_template_params(
+                tmpl.default_value,
+                tmpl.parameters,
+                section_info.template_args);
+
+            std::vector<std::string> expanded_constants;
+            for (auto const & c : tmpl.constants) {
+                expanded_constants.push_back(substitute_template_params(
+                    c,
+                    tmpl.parameters,
+                    section_info.template_args));
+            }
+
+            std::vector<std::string> expanded_forwards;
+            for (auto const & f : tmpl.forwards) {
+                expanded_forwards.push_back(substitute_template_params(
+                    f,
+                    tmpl.parameters,
+                    section_info.template_args));
+            }
+
+            // Add any instance-level constants (additive)
+            for (auto const & c : current_constants) {
+                expanded_constants.push_back(c);
+            }
+
+            // Override kind if specified in instance
+            std::string effective_kind = current_kind.empty() ? tmpl.kind
+                                                              : current_kind;
+
+            // Override namespace if specified, else use template's, else global
+            std::string effective_namespace = current_namespace.empty()
+                ? (tmpl.type_namespace.empty() ? global_namespace
+                                               : tmpl.type_namespace)
+                : current_namespace;
+
+            // Override default_value if specified in instance
+            std::string effective_default = current_default_value.empty()
+                ? expanded_default
+                : current_default_value;
+
+            // Generate a name from template_name + args (e.g., Optional_int)
+            std::string generated_name = section_info.template_name;
+            for (auto const & arg : section_info.template_args) {
+                // Replace :: with _ for qualified names
+                std::string safe_arg = arg;
+                size_t pos = 0;
+                while ((pos = safe_arg.find("::", pos)) != std::string::npos) {
+                    safe_arg.replace(pos, 2, "_");
+                    pos += 1;
+                }
+                generated_name += "_" + safe_arg;
+            }
+
+            // Use provided name if specified (header 'as' or body 'name='),
+            // otherwise use generated name
+            std::string effective_name = not section_info.name.empty()
+                ? section_info.name
+                : (current_name.empty() ? generated_name : current_name);
+
+            // Build the type description using the expanded values
+            SectionHeaderInfo synthetic_info;
+            synthetic_info.kind = effective_kind;
+            synthetic_info.type_namespace = effective_namespace;
+            synthetic_info.name = effective_name;
+
+            auto type_desc = build_type_description(
+                effective_kind,
+                effective_namespace,
+                effective_name,
+                expanded_desc,
+                effective_default,
+                expanded_constants,
+                expanded_forwards,
+                synthetic_info,
+                global_namespace,
+                profile_system,
+                line_number,
+                filename,
+                result);
+
+            result.types.push_back(type_desc);
+
+            current_kind.clear();
+            current_namespace.clear();
+            current_name.clear();
+            current_description.clear();
+            current_default_value.clear();
+            current_constants.clear();
+            current_forward.clear();
+            section_info = SectionHeaderInfo{};
+            return;
+        }
+
+        // Check if we have started a regular type definition
         bool started = has_started_type_definition(
             current_kind,
             current_namespace,
@@ -1066,7 +1369,7 @@ parse_interactions(std::string const & filename)
 
     // State tracking
     std::string current_namespace;
-    std::string current_value_access = "atlas::value";
+    std::string current_value_access = "atlas::undress";
     std::string current_lhs_value_access; // Empty = use current_value_access
     std::string current_rhs_value_access; // Empty = use current_value_access
     bool current_constexpr = true;

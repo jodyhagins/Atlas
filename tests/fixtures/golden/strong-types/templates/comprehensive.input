@@ -1,0 +1,111 @@
+# Test: Comprehensive template feature tests
+# Feature: Template definition and instantiation with all features
+# Expected: All template features work correctly together
+
+# Global namespace for all types
+namespace=test::templates
+
+# Profile for testing profile+template interaction
+profile=NUMERIC; +, -, *, /
+
+# ----------------------------------------------------------------------
+# Basic single parameter template
+# ----------------------------------------------------------------------
+[template Optional T]
+kind=struct
+description=strong std::optional<{T}>; <=>, bool
+
+# Auto-generated name: Optional_int
+[use Optional int]
+
+# Custom name with 'as' keyword
+[use Optional double as OptionalDouble]
+
+# ----------------------------------------------------------------------
+# Multiple parameter template
+# ----------------------------------------------------------------------
+[template Pair K V]
+kind=struct
+description=strong std::pair<{K}, {V}>; ==
+
+[use Pair int std::string as IntStringPair]
+
+# ----------------------------------------------------------------------
+# Template with constants (name:value format)
+# ----------------------------------------------------------------------
+[template BoundedValue T]
+kind=struct
+description=strong {T}; ==, <=>
+constants=min:0; max:100
+
+[use BoundedValue int as BoundedInt]
+
+# ----------------------------------------------------------------------
+# Template with forwarded member functions
+# ----------------------------------------------------------------------
+[template Container T]
+kind=struct
+description=strong std::vector<{T}>; ==
+forward=size, empty
+
+[use Container int as IntContainer]
+
+# ----------------------------------------------------------------------
+# Template with default value
+# ----------------------------------------------------------------------
+[template DefaultValue T]
+kind=struct
+description=strong {T}; ==
+default_value=42
+
+[use DefaultValue int as DefaultInt]
+
+# ----------------------------------------------------------------------
+# Instance overrides namespace
+# ----------------------------------------------------------------------
+[template GenericType T]
+kind=struct
+namespace=templates::base
+description=strong {T}; ==
+
+[use GenericType int as NamespacedInt]
+namespace=custom::ns
+
+# ----------------------------------------------------------------------
+# Instance overrides kind
+# ----------------------------------------------------------------------
+[template GenericWrapper T]
+kind=struct
+description=strong {T}; ==
+
+[use GenericWrapper int as ClassWrapper]
+kind=class
+
+# ----------------------------------------------------------------------
+# Template with profile expansion in description
+# ----------------------------------------------------------------------
+[template ArithmeticValue T]
+kind=struct
+description=strong {T}; {NUMERIC}, ==
+
+[use ArithmeticValue long as ArithmeticLong]
+
+# ----------------------------------------------------------------------
+# Instance adds additional constants
+# ----------------------------------------------------------------------
+[template BaseValue T]
+kind=struct
+description=strong {T}; ==
+constants=is_template:1
+
+[use BaseValue int as EnhancedInt]
+constants=special:42
+
+# ----------------------------------------------------------------------
+# Complex type as template argument
+# ----------------------------------------------------------------------
+[template Wrapper T]
+kind=struct
+description=strong {T}; ==
+
+[use Wrapper std::vector<int> as VectorWrapper]

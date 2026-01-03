@@ -18,12 +18,15 @@ get_template_impl() const noexcept
     static constexpr std::string_view tmpl = R"(
     /**
      * Insert the wrapped object into an ostream.
+     * Drills down to find the first ostreamable type.
      */
-    friend std::ostream & operator << (
+    friend std::ostream & operator<<(
         std::ostream & strm,
         {{{class_name}}} const & t)
     {
-        return strm << t.value;
+        atlas::atlas_detail::ostream_drill(
+            strm, t.value, atlas::atlas_detail::PriorityTag<2>{});
+        return strm;
     }
 )";
     return tmpl;

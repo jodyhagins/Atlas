@@ -112,14 +112,14 @@ struct InteractionDescription
 
     /**
      * How to access underlying value for LHS type
-     * Examples: "atlas::value", ".value", "get_value"
+     * Examples: "atlas::undress", ".value", "get_value"
      * If empty, falls back to value_access
      */
     std::string lhs_value_access = "";
 
     /**
      * How to access underlying value for RHS type
-     * Examples: "atlas::value", ".value", "get_value"
+     * Examples: "atlas::undress", ".value", "get_value"
      * If empty, falls back to value_access
      */
     std::string rhs_value_access = "";
@@ -127,8 +127,8 @@ struct InteractionDescription
     /**
      * Default way to access underlying value of types
      * Used when lhs_value_access or rhs_value_access is not specified
-     * Examples: "atlas::value", ".value", "get_value"
-     * If empty, uses atlas::value
+     * Examples: "atlas::undress", ".value", "get_value"
+     * If empty, uses atlas::undress
      */
     std::string value_access = "";
 };

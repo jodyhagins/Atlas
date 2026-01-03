@@ -233,13 +233,13 @@ Each constant generates a static member of the strong type, similar to scoped en
 ```cmake
 # Generate types from file
 add_atlas_strong_types_from_file(
-    INPUT types.txt
+    INPUT types.atlas
     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/GeneratedTypes.hpp
     TARGET my_library)
 
 # Using relative path (resolved to CMAKE_CURRENT_SOURCE_DIR)
 add_atlas_strong_types_from_file(
-    INPUT config/strong_types.txt
+    INPUT config/strong_types.atlas
     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/Types.hpp)
 ```
 
@@ -404,14 +404,14 @@ target_link_libraries(my_app PRIVATE my_lib)
 ### Example 2: File-based Types
 
 ```cmake
-# Create types.txt with your type definitions
+# Create types.atlas with your type definitions
 add_atlas_strong_types_from_file(
-    INPUT types.txt
+    INPUT types.atlas
     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/DomainTypes.hpp
     TARGET domain_lib)
 ```
 
-**types.txt:**
+**types.atlas:**
 ```ini
 guard_prefix=DOMAIN_TYPES
 
@@ -454,7 +454,7 @@ atlas_add_type(SessionId int "==, !=, hash" TARGET my_lib)
 
 # Multiple related types from file
 add_atlas_strong_types_from_file(
-    INPUT domain_types.txt
+    INPUT domain_types.atlas
     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/DomainTypes.hpp
     TARGET my_lib)
 
@@ -513,13 +513,13 @@ Distance / Time -> Velocity
 ```cmake
 # Generate interactions from file
 add_atlas_interactions_from_file(
-    INPUT interactions.txt
+    INPUT interactions.atlas
     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/Interactions.hpp
     TARGET my_library)
 
 # Using relative path (resolved to CMAKE_CURRENT_SOURCE_DIR)
 add_atlas_interactions_from_file(
-    INPUT config/interactions.txt
+    INPUT config/interactions.atlas
     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/TypeInteractions.hpp)
 ```
 
@@ -594,20 +594,20 @@ Total / Quantity -> Price
 ### Example 2: Physics Calculations
 
 ```cmake
-# Create physics_types.txt with your strong types
+# Create physics_types.atlas with your strong types
 add_atlas_strong_types_from_file(
-    INPUT physics_types.txt
+    INPUT physics_types.atlas
     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/PhysicsTypes.hpp
     TARGET physics_lib)
 
-# Create interactions.txt with your cross-type operations
+# Create interactions.atlas with your cross-type operations
 add_atlas_interactions_from_file(
-    INPUT interactions.txt
+    INPUT interactions.atlas
     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/PhysicsOps.hpp
     TARGET physics_lib)
 ```
 
-**interactions.txt:**
+**interactions.atlas:**
 ```
 include "PhysicsTypes.hpp"
 

@@ -7,9 +7,10 @@
 #include "AtlasUtilities.hpp"
 #include "InteractionGenerator.hpp"
 #include "SHA1Hasher.hpp"
-#include "version.hpp"
 
 #include <boost/mustache.hpp>
+
+#include "atlas/version.hpp"
 
 #include <algorithm>
 #include <map>
@@ -37,26 +38,26 @@ template <typename L, typename R>
 struct has_compound_op_{{{op_id}}}<
     L,
     R,
-    decltype((void)(atlas::value(std::declval<L&>()) {{{compound_op}}}
-        atlas::value(std::declval<R const&>())))>
+    decltype((void)(atlas::undress(std::declval<L&>()) {{{compound_op}}}
+        atlas::undress(std::declval<R const&>())))>
 : std::true_type
 { };
 
 template <typename L, typename R>
 constexpr L &
 compound_assign_impl_{{{op_id}}}(L & lhs, R const & rhs, std::true_type)
-noexcept(noexcept(atlas::value(lhs) {{{compound_op}}} atlas::value(rhs)))
+noexcept(noexcept(atlas::undress(lhs) {{{compound_op}}} atlas::undress(rhs)))
 {
-    atlas::value(lhs) {{{compound_op}}} atlas::value(rhs);
+    atlas::undress(lhs) {{{compound_op}}} atlas::undress(rhs);
     return lhs;
 }
 
 template <typename L, typename R>
 constexpr L &
 compound_assign_impl_{{{op_id}}}(L & lhs, R const & rhs, std::false_type)
-noexcept(noexcept(atlas::value(lhs) = atlas::value(lhs {{{binary_op}}} rhs)))
+noexcept(noexcept(atlas::undress(lhs) = atlas::undress(lhs {{{binary_op}}} rhs)))
 {
-    atlas::value(lhs) = atlas::value(lhs {{{binary_op}}} rhs);
+    atlas::undress(lhs) = atlas::undress(lhs {{{binary_op}}} rhs);
     return lhs;
 }
 }
@@ -242,7 +243,7 @@ generate_value_access(
     std::string value_access = specific_access.empty() ? default_access
                                                        : specific_access;
     if (value_access.empty()) {
-        value_access = "atlas::value";
+        value_access = "atlas::undress";
     }
     if (value_access[0] == '.') {
         // Member access: .value, .get(), etc.
@@ -251,7 +252,7 @@ generate_value_access(
         // Function call operator
         return var_name + "()";
     } else {
-        // Function call: get_value, extract, atlas::value, etc.
+        // Function call: get_value, extract, atlas::undress, etc.
         return value_access + "(" + var_name + ")";
     }
 }
@@ -469,13 +470,18 @@ generate_operator_function(
     // Add conditional noexcept specification
     oss << ")\nnoexcept(\n"
         << "    noexcept(" << lhs_value << " " << interaction.op_symbol << " "
-        << rhs_value << ") &&\n"
-        << "    std::is_nothrow_constructible<" << interaction.result_type
-        << ", decltype(" << lhs_value << " " << interaction.op_symbol << " "
-        << rhs_value << ")>::value)\n{\n";
-
-    oss << "    return " << interaction.result_type << "{" << lhs_value << " "
-        << interaction.op_symbol << " " << rhs_value << "};\n";
+        << rhs_value << ")";
+    if (interaction.result_type == "auto") {
+        oss << ")\n{\n    return " << lhs_value << " " << interaction.op_symbol
+            << " " << rhs_value << ";\n";
+    } else {
+        oss << " &&\n"
+            << "    std::is_nothrow_constructible<" << interaction.result_type
+            << ", decltype(" << lhs_value << " " << interaction.op_symbol << " "
+            << rhs_value << ")>::value)\n{\n    return "
+            << interaction.result_type << "{" << lhs_value << " "
+            << interaction.op_symbol << " " << rhs_value << "};\n";
+    }
     oss << "}\n";
 
     return oss.str();
@@ -505,7 +511,7 @@ operator () (InteractionFileDescription const & desc) const
     }
     body << "\n";
 
-    // Embed atlas::value implementation
+    // Embed atlas::undress implementation
     body << preamble();
 
     // Collect RHS types that need custom atlas_value functions
@@ -525,15 +531,15 @@ operator () (InteractionFileDescription const & desc) const
             interaction.interaction_namespace);
 
         // Only generate if RHS has a custom value access that's not
-        // atlas::value
+        // atlas::undress
         std::string value_access_expr;
         if (not interaction.rhs_value_access.empty() &&
-            interaction.rhs_value_access != "atlas::value")
+            interaction.rhs_value_access != "atlas::undress")
         {
             value_access_expr = interaction.rhs_value_access;
         } else if (
             not interaction.value_access.empty() &&
-            interaction.value_access != "atlas::value" &&
+            interaction.value_access != "atlas::undress" &&
             interaction.rhs_value_access.empty())
         {
             // Fallback to value_access if rhs_value_access not specified
@@ -555,7 +561,7 @@ operator () (InteractionFileDescription const & desc) const
                         interaction.is_constexpr};
                 } else {
                     // Type already exists - if ANY interaction is
-                    // non-constexpr, the atlas_value must be non-constexpr
+                    // non-constexpr, the atlas_value_for must be non-constexpr
                     if (not interaction.is_constexpr) {
                         it->second.is_constexpr = false;
                     }
@@ -564,12 +570,12 @@ operator () (InteractionFileDescription const & desc) const
         }
     }
 
-    // Generate atlas_value functions for RHS types with custom accessors
+    // Generate atlas_value_for functions for RHS types with custom accessors
     if (not rhs_value_accessors.empty()) {
         body << R"(
 // Custom value accessors for non-Atlas types
-// These allow atlas::value() to work with external library types
-// Users can override by providing atlas_value(T const&) without the tag parameter
+// These allow atlas::undress() to work with external library types
+// Users can override by providing atlas_value_for(T const&) without the tag parameter
 namespace atlas {
 )";
 
@@ -578,7 +584,7 @@ namespace atlas {
             if (info.is_constexpr) {
                 body << "constexpr ";
             }
-            body << "auto\natlas_value(" << rhs_type
+            body << "auto\natlas_value_for(" << rhs_type
                 << " const& v, value_tag)\n";
             body << "-> decltype("
                 << generate_value_access("v", rhs_type, info.access_expr, "")

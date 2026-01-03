@@ -98,7 +98,9 @@ TEST_SUITE("StrongTypeGenerator")
                 "42"));
 
             // Verify the generated code contains the correct initialization
-            CHECK(code.find("int value{42};") != std::string::npos);
+            CHECK(
+                code.find("int value = static_cast<int>(42);") !=
+                std::string::npos);
         }
 
         SUBCASE("explicit zero default value") {
@@ -110,7 +112,9 @@ TEST_SUITE("StrongTypeGenerator")
                 "0"));
 
             // Verify zero is explicitly initialized
-            CHECK(code.find("int value{0};") != std::string::npos);
+            CHECK(
+                code.find("int value = static_cast<int>(0);") !=
+                std::string::npos);
         }
     }
 

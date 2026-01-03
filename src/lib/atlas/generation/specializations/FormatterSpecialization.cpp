@@ -23,18 +23,28 @@ get_template_impl() const
  * Enables use with std::format and std::print in C++20 and later:
  *   std::format("{}", strong_type_instance)
  *
- * This specialization is only available when std::format is available
- * (checked via __cpp_lib_format >= 202110L). Delegates formatting to the
- * underlying type {{{underlying_type}}}
+ * Drills down to find the first formattable type in the wrapping chain.
+ * Falls back to underlying type for enums without std::formatter.
  */
 #if defined(__cpp_lib_format) && __cpp_lib_format >= 202110L
 template <>
-struct std::formatter<{{{full_qualified_name}}}> : std::formatter<{{{underlying_type}}}>
+struct std::formatter<{{{full_qualified_name}}}>
 {
+private:
+    using drilled_type_ = atlas::atlas_detail::format_drilled_type_t<{{{underlying_type}}}>;
+    std::formatter<drilled_type_> underlying_formatter_;
+
+public:
+    constexpr auto parse(std::format_parse_context & ctx)
+    {
+        return underlying_formatter_.parse(ctx);
+    }
+
     auto format({{{full_qualified_name}}} const & t, std::format_context & ctx) const
     {
-        return std::formatter<{{{underlying_type}}}>::format(
-            static_cast<{{{underlying_type}}} const &>(t), ctx);
+        return underlying_formatter_.format(
+            atlas::atlas_detail::format_value_drill(atlas_value_for(t)),
+            ctx);
     }
 };
 #endif // defined(__cpp_lib_format) && __cpp_lib_format >= 202110L
@@ -55,7 +65,8 @@ prepare_variables_impl(ClassInfo const & info) const
 {
     boost::json::object variables;
     variables["full_qualified_name"] = info.full_qualified_name;
-    variables["underlying_type"] = info.underlying_type;
+    variables["underlying_type"] =
+        info.underlying_type; // Used to determine drilled type
 
     return variables;
 }

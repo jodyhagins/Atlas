@@ -81,6 +81,7 @@ add_atlas_test(TARGET atlas_main_ut TEST_NAME AtlasMainTests)
 add_atlas_test(TARGET interaction_generator_ut TEST_NAME InteractionGeneratorTests USE_RAPIDCHECK)
 add_atlas_test(TARGET property_ut TEST_NAME PropertyTests USE_RAPIDCHECK)
 add_atlas_test(TARGET error_ut TEST_NAME ErrorConditionTests)
+add_atlas_test(TARGET template_system_ut TEST_NAME TemplateSystemTests)
 add_atlas_test(TARGET type_tokenizer_ut TEST_NAME TypeTokenizerTests)
 add_atlas_test(TARGET token_to_header_mapper_ut TEST_NAME TokenToHeaderMapperTests)
 
@@ -229,4 +230,48 @@ target_include_directories(nilable_cpp20_ut PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/lib/atlas
 )
 add_test(NAME NilableCpp20Tests COMMAND nilable_cpp20_ut)
+
+# atlas::undress() tests
+set(TO_UNDERLYING_INPUT "${CMAKE_CURRENT_SOURCE_DIR}/undress_test_types.atlas")
+set(TO_UNDERLYING_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/undress_test_types.hpp")
+add_custom_command(
+    OUTPUT ${TO_UNDERLYING_OUTPUT}
+    COMMAND atlas --input=${TO_UNDERLYING_INPUT} --output=${TO_UNDERLYING_OUTPUT}
+    DEPENDS atlas ${TO_UNDERLYING_INPUT}
+    COMMENT "Generating atlas::undress test types"
+)
+add_executable(undress_ut
+    undress_ut.cpp
+    ${TO_UNDERLYING_OUTPUT}
+)
+target_link_libraries(undress_ut PRIVATE doctest::doctest)
+target_include_directories(undress_ut PRIVATE
+    ${CMAKE_CURRENT_BINARY_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/lib/atlas
+)
+add_test(NAME ToUnderlyingTests COMMAND undress_ut)
+
+# atlas::cast<T>() tests - reuses undress test types
+add_executable(cast_ut
+    cast_ut.cpp
+    ${TO_UNDERLYING_OUTPUT}
+)
+target_link_libraries(cast_ut PRIVATE doctest::doctest)
+target_include_directories(cast_ut PRIVATE
+    ${CMAKE_CURRENT_BINARY_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/lib/atlas
+)
+add_test(NAME CastTests COMMAND cast_ut)
+
+# atlas::unwrap() tests - reuses undress test types
+add_executable(unwrap_ut
+    unwrap_ut.cpp
+    ${TO_UNDERLYING_OUTPUT}
+)
+target_link_libraries(unwrap_ut PRIVATE doctest::doctest)
+target_include_directories(unwrap_ut PRIVATE
+    ${CMAKE_CURRENT_BINARY_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/lib/atlas
+)
+add_test(NAME UnwrapTests COMMAND unwrap_ut)
 

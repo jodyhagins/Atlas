@@ -235,11 +235,13 @@ get_preamble_includes(PreambleOptions const & options)
 
     if (options.include_nilable_support) {
         includes.push_back("<cassert>");
-        includes.push_back("<functional>");
         includes.push_back("<memory>");
         includes.push_back("<optional>");
-        includes.push_back("<type_traits>");
-        includes.push_back("<utility>");
+    }
+
+    // <functional> is needed for std::hash in hash drilling
+    if (options.include_hash_drill || options.include_nilable_support) {
+        includes.push_back("<functional>");
     }
 
     return includes;
@@ -267,7 +269,7 @@ preamble(PreambleOptions options)
 //
 // Components:
 // - atlas::strong_type_tag: Base class for strong types
-// - atlas::value(): Universal value accessor for strong types
+// - atlas::undress(): Universal value accessor for strong types
 // - atlas_detail::*: Internal implementation utilities
 //
 // For projects using multiple Atlas-generated files, this boilerplate
@@ -290,6 +292,10 @@ preamble(PreambleOptions options)
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
 #include <compare>
+#endif
+
+#if defined(__cpp_lib_format) && __cpp_lib_format >= 202110L
+#include <format>
 #endif
 
 namespace atlas {
@@ -318,16 +324,6 @@ struct make_void
 template <typename... Ts>
 using void_t = typename make_void<Ts...>::type;
 
-template <typename T, typename = void>
-struct IsAtlasType
-: std::false_type
-{ };
-
-template <typename T>
-struct IsAtlasType<T, void_t<typename T::atlas_value_type>>
-: std::true_type
-{ };
-
 template <std::size_t N>
 struct PriorityTag
 : PriorityTag<N - 1>
@@ -349,65 +345,247 @@ template <typename T, typename U>
 using and_ = bool_c<T::value && U::value>;
 template <typename T>
 using is_lref = std::is_lvalue_reference<T>;
-template <typename T, typename U = void>
-using enable_if = typename std::enable_if<T::value, U>::type;
+
+template <typename T>
+using remove_cv_t = typename std::remove_cv<T>::type;
+template <typename T>
+using remove_reference_t = typename std::remove_reference<T>::type;
+template <typename T>
+using remove_cvref_t = remove_cv_t<remove_reference_t<T>>;
+template <bool B, typename T = void>
+using enable_if_t = typename std::enable_if<B, T>::type;
+template <bool B>
+using when = enable_if_t<B, bool>;
 
 template <typename T>
 using _t = typename T::type;
 
-void atlas_value();
+template <typename T, typename = void>
+struct has_atlas_value_type
+: std::false_type
+{ };
 
+template <typename T>
+struct has_atlas_value_type<
+    T,
+    enable_if_t<not std::is_same<
+        typename remove_cvref_t<T>::atlas_value_type,
+        void>::value>>
+: std::true_type
+{ };
+
+void atlas_value_for();
+struct value_by_ref
+{ };
+struct value_by_val
+{ };
+
+// ----------------------------------------------------------------------------
+// Base case: T does not have atlas_value_type
+// These are the termination cases for the recursion.
+// ----------------------------------------------------------------------------
 template <typename T>
 constexpr T &
-value(T & val, PriorityTag<0>)
+value_impl(T & t, PriorityTag<0>, value_by_ref)
 {
-    return val;
+    return t;
+}
+template <typename T>
+constexpr T const &
+value_impl(T const & t, PriorityTag<0>, value_by_ref)
+{
+    return t;
+}
+template <typename T>
+constexpr T
+value_impl(T & t, PriorityTag<0>, value_by_val)
+{
+    return std::move(t);
+}
+template <typename T>
+constexpr T
+value_impl(T const & t, PriorityTag<0>, value_by_val)
+{
+    return t;
 }
 
-template <typename T, typename U = typename T::atlas_value_type>
-using val_t = _t<std::conditional<std::is_const<T>::value, U const &, U &>>;
-
-template <typename T, typename U = val_t<T>>
-constexpr auto
-value(T & val, PriorityTag<1>)
--> decltype(atlas::atlas_detail::value(static_cast<U>(val), value_tag{}))
-{
-    return atlas::atlas_detail::value(static_cast<U>(val), value_tag{});
-}
-
+// ----------------------------------------------------------------------------
+// Recursive case: T has atlas_value_for() hidden friend
+// Use ADL to call atlas_value_for() and recurse.
+// ----------------------------------------------------------------------------
 template <typename T>
 constexpr auto
-value(T const & t, PriorityTag<2>)
--> decltype(atlas_value(t, atlas::value_tag{}))
+value_impl(T & t, PriorityTag<1>, value_by_ref)
+-> decltype(value_impl(
+    atlas_value_for(t),
+    value_tag{},
+    value_by_ref{}))
 {
-    return atlas_value(t, atlas::value_tag{});
+    return value_impl(atlas_value_for(t), value_tag{}, value_by_ref{});
 }
-
 template <typename T>
 constexpr auto
-value(T const & t, PriorityTag<3>)
--> decltype(atlas_value(t))
+value_impl(T const & t, PriorityTag<1>, value_by_ref)
+-> decltype(value_impl(
+    atlas_value_for(t),
+    value_tag{},
+    value_by_ref{}))
 {
-    return atlas_value(t);
+    return value_impl(atlas_value_for(t), value_tag{}, value_by_ref{});
+}
+template <typename T>
+constexpr auto
+value_impl(T & t, PriorityTag<1>, value_by_val)
+-> decltype(value_impl(
+    atlas_value_for(std::move(t)),
+    value_tag{},
+    value_by_val{}))
+{
+    return value_impl(atlas_value_for(std::move(t)), value_tag{}, value_by_val{});
+}
+template <typename T>
+constexpr auto
+value_impl(T const & t, PriorityTag<1>, value_by_val)
+-> decltype(value_impl(
+    atlas_value_for(t),
+    value_tag{},
+    value_by_val{}))
+{
+    return value_impl(atlas_value_for(t), value_tag{}, value_by_val{});
 }
 
-class Value
+struct ToUnderlying
 {
-    template <
-        typename U,
-        typename T,
-        typename V = _t<std::conditional<is_lref<U &&>::value, T &, T>>>
-    static constexpr V rval(T && t)
+    template <typename T>
+    constexpr auto
+    operator () (T & t) const
+    -> decltype(atlas_detail::value_impl(t, value_tag{}, value_by_ref{}))
     {
-        return t;
+        return atlas_detail::value_impl(t, value_tag{}, value_by_ref{});
     }
 
-public:
     template <typename T>
-    constexpr auto operator () (T && t) const
-    -> decltype(rval<T>(atlas_detail::value(t, atlas_detail::value_tag{})))
+    constexpr auto
+    operator () (T const & t) const
+    -> decltype(atlas_detail::value_impl(t, value_tag{}, value_by_ref{}))
     {
-        return rval<T>(atlas_detail::value(t, atlas_detail::value_tag{}));
+        return atlas_detail::value_impl(t, value_tag{}, value_by_ref{});
+    }
+
+    template <
+        typename T,
+        when<not std::is_lvalue_reference<T>::value> = true>
+    constexpr auto
+    operator () (T && t) const
+    -> decltype(atlas_detail::value_impl(t, value_tag{}, value_by_val{}))
+    {
+        return atlas_detail::value_impl(t, value_tag{}, value_by_val{});
+    }
+};
+
+// ----------------------------------------------------------------------------
+// Unwrap: Remove exactly one layer from atlas types or enums
+// Unlike undress, this does NOT recurse.
+// ----------------------------------------------------------------------------
+
+template <typename T>
+constexpr auto
+unwrap_impl(T & t, PriorityTag<2>)
+-> decltype(atlas_value_for(t))
+{
+    return atlas_value_for(t);
+}
+
+template <typename T>
+constexpr auto
+unwrap_impl(T const & t, PriorityTag<2>)
+-> decltype(atlas_value_for(t))
+{
+    return atlas_value_for(t);
+}
+
+template <typename T>
+constexpr auto
+unwrap_impl(T && t, PriorityTag<2>)
+-> typename std::enable_if<
+    not std::is_lvalue_reference<T>::value,
+    decltype(atlas_value_for(std::move(t)))>::type
+{
+    return atlas_value_for(std::move(t));
+}
+
+// Enum fallback - convert to underlying type
+template <typename T>
+constexpr auto
+unwrap_impl(T t, PriorityTag<1>)
+-> typename std::enable_if<
+    std::is_enum<T>::value,
+    typename std::underlying_type<T>::type>::type
+{
+    return static_cast<typename std::underlying_type<T>::type>(t);
+}
+
+// No PriorityTag<0> - SFINAE failure for non-atlas/non-enum types
+
+struct Unwrap
+{
+    template <typename T>
+    constexpr auto
+    operator () (T & t) const
+    -> decltype(unwrap_impl(t, PriorityTag<2>{}))
+    {
+        return unwrap_impl(t, PriorityTag<2>{});
+    }
+
+    template <typename T>
+    constexpr auto
+    operator () (T const & t) const
+    -> decltype(unwrap_impl(t, PriorityTag<2>{}))
+    {
+        return unwrap_impl(t, PriorityTag<2>{});
+    }
+
+    template <
+        typename T,
+        when<not std::is_lvalue_reference<T>::value> = true>
+    constexpr auto
+    operator () (T && t) const
+    -> decltype(unwrap_impl(std::forward<T>(t), PriorityTag<2>{}))
+    {
+        return unwrap_impl(std::forward<T>(t), PriorityTag<2>{});
+    }
+};
+
+using cast_tag = PriorityTag<1>;
+
+// ----------------------------------------------------------------------------
+// cast_impl: Drill down to find the first type castable to TargetT
+// ----------------------------------------------------------------------------
+template <typename TargetT, typename U>
+constexpr auto
+cast_impl(U && u, PriorityTag<1>)
+-> decltype(static_cast<TargetT>(std::forward<U>(u)))
+{
+    return static_cast<TargetT>(std::forward<U>(u));
+}
+
+template <typename TargetT, typename U>
+constexpr auto
+cast_impl(U && u, PriorityTag<0>)
+-> decltype(cast_impl<TargetT>(atlas_value_for(std::forward<U>(u)), cast_tag{}))
+{
+    return cast_impl<TargetT>(atlas_value_for(std::forward<U>(u)), cast_tag{});
+}
+
+template <typename TargetT>
+struct CastTo
+{
+    template <typename U>
+    constexpr auto
+    operator () (U && u) const
+    -> decltype(cast_impl<TargetT>(std::forward<U>(u), cast_tag{}))
+    {
+        return cast_impl<TargetT>(std::forward<U>(u), cast_tag{});
     }
 };
 
@@ -429,18 +607,264 @@ end_(T && t) noexcept(noexcept(end(std::forward<T>(t))))
 {
     return end(std::forward<T>(t));
 }
+)";
 
+    // Hash drilling boilerplate - only included when hash specialization is
+    // needed
+    static constexpr char const hash_drill_boilerplate[] = R"(
+// ----------------------------------------------------------------------------
+// Hash drilling support
+// ----------------------------------------------------------------------------
+
+// is_hashable<T>: detects if std::hash<T> is valid
+template <typename T, typename = void>
+struct is_hashable
+: std::false_type
+{ };
+
+template <typename T>
+struct is_hashable<
+    T,
+    void_t<decltype(std::hash<T>{}(std::declval<T const &>()))>>
+: std::true_type
+{ };
+
+// Base case: T is directly hashable
+template <typename T>
+auto hash_drill(T const & t, PriorityTag<2>)
+-> typename std::enable_if<
+    is_hashable<T>::value,
+    std::size_t>::type
+{
+    return std::hash<T>{}(t);
+}
+
+// Enum fallback: T is an enum without std::hash, use underlying type
+template <typename T>
+auto hash_drill(T const & t, PriorityTag<1>)
+-> typename std::enable_if<
+    std::is_enum<T>::value &&
+    not is_hashable<T>::value,
+    std::size_t>::type
+{
+    return std::hash<typename std::underlying_type<T>::type>{}(
+        static_cast<typename std::underlying_type<T>::type>(t));
+}
+
+// Recursive case: T is an atlas type, drill down
+template <typename T>
+auto hash_drill(T const & t, PriorityTag<0>)
+-> decltype(hash_drill(atlas_value_for(t), PriorityTag<2>{}))
+{
+    return hash_drill(atlas_value_for(t), PriorityTag<2>{});
+}
+)";
+
+    // OStream drilling boilerplate - only included when ostream operator is
+    // needed
+    static constexpr char const ostream_drill_boilerplate[] = R"(
+// ----------------------------------------------------------------------------
+// OStream drilling support
+// ----------------------------------------------------------------------------
+
+// is_ostreamable<T>: detects if T can be written to std::ostream
+template <typename T, typename = void>
+struct is_ostreamable
+: std::false_type
+{ };
+
+template <typename T>
+struct is_ostreamable<
+    T,
+    void_t<decltype(std::declval<std::ostream &>() << std::declval<T const &>())>>
+: std::true_type
+{ };
+
+// Base case: T is directly ostreamable
+template <typename T>
+auto ostream_drill(std::ostream & strm, T const & t, PriorityTag<2>)
+-> typename std::enable_if<
+    is_ostreamable<T>::value,
+    std::ostream &>::type
+{
+    return strm << t;
+}
+
+// Enum fallback: T is an enum without operator<<, use underlying type
+template <typename T>
+auto ostream_drill(std::ostream & strm, T const & t, PriorityTag<1>)
+-> typename std::enable_if<
+    std::is_enum<T>::value &&
+    not is_ostreamable<T>::value,
+    std::ostream &>::type
+{
+    return strm << static_cast<typename std::underlying_type<T>::type>(t);
+}
+
+// Recursive case: T is an atlas type, drill down
+template <typename T>
+auto ostream_drill(std::ostream & strm, T const & t, PriorityTag<0>)
+-> decltype(ostream_drill(strm, atlas_value_for(t), PriorityTag<2>{}))
+{
+    return ostream_drill(strm, atlas_value_for(t), PriorityTag<2>{});
+}
+)";
+
+    // IStream drilling boilerplate - only included when istream operator is
+    // needed
+    static constexpr char const istream_drill_boilerplate[] = R"(
+// ----------------------------------------------------------------------------
+// IStream drilling support
+// ----------------------------------------------------------------------------
+
+// is_istreamable<T>: detects if T can be read from std::istream
+template <typename T, typename = void>
+struct is_istreamable
+: std::false_type
+{ };
+
+template <typename T>
+struct is_istreamable<
+    T,
+    void_t<decltype(std::declval<std::istream &>() >> std::declval<T &>())>>
+: std::true_type
+{ };
+
+// Base case: T is directly istreamable
+template <typename T>
+auto istream_drill(std::istream & strm, T & t, PriorityTag<2>)
+-> typename std::enable_if<
+    is_istreamable<T>::value,
+    std::istream &>::type
+{
+    return strm >> t;
+}
+
+// Enum fallback: T is an enum without operator>>, read as underlying type
+template <typename T>
+auto istream_drill(std::istream & strm, T & t, PriorityTag<1>)
+-> typename std::enable_if<
+    std::is_enum<T>::value &&
+    not is_istreamable<T>::value,
+    std::istream &>::type
+{
+    typename std::underlying_type<T>::type tmp;
+    strm >> tmp;
+    t = static_cast<T>(tmp);
+    return strm;
+}
+
+// Recursive case: T is an atlas type, drill down
+template <typename T>
+auto istream_drill(std::istream & strm, T & t, PriorityTag<0>)
+-> decltype(istream_drill(strm, atlas_value_for(t), PriorityTag<2>{}))
+{
+    return istream_drill(strm, atlas_value_for(t), PriorityTag<2>{});
+}
+)";
+
+    // Format drilling boilerplate - only included when formatter specialization
+    // is needed
+    static constexpr char const format_drill_boilerplate[] = R"(
+// ----------------------------------------------------------------------------
+// Format drilling support (C++20+)
+// ----------------------------------------------------------------------------
+#if defined(__cpp_lib_format) && __cpp_lib_format >= 202110L
+
+// Concept: T is formattable via std::formatter<T>
+template <typename T>
+concept formattable = requires(
+    std::formatter<T> f,
+    T const & t,
+    std::format_parse_context & parse_ctx,
+    std::format_context & fmt_ctx)
+{
+    f.parse(parse_ctx);
+    f.format(t, fmt_ctx);
+};
+
+// Drill to find a formattable type, returning a reference or converted value
+template <typename T>
+constexpr decltype(auto) format_value_drill(T const & t)
+{
+    if constexpr (formattable<T>) {
+        // Base case: T is directly formattable - return reference
+        return (t);
+    } else if constexpr (std::is_enum_v<T>) {
+        // Enum fallback: convert to underlying type
+        return static_cast<std::underlying_type_t<T>>(t);
+    } else if constexpr (has_atlas_value_type<T>::value) {
+        // Recursive case: drill through atlas type
+        return format_value_drill(atlas_value_for(t));
+    } else {
+        static_assert(formattable<T>, "Type is not formattable after drilling");
+    }
+}
+
+// Type trait for the drilled type
+template <typename T>
+using format_drilled_type_t =
+    std::remove_cvref_t<decltype(format_value_drill(std::declval<T const &>()))>;
+
+#endif // __cpp_lib_format
+)";
+
+    // Closing section of the basic boilerplate
+    static constexpr char const basic_closing[] = R"(
 } // namespace atlas_detail
 
-#if defined(__cpp_inline_variables) && __cpp_inline_variables >= 201606L
-inline constexpr auto value = atlas_detail::Value{};
-#else
+using atlas_detail::enable_if_t;
+using atlas_detail::remove_cv_t;
+using atlas_detail::remove_cvref_t;
+using atlas_detail::when;
+
 template <typename T>
+using is_atlas_type = atlas_detail::has_atlas_value_type<T>;
+
+#if defined(__cpp_concepts) && __cpp_concepts >= 201907L
+template <typename T>
+concept AtlasTypeC = is_atlas_type<T>::value;
+#endif
+
+#if defined(__cpp_inline_variables) && __cpp_inline_variables >= 201606L
+inline constexpr auto undress = atlas_detail::ToUnderlying{};
+#elif defined(__cpp_variable_templates) && __cpp_variable_templates >= 201304L
+constexpr auto undress = atlas_detail::ToUnderlying{};
+#else
+// fallback: not nice, but not terrible and prevents ADL
+namespace {
+constexpr atlas_detail::ToUnderlying undress{};
+}
+#endif
+
+#if defined(__cpp_inline_variables) && __cpp_inline_variables >= 201606L
+inline constexpr auto unwrap = atlas_detail::Unwrap{};
+#elif defined(__cpp_variable_templates) && __cpp_variable_templates >= 201304L
+constexpr auto unwrap = atlas_detail::Unwrap{};
+#else
+namespace {
+constexpr atlas_detail::Unwrap unwrap{};
+}
+#endif
+
+#if defined(__cpp_inline_variables) && __cpp_inline_variables >= 201606L
+template <typename TargetT>
+inline constexpr atlas_detail::CastTo<TargetT> cast{};
+#elif defined(__cpp_variable_templates) && __cpp_variable_templates >= 201304L
+template <typename TargetT>
+constexpr atlas_detail::CastTo<TargetT> cast{};
+#else
+// fallback: function template (ADL still possible, but unavoidable in C++11)
+template <typename TargetT, typename U>
 constexpr auto
-value(T && t)
--> decltype(atlas_detail::Value{}(std::forward<T>(t)))
+cast(U && u)
+-> decltype(atlas_detail::cast_impl<TargetT>(
+    std::forward<U>(u),
+    atlas_detail::cast_tag{}))
 {
-    return atlas_detail::Value{}(std::forward<T>(t));
+    return atlas_detail::cast_impl<TargetT>(
+        std::forward<U>(u),
+        atlas_detail::cast_tag{});
 }
 #endif
 
@@ -552,6 +976,11 @@ U & star_impl(U & u, PriorityTag<0>)
 #ifndef WJH_ATLAS_8BF8485B2F9D45ACAD473DC5B3274DDF
 #define WJH_ATLAS_8BF8485B2F9D45ACAD473DC5B3274DDF
 
+#ifdef __clang__
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wweak-vtables"
+#endif
+
 namespace atlas {
 
 /**
@@ -570,7 +999,6 @@ class ArithmeticError
 {
 public:
     using std::runtime_error::runtime_error;
-    virtual ~ArithmeticError() noexcept = default;
 };
 
 /**
@@ -597,7 +1025,6 @@ class CheckedOverflowError
 {
 public:
     using ArithmeticError::ArithmeticError;
-    virtual ~CheckedOverflowError() noexcept = default;
 };
 
 /**
@@ -625,7 +1052,6 @@ class CheckedUnderflowError
 {
 public:
     using ArithmeticError::ArithmeticError;
-    virtual ~CheckedUnderflowError() noexcept = default;
 };
 
 /**
@@ -647,7 +1073,6 @@ class CheckedDivisionByZeroError
 {
 public:
     using ArithmeticError::ArithmeticError;
-    virtual ~CheckedDivisionByZeroError() noexcept = default;
 };
 
 /**
@@ -673,7 +1098,6 @@ class CheckedInvalidOperationError
 {
 public:
     using ArithmeticError::ArithmeticError;
-    virtual ~CheckedInvalidOperationError() noexcept = default;
 };
 
 namespace atlas_detail {
@@ -986,6 +1410,10 @@ checked_mod(T a, T b, char const * div_by_zero)
 
 } // namespace atlas_detail
 } // namespace atlas
+
+#ifdef __clang__
+    #pragma clang diagnostic pop
+#endif
 
 #endif // WJH_ATLAS_8BF8485B2F9D45ACAD473DC5B3274DDF
 )";
@@ -1426,6 +1854,11 @@ saturating_rem(T a, T b) noexcept
 
 #include <sstream>
 
+#ifdef __clang__
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wweak-vtables"
+#endif
+
 namespace atlas {
 
 /**
@@ -1436,7 +1869,6 @@ class ConstraintError
 {
 public:
     using std::logic_error::logic_error;
-    virtual ~ConstraintError() noexcept = default;
 };
 
 namespace constraints {
@@ -1568,9 +2000,9 @@ auto constraint_guard(T & t, char const * op) noexcept
 
 template <typename T>
 constexpr auto is_nil_value(typename T::atlas_value_type const * value)
--> decltype(atlas::value(T::nil_value) == *value)
+-> decltype(atlas::undress(T::nil_value) == *value)
 {
-    return atlas::value(T::nil_value) == *value;
+    return atlas::undress(T::nil_value) == *value;
 }
 
 template <typename T>
@@ -1725,6 +2157,10 @@ struct non_null
 } // namespace constraints
 } // namespace atlas
 
+#ifdef __clang__
+    #pragma clang diagnostic pop
+#endif
+
 #endif // WJH_ATLAS_173D2C4FC9AA46929AD14C8BDF75D829
 )__";
 
@@ -1733,17 +2169,6 @@ struct non_null
 #define WJH_ATLAS_04D0CC2BF798478DBE3CA9BFFCC24233
 
 namespace atlas {
-
-template <typename T>
-using remove_cv_t = typename std::remove_cv<T>::type;
-template <typename T>
-using remove_reference_t = typename std::remove_reference<T>::type;
-template <typename T>
-using remove_cvref_t = remove_cv_t<remove_reference_t<T>>;
-template <bool B, typename T>
-using enable_if_t = typename std::enable_if<B, T>::type;
-template <bool B>
-using when = enable_if_t<B, bool>;
 
 template <typename T, typename = void>
 struct can_be_nilable
@@ -1759,6 +2184,11 @@ struct can_be_nilable<
 : std::true_type
 { };
 
+#ifdef __clang__
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wweak-vtables"
+#endif
+
 /**
  * Exception thrown when an atlas::Nilable is accessed without a value.
  */
@@ -1770,8 +2200,11 @@ public:
     explicit BadNilableAccess()
     : std::logic_error("bad atlas::Nilable access")
     { }
-    virtual ~BadNilableAccess() noexcept = default;
 };
+
+#ifdef __clang__
+    #pragma clang diagnostic pop
+#endif
 
 namespace detail {
 
@@ -1847,7 +2280,7 @@ public:
 
     constexpr explicit operator bool () const noexcept
     {
-        return not (atlas::value(value_) == atlas::value(T::nil_value));
+        return not (atlas::undress(value_) == atlas::undress(T::nil_value));
     }
 
     constexpr bool has_value() const noexcept { return bool(*this); }
@@ -2449,7 +2882,7 @@ public:
     -> decltype(std::hash<value_type>{}(std::declval<value_type const &>()))
     {
         if (x.has_value()) {
-            return std::hash<value_type>{}(atlas::value(*x));
+            return std::hash<value_type>{}(atlas::undress(*x));
         } else {
             return std::hash<value_type *>{}(nullptr);
         }
@@ -2470,6 +2903,25 @@ public:
 )";
 
     std::string result = basic + 1;
+
+    // Add drilling sections before closing the basic boilerplate
+    if (options.include_hash_drill) {
+        result += hash_drill_boilerplate;
+    }
+    if (options.include_ostream_drill) {
+        result += ostream_drill_boilerplate;
+    }
+    if (options.include_istream_drill) {
+        result += istream_drill_boilerplate;
+    }
+    if (options.include_format_drill) {
+        result += format_drill_boilerplate;
+    }
+
+    // Close the basic boilerplate
+    result += basic_closing;
+
+    // Add other optional sections
     if (options.include_arrow_operator_traits ||
         options.include_dereference_operator_traits)
     {

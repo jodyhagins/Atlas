@@ -170,13 +170,28 @@ TEST_SUITE("Atlas Main Tests")
 
         // Create temporary file with same specification using raw string
         // literal
-        std::string const temp_file = "/tmp/atlas_consistency_test.txt";
-        {
-            std::ofstream out(temp_file);
-            out << "guard_prefix=TEST_GUARD\n"
-                << "[test::ComprehensiveType]\nkind=struct\n"
-                << description << '\n';
-        }
+        std::string const temp_file = [&description] {
+            std::string file_template;
+            if (auto tmpdir = ::getenv("TMPDIR")) {
+                file_template = tmpdir;
+            } else {
+                file_template = "/tmp";
+            }
+            file_template += "/atlas.XXXXXX";
+            int fd = ::mkstemp(file_template.data());
+            if (fd < 0) {
+                throw std::runtime_error(
+                    "mkstemp failed with \"" + file_template +
+                    "\": maybe set TMPDIR to a directory you can write to");
+            }
+            auto const s = std::string("guard_prefix=TEST_GUARD\n"
+                                       "[test::ComprehensiveType]\n"
+                                       "kind=struct\n") +
+                description + "\n";
+            ::write(fd, s.data(), s.size());
+            ::close(fd);
+            return file_template;
+        }();
 
         // Test via file-based input
         std::string const input_arg = "--input=" + temp_file;
