@@ -15,6 +15,12 @@
 // ----------------------------------------------------------------------
 
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+
+// Define test enum BEFORE including generated types (they reference it)
+namespace test {
+enum class Color : int { Red = 1, Green = 2, Blue = 3 };
+}
+
 #include "undress_test_types.hpp"
 
 #include <memory>

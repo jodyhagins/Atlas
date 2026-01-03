@@ -14,9 +14,17 @@
 // - Nested atlas types - drills down to innermost value
 // - Non-atlas types - returns value unchanged
 // - Enums - converts to underlying type (same as unwrap)
+// - holds_enum trait - checks if type is or contains an enum
+// - undress_enum - drills to enum and stops (SFINAE out if no enum)
 // ----------------------------------------------------------------------
 
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+
+// Define test enum BEFORE including generated types (they reference it)
+namespace test {
+enum class Color : int { Red = 1, Green = 2, Blue = 3 };
+}
+
 #include "undress_test_types.hpp"
 
 #include <atomic>
@@ -310,5 +318,153 @@ TEST_SUITE("atlas::undress - Enums")
         CHECK(atlas::undress(ScopedColor::Green) == atlas::unwrap(ScopedColor::Green));
         CHECK(atlas::undress(Small) == atlas::unwrap(Small));
         CHECK(atlas::undress(Large) == atlas::unwrap(Large));
+    }
+}
+
+// ======================================================================
+// TEST SUITE: holds_enum TYPE TRAIT
+// ======================================================================
+
+TEST_SUITE("atlas::holds_enum")
+{
+    TEST_CASE("Direct enum types")
+    {
+        CHECK(atlas::holds_enum<ScopedColor>::value);
+        CHECK(atlas::holds_enum<UnscopedSize>::value);
+        CHECK(atlas::holds_enum<test::Color>::value);
+    }
+
+    TEST_CASE("Atlas types wrapping enums")
+    {
+        CHECK(atlas::holds_enum<test::WrappedColor>::value);
+        CHECK(atlas::holds_enum<test::NestedWrappedColor>::value);
+    }
+
+    TEST_CASE("Non-enum primitives")
+    {
+        CHECK_FALSE(atlas::holds_enum<int>::value);
+        CHECK_FALSE(atlas::holds_enum<double>::value);
+        CHECK_FALSE(atlas::holds_enum<std::string>::value);
+    }
+
+    TEST_CASE("Atlas types wrapping non-enums")
+    {
+        CHECK_FALSE(atlas::holds_enum<test::SimpleInt>::value);
+        CHECK_FALSE(atlas::holds_enum<test::NestedInt>::value);
+        CHECK_FALSE(atlas::holds_enum<test::MovableString>::value);
+    }
+
+    TEST_CASE("Const and reference qualifiers are stripped")
+    {
+        CHECK(atlas::holds_enum<ScopedColor const>::value);
+        CHECK(atlas::holds_enum<ScopedColor &>::value);
+        CHECK(atlas::holds_enum<ScopedColor const &>::value);
+        CHECK(atlas::holds_enum<test::WrappedColor const>::value);
+    }
+}
+
+// ======================================================================
+// TEST SUITE: undress_enum FUNCTION
+// ======================================================================
+
+// Detection idiom for SFINAE tests
+template <typename T, typename = void>
+struct is_undress_enumable : std::false_type {};
+
+template <typename T>
+struct is_undress_enumable<
+    T,
+    decltype(atlas::undress_enum(std::declval<T &>()), void())> : std::true_type {};
+
+TEST_SUITE("atlas::undress_enum")
+{
+    TEST_CASE("Direct enum returns itself")
+    {
+        test::Color color = test::Color::Green;
+        auto & result = atlas::undress_enum(color);
+
+        CHECK(result == test::Color::Green);
+        CHECK(std::is_same<decltype(result), test::Color &>::value);
+    }
+
+    TEST_CASE("Const enum returns const reference")
+    {
+        test::Color const color = test::Color::Blue;
+        auto const & result = atlas::undress_enum(color);
+
+        CHECK(result == test::Color::Blue);
+        CHECK(std::is_same<decltype(result), test::Color const &>::value);
+    }
+
+    TEST_CASE("Wrapped enum drills to enum")
+    {
+        test::WrappedColor wrapped{test::Color::Red};
+        auto & result = atlas::undress_enum(wrapped);
+
+        CHECK(result == test::Color::Red);
+        CHECK(std::is_same<decltype(result), test::Color &>::value);
+    }
+
+    TEST_CASE("Nested wrapped enum drills through multiple layers")
+    {
+        test::NestedWrappedColor nested{test::WrappedColor{test::Color::Blue}};
+        auto & result = atlas::undress_enum(nested);
+
+        CHECK(result == test::Color::Blue);
+        CHECK(std::is_same<decltype(result), test::Color &>::value);
+    }
+
+    TEST_CASE("Rvalue enum returns by value")
+    {
+        auto result = atlas::undress_enum(test::Color::Green);
+
+        CHECK(result == test::Color::Green);
+        CHECK(std::is_same<decltype(result), test::Color>::value);
+    }
+
+    TEST_CASE("Rvalue wrapped enum drills and returns enum by value")
+    {
+        auto result = atlas::undress_enum(test::WrappedColor{test::Color::Red});
+
+        CHECK(result == test::Color::Red);
+        CHECK(std::is_same<decltype(result), test::Color>::value);
+    }
+
+    TEST_CASE("SFINAE: enum types are undress_enumable")
+    {
+        CHECK(is_undress_enumable<ScopedColor>::value);
+        CHECK(is_undress_enumable<UnscopedSize>::value);
+        CHECK(is_undress_enumable<test::Color>::value);
+    }
+
+    TEST_CASE("SFINAE: wrapped enums are undress_enumable")
+    {
+        CHECK(is_undress_enumable<test::WrappedColor>::value);
+        CHECK(is_undress_enumable<test::NestedWrappedColor>::value);
+    }
+
+    TEST_CASE("SFINAE: non-enum types are NOT undress_enumable")
+    {
+        CHECK_FALSE(is_undress_enumable<int>::value);
+        CHECK_FALSE(is_undress_enumable<double>::value);
+        CHECK_FALSE(is_undress_enumable<std::string>::value);
+        CHECK_FALSE(is_undress_enumable<test::SimpleInt>::value);
+        CHECK_FALSE(is_undress_enumable<test::NestedInt>::value);
+    }
+
+    TEST_CASE("Constexpr context")
+    {
+        constexpr test::Color color = test::Color::Blue;
+        constexpr test::Color result = atlas::undress_enum(color);
+
+        CHECK(result == test::Color::Blue);
+    }
+
+    TEST_CASE("Can modify through reference")
+    {
+        test::WrappedColor wrapped{test::Color::Red};
+        atlas::undress_enum(wrapped) = test::Color::Green;
+
+        CHECK(atlas::undress_enum(wrapped) == test::Color::Green);
     }
 }

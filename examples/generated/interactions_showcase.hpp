@@ -1,5 +1,5 @@
-#ifndef EXAMPLE_INTERACTIONS_F8884D35297059ED7FC8F391168CD425F6588ACB
-#define EXAMPLE_INTERACTIONS_F8884D35297059ED7FC8F391168CD425F6588ACB
+#ifndef EXAMPLE_INTERACTIONS_221B4644637D559A9D12570FC413F46CF2C79216
+#define EXAMPLE_INTERACTIONS_221B4644637D559A9D12570FC413F46CF2C79216
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -351,6 +351,101 @@ struct Unwrap
     }
 };
 
+// ----------------------------------------------------------------------------
+// UndressEnum: Drill through atlas types and stop at enum
+// Like undress, but stops at enum instead of converting to underlying type.
+// SFINAE fails if the drill does not resolve to an enum.
+// ----------------------------------------------------------------------------
+using undress_enum_tag = PriorityTag<1>;
+
+// Base case: T is an enum - return it (don't convert to underlying)
+template <typename T>
+constexpr auto
+undress_enum_impl(T & t, PriorityTag<0>)
+-> typename std::enable_if<std::is_enum<T>::value, T &>::type
+{
+    return t;
+}
+
+template <typename T>
+constexpr auto
+undress_enum_impl(T const & t, PriorityTag<0>)
+-> typename std::enable_if<std::is_enum<T>::value, T const &>::type
+{
+    return t;
+}
+
+// Recursive case: drill through atlas types
+template <typename T>
+constexpr auto
+undress_enum_impl(T & t, PriorityTag<1>)
+-> decltype(undress_enum_impl(atlas_value_for(t), undress_enum_tag{}))
+{
+    return undress_enum_impl(atlas_value_for(t), undress_enum_tag{});
+}
+
+template <typename T>
+constexpr auto
+undress_enum_impl(T const & t, PriorityTag<1>)
+-> decltype(undress_enum_impl(atlas_value_for(t), undress_enum_tag{}))
+{
+    return undress_enum_impl(atlas_value_for(t), undress_enum_tag{});
+}
+
+template <typename T>
+constexpr auto
+undress_enum_impl(T && t, PriorityTag<1>)
+-> typename std::enable_if<
+    not std::is_lvalue_reference<T>::value,
+    decltype(undress_enum_impl(atlas_value_for(std::move(t)), undress_enum_tag{}))>::type
+{
+    return undress_enum_impl(atlas_value_for(std::move(t)), undress_enum_tag{});
+}
+
+struct UndressEnum
+{
+    template <typename T>
+    constexpr auto
+    operator () (T & t) const
+    -> decltype(undress_enum_impl(t, undress_enum_tag{}))
+    {
+        return undress_enum_impl(t, undress_enum_tag{});
+    }
+
+    template <typename T>
+    constexpr auto
+    operator () (T const & t) const
+    -> decltype(undress_enum_impl(t, undress_enum_tag{}))
+    {
+        return undress_enum_impl(t, undress_enum_tag{});
+    }
+
+    template <
+        typename T,
+        when<not std::is_lvalue_reference<T>::value> = true>
+    constexpr auto
+    operator () (T && t) const
+    -> decltype(undress_enum_impl(std::forward<T>(t), undress_enum_tag{}))
+    {
+        return undress_enum_impl(std::forward<T>(t), undress_enum_tag{});
+    }
+};
+
+// ----------------------------------------------------------------------------
+// Type trait: holds_enum - true if undress_enum would succeed
+// Uses the same mechanism as undress_enum to ensure consistency.
+// ----------------------------------------------------------------------------
+template <typename T, typename = void>
+struct holds_enum_impl : std::false_type {};
+
+template <typename T>
+struct holds_enum_impl<
+    T,
+    void_t<decltype(undress_enum_impl(
+        std::declval<remove_cvref_t<T> &>(),
+        undress_enum_tag{}))>>
+: std::true_type {};
+
 using cast_tag = PriorityTag<1>;
 
 // ----------------------------------------------------------------------------
@@ -413,9 +508,15 @@ using atlas_detail::when;
 template <typename T>
 using is_atlas_type = atlas_detail::has_atlas_value_type<T>;
 
+template <typename T>
+using holds_enum = atlas_detail::holds_enum_impl<atlas_detail::remove_cvref_t<T>>;
+
 #if defined(__cpp_concepts) && __cpp_concepts >= 201907L
 template <typename T>
 concept AtlasTypeC = is_atlas_type<T>::value;
+
+template <typename T>
+concept HoldsEnumC = holds_enum<T>::value;
 #endif
 
 #if defined(__cpp_inline_variables) && __cpp_inline_variables >= 201606L
@@ -436,6 +537,16 @@ constexpr auto unwrap = atlas_detail::Unwrap{};
 #else
 namespace {
 constexpr atlas_detail::Unwrap unwrap{};
+}
+#endif
+
+#if defined(__cpp_inline_variables) && __cpp_inline_variables >= 201606L
+inline constexpr auto undress_enum = atlas_detail::UndressEnum{};
+#elif defined(__cpp_variable_templates) && __cpp_variable_templates >= 201304L
+constexpr auto undress_enum = atlas_detail::UndressEnum{};
+#else
+namespace {
+constexpr atlas_detail::UndressEnum undress_enum{};
 }
 #endif
 
@@ -1663,4 +1774,4 @@ noexcept(
 
 } // namespace security
 
-#endif // EXAMPLE_INTERACTIONS_F8884D35297059ED7FC8F391168CD425F6588ACB
+#endif // EXAMPLE_INTERACTIONS_221B4644637D559A9D12570FC413F46CF2C79216

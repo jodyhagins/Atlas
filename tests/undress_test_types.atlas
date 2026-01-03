@@ -34,3 +34,17 @@ kind=struct
 namespace=test
 name=MoveOnlyWrapper
 description=std::unique_ptr<int>; no-constexpr
+
+# Wrapper for scoped enum (for undress_enum tests)
+[type]
+kind=struct
+namespace=test
+name=WrappedColor
+description=test::Color
+
+# Nested wrapper for scoped enum
+[type]
+kind=struct
+namespace=test
+name=NestedWrappedColor
+description=test::WrappedColor
