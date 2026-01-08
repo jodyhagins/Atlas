@@ -31,7 +31,7 @@ template <>
 struct std::formatter<{{{full_qualified_name}}}>
 {
 private:
-    using drilled_type_ = atlas::atlas_detail::format_drilled_type_t<{{{underlying_type}}}>;
+    using drilled_type_ = atlas::atlas_detail::format_drilled_type_t<{{{full_qualified_name}}}::atlas_value_type>;
     std::formatter<drilled_type_> underlying_formatter_;
 
 public:
