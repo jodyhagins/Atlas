@@ -410,11 +410,13 @@ TEST_SUITE("Compilation Tests: Standard Library Integration")
     {
         CompilationTester tester;
 
-        auto description = R"([type]
+        auto description = R"(auto_hash=true
+
+[type]
 kind=struct
 namespace=test
 name=HashableType
-description=strong int; ==, hash, no-constexpr
+description=strong int; ==, no-constexpr
 )";
 
         auto test_code = R"(
@@ -450,11 +452,14 @@ int main() {
     {
         CompilationTester tester;
 
-        auto description = R"([type]
+        auto description = R"(auto_ostream=true
+auto_istream=true
+
+[type]
 kind=struct
 namespace=test
 name=Streamable
-description=strong int; out, in, no-constexpr
+description=strong int; no-constexpr
 )";
 
         auto test_code = R"(
@@ -709,25 +714,28 @@ TEST_SUITE("Compilation Tests: Integration")
         // - Distance / Velocity = Time
         // This is a comprehensive "everything working together" test
 
-        auto types_description = R"([type]
+        auto types_description = R"(auto_hash=true
+auto_ostream=true
+
+[type]
 kind=struct
 namespace=kitchen
 name=Distance
-description=strong double; u-, ==, !=, <, <=>, ++, --, bool, out, hash, no-constexpr
+description=strong double; u-, ==, !=, <, <=>, ++, --, bool, no-constexpr
 default_value=0.0
 
 [type]
 kind=struct
 namespace=kitchen
 name=Time
-description=strong double; u-, ==, !=, <, <=>, ++, bool, hash, no-constexpr
+description=strong double; u-, ==, !=, <, <=>, ++, bool, no-constexpr
 default_value=0.0
 
 [type]
 kind=struct
 namespace=kitchen
 name=Velocity
-description=strong double; ==, !=, <, bool, out, no-constexpr
+description=strong double; ==, !=, <, bool, no-constexpr
 
 [type]
 kind=struct
@@ -1431,17 +1439,19 @@ TEST_SUITE("Compilation Tests: Drilling Behavior")
 
         // Inner wraps int (hashable), Outer wraps Inner
         // Hash should drill from Outer -> Inner -> int
-        auto description = R"([type]
+        auto description = R"(auto_hash=true
+
+[type]
 kind=struct
 namespace=test
 name=Inner
-description=strong int; ==, hash, no-constexpr
+description=strong int; ==, no-constexpr
 
 [type]
 kind=struct
 namespace=test
 name=Outer
-description=strong test::Inner; ==, hash, no-constexpr
+description=strong test::Inner; ==, no-constexpr
 )";
 
         auto test_code = R"(
@@ -1494,11 +1504,13 @@ int main() {
 
         // Strong type wrapping an enum - hash should use underlying int
         // Use #"color.hpp" to include our custom header
-        auto description = R"([type]
+        auto description = R"(auto_hash=true
+
+[type]
 kind=struct
 namespace=test
 name=ColorWrapper
-description=strong test::Color; ==, hash, no-constexpr, #"color.hpp"
+description=strong test::Color; ==, no-constexpr, #"color.hpp"
 )";
 
         auto test_code = R"(
@@ -1540,17 +1552,19 @@ int main() {
 
         // Inner wraps int (streamable), Outer wraps Inner
         // ostream should drill from Outer -> Inner -> int
-        auto description = R"([type]
+        auto description = R"(auto_ostream=true
+
+[type]
 kind=struct
 namespace=test
 name=Inner
-description=strong int; out, no-constexpr
+description=strong int; no-constexpr
 
 [type]
 kind=struct
 namespace=test
 name=Outer
-description=strong test::Inner; out, no-constexpr
+description=strong test::Inner; no-constexpr
 )";
 
         auto test_code = R"(
@@ -1585,17 +1599,19 @@ int main() {
 
         // Inner wraps int (streamable), Outer wraps Inner
         // istream should drill from Outer -> Inner -> int
-        auto description = R"([type]
+        auto description = R"(auto_istream=true
+
+[type]
 kind=struct
 namespace=test
 name=Inner
-description=strong int; in, no-constexpr
+description=strong int; no-constexpr
 
 [type]
 kind=struct
 namespace=test
 name=Outer
-description=strong test::Inner; in, no-constexpr
+description=strong test::Inner; no-constexpr
 )";
 
         auto test_code = R"(
@@ -1629,17 +1645,19 @@ int main() {
 
         // Inner wraps int (formattable), Outer wraps Inner
         // formatter should drill from Outer -> Inner -> int
-        auto description = R"([type]
+        auto description = R"(auto_format=true
+
+[type]
 kind=struct
 namespace=test
 name=Inner
-description=strong int; fmt, no-constexpr, c++20
+description=strong int; no-constexpr, c++20
 
 [type]
 kind=struct
 namespace=test
 name=Outer
-description=strong test::Inner; fmt, no-constexpr, c++20
+description=strong test::Inner; no-constexpr, c++20
 )";
 
         auto test_code = R"(
@@ -1687,11 +1705,13 @@ int main() { return 0; }
             "}; }\n");
 
         // Strong type wrapping an enum - formatter should use underlying int
-        auto description = R"([type]
+        auto description = R"(auto_format=true
+
+[type]
 kind=struct
 namespace=test
 name=ColorWrapper
-description=strong test::Color; fmt, no-constexpr, c++20, #"format_color.hpp"
+description=strong test::Color; no-constexpr, c++20, #"format_color.hpp"
 )";
 
         auto test_code = R"(
@@ -1773,7 +1793,7 @@ TEST_SUITE("Compilation Tests: Drilling Multiple Files")
 
     TEST_CASE("Hash: first header without, second with - drilling works")
     {
-        // Problem 1: First header has NO hash, second header HAS hash.
+        // Problem 1: First header has NO auto_hash, second header HAS auto_hash.
         // The hash drilling from the second header must be visible.
         auto temp_dir = fs::temp_directory_path() /
             ("atlas_hash_first_without_" + std::to_string(::getpid()));
@@ -1786,12 +1806,14 @@ namespace=test::drill
 name=NoHash
 description=strong int; ==, no-constexpr
 )";
-        // Second header: HAS hash support
-        auto desc2 = R"([type]
+        // Second header: HAS auto_hash support
+        auto desc2 = R"(auto_hash=true
+
+[type]
 kind=struct
 namespace=test::drill
 name=WithHash
-description=strong int; ==, hash, no-constexpr
+description=strong int; ==, no-constexpr
 )";
 
         auto input1 = temp_dir / "no_hash.txt";
@@ -1846,23 +1868,27 @@ int main() {
 
     TEST_CASE("Hash: both headers with")
     {
-        // Problem 2: Both headers have hash support.
+        // Problem 2: Both headers have auto_hash support.
         // Must compile without duplicate definition errors.
         auto temp_dir = fs::temp_directory_path() /
             ("atlas_hash_both_with_" + std::to_string(::getpid()));
         fs::create_directories(temp_dir);
 
-        auto desc1 = R"([type]
+        auto desc1 = R"(auto_hash=true
+
+[type]
 kind=struct
 namespace=test::drill
 name=HashA
-description=strong int; ==, hash, no-constexpr
+description=strong int; ==, no-constexpr
 )";
-        auto desc2 = R"([type]
+        auto desc2 = R"(auto_hash=true
+
+[type]
 kind=struct
 namespace=test::drill
 name=HashB
-description=strong std::string; ==, hash, no-constexpr
+description=strong std::string; ==, no-constexpr
 )";
 
         auto input1 = temp_dir / "hash_a.txt";
@@ -1932,12 +1958,14 @@ namespace=test::drill
 name=NoOut
 description=strong int; ==, no-constexpr
 )";
-        // Second header: HAS ostream support
-        auto desc2 = R"([type]
+        // Second header: HAS auto_ostream support
+        auto desc2 = R"(auto_ostream=true
+
+[type]
 kind=struct
 namespace=test::drill
 name=WithOut
-description=strong int; out, no-constexpr
+description=strong int; no-constexpr
 )";
 
         auto input1 = temp_dir / "no_out.txt";
@@ -1993,17 +2021,21 @@ int main() {
             ("atlas_ostream_both_with_" + std::to_string(::getpid()));
         fs::create_directories(temp_dir);
 
-        auto desc1 = R"([type]
+        auto desc1 = R"(auto_ostream=true
+
+[type]
 kind=struct
 namespace=test::drill
 name=OutA
-description=strong int; out, no-constexpr
+description=strong int; no-constexpr
 )";
-        auto desc2 = R"([type]
+        auto desc2 = R"(auto_ostream=true
+
+[type]
 kind=struct
 namespace=test::drill
 name=OutB
-description=strong double; out, no-constexpr
+description=strong double; no-constexpr
 )";
 
         auto input1 = temp_dir / "out_a.txt";
@@ -2072,12 +2104,14 @@ namespace=test::drill
 name=NoIn
 description=strong int; ==, no-constexpr
 )";
-        // Second header: HAS istream support
-        auto desc2 = R"([type]
+        // Second header: HAS auto_istream support
+        auto desc2 = R"(auto_istream=true
+
+[type]
 kind=struct
 namespace=test::drill
 name=WithIn
-description=strong int; in, no-constexpr
+description=strong int; no-constexpr
 )";
 
         auto input1 = temp_dir / "no_in.txt";
@@ -2133,17 +2167,21 @@ int main() {
             ("atlas_istream_both_with_" + std::to_string(::getpid()));
         fs::create_directories(temp_dir);
 
-        auto desc1 = R"([type]
+        auto desc1 = R"(auto_istream=true
+
+[type]
 kind=struct
 namespace=test::drill
 name=InA
-description=strong int; in, no-constexpr
+description=strong int; no-constexpr
 )";
-        auto desc2 = R"([type]
+        auto desc2 = R"(auto_istream=true
+
+[type]
 kind=struct
 namespace=test::drill
 name=InB
-description=strong double; in, no-constexpr
+description=strong double; no-constexpr
 )";
 
         auto input1 = temp_dir / "in_a.txt";
@@ -2214,12 +2252,14 @@ namespace=test::drill
 name=NoFmt
 description=strong int; ==, no-constexpr, c++20
 )";
-        // Second header: HAS format support
-        auto desc2 = R"([type]
+        // Second header: HAS auto_format support
+        auto desc2 = R"(auto_format=true
+
+[type]
 kind=struct
 namespace=test::drill
 name=WithFmt
-description=strong int; fmt, no-constexpr, c++20
+description=strong int; no-constexpr, c++20
 )";
 
         auto input1 = temp_dir / "no_fmt.txt";
@@ -2279,17 +2319,21 @@ int main() { return 0; }  // Skip if format not available
             ("atlas_format_both_with_" + std::to_string(::getpid()));
         fs::create_directories(temp_dir);
 
-        auto desc1 = R"([type]
+        auto desc1 = R"(auto_format=true
+
+[type]
 kind=struct
 namespace=test::drill
 name=FmtA
-description=strong int; fmt, no-constexpr, c++20
+description=strong int; no-constexpr, c++20
 )";
-        auto desc2 = R"([type]
+        auto desc2 = R"(auto_format=true
+
+[type]
 kind=struct
 namespace=test::drill
 name=FmtB
-description=strong double; fmt, no-constexpr, c++20
+description=strong double; no-constexpr, c++20
 )";
 
         auto input1 = temp_dir / "fmt_a.txt";

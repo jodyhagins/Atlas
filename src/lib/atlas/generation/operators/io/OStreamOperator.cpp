@@ -34,9 +34,11 @@ get_template_impl() const noexcept
 
 bool
 OStreamOperator::
-should_apply_impl(ClassInfo const & info) const
+should_apply_impl(ClassInfo const &) const
 {
-    return info.ostream_operator;
+    // Per-type ostream operator is disabled.
+    // Use auto_ostream=true at file level for automatic operator<< support.
+    return false;
 }
 
 boost::json::object

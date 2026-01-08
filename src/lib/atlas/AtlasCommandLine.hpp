@@ -47,6 +47,12 @@ public:
         std::string output_file;
         bool interactions_mode = false;
         int cpp_standard = 0; // 0 means not specified on CLI
+
+        // Auto-generation options (for single-type mode)
+        bool auto_hash = false;
+        bool auto_ostream = false;
+        bool auto_istream = false;
+        bool auto_format = false;
     };
 
     struct FileGenerationResult
@@ -56,6 +62,12 @@ public:
         bool upcase_guard = true;
         int file_level_cpp_standard = 11;
         std::vector<StrongTypeDescription> types;
+
+        // Auto-generation options
+        bool auto_hash = false;
+        bool auto_ostream = false;
+        bool auto_istream = false;
+        bool auto_format = false;
     };
 
     // Parse command line arguments

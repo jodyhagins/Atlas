@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_170E1DAC53F4CDA9EB2B3A5F294C5D8168C27548
-#define FOO_BAR_170E1DAC53F4CDA9EB2B3A5F294C5D8168C27548
+#ifndef FOO_BAR_ED9773CB0EE2E31430F4CB88E11D8017E6B7BF61
+#define FOO_BAR_ED9773CB0EE2E31430F4CB88E11D8017E6B7BF61
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -19,6 +19,7 @@
 #if __has_include(<version>)
 #include <version>
 #endif
+#include <iostream>
 #include <istream>
 #include <ostream>
 #include <type_traits>
@@ -685,6 +686,46 @@ auto istream_drill(std::istream & strm, T & t, PriorityTag<0>)
 } // namespace atlas
 #endif // WJH_ATLAS_4296E303C8F846C0B958EB450C57465B
 
+#ifndef WJH_ATLAS_204DEDF8AD1A4B8EA2910C659C4523BC
+#define WJH_ATLAS_204DEDF8AD1A4B8EA2910C659C4523BC
+namespace atlas {
+
+// Templated operator<< for all atlas types
+// ADL finds this via atlas::strong_type_tag base class
+template <typename T>
+auto operator<<(std::ostream & strm, T const & t)
+-> typename std::enable_if<
+    atlas_detail::has_atlas_value_type<T>::value,
+    decltype(atlas_detail::ostream_drill(
+        strm, atlas_value_for(t), atlas_detail::PriorityTag<2>{}))>::type
+{
+    return atlas_detail::ostream_drill(
+        strm, atlas_value_for(t), atlas_detail::PriorityTag<2>{});
+}
+
+} // namespace atlas
+#endif // WJH_ATLAS_204DEDF8AD1A4B8EA2910C659C4523BC
+
+#ifndef WJH_ATLAS_8E1585765002403FBFA3B92531F0A25E
+#define WJH_ATLAS_8E1585765002403FBFA3B92531F0A25E
+namespace atlas {
+
+// Templated operator>> for all atlas types
+// ADL finds this via atlas::strong_type_tag base class
+template <typename T>
+auto operator>>(std::istream & strm, T & t)
+-> typename std::enable_if<
+    atlas_detail::has_atlas_value_type<T>::value,
+    decltype(atlas_detail::istream_drill(
+        strm, atlas_value_for(t), atlas_detail::PriorityTag<2>{}))>::type
+{
+    return atlas_detail::istream_drill(
+        strm, atlas_value_for(t), atlas_detail::PriorityTag<2>{});
+}
+
+} // namespace atlas
+#endif // WJH_ATLAS_8E1585765002403FBFA3B92531F0A25E
+
 
 //////////////////////////////////////////////////////////////////////
 ///
@@ -752,35 +793,9 @@ struct StreamableInt
     {
         return lhs.value == rhs.value;
     }
-
-    /**
-     * Insert the wrapped object into an ostream.
-     * Drills down to find the first ostreamable type.
-     */
-    friend std::ostream & operator<<(
-        std::ostream & strm,
-        StreamableInt const & t)
-    {
-        atlas::atlas_detail::ostream_drill(
-            strm, t.value, atlas::atlas_detail::PriorityTag<2>{});
-        return strm;
-    }
-
-    /**
-     * Extract the wrapped object from an istream.
-     * Drills down to find the first istreamable type.
-     */
-    friend std::istream & operator>>(
-        std::istream & strm,
-        StreamableInt & t)
-    {
-        atlas::atlas_detail::istream_drill(
-            strm, t.value, atlas::atlas_detail::PriorityTag<2>{});
-        return strm;
-    }
 };
 } // namespace integration
 } // namespace test
 
-#endif // FOO_BAR_170E1DAC53F4CDA9EB2B3A5F294C5D8168C27548
+#endif // FOO_BAR_ED9773CB0EE2E31430F4CB88E11D8017E6B7BF61
 

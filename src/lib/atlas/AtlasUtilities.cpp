@@ -239,9 +239,30 @@ get_preamble_includes(PreambleOptions const & options)
         includes.push_back("<optional>");
     }
 
-    // <functional> is needed for std::hash in hash drilling
-    if (options.include_hash_drill || options.include_nilable_support) {
+    // <functional> is needed for std::hash in hash drilling and auto_hash
+    if (options.include_hash_drill || options.include_nilable_support ||
+        options.auto_hash)
+    {
         includes.push_back("<functional>");
+    }
+
+    // <iostream> is needed for auto_ostream and auto_istream
+    // (ostream_drill and istream_drill boilerplates are also included)
+    if (options.include_ostream_drill || options.include_istream_drill ||
+        options.auto_ostream || options.auto_istream)
+    {
+        includes.push_back("<iostream>");
+    }
+
+    // <format> is needed for auto_format (C++20)
+    // The boilerplate itself checks for __cpp_lib_format
+    if (options.include_format_drill || options.auto_format) {
+        includes.push_back("<format>");
+    }
+
+    // <concepts> may be needed for auto_hash and auto_format in C++20
+    if (options.auto_hash || options.auto_format) {
+        includes.push_back("<concepts>");
     }
 
     return includes;
@@ -953,6 +974,133 @@ using format_drilled_type_t =
 } // namespace atlas_detail
 } // namespace atlas
 #endif // WJH_ATLAS_9B74AE244B4F4EB68DF9D80B67E1EB05
+)";
+
+    // Auto hash boilerplate - C++20 constrained partial specialization of
+    // std::hash for all atlas types. Requires hash_drill boilerplate.
+    static constexpr char const auto_hash_boilerplate[] = R"(
+#ifndef WJH_ATLAS_83B11BF12B6945019DF71C7517A1D6DA
+#define WJH_ATLAS_83B11BF12B6945019DF71C7517A1D6DA
+#if __cplusplus >= 202002L
+namespace atlas::atlas_detail {
+
+// Concept: T is an atlas type whose underlying value chain is eventually
+// hashable
+template <typename T>
+concept atlas_hashable = has_atlas_value_type<T>::value &&
+    requires(T const & t) {
+        { hash_drill(atlas_value_for(t), PriorityTag<2>{}) }
+            -> std::same_as<std::size_t>;
+    };
+
+} // namespace atlas::atlas_detail
+
+template <typename T>
+    requires atlas::atlas_detail::atlas_hashable<T>
+struct std::hash<T>
+{
+    std::size_t operator()(T const & t) const
+    noexcept(noexcept(atlas::atlas_detail::hash_drill(
+        atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{})))
+    {
+        return atlas::atlas_detail::hash_drill(
+            atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{});
+    }
+};
+#endif // C++20
+#endif // WJH_ATLAS_83B11BF12B6945019DF71C7517A1D6DA
+)";
+
+    // Auto format boilerplate - C++20 constrained partial specialization of
+    // std::formatter for all atlas types. Requires format_drill boilerplate.
+    static constexpr char const auto_format_boilerplate[] = R"(
+#ifndef WJH_ATLAS_A3A2ADA707CA47BE9EB94254C729C906
+#define WJH_ATLAS_A3A2ADA707CA47BE9EB94254C729C906
+#if defined(__cpp_lib_format) && __cpp_lib_format >= 202110L
+namespace atlas::atlas_detail {
+
+// Concept: T is an atlas type whose underlying value chain is eventually
+// formattable
+template <typename T>
+concept atlas_formattable = has_atlas_value_type<T>::value &&
+    requires(T const & t) {
+        format_value_drill(atlas_value_for(t));
+    };
+
+} // namespace atlas::atlas_detail
+
+template <typename T>
+    requires atlas::atlas_detail::atlas_formattable<T>
+struct std::formatter<T>
+{
+private:
+    using drilled_type_ =
+        atlas::atlas_detail::format_drilled_type_t<typename T::atlas_value_type>;
+    std::formatter<drilled_type_> underlying_formatter_;
+
+public:
+    constexpr auto parse(std::format_parse_context & ctx)
+    {
+        return underlying_formatter_.parse(ctx);
+    }
+
+    auto format(T const & t, std::format_context & ctx) const
+    {
+        return underlying_formatter_.format(
+            atlas::atlas_detail::format_value_drill(atlas_value_for(t)),
+            ctx);
+    }
+};
+#endif // __cpp_lib_format
+#endif // WJH_ATLAS_A3A2ADA707CA47BE9EB94254C729C906
+)";
+
+    // Auto ostream boilerplate - templated operator<< for all atlas types
+    // Works via ADL through atlas::strong_type_tag base class
+    static constexpr char const auto_ostream_boilerplate[] = R"(
+#ifndef WJH_ATLAS_204DEDF8AD1A4B8EA2910C659C4523BC
+#define WJH_ATLAS_204DEDF8AD1A4B8EA2910C659C4523BC
+namespace atlas {
+
+// Templated operator<< for all atlas types
+// ADL finds this via atlas::strong_type_tag base class
+template <typename T>
+auto operator<<(std::ostream & strm, T const & t)
+-> typename std::enable_if<
+    atlas_detail::has_atlas_value_type<T>::value,
+    decltype(atlas_detail::ostream_drill(
+        strm, atlas_value_for(t), atlas_detail::PriorityTag<2>{}))>::type
+{
+    return atlas_detail::ostream_drill(
+        strm, atlas_value_for(t), atlas_detail::PriorityTag<2>{});
+}
+
+} // namespace atlas
+#endif // WJH_ATLAS_204DEDF8AD1A4B8EA2910C659C4523BC
+)";
+
+    // Auto istream boilerplate - templated operator>> for all atlas types
+    // Works via ADL through atlas::strong_type_tag base class
+    static constexpr char const auto_istream_boilerplate[] = R"(
+#ifndef WJH_ATLAS_8E1585765002403FBFA3B92531F0A25E
+#define WJH_ATLAS_8E1585765002403FBFA3B92531F0A25E
+namespace atlas {
+
+// Templated operator>> for all atlas types
+// ADL finds this via atlas::strong_type_tag base class
+template <typename T>
+auto operator>>(std::istream & strm, T & t)
+-> typename std::enable_if<
+    atlas_detail::has_atlas_value_type<T>::value,
+    decltype(atlas_detail::istream_drill(
+        strm, atlas_value_for(t), atlas_detail::PriorityTag<2>{}))>::type
+{
+    return atlas_detail::istream_drill(
+        strm, atlas_value_for(t), atlas_detail::PriorityTag<2>{});
+}
+
+} // namespace atlas
+#endif // WJH_ATLAS_8E1585765002403FBFA3B92531F0A25E
 )";
 
     // Closing section of the basic boilerplate
@@ -3069,16 +3217,17 @@ public:
     // Close the basic boilerplate
     result += basic_closing;
 
-    if (options.include_hash_drill) {
+    // Include drill boilerplates - also required by auto_* options
+    if (options.include_hash_drill || options.auto_hash) {
         result += hash_drill_boilerplate;
     }
-    if (options.include_ostream_drill) {
+    if (options.include_ostream_drill || options.auto_ostream) {
         result += ostream_drill_boilerplate;
     }
-    if (options.include_istream_drill) {
+    if (options.include_istream_drill || options.auto_istream) {
         result += istream_drill_boilerplate;
     }
-    if (options.include_format_drill) {
+    if (options.include_format_drill || options.auto_format) {
         result += format_drill_boilerplate;
     }
     if (options.include_arrow_operator_traits ||
@@ -3104,6 +3253,22 @@ public:
     if (options.include_nilable_support) {
         result += optional_support;
     }
+
+    // Auto-generation boilerplates - provide automatic support for all atlas
+    // types
+    if (options.auto_hash) {
+        result += auto_hash_boilerplate;
+    }
+    if (options.auto_format) {
+        result += auto_format_boilerplate;
+    }
+    if (options.auto_ostream) {
+        result += auto_ostream_boilerplate;
+    }
+    if (options.auto_istream) {
+        result += auto_istream_boilerplate;
+    }
+
     result += droids;
     return result;
 }

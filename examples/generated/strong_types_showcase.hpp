@@ -1,5 +1,5 @@
-#ifndef EXAMPLE_D224AE2C88F4D4B92BCB5A2309A63FD915606C8B
-#define EXAMPLE_D224AE2C88F4D4B92BCB5A2309A63FD915606C8B
+#ifndef EXAMPLE_ECE1953A78304BC27A00F783642CF4AB14C8E4A1
+#define EXAMPLE_ECE1953A78304BC27A00F783642CF4AB14C8E4A1
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -27,10 +27,9 @@
 #include <cstddef>
 #include <cstdint>
 #include <deque>
-#if defined(__cpp_lib_format) && __cpp_lib_format >= 202110L
 #include <format>
-#endif
 #include <functional>
+#include <iostream>
 #include <istream>
 #include <limits>
 #include <map>
@@ -2086,6 +2085,117 @@ struct non_null
 
 #endif // WJH_ATLAS_173D2C4FC9AA46929AD14C8BDF75D829
 
+#ifndef WJH_ATLAS_83B11BF12B6945019DF71C7517A1D6DA
+#define WJH_ATLAS_83B11BF12B6945019DF71C7517A1D6DA
+#if __cplusplus >= 202002L
+namespace atlas::atlas_detail {
+
+// Concept: T is an atlas type whose underlying value chain is eventually
+// hashable
+template <typename T>
+concept atlas_hashable = has_atlas_value_type<T>::value &&
+    requires(T const & t) {
+        { hash_drill(atlas_value_for(t), PriorityTag<2>{}) }
+            -> std::same_as<std::size_t>;
+    };
+
+} // namespace atlas::atlas_detail
+
+template <typename T>
+    requires atlas::atlas_detail::atlas_hashable<T>
+struct std::hash<T>
+{
+    std::size_t operator()(T const & t) const
+    noexcept(noexcept(atlas::atlas_detail::hash_drill(
+        atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{})))
+    {
+        return atlas::atlas_detail::hash_drill(
+            atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{});
+    }
+};
+#endif // C++20
+#endif // WJH_ATLAS_83B11BF12B6945019DF71C7517A1D6DA
+
+#ifndef WJH_ATLAS_A3A2ADA707CA47BE9EB94254C729C906
+#define WJH_ATLAS_A3A2ADA707CA47BE9EB94254C729C906
+#if defined(__cpp_lib_format) && __cpp_lib_format >= 202110L
+namespace atlas::atlas_detail {
+
+// Concept: T is an atlas type whose underlying value chain is eventually
+// formattable
+template <typename T>
+concept atlas_formattable = has_atlas_value_type<T>::value &&
+    requires(T const & t) {
+        format_value_drill(atlas_value_for(t));
+    };
+
+} // namespace atlas::atlas_detail
+
+template <typename T>
+    requires atlas::atlas_detail::atlas_formattable<T>
+struct std::formatter<T>
+{
+private:
+    using drilled_type_ =
+        atlas::atlas_detail::format_drilled_type_t<typename T::atlas_value_type>;
+    std::formatter<drilled_type_> underlying_formatter_;
+
+public:
+    constexpr auto parse(std::format_parse_context & ctx)
+    {
+        return underlying_formatter_.parse(ctx);
+    }
+
+    auto format(T const & t, std::format_context & ctx) const
+    {
+        return underlying_formatter_.format(
+            atlas::atlas_detail::format_value_drill(atlas_value_for(t)),
+            ctx);
+    }
+};
+#endif // __cpp_lib_format
+#endif // WJH_ATLAS_A3A2ADA707CA47BE9EB94254C729C906
+
+#ifndef WJH_ATLAS_204DEDF8AD1A4B8EA2910C659C4523BC
+#define WJH_ATLAS_204DEDF8AD1A4B8EA2910C659C4523BC
+namespace atlas {
+
+// Templated operator<< for all atlas types
+// ADL finds this via atlas::strong_type_tag base class
+template <typename T>
+auto operator<<(std::ostream & strm, T const & t)
+-> typename std::enable_if<
+    atlas_detail::has_atlas_value_type<T>::value,
+    decltype(atlas_detail::ostream_drill(
+        strm, atlas_value_for(t), atlas_detail::PriorityTag<2>{}))>::type
+{
+    return atlas_detail::ostream_drill(
+        strm, atlas_value_for(t), atlas_detail::PriorityTag<2>{});
+}
+
+} // namespace atlas
+#endif // WJH_ATLAS_204DEDF8AD1A4B8EA2910C659C4523BC
+
+#ifndef WJH_ATLAS_8E1585765002403FBFA3B92531F0A25E
+#define WJH_ATLAS_8E1585765002403FBFA3B92531F0A25E
+namespace atlas {
+
+// Templated operator>> for all atlas types
+// ADL finds this via atlas::strong_type_tag base class
+template <typename T>
+auto operator>>(std::istream & strm, T & t)
+-> typename std::enable_if<
+    atlas_detail::has_atlas_value_type<T>::value,
+    decltype(atlas_detail::istream_drill(
+        strm, atlas_value_for(t), atlas_detail::PriorityTag<2>{}))>::type
+{
+    return atlas_detail::istream_drill(
+        strm, atlas_value_for(t), atlas_detail::PriorityTag<2>{});
+}
+
+} // namespace atlas
+#endif // WJH_ATLAS_8E1585765002403FBFA3B92531F0A25E
+
 
 //////////////////////////////////////////////////////////////////////
 ///
@@ -2333,27 +2443,6 @@ struct Price
 } // namespace demo
 
 
-/**
- * @brief std::hash specialization for demo::profiles::Price
- *
- * Drills down to find the first hashable type in the wrapping chain.
- * Falls back to underlying type for enums without std::hash.
- */
-template <>
-struct std::hash<demo::profiles::Price>
-{
-    ATLAS_NODISCARD
-    auto operator()(demo::profiles::Price const & t) const
-    noexcept(noexcept(atlas::atlas_detail::hash_drill(
-        atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{})))
-    -> decltype(atlas::atlas_detail::hash_drill(
-        atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{}))
-    {
-        return atlas::atlas_detail::hash_drill(
-            atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{});
-    }
-};
-
 namespace demo {
 namespace profiles {
 
@@ -2549,27 +2638,6 @@ struct Quantity
 } // namespace demo
 
 
-/**
- * @brief std::hash specialization for demo::profiles::Quantity
- *
- * Drills down to find the first hashable type in the wrapping chain.
- * Falls back to underlying type for enums without std::hash.
- */
-template <>
-struct std::hash<demo::profiles::Quantity>
-{
-    ATLAS_NODISCARD
-    auto operator()(demo::profiles::Quantity const & t) const
-    noexcept(noexcept(atlas::atlas_detail::hash_drill(
-        atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{})))
-    -> decltype(atlas::atlas_detail::hash_drill(
-        atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{}))
-    {
-        return atlas::atlas_detail::hash_drill(
-            atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{});
-    }
-};
-
 namespace demo {
 namespace profiles {
 
@@ -2640,57 +2708,10 @@ struct Identifier
     {
         return lhs.value == rhs.value;
     }
-
-    /**
-     * Insert the wrapped object into an ostream.
-     * Drills down to find the first ostreamable type.
-     */
-    friend std::ostream & operator<<(
-        std::ostream & strm,
-        Identifier const & t)
-    {
-        atlas::atlas_detail::ostream_drill(
-            strm, t.value, atlas::atlas_detail::PriorityTag<2>{});
-        return strm;
-    }
-
-    /**
-     * Extract the wrapped object from an istream.
-     * Drills down to find the first istreamable type.
-     */
-    friend std::istream & operator>>(
-        std::istream & strm,
-        Identifier & t)
-    {
-        atlas::atlas_detail::istream_drill(
-            strm, t.value, atlas::atlas_detail::PriorityTag<2>{});
-        return strm;
-    }
 };
 } // namespace profiles
 } // namespace demo
 
-
-/**
- * @brief std::hash specialization for demo::profiles::Identifier
- *
- * Drills down to find the first hashable type in the wrapping chain.
- * Falls back to underlying type for enums without std::hash.
- */
-template <>
-struct std::hash<demo::profiles::Identifier>
-{
-    ATLAS_NODISCARD
-    auto operator()(demo::profiles::Identifier const & t) const
-    noexcept(noexcept(atlas::atlas_detail::hash_drill(
-        atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{})))
-    -> decltype(atlas::atlas_detail::hash_drill(
-        atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{}))
-    {
-        return atlas::atlas_detail::hash_drill(
-            atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{});
-    }
-};
 
 namespace finance {
 namespace core {
@@ -2961,27 +2982,6 @@ struct Money
 } // namespace finance
 
 
-/**
- * @brief std::hash specialization for finance::core::Money
- *
- * Drills down to find the first hashable type in the wrapping chain.
- * Falls back to underlying type for enums without std::hash.
- */
-template <>
-struct std::hash<finance::core::Money>
-{
-    ATLAS_NODISCARD
-    auto operator()(finance::core::Money const & t) const
-    noexcept(noexcept(atlas::atlas_detail::hash_drill(
-        atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{})))
-    -> decltype(atlas::atlas_detail::hash_drill(
-        atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{}))
-    {
-        return atlas::atlas_detail::hash_drill(
-            atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{});
-    }
-};
-
 namespace ids {
 namespace v1 {
 
@@ -3118,27 +3118,6 @@ public:
 } // namespace v1
 } // namespace ids
 
-
-/**
- * @brief std::hash specialization for ids::v1::UserId
- *
- * Drills down to find the first hashable type in the wrapping chain.
- * Falls back to underlying type for enums without std::hash.
- */
-template <>
-struct std::hash<ids::v1::UserId>
-{
-    ATLAS_NODISCARD
-    auto operator()(ids::v1::UserId const & t) const
-    noexcept(noexcept(atlas::atlas_detail::hash_drill(
-        atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{})))
-    -> decltype(atlas::atlas_detail::hash_drill(
-        atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{}))
-    {
-        return atlas::atlas_detail::hash_drill(
-            atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{});
-    }
-};
 
 namespace physics {
 namespace units {
@@ -4763,27 +4742,6 @@ public:
 } // namespace security
 
 
-/**
- * @brief std::hash specialization for security::EncryptedData
- *
- * Drills down to find the first hashable type in the wrapping chain.
- * Falls back to underlying type for enums without std::hash.
- */
-template <>
-struct std::hash<security::EncryptedData>
-{
-    ATLAS_NODISCARD
-    auto operator()(security::EncryptedData const & t) const
-    noexcept(noexcept(atlas::atlas_detail::hash_drill(
-        atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{})))
-    -> decltype(atlas::atlas_detail::hash_drill(
-        atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{}))
-    {
-        return atlas::atlas_detail::hash_drill(
-            atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{});
-    }
-};
-
 namespace geo {
 
 /**
@@ -5210,27 +5168,6 @@ struct ThreadId
 };
 } // namespace concurrency
 
-
-/**
- * @brief std::hash specialization for concurrency::ThreadId
- *
- * Drills down to find the first hashable type in the wrapping chain.
- * Falls back to underlying type for enums without std::hash.
- */
-template <>
-struct std::hash<concurrency::ThreadId>
-{
-    ATLAS_NODISCARD
-    auto operator()(concurrency::ThreadId const & t) const
-    noexcept(noexcept(atlas::atlas_detail::hash_drill(
-        atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{})))
-    -> decltype(atlas::atlas_detail::hash_drill(
-        atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{}))
-    {
-        return atlas::atlas_detail::hash_drill(
-            atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{});
-    }
-};
 
 namespace math {
 namespace rational {
@@ -6074,27 +6011,6 @@ public:
 } // namespace app
 
 
-/**
- * @brief std::hash specialization for app::config::ConfigKey
- *
- * Drills down to find the first hashable type in the wrapping chain.
- * Falls back to underlying type for enums without std::hash.
- */
-template <>
-struct std::hash<app::config::ConfigKey>
-{
-    ATLAS_NODISCARD
-    auto operator()(app::config::ConfigKey const & t) const
-    noexcept(noexcept(atlas::atlas_detail::hash_drill(
-        atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{})))
-    -> decltype(atlas::atlas_detail::hash_drill(
-        atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{}))
-    {
-        return atlas::atlas_detail::hash_drill(
-            atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{});
-    }
-};
-
 namespace containers {
 
 /**
@@ -6502,27 +6418,6 @@ public:
 } // namespace containers
 
 
-/**
- * @brief std::hash specialization for containers::DataBuffer
- *
- * Drills down to find the first hashable type in the wrapping chain.
- * Falls back to underlying type for enums without std::hash.
- */
-template <>
-struct std::hash<containers::DataBuffer>
-{
-    ATLAS_NODISCARD
-    auto operator()(containers::DataBuffer const & t) const
-    noexcept(noexcept(atlas::atlas_detail::hash_drill(
-        atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{})))
-    -> decltype(atlas::atlas_detail::hash_drill(
-        atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{}))
-    {
-        return atlas::atlas_detail::hash_drill(
-            atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{});
-    }
-};
-
 namespace formatting {
 
 /**
@@ -6592,75 +6487,9 @@ struct FormattedString
     {
         return lhs.value == rhs.value;
     }
-
-    /**
-     * Insert the wrapped object into an ostream.
-     * Drills down to find the first ostreamable type.
-     */
-    friend std::ostream & operator<<(
-        std::ostream & strm,
-        FormattedString const & t)
-    {
-        atlas::atlas_detail::ostream_drill(
-            strm, t.value, atlas::atlas_detail::PriorityTag<2>{});
-        return strm;
-    }
 };
 } // namespace formatting
 
-
-/**
- * @brief std::hash specialization for formatting::FormattedString
- *
- * Drills down to find the first hashable type in the wrapping chain.
- * Falls back to underlying type for enums without std::hash.
- */
-template <>
-struct std::hash<formatting::FormattedString>
-{
-    ATLAS_NODISCARD
-    auto operator()(formatting::FormattedString const & t) const
-    noexcept(noexcept(atlas::atlas_detail::hash_drill(
-        atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{})))
-    -> decltype(atlas::atlas_detail::hash_drill(
-        atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{}))
-    {
-        return atlas::atlas_detail::hash_drill(
-            atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{});
-    }
-};
-
-/**
- * @brief std::formatter specialization for formatting::FormattedString
- *
- * Enables use with std::format and std::print in C++20 and later:
- *   std::format("{}", strong_type_instance)
- *
- * Drills down to find the first formattable type in the wrapping chain.
- * Falls back to underlying type for enums without std::formatter.
- */
-#if defined(__cpp_lib_format) && __cpp_lib_format >= 202110L
-template <>
-struct std::formatter<formatting::FormattedString>
-{
-private:
-    using drilled_type_ = atlas::atlas_detail::format_drilled_type_t<std::string>;
-    std::formatter<drilled_type_> underlying_formatter_;
-
-public:
-    constexpr auto parse(std::format_parse_context & ctx)
-    {
-        return underlying_formatter_.parse(ctx);
-    }
-
-    auto format(formatting::FormattedString const & t, std::format_context & ctx) const
-    {
-        return underlying_formatter_.format(
-            atlas::atlas_detail::format_value_drill(atlas_value_for(t)),
-            ctx);
-    }
-};
-#endif // defined(__cpp_lib_format) && __cpp_lib_format >= 202110L
 
 namespace formatting {
 
@@ -6723,38 +6552,6 @@ struct FormattedInt
 };
 } // namespace formatting
 
-
-/**
- * @brief std::formatter specialization for formatting::FormattedInt
- *
- * Enables use with std::format and std::print in C++20 and later:
- *   std::format("{}", strong_type_instance)
- *
- * Drills down to find the first formattable type in the wrapping chain.
- * Falls back to underlying type for enums without std::formatter.
- */
-#if defined(__cpp_lib_format) && __cpp_lib_format >= 202110L
-template <>
-struct std::formatter<formatting::FormattedInt>
-{
-private:
-    using drilled_type_ = atlas::atlas_detail::format_drilled_type_t<int>;
-    std::formatter<drilled_type_> underlying_formatter_;
-
-public:
-    constexpr auto parse(std::format_parse_context & ctx)
-    {
-        return underlying_formatter_.parse(ctx);
-    }
-
-    auto format(formatting::FormattedInt const & t, std::format_context & ctx) const
-    {
-        return underlying_formatter_.format(
-            atlas::atlas_detail::format_value_drill(atlas_value_for(t)),
-            ctx);
-    }
-};
-#endif // defined(__cpp_lib_format) && __cpp_lib_format >= 202110L
 
 namespace text {
 
@@ -6861,19 +6658,6 @@ struct AssignableString
     noexcept(noexcept(std::declval<std::string const&>() == std::declval<std::string const&>()))
     {
         return lhs.value == rhs.value;
-    }
-
-    /**
-     * Insert the wrapped object into an ostream.
-     * Drills down to find the first ostreamable type.
-     */
-    friend std::ostream & operator<<(
-        std::ostream & strm,
-        AssignableString const & t)
-    {
-        atlas::atlas_detail::ostream_drill(
-            strm, t.value, atlas::atlas_detail::PriorityTag<2>{});
-        return strm;
     }
 };
 } // namespace text
@@ -7493,27 +7277,6 @@ struct GlobalEventId
     }
 };
 
-
-/**
- * @brief std::hash specialization for GlobalEventId
- *
- * Drills down to find the first hashable type in the wrapping chain.
- * Falls back to underlying type for enums without std::hash.
- */
-template <>
-struct std::hash<GlobalEventId>
-{
-    ATLAS_NODISCARD
-    auto operator()(GlobalEventId const & t) const
-    noexcept(noexcept(atlas::atlas_detail::hash_drill(
-        atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{})))
-    -> decltype(atlas::atlas_detail::hash_drill(
-        atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{}))
-    {
-        return atlas::atlas_detail::hash_drill(
-            atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{});
-    }
-};
 
 namespace demo {
 namespace constants {
@@ -8356,27 +8119,6 @@ struct SafeString
 } // namespace forwarding
 } // namespace demo
 
-
-/**
- * @brief std::hash specialization for demo::forwarding::SafeString
- *
- * Drills down to find the first hashable type in the wrapping chain.
- * Falls back to underlying type for enums without std::hash.
- */
-template <>
-struct std::hash<demo::forwarding::SafeString>
-{
-    ATLAS_NODISCARD
-    auto operator()(demo::forwarding::SafeString const & t) const
-    noexcept(noexcept(atlas::atlas_detail::hash_drill(
-        atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{})))
-    -> decltype(atlas::atlas_detail::hash_drill(
-        atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{}))
-    {
-        return atlas::atlas_detail::hash_drill(
-            atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{});
-    }
-};
 
 namespace demo {
 namespace forwarding {
@@ -9659,27 +9401,6 @@ struct ManagedString
 } // namespace forwarding
 } // namespace demo
 
-
-/**
- * @brief std::hash specialization for demo::forwarding::ManagedString
- *
- * Drills down to find the first hashable type in the wrapping chain.
- * Falls back to underlying type for enums without std::hash.
- */
-template <>
-struct std::hash<demo::forwarding::ManagedString>
-{
-    ATLAS_NODISCARD
-    auto operator()(demo::forwarding::ManagedString const & t) const
-    noexcept(noexcept(atlas::atlas_detail::hash_drill(
-        atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{})))
-    -> decltype(atlas::atlas_detail::hash_drill(
-        atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{}))
-    {
-        return atlas::atlas_detail::hash_drill(
-            atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{});
-    }
-};
 
 namespace finance {
 namespace pricing {
@@ -10967,27 +10688,6 @@ struct Username
 } // namespace credentials
 } // namespace auth
 
-
-/**
- * @brief std::hash specialization for auth::credentials::Username
- *
- * Drills down to find the first hashable type in the wrapping chain.
- * Falls back to underlying type for enums without std::hash.
- */
-template <>
-struct std::hash<auth::credentials::Username>
-{
-    ATLAS_NODISCARD
-    auto operator()(auth::credentials::Username const & t) const
-    noexcept(noexcept(atlas::atlas_detail::hash_drill(
-        atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{})))
-    -> decltype(atlas::atlas_detail::hash_drill(
-        atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{}))
-    {
-        return atlas::atlas_detail::hash_drill(
-            atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{});
-    }
-};
 
 namespace data {
 namespace collections {
@@ -12547,27 +12247,6 @@ public:
 } // namespace security
 } // namespace api
 
-
-/**
- * @brief std::hash specialization for api::security::ApiKey
- *
- * Drills down to find the first hashable type in the wrapping chain.
- * Falls back to underlying type for enums without std::hash.
- */
-template <>
-struct std::hash<api::security::ApiKey>
-{
-    ATLAS_NODISCARD
-    auto operator()(api::security::ApiKey const & t) const
-    noexcept(noexcept(atlas::atlas_detail::hash_drill(
-        atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{})))
-    -> decltype(atlas::atlas_detail::hash_drill(
-        atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{}))
-    {
-        return atlas::atlas_detail::hash_drill(
-            atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{});
-    }
-};
 
 namespace sys {
 namespace scheduling {
@@ -14204,4 +13883,4 @@ struct StatusCode
 } // namespace protocol
 } // namespace http
 
-#endif // EXAMPLE_D224AE2C88F4D4B92BCB5A2309A63FD915606C8B
+#endif // EXAMPLE_ECE1953A78304BC27A00F783642CF4AB14C8E4A1

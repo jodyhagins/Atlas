@@ -152,6 +152,10 @@ parse_input_file(Arguments const & args)
         result.upcase_guard = parse_result.upcase_guard;
         result.file_level_cpp_standard = parse_result.file_level_cpp_standard;
         result.types = std::move(parse_result.types);
+        result.auto_hash = parse_result.auto_hash;
+        result.auto_ostream = parse_result.auto_ostream;
+        result.auto_istream = parse_result.auto_istream;
+        result.auto_format = parse_result.auto_format;
 
         return result;
     } catch (AtlasParserError const & e) {
@@ -213,6 +217,15 @@ OPTIONAL ARGUMENTS:
                                 standard at compile time. Overrides file-level
                                 and description-level specifications.
                                 (default: 11)
+
+    --auto-hash=<bool>          Enable automatic std::hash support (C++20)
+                                Values: true/false, 1/0, yes/no
+    --auto-ostream=<bool>       Enable automatic operator<< support
+                                Values: true/false, 1/0, yes/no
+    --auto-istream=<bool>       Enable automatic operator>> support
+                                Values: true/false, 1/0, yes/no
+    --auto-format=<bool>        Enable automatic std::formatter support (C++20)
+                                Values: true/false, 1/0, yes/no
 
     --help, -h                  Show this help message
     --version, -v               Show version information

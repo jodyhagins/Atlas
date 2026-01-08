@@ -54,9 +54,11 @@ public:
 
 bool
 FormatterSpecialization::
-should_apply_impl(ClassInfo const & info) const
+should_apply_impl(ClassInfo const &) const
 {
-    return info.formatter_specialization;
+    // Per-type formatter specialization is disabled.
+    // Use auto_format=true at file level for automatic std::formatter support.
+    return false;
 }
 
 boost::json::object

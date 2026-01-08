@@ -50,6 +50,10 @@ endfunction()
 #   UPCASE_GUARD - Optional: Use uppercase header guards (true/false)
 #   OUTPUT - Optional: Output file path (defaults to ${CMAKE_CURRENT_SOURCE_DIR}/${NAME}.hpp)
 #   TARGET - Optional: Target to add dependency to (if not specified, no target integration)
+#   AUTO_HASH - Optional: Enable automatic std::hash support (C++20)
+#   AUTO_OSTREAM - Optional: Enable automatic operator<< support
+#   AUTO_ISTREAM - Optional: Enable automatic operator>> support
+#   AUTO_FORMAT - Optional: Enable automatic std::formatter support (C++20)
 #
 # Examples:
 #   # Minimal usage - namespace auto-deduced from directory path
@@ -67,7 +71,7 @@ endfunction()
 #       DEFAULT_VALUE 0.0)
 #
 function(add_atlas_strong_type)
-    set(options "")
+    set(options AUTO_HASH AUTO_OSTREAM AUTO_ISTREAM AUTO_FORMAT)
     set(oneValueArgs
         NAME
         TYPE
@@ -139,6 +143,23 @@ function(add_atlas_strong_type)
 
     if(DEFINED ARG_UPCASE_GUARD)
         list(APPEND ATLAS_ARGS "--upcase-guard=${ARG_UPCASE_GUARD}")
+    endif()
+
+    # Add auto-generation options
+    if(ARG_AUTO_HASH)
+        list(APPEND ATLAS_ARGS "--auto-hash=true")
+    endif()
+
+    if(ARG_AUTO_OSTREAM)
+        list(APPEND ATLAS_ARGS "--auto-ostream=true")
+    endif()
+
+    if(ARG_AUTO_ISTREAM)
+        list(APPEND ATLAS_ARGS "--auto-istream=true")
+    endif()
+
+    if(ARG_AUTO_FORMAT)
+        list(APPEND ATLAS_ARGS "--auto-format=true")
     endif()
 
     # Determine Atlas executable location

@@ -43,9 +43,11 @@ struct std::hash<{{{full_qualified_name}}}>
 
 bool
 HashSpecialization::
-should_apply_impl(ClassInfo const & info) const
+should_apply_impl(ClassInfo const &) const
 {
-    return info.hash_specialization;
+    // Per-type hash specialization is disabled.
+    // Use auto_hash=true at file level for automatic std::hash support.
+    return false;
 }
 
 boost::json::object

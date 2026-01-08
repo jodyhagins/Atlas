@@ -92,6 +92,12 @@ struct PreambleOptions
     bool include_ostream_drill = false;
     bool include_istream_drill = false;
     bool include_format_drill = false;
+
+    // Auto-generation options: enable automatic support for all atlas types
+    bool auto_hash = false;
+    bool auto_ostream = false;
+    bool auto_istream = false;
+    bool auto_format = false;
 };
 
 /**

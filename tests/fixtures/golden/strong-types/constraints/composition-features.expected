@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_F49BAD902BA53C636DAA85EB059E8B1E2EC76231
-#define FOO_BAR_F49BAD902BA53C636DAA85EB059E8B1E2EC76231
+#ifndef FOO_BAR_6D4E171CC32C33A5A67F80709A4C1955F20F0D3F
+#define FOO_BAR_6D4E171CC32C33A5A67F80709A4C1955F20F0D3F
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -19,6 +19,7 @@
 #if __has_include(<version>)
 #include <version>
 #endif
+#include <concepts>
 #include <functional>
 #include <sstream>
 #include <stdexcept>
@@ -946,6 +947,37 @@ struct non_null
 
 #endif // WJH_ATLAS_173D2C4FC9AA46929AD14C8BDF75D829
 
+#ifndef WJH_ATLAS_83B11BF12B6945019DF71C7517A1D6DA
+#define WJH_ATLAS_83B11BF12B6945019DF71C7517A1D6DA
+#if __cplusplus >= 202002L
+namespace atlas::atlas_detail {
+
+// Concept: T is an atlas type whose underlying value chain is eventually
+// hashable
+template <typename T>
+concept atlas_hashable = has_atlas_value_type<T>::value &&
+    requires(T const & t) {
+        { hash_drill(atlas_value_for(t), PriorityTag<2>{}) }
+            -> std::same_as<std::size_t>;
+    };
+
+} // namespace atlas::atlas_detail
+
+template <typename T>
+    requires atlas::atlas_detail::atlas_hashable<T>
+struct std::hash<T>
+{
+    std::size_t operator()(T const & t) const
+    noexcept(noexcept(atlas::atlas_detail::hash_drill(
+        atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{})))
+    {
+        return atlas::atlas_detail::hash_drill(
+            atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{});
+    }
+};
+#endif // C++20
+#endif // WJH_ATLAS_83B11BF12B6945019DF71C7517A1D6DA
+
 
 //////////////////////////////////////////////////////////////////////
 ///
@@ -1511,26 +1543,5 @@ struct PositiveScore
 };
 } // namespace data
 
-
-/**
- * @brief std::hash specialization for data::PositiveScore
- *
- * Drills down to find the first hashable type in the wrapping chain.
- * Falls back to underlying type for enums without std::hash.
- */
-template <>
-struct std::hash<data::PositiveScore>
-{
-    ATLAS_NODISCARD
-    auto operator()(data::PositiveScore const & t) const
-    noexcept(noexcept(atlas::atlas_detail::hash_drill(
-        atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{})))
-    -> decltype(atlas::atlas_detail::hash_drill(
-        atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{}))
-    {
-        return atlas::atlas_detail::hash_drill(
-            atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{});
-    }
-};
-#endif // FOO_BAR_F49BAD902BA53C636DAA85EB059E8B1E2EC76231
+#endif // FOO_BAR_6D4E171CC32C33A5A67F80709A4C1955F20F0D3F
 

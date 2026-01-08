@@ -1,5 +1,5 @@
-#ifndef TEST_C427B30F55B411D5704110B3CC06F45F58A40BC0
-#define TEST_C427B30F55B411D5704110B3CC06F45F58A40BC0
+#ifndef TEST_41197AFDD3EA22B6C34D883F015D081578A9B3CE
+#define TEST_41197AFDD3EA22B6C34D883F015D081578A9B3CE
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -19,6 +19,7 @@
 #if __has_include(<version>)
 #include <version>
 #endif
+#include <concepts>
 #include <functional>
 #include <string>
 #include <type_traits>
@@ -631,6 +632,37 @@ auto hash_drill(T const & t, PriorityTag<0>)
 } // namespace atlas
 #endif // WJH_ATLAS_771333B44A11491895F986933BB2FB41
 
+#ifndef WJH_ATLAS_83B11BF12B6945019DF71C7517A1D6DA
+#define WJH_ATLAS_83B11BF12B6945019DF71C7517A1D6DA
+#if __cplusplus >= 202002L
+namespace atlas::atlas_detail {
+
+// Concept: T is an atlas type whose underlying value chain is eventually
+// hashable
+template <typename T>
+concept atlas_hashable = has_atlas_value_type<T>::value &&
+    requires(T const & t) {
+        { hash_drill(atlas_value_for(t), PriorityTag<2>{}) }
+            -> std::same_as<std::size_t>;
+    };
+
+} // namespace atlas::atlas_detail
+
+template <typename T>
+    requires atlas::atlas_detail::atlas_hashable<T>
+struct std::hash<T>
+{
+    std::size_t operator()(T const & t) const
+    noexcept(noexcept(atlas::atlas_detail::hash_drill(
+        atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{})))
+    {
+        return atlas::atlas_detail::hash_drill(
+            atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{});
+    }
+};
+#endif // C++20
+#endif // WJH_ATLAS_83B11BF12B6945019DF71C7517A1D6DA
+
 
 //////////////////////////////////////////////////////////////////////
 ///
@@ -845,27 +877,6 @@ struct StringWrapper
 };
 } // namespace test
 
-
-/**
- * @brief std::hash specialization for test::StringWrapper
- *
- * Drills down to find the first hashable type in the wrapping chain.
- * Falls back to underlying type for enums without std::hash.
- */
-template <>
-struct std::hash<test::StringWrapper>
-{
-    ATLAS_NODISCARD
-    auto operator()(test::StringWrapper const & t) const
-    noexcept(noexcept(atlas::atlas_detail::hash_drill(
-        atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{})))
-    -> decltype(atlas::atlas_detail::hash_drill(
-        atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{}))
-    {
-        return atlas::atlas_detail::hash_drill(
-            atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{});
-    }
-};
 
 namespace test {
 
@@ -2832,5 +2843,5 @@ struct MixedForwardingConst
 };
 } // namespace test
 
-#endif // TEST_C427B30F55B411D5704110B3CC06F45F58A40BC0
+#endif // TEST_41197AFDD3EA22B6C34D883F015D081578A9B3CE
 

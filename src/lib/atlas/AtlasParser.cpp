@@ -517,6 +517,14 @@ parse_file_level_config(
                 std::to_string(line_number) + " in " + filename + ": " +
                 e.what());
         }
+    } else if (key == "auto_hash") {
+        result.auto_hash = parser_utils::parse_bool(value, "auto_hash");
+    } else if (key == "auto_ostream") {
+        result.auto_ostream = parser_utils::parse_bool(value, "auto_ostream");
+    } else if (key == "auto_istream") {
+        result.auto_istream = parser_utils::parse_bool(value, "auto_istream");
+    } else if (key == "auto_format") {
+        result.auto_format = parser_utils::parse_bool(value, "auto_format");
     } else {
         throw AtlasParserError(
             "Unknown configuration key at line " + std::to_string(line_number) +
@@ -1543,6 +1551,20 @@ parse_arguments(std::vector<std::string> const & args)
                 throw AtlasParserError(
                     "Invalid --cpp-standard value: " + std::string(e.what()));
             }
+        } else if (key == "auto-hash") {
+            result.auto_hash = parser_utils::parse_bool(value, "--auto-hash");
+        } else if (key == "auto-ostream") {
+            result.auto_ostream = parser_utils::parse_bool(
+                value,
+                "--auto-ostream");
+        } else if (key == "auto-istream") {
+            result.auto_istream = parser_utils::parse_bool(
+                value,
+                "--auto-istream");
+        } else if (key == "auto-format") {
+            result.auto_format = parser_utils::parse_bool(
+                value,
+                "--auto-format");
         } else {
             throw AtlasParserError("Unknown argument: --" + key);
         }

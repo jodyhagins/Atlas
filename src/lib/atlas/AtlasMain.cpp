@@ -60,38 +60,36 @@ atlas_main(int argc, char ** argv)
         } else {
             // Parse as type file and generate strong types
             auto file_result = AtlasCommandLine::parse_input_file(args);
+            PreambleOptions auto_opts{
+                .auto_hash = file_result.auto_hash,
+                .auto_ostream = file_result.auto_ostream,
+                .auto_istream = file_result.auto_istream,
+                .auto_format = file_result.auto_format};
             output = generate_strong_types_file(
                 file_result.types,
                 file_result.guard_prefix,
                 file_result.guard_separator,
-                file_result.upcase_guard);
+                file_result.upcase_guard,
+                auto_opts);
         }
-    } else { // Command-line mode - single type with individual guard
+    } else { // Command-line mode - single type
         auto description = AtlasCommandLine::to_description(args);
-        StrongTypeGenerator generator;
-        output = generator(description);
 
-        // Output warnings to stderr
-        auto const & warnings = generator.get_warnings();
-        if (not warnings.empty()) {
-            bool use_color = supports_color(fileno(stderr));
-
-            std::cerr << "\n";
-            if (use_color) {
-                std::cerr << color::red << "Warnings:" << color::reset << "\n";
-                for (auto const & w : warnings) {
-                    std::cerr << "  " << color::yellow << w.type_name << ": "
-                        << w.message << color::reset << "\n";
-                }
-            } else {
-                std::cerr << "Warnings:\n";
-                for (auto const & w : warnings) {
-                    std::cerr << "  " << w.type_name << ": " << w.message
-                        << "\n";
-                }
-            }
-            std::cerr << std::endl;
-        }
+        // Always use generate_strong_types_file for consistent behavior.
+        // This ensures that if the description contains hash/out/in/fmt tokens,
+        // the automatic support will be enabled via the preamble boilerplate.
+        // CLI flags like --auto-ostream=true are also honored.
+        PreambleOptions auto_opts{
+            .auto_hash = args.auto_hash,
+            .auto_ostream = args.auto_ostream,
+            .auto_istream = args.auto_istream,
+            .auto_format = args.auto_format};
+        output = generate_strong_types_file(
+            {description},
+            args.guard_prefix,
+            args.guard_separator,
+            args.upcase_guard,
+            auto_opts);
     }
 
     // Write output

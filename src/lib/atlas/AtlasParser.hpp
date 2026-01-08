@@ -57,6 +57,12 @@ struct FileParseResult
     bool upcase_guard = true;
     int file_level_cpp_standard = 11;
     std::vector<StrongTypeDescription> types;
+
+    // Auto-generation options
+    bool auto_hash = false;
+    bool auto_ostream = false;
+    bool auto_istream = false;
+    bool auto_format = false;
 };
 
 /**

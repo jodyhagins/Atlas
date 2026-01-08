@@ -146,7 +146,8 @@ generate_strong_types_file(
     std::vector<StrongTypeDescription> const & descriptions,
     std::string const & guard_prefix,
     std::string const & guard_separator,
-    bool upcase_guard)
+    bool upcase_guard,
+    PreambleOptions auto_opts)
 {
     std::set<std::string> all_includes;
     std::map<std::string, std::string> all_guards;
@@ -242,6 +243,9 @@ generate_strong_types_file(
     std::string guard = GuardGenerator::make_guard(temp_desc, content);
 
     // Add preamble includes to the collected includes
+    // Merge per-type requests with global auto_opts
+    // If any type requests hash/ostream/istream/format, enable the automatic
+    // support for ALL types via the preamble boilerplate
     PreambleOptions preamble_opts{
         .include_arrow_operator_traits = any_arrow_operator,
         .include_dereference_operator_traits = any_indirection_operator,
@@ -249,10 +253,14 @@ generate_strong_types_file(
         .include_saturating_helpers = any_saturating_arithmetic,
         .include_constraints = any_constraints,
         .include_nilable_support = any_nil_value,
-        .include_hash_drill = any_hash_specialization,
-        .include_ostream_drill = any_ostream_operator,
-        .include_istream_drill = any_istream_operator,
-        .include_format_drill = any_formatter_specialization};
+        .include_hash_drill = any_hash_specialization || auto_opts.auto_hash,
+        .include_ostream_drill = any_ostream_operator || auto_opts.auto_ostream,
+        .include_istream_drill = any_istream_operator || auto_opts.auto_istream,
+        .include_format_drill = any_formatter_specialization || auto_opts.auto_format,
+        .auto_hash = auto_opts.auto_hash || any_hash_specialization,
+        .auto_ostream = auto_opts.auto_ostream || any_ostream_operator,
+        .auto_istream = auto_opts.auto_istream || any_istream_operator,
+        .auto_format = auto_opts.auto_format || any_formatter_specialization};
     auto preamble_includes = get_preamble_includes(preamble_opts);
     for (auto const & include : preamble_includes) {
         all_includes.insert(include);

@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_DCB12C59BA533F48DF96683764EAE4882DF7AE99
-#define FOO_BAR_DCB12C59BA533F48DF96683764EAE4882DF7AE99
+#ifndef FOO_BAR_0D42ECFDEAB5F9A6401F65EE1715EAC28334A122
+#define FOO_BAR_0D42ECFDEAB5F9A6401F65EE1715EAC28334A122
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -20,6 +20,7 @@
 #include <version>
 #endif
 #include <cmath>
+#include <concepts>
 #include <cstdint>
 #include <functional>
 #include <limits>
@@ -1393,6 +1394,37 @@ struct non_null
 
 #endif // WJH_ATLAS_173D2C4FC9AA46929AD14C8BDF75D829
 
+#ifndef WJH_ATLAS_83B11BF12B6945019DF71C7517A1D6DA
+#define WJH_ATLAS_83B11BF12B6945019DF71C7517A1D6DA
+#if __cplusplus >= 202002L
+namespace atlas::atlas_detail {
+
+// Concept: T is an atlas type whose underlying value chain is eventually
+// hashable
+template <typename T>
+concept atlas_hashable = has_atlas_value_type<T>::value &&
+    requires(T const & t) {
+        { hash_drill(atlas_value_for(t), PriorityTag<2>{}) }
+            -> std::same_as<std::size_t>;
+    };
+
+} // namespace atlas::atlas_detail
+
+template <typename T>
+    requires atlas::atlas_detail::atlas_hashable<T>
+struct std::hash<T>
+{
+    std::size_t operator()(T const & t) const
+    noexcept(noexcept(atlas::atlas_detail::hash_drill(
+        atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{})))
+    {
+        return atlas::atlas_detail::hash_drill(
+            atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{});
+    }
+};
+#endif // C++20
+#endif // WJH_ATLAS_83B11BF12B6945019DF71C7517A1D6DA
+
 
 //////////////////////////////////////////////////////////////////////
 ///
@@ -1599,26 +1631,5 @@ struct ServerPort
 };
 } // namespace net
 
-
-/**
- * @brief std::hash specialization for net::ServerPort
- *
- * Drills down to find the first hashable type in the wrapping chain.
- * Falls back to underlying type for enums without std::hash.
- */
-template <>
-struct std::hash<net::ServerPort>
-{
-    ATLAS_NODISCARD
-    auto operator()(net::ServerPort const & t) const
-    noexcept(noexcept(atlas::atlas_detail::hash_drill(
-        atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{})))
-    -> decltype(atlas::atlas_detail::hash_drill(
-        atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{}))
-    {
-        return atlas::atlas_detail::hash_drill(
-            atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{});
-    }
-};
-#endif // FOO_BAR_DCB12C59BA533F48DF96683764EAE4882DF7AE99
+#endif // FOO_BAR_0D42ECFDEAB5F9A6401F65EE1715EAC28334A122
 

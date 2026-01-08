@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_14FFDBF19F157D4CB3394A9C126F374BF832AD18
-#define FOO_BAR_14FFDBF19F157D4CB3394A9C126F374BF832AD18
+#ifndef FOO_BAR_7CC0C5F609EAF98238C8E8F711B582C4B0D7BB2A
+#define FOO_BAR_7CC0C5F609EAF98238C8E8F711B582C4B0D7BB2A
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -19,9 +19,8 @@
 #if __has_include(<version>)
 #include <version>
 #endif
-#if defined(__cpp_lib_format) && __cpp_lib_format >= 202110L
+#include <concepts>
 #include <format>
-#endif
 #include <type_traits>
 #include <utility>
 
@@ -626,6 +625,46 @@ using format_drilled_type_t =
 } // namespace atlas
 #endif // WJH_ATLAS_9B74AE244B4F4EB68DF9D80B67E1EB05
 
+#ifndef WJH_ATLAS_A3A2ADA707CA47BE9EB94254C729C906
+#define WJH_ATLAS_A3A2ADA707CA47BE9EB94254C729C906
+#if defined(__cpp_lib_format) && __cpp_lib_format >= 202110L
+namespace atlas::atlas_detail {
+
+// Concept: T is an atlas type whose underlying value chain is eventually
+// formattable
+template <typename T>
+concept atlas_formattable = has_atlas_value_type<T>::value &&
+    requires(T const & t) {
+        format_value_drill(atlas_value_for(t));
+    };
+
+} // namespace atlas::atlas_detail
+
+template <typename T>
+    requires atlas::atlas_detail::atlas_formattable<T>
+struct std::formatter<T>
+{
+private:
+    using drilled_type_ =
+        atlas::atlas_detail::format_drilled_type_t<typename T::atlas_value_type>;
+    std::formatter<drilled_type_> underlying_formatter_;
+
+public:
+    constexpr auto parse(std::format_parse_context & ctx)
+    {
+        return underlying_formatter_.parse(ctx);
+    }
+
+    auto format(T const & t, std::format_context & ctx) const
+    {
+        return underlying_formatter_.format(
+            atlas::atlas_detail::format_value_drill(atlas_value_for(t)),
+            ctx);
+    }
+};
+#endif // __cpp_lib_format
+#endif // WJH_ATLAS_A3A2ADA707CA47BE9EB94254C729C906
+
 
 //////////////////////////////////////////////////////////////////////
 ///
@@ -767,37 +806,5 @@ struct FormatterCombinedType
 };
 } // namespace test
 
-
-/**
- * @brief std::formatter specialization for test::FormatterCombinedType
- *
- * Enables use with std::format and std::print in C++20 and later:
- *   std::format("{}", strong_type_instance)
- *
- * Drills down to find the first formattable type in the wrapping chain.
- * Falls back to underlying type for enums without std::formatter.
- */
-#if defined(__cpp_lib_format) && __cpp_lib_format >= 202110L
-template <>
-struct std::formatter<test::FormatterCombinedType>
-{
-private:
-    using drilled_type_ = atlas::atlas_detail::format_drilled_type_t<int>;
-    std::formatter<drilled_type_> underlying_formatter_;
-
-public:
-    constexpr auto parse(std::format_parse_context & ctx)
-    {
-        return underlying_formatter_.parse(ctx);
-    }
-
-    auto format(test::FormatterCombinedType const & t, std::format_context & ctx) const
-    {
-        return underlying_formatter_.format(
-            atlas::atlas_detail::format_value_drill(atlas_value_for(t)),
-            ctx);
-    }
-};
-#endif // defined(__cpp_lib_format) && __cpp_lib_format >= 202110L
-#endif // FOO_BAR_14FFDBF19F157D4CB3394A9C126F374BF832AD18
+#endif // FOO_BAR_7CC0C5F609EAF98238C8E8F711B582C4B0D7BB2A
 

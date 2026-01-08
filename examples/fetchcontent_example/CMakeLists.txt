@@ -36,6 +36,7 @@ atlas_add_type(UserId int "==, !=, no-constexpr"
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/UserId.hpp)
 
 # Method 2: Using the full add_atlas_strong_type function
+# Note: "out" in the description enables automatic ostream support
 add_atlas_strong_type(
     NAME Price
     TYPE double

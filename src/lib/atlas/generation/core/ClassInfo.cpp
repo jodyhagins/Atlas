@@ -478,6 +478,9 @@ process_comparison_operators(
 bool
 process_io_operators(ClassInfo & info, std::string_view sv)
 {
+    // These tokens trigger automatic I/O support via the preamble boilerplate.
+    // The flags are set to signal that auto_ostream/auto_istream should be
+    // enabled, but no per-type code is generated.
     if (sv == "out") {
         info.ostream_operator = true;
         info.includes_vec.push_back("<ostream>");
@@ -555,6 +558,9 @@ process_callable_operators(ClassInfo & info, std::string_view sv)
 bool
 process_specializations(ClassInfo & info, std::string_view sv)
 {
+    // These tokens trigger automatic hash/format support via the preamble
+    // boilerplate. The flags are set to signal that auto_hash/auto_format
+    // should be enabled, but no per-type code is generated.
     if (sv == "hash") {
         info.hash_specialization = true;
         info.includes_vec.push_back("<functional>");
@@ -569,10 +575,8 @@ process_specializations(ClassInfo & info, std::string_view sv)
     }
 
     if (sv == "fmt") {
-        info.desc.generate_formatter = true;
+        info.formatter_specialization = true;
         info.includes_vec.push_back("<format>");
-        info.include_guards["<format>"] =
-            "defined(__cpp_lib_format) && __cpp_lib_format >= 202110L";
         return true;
     }
 

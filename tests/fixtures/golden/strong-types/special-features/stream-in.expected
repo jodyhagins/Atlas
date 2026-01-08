@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_04F43EB4289718D4832ADD897F70F6B42BDB2B92
-#define FOO_BAR_04F43EB4289718D4832ADD897F70F6B42BDB2B92
+#ifndef FOO_BAR_63F3D502E9D23AFE30252D2D94838A037E523733
+#define FOO_BAR_63F3D502E9D23AFE30252D2D94838A037E523733
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -19,6 +19,7 @@
 #if __has_include(<version>)
 #include <version>
 #endif
+#include <iostream>
 #include <istream>
 #include <type_traits>
 #include <utility>
@@ -631,6 +632,26 @@ auto istream_drill(std::istream & strm, T & t, PriorityTag<0>)
 } // namespace atlas
 #endif // WJH_ATLAS_4296E303C8F846C0B958EB450C57465B
 
+#ifndef WJH_ATLAS_8E1585765002403FBFA3B92531F0A25E
+#define WJH_ATLAS_8E1585765002403FBFA3B92531F0A25E
+namespace atlas {
+
+// Templated operator>> for all atlas types
+// ADL finds this via atlas::strong_type_tag base class
+template <typename T>
+auto operator>>(std::istream & strm, T & t)
+-> typename std::enable_if<
+    atlas_detail::has_atlas_value_type<T>::value,
+    decltype(atlas_detail::istream_drill(
+        strm, atlas_value_for(t), atlas_detail::PriorityTag<2>{}))>::type
+{
+    return atlas_detail::istream_drill(
+        strm, atlas_value_for(t), atlas_detail::PriorityTag<2>{});
+}
+
+} // namespace atlas
+#endif // WJH_ATLAS_8E1585765002403FBFA3B92531F0A25E
+
 
 //////////////////////////////////////////////////////////////////////
 ///
@@ -686,21 +707,8 @@ struct StreamInType
     {
         return std::move(self.value);
     }
-
-    /**
-     * Extract the wrapped object from an istream.
-     * Drills down to find the first istreamable type.
-     */
-    friend std::istream & operator>>(
-        std::istream & strm,
-        StreamInType & t)
-    {
-        atlas::atlas_detail::istream_drill(
-            strm, t.value, atlas::atlas_detail::PriorityTag<2>{});
-        return strm;
-    }
 };
 } // namespace test
 
-#endif // FOO_BAR_04F43EB4289718D4832ADD897F70F6B42BDB2B92
+#endif // FOO_BAR_63F3D502E9D23AFE30252D2D94838A037E523733
 

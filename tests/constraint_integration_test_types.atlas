@@ -3,6 +3,9 @@
 # Consolidation of ALL constraint test type definitions (Tasks 2-8)
 # ======================================================================
 
+# Enable automatic hash support for all types
+auto_hash=true
+
 # ======================================================================
 # TASK 2: POSITIVE CONSTRAINT
 # Value must be > 0

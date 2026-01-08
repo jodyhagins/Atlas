@@ -344,55 +344,10 @@ TEST_SUITE("Property-Based Tests")
         });
     }
 
-    // Property: Hash feature must include the functional header
-    //
-    // Concept: When the "hash" feature is requested, the generator must include
-    // <functional> header and generate a std::hash specialization. The hash
-    // feature enables use of strong types in unordered containers and hash
-    // tables.
-    //
-    // Why this matters: std::hash specializations require the <functional>
-    // header. Without it, code using the strong type in std::unordered_map or
-    // std::unordered_set will fail to compile with "incomplete type" errors.
-    //
-    // What we test: Generate a type with the "hash" feature, then verify both
-    // the #include <functional> directive and std::hash specialization appear
-    // in the generated code.
-    //
-    // Bugs this catches:
-    // - Missing functional header include
-    // - Hash specialization not generated
-    // - Incorrect hash template syntax
-    // - Feature detection logic failures
-    // - Incomplete hash implementation
-    TEST_CASE("Property: hash feature requires functional header")
-    {
-        check("hash feature always includes <functional>", []() {
-            auto name = *gen::cppIdentifier();
-            auto ns = *gen::cppNamespace();
-            auto other_ops = *gen::operatorSet();
-
-            // Build description with hash
-            std::string desc = "strong int; hash";
-            for (auto const & op : other_ops) {
-                if (op != "hash") { // Avoid duplicates
-                    desc += ", " + op;
-                }
-            }
-
-            auto type_desc = StrongTypeDescription{
-                .kind = "struct",
-                .type_namespace = ns,
-                .type_name = name,
-                .description = desc};
-
-            StrongTypeGenerator generator;
-            auto code = generator(type_desc);
-
-            RC_ASSERT(code.find("#include <functional>") != std::string::npos);
-            RC_ASSERT(code.find("std::hash<") != std::string::npos);
-        });
-    }
+    // NOTE: The per-type "hash" feature has been deprecated.
+    // Use auto_hash=true at file level instead for automatic std::hash support.
+    // The original test checked that "hash" in description generates std::hash.
+    // This is no longer supported via per-type opt-in.
 
     // Property: Arithmetic operators must be constexpr by default
     //

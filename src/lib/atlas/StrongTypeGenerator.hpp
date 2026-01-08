@@ -7,6 +7,8 @@
 #ifndef WJH_ATLAS_4F59B4312A2E4CF9BE42CEE05C67CEC3
 #define WJH_ATLAS_4F59B4312A2E4CF9BE42CEE05C67CEC3
 
+#include "AtlasUtilities.hpp"
+
 #include <map>
 #include <string>
 #include <vector>
@@ -363,13 +365,15 @@ private:
  * @param guard_prefix Prefix for the header guard (default: "ATLAS")
  * @param guard_separator Separator between prefix and hash (default: "_")
  * @param upcase_guard Whether to uppercase the guard (default: true)
+ * @param auto_opts Auto-generation options for hash, ostream, istream, format
  * @return Generated C++ header file content
  */
 std::string generate_strong_types_file(
     std::vector<StrongTypeDescription> const & descriptions,
     std::string const & guard_prefix = "",
     std::string const & guard_separator = "_",
-    bool upcase_guard = true);
+    bool upcase_guard = true,
+    PreambleOptions auto_opts = {});
 
 } // namespace wjh::atlas
 

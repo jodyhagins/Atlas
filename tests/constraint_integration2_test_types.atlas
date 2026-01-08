@@ -1,6 +1,9 @@
 # Integration Test: Constraint × Arithmetic Mode Composition
 # All 16 combinations: positive, non_negative, non_zero, bounded × default, checked, saturating, wrapping
 
+# Enable automatic hash and ostream support for all types
+auto_hash=true
+
 # === Positive Constraint × Arithmetic Modes ===
 
 [test::PositiveDefault]
