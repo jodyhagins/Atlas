@@ -1123,12 +1123,18 @@ format_value_impl(T const & value, atlas_detail::PriorityTag<1>)
     return oss.str();
 }
 
-template <typename T>
-auto
+template <typename T, atlas_detail::when<std::is_arithmetic<T>::value> = true>
+std::string
 format_value_impl(T const & value, atlas_detail::PriorityTag<2>)
--> decltype(std::to_string(value))
 {
-    return std::to_string(value);
+    using U = typename std::conditional<
+        std::is_integral<T>::value && sizeof(T) < sizeof(int),
+        typename std::conditional<
+            std::is_unsigned<T>::value,
+            unsigned int,
+            signed int>::type,
+        T>::type;
+    return std::to_string(static_cast<U>(value));
 }
 
 template <typename T>
