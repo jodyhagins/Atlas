@@ -275,3 +275,24 @@ target_include_directories(unwrap_ut PRIVATE
 )
 add_test(NAME UnwrapTests COMMAND unwrap_ut)
 
+# Nested type size tests - verifies EBO works with templated strong_type_tag
+# See PRD-templated-strong-type-tag.md for motivation
+set(NESTED_SIZE_INPUT "${CMAKE_CURRENT_SOURCE_DIR}/nested_type_size_test_types.atlas")
+set(NESTED_SIZE_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/nested_type_size_test_types.hpp")
+add_custom_command(
+    OUTPUT ${NESTED_SIZE_OUTPUT}
+    COMMAND atlas --input=${NESTED_SIZE_INPUT} --output=${NESTED_SIZE_OUTPUT}
+    DEPENDS atlas ${NESTED_SIZE_INPUT}
+    COMMENT "Generating nested type size test types"
+)
+add_executable(nested_type_size_ut
+    nested_type_size_ut.cpp
+    ${NESTED_SIZE_OUTPUT}
+)
+target_link_libraries(nested_type_size_ut PRIVATE doctest::doctest)
+target_include_directories(nested_type_size_ut PRIVATE
+    ${CMAKE_CURRENT_BINARY_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/lib/atlas
+)
+add_test(NAME NestedTypeSizeTests COMMAND nested_type_size_ut)
+

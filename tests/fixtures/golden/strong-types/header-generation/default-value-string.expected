@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_F9994069016061EC6B6A5A639AAD2C08EDC8268E
-#define FOO_BAR_F9994069016061EC6B6A5A639AAD2C08EDC8268E
+#ifndef FOO_BAR_562845D8A9DE23213EBFB6BB5F0D8E7CAA45A9A0
+#define FOO_BAR_562845D8A9DE23213EBFB6BB5F0D8E7CAA45A9A0
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -72,6 +72,7 @@
 
 namespace atlas {
 
+template<typename T>
 struct strong_type_tag
 {
 #if defined(__cpp_impl_three_way_comparison) && \
@@ -597,7 +598,7 @@ namespace test {
  * - default_value: ""hello""
  */
 struct DefaultValueString
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<DefaultValueString>
 {
     std::string value = static_cast<std::string>("hello");
 
@@ -644,5 +645,5 @@ struct DefaultValueString
 };
 } // namespace test
 
-#endif // FOO_BAR_F9994069016061EC6B6A5A639AAD2C08EDC8268E
+#endif // FOO_BAR_562845D8A9DE23213EBFB6BB5F0D8E7CAA45A9A0
 

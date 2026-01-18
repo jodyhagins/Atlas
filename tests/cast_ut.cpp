@@ -20,7 +20,12 @@
 
 // Define test enum BEFORE including generated types (they reference it)
 namespace test {
-enum class Color : int { Red = 1, Green = 2, Blue = 3 };
+enum class Color : int
+{
+    Red = 1,
+    Green = 2,
+    Blue = 3
+};
 }
 
 #include "undress_test_types.hpp"
@@ -290,32 +295,39 @@ namespace {
 struct UnrelatedTarget
 {
     int marker;
-    constexpr explicit UnrelatedTarget(int m) : marker{m} { }
+
+    constexpr explicit UnrelatedTarget(int m)
+    : marker{m}
+    { }
 };
 
 // An atlas-like type that wraps int but also has a cast operator to
 // UnrelatedTarget
 // This proves atlas::cast tries the type itself before drilling down
-struct TypeWithCastOperator : private atlas::strong_type_tag
+struct TypeWithCastOperator
+: private atlas::strong_type_tag<TypeWithCastOperator>
 {
     int value;
     using atlas_value_type = int;
 
-    constexpr explicit TypeWithCastOperator(int v) : value{v} { }
+    constexpr explicit TypeWithCastOperator(int v)
+    : value{v}
+    { }
 
     // Cast operator to UnrelatedTarget - uses a DIFFERENT value to prove
     // we used this operator rather than drilling to the int
-    constexpr explicit operator UnrelatedTarget() const
+    constexpr explicit operator UnrelatedTarget () const
     {
         return UnrelatedTarget{value * 1000 + 42};
     }
 
     // Hidden friend for atlas machinery
-    friend constexpr int const &
-    atlas_value_for(TypeWithCastOperator const & self) noexcept
+    friend constexpr int const & atlas_value_for(
+        TypeWithCastOperator const & self) noexcept
     {
         return self.value;
     }
+
     friend constexpr int & atlas_value_for(TypeWithCastOperator & self) noexcept
     {
         return self.value;

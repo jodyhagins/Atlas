@@ -1,5 +1,5 @@
-#ifndef TEST_2A0A72763E02BC866FB3BD65AFC463EB799760DD
-#define TEST_2A0A72763E02BC866FB3BD65AFC463EB799760DD
+#ifndef TEST_2C7DFBBCBE9B53863816D18212230196E49E13E8
+#define TEST_2C7DFBBCBE9B53863816D18212230196E49E13E8
 
 static_assert(__cplusplus >= 201703L,
     "This file requires C++17 or later. Compile with -std=c++17 or higher.");
@@ -75,6 +75,7 @@ static_assert(__cplusplus >= 201703L,
 
 namespace atlas {
 
+template<typename T>
 struct strong_type_tag
 {
 #if defined(__cpp_impl_three_way_comparison) && \
@@ -629,7 +630,7 @@ template <
     typename L,
     typename R,
     typename std::enable_if<
-        std::is_base_of<atlas::strong_type_tag, L>::value,
+        atlas::is_atlas_type<L>::value,
         bool>::type = true>
 inline auto
 operator*=(L & lhs, R const & rhs)
@@ -669,5 +670,5 @@ noexcept(
 
 } // namespace test
 
-#endif // TEST_2A0A72763E02BC866FB3BD65AFC463EB799760DD
+#endif // TEST_2C7DFBBCBE9B53863816D18212230196E49E13E8
 

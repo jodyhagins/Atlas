@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_BB7A9F02100A89337B5DA5DC8D124E89357E2561
-#define FOO_BAR_BB7A9F02100A89337B5DA5DC8D124E89357E2561
+#ifndef FOO_BAR_FCE40758B86FEC85E2E8211F848CFD4780FEDD42
+#define FOO_BAR_FCE40758B86FEC85E2E8211F848CFD4780FEDD42
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -73,6 +73,7 @@
 
 namespace atlas {
 
+template<typename T>
 struct strong_type_tag
 {
 #if defined(__cpp_impl_three_way_comparison) && \
@@ -659,7 +660,7 @@ namespace edge_cases {
  * - default_value: ""
  */
 struct ComplexTemplateType
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<ComplexTemplateType>
 {
     std::vector<std::pair<int, std::string>> value;
 
@@ -770,5 +771,5 @@ struct ComplexTemplateType
 } // namespace edge_cases
 } // namespace test
 
-#endif // FOO_BAR_BB7A9F02100A89337B5DA5DC8D124E89357E2561
+#endif // FOO_BAR_FCE40758B86FEC85E2E8211F848CFD4780FEDD42
 

@@ -233,7 +233,8 @@ operatorSet()
                 "->",
                 "[]",
                 // Note: "in", "out", "hash", "fmt" are deprecated.
-                // Use auto_istream, auto_ostream, auto_hash, auto_format instead.
+                // Use auto_istream, auto_ostream, auto_hash, auto_format
+                // instead.
                 "iterable",
                 "assign",
                 "bool")));

@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_74C921AD1357715EC13104301275D21AEC40F0F9
-#define FOO_BAR_74C921AD1357715EC13104301275D21AEC40F0F9
+#ifndef FOO_BAR_9E63FB92BAB7524FD728E7B6341C8CFFDA9B29DC
+#define FOO_BAR_9E63FB92BAB7524FD728E7B6341C8CFFDA9B29DC
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -71,6 +71,7 @@
 
 namespace atlas {
 
+template<typename T>
 struct strong_type_tag
 {
 #if defined(__cpp_impl_three_way_comparison) && \
@@ -596,7 +597,7 @@ namespace test {
  * - default_value: ""
  */
 struct UnaryComplementType
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<UnaryComplementType>
 {
     int value;
 
@@ -647,5 +648,5 @@ struct UnaryComplementType
 };
 } // namespace test
 
-#endif // FOO_BAR_74C921AD1357715EC13104301275D21AEC40F0F9
+#endif // FOO_BAR_9E63FB92BAB7524FD728E7B6341C8CFFDA9B29DC
 

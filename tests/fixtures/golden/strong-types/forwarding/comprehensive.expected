@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_106A4CA2FDA9252D5A184EAB9AF3555C0EB1F003
-#define FOO_BAR_106A4CA2FDA9252D5A184EAB9AF3555C0EB1F003
+#ifndef FOO_BAR_3E7D86EB61A2A85E95D42BAF5AEA00D5E48FB69B
+#define FOO_BAR_3E7D86EB61A2A85E95D42BAF5AEA00D5E48FB69B
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -76,6 +76,7 @@
 
 namespace atlas {
 
+template<typename T>
 struct strong_type_tag
 {
 #if defined(__cpp_impl_three_way_comparison) && \
@@ -779,7 +780,7 @@ namespace test {
  * - default_value: ""
  */
 struct BasicString
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<BasicString>
 {
     std::string value;
 
@@ -1008,7 +1009,7 @@ namespace test {
  * - default_value: ""
  */
 struct AliasedString
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<AliasedString>
 {
     std::string value;
 
@@ -1185,7 +1186,7 @@ namespace test {
  * - default_value: ""
  */
 struct BothNameAndAlias
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<BothNameAndAlias>
 {
     std::string value;
 
@@ -1414,7 +1415,7 @@ namespace test {
  * - default_value: ""
  */
 struct ConstOnly
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<ConstOnly>
 {
     std::string value;
 
@@ -1529,7 +1530,7 @@ namespace test {
  * - default_value: ""
  */
 struct MultipleLines
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<MultipleLines>
 {
     std::string value;
 
@@ -1758,7 +1759,7 @@ namespace test {
  * - default_value: ""
  */
 struct IntVector
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<IntVector>
 {
     std::vector<int> value;
 
@@ -2072,7 +2073,7 @@ namespace test {
  * - default_value: ""
  */
 struct ResourceHandle
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<ResourceHandle>
 {
     std::unique_ptr<int> value;
 
@@ -2297,7 +2298,7 @@ namespace test {
  * - default_value: ""
  */
 struct AdvancedString
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<AdvancedString>
 {
     std::string value;
 
@@ -2464,7 +2465,7 @@ namespace test {
  * - default_value: ""
  */
 struct Username
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<Username>
 {
     std::string value;
 
@@ -2587,7 +2588,7 @@ namespace test {
  * - default_value: ""
  */
 struct EmailAddress
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<EmailAddress>
 {
     std::string value;
 
@@ -2710,7 +2711,7 @@ namespace test {
  * - default_value: ""
  */
 struct SafeString
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<SafeString>
 {
     std::string value;
 
@@ -2885,7 +2886,7 @@ namespace test {
  * - default_value: ""
  */
 struct Name
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<Name>
 {
     std::string value;
 
@@ -3112,7 +3113,7 @@ namespace test {
  * - default_value: ""
  */
 struct Label
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<Label>
 {
     std::string value;
 
@@ -3339,7 +3340,7 @@ namespace test {
  * - default_value: ""
  */
 struct UserId
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<UserId>
 {
     std::string value;
 
@@ -3462,7 +3463,7 @@ namespace test {
  * - default_value: ""
  */
 struct Token
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<Token>
 {
     std::string value;
 
@@ -3689,7 +3690,7 @@ namespace test {
  * - default_value: ""
  */
 struct Path
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<Path>
 {
     std::string value;
 
@@ -3864,7 +3865,7 @@ namespace test {
  * - default_value: ""
  */
 struct Identifier
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<Identifier>
 {
     std::string value;
 
@@ -4091,7 +4092,7 @@ namespace test {
  * - default_value: ""
  */
 struct ReadOnlyText
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<ReadOnlyText>
 {
     std::string value;
 
@@ -4172,5 +4173,5 @@ struct ReadOnlyText
 };
 } // namespace test
 
-#endif // FOO_BAR_106A4CA2FDA9252D5A184EAB9AF3555C0EB1F003
+#endif // FOO_BAR_3E7D86EB61A2A85E95D42BAF5AEA00D5E48FB69B
 

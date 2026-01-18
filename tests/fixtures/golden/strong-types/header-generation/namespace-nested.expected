@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_E25402F027156F61D6689AFB2605BEEB95833D01
-#define FOO_BAR_E25402F027156F61D6689AFB2605BEEB95833D01
+#ifndef FOO_BAR_8137750F598560C8FAA15957892A5D14B45824DB
+#define FOO_BAR_8137750F598560C8FAA15957892A5D14B45824DB
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -71,6 +71,7 @@
 
 namespace atlas {
 
+template<typename T>
 struct strong_type_tag
 {
 #if defined(__cpp_impl_three_way_comparison) && \
@@ -599,7 +600,7 @@ namespace d {
  * - default_value: ""
  */
 struct DeeplyNestedType
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<DeeplyNestedType>
 {
     int value;
 
@@ -649,5 +650,5 @@ struct DeeplyNestedType
 } // namespace b
 } // namespace a
 
-#endif // FOO_BAR_E25402F027156F61D6689AFB2605BEEB95833D01
+#endif // FOO_BAR_8137750F598560C8FAA15957892A5D14B45824DB
 

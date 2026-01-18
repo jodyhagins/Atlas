@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_4750F7F0299290A99299C0A1AD05C749F9C74C13
-#define FOO_BAR_4750F7F0299290A99299C0A1AD05C749F9C74C13
+#ifndef FOO_BAR_D272826170F773B18F9D056BA3A6655A25C0092A
+#define FOO_BAR_D272826170F773B18F9D056BA3A6655A25C0092A
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -71,6 +71,7 @@
 
 namespace atlas {
 
+template<typename T>
 struct strong_type_tag
 {
 #if defined(__cpp_impl_three_way_comparison) && \
@@ -597,7 +598,7 @@ namespace profiles {
  * - default_value: ""
  */
 struct SimpleProfileType
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<SimpleProfileType>
 {
     int value;
 
@@ -765,5 +766,5 @@ struct SimpleProfileType
 } // namespace profiles
 } // namespace test
 
-#endif // FOO_BAR_4750F7F0299290A99299C0A1AD05C749F9C74C13
+#endif // FOO_BAR_D272826170F773B18F9D056BA3A6655A25C0092A
 

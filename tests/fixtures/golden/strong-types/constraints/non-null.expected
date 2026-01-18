@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_023D4A1E49C9B46B63A1C1DA57E70639BFA6E1EA
-#define FOO_BAR_023D4A1E49C9B46B63A1C1DA57E70639BFA6E1EA
+#ifndef FOO_BAR_4B81044617BB07D327C94BC0401956EEFFF27E32
+#define FOO_BAR_4B81044617BB07D327C94BC0401956EEFFF27E32
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -76,6 +76,7 @@
 
 namespace atlas {
 
+template<typename T>
 struct strong_type_tag
 {
 #if defined(__cpp_impl_three_way_comparison) && \
@@ -981,7 +982,7 @@ namespace sys {
  * - default_value: ""
  */
 struct Handle
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<Handle>
 {
     void* value;
 
@@ -1062,7 +1063,7 @@ namespace data {
  * - default_value: ""
  */
 struct DataPointer
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<DataPointer>
 {
     int* value;
 
@@ -1173,7 +1174,7 @@ namespace data {
  * - default_value: ""
  */
 struct UniquePointer
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<UniquePointer>
 {
     std::unique_ptr<int> value;
 
@@ -1284,7 +1285,7 @@ namespace data {
  * - default_value: ""
  */
 struct SharedPointer
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<SharedPointer>
 {
     std::shared_ptr<int> value;
 
@@ -1395,7 +1396,7 @@ namespace data {
  * - default_value: ""
  */
 struct Optional
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<Optional>
 {
     std::optional<int> value;
 
@@ -1491,5 +1492,5 @@ struct Optional
 };
 } // namespace data
 
-#endif // FOO_BAR_023D4A1E49C9B46B63A1C1DA57E70639BFA6E1EA
+#endif // FOO_BAR_4B81044617BB07D327C94BC0401956EEFFF27E32
 

@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_8F8A65842C9D896D33A0E76CC15708647A7FE4D5
-#define FOO_BAR_8F8A65842C9D896D33A0E76CC15708647A7FE4D5
+#ifndef FOO_BAR_C8C1F2B7C51CF2FDF1A383AD7BADCBF80E189523
+#define FOO_BAR_C8C1F2B7C51CF2FDF1A383AD7BADCBF80E189523
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -72,6 +72,7 @@
 
 namespace atlas {
 
+template<typename T>
 struct strong_type_tag
 {
 #if defined(__cpp_impl_three_way_comparison) && \
@@ -597,7 +598,7 @@ namespace test {
  * - default_value: ""
  */
 struct IterableVectorType
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<IterableVectorType>
 {
     std::vector<int> value;
 
@@ -677,5 +678,5 @@ struct IterableVectorType
 };
 } // namespace test
 
-#endif // FOO_BAR_8F8A65842C9D896D33A0E76CC15708647A7FE4D5
+#endif // FOO_BAR_C8C1F2B7C51CF2FDF1A383AD7BADCBF80E189523
 

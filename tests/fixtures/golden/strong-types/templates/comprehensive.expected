@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_AB3D1230B660C0140B68D08B41183158BE56DFC6
-#define FOO_BAR_AB3D1230B660C0140B68D08B41183158BE56DFC6
+#ifndef FOO_BAR_1D08EB689524E37BC2F368DFD1D52149C99647EF
+#define FOO_BAR_1D08EB689524E37BC2F368DFD1D52149C99647EF
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -74,6 +74,7 @@
 
 namespace atlas {
 
+template<typename T>
 struct strong_type_tag
 {
 #if defined(__cpp_impl_three_way_comparison) && \
@@ -600,7 +601,7 @@ namespace templates {
  * - default_value: ""
  */
 struct Optional_int
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<Optional_int>
 {
     std::optional<int> value;
 
@@ -746,7 +747,7 @@ namespace templates {
  * - default_value: ""
  */
 struct OptionalDouble
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<OptionalDouble>
 {
     std::optional<double> value;
 
@@ -892,7 +893,7 @@ namespace templates {
  * - default_value: ""
  */
 struct IntStringPair
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<IntStringPair>
 {
     std::pair<int, std::string> value;
 
@@ -956,7 +957,7 @@ namespace templates {
  * - default_value: ""
  */
 struct BoundedInt
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<BoundedInt>
 {
     int value;
 
@@ -1100,7 +1101,7 @@ namespace templates {
  * - default_value: ""
  */
 struct IntContainer
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<IntContainer>
 {
     std::vector<int> value;
 
@@ -1268,7 +1269,7 @@ namespace templates {
  * - default_value: "42"
  */
 struct DefaultInt
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<DefaultInt>
 {
     int value = static_cast<int>(42);
 
@@ -1332,7 +1333,7 @@ namespace ns {
  * - default_value: ""
  */
 struct NamespacedInt
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<NamespacedInt>
 {
     int value;
 
@@ -1396,7 +1397,7 @@ namespace templates {
  * - default_value: ""
  */
 class ClassWrapper
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<ClassWrapper>
 {
     int value;
 
@@ -1461,7 +1462,7 @@ namespace templates {
  * - default_value: ""
  */
 struct ArithmeticLong
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<ArithmeticLong>
 {
     long value;
 
@@ -1645,7 +1646,7 @@ namespace templates {
  * - default_value: ""
  */
 struct EnhancedInt
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<EnhancedInt>
 {
     int value;
 
@@ -1717,7 +1718,7 @@ namespace templates {
  * - default_value: ""
  */
 struct VectorWrapper
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<VectorWrapper>
 {
     std::vector<int> value;
 
@@ -1765,5 +1766,5 @@ struct VectorWrapper
 } // namespace templates
 } // namespace test
 
-#endif // FOO_BAR_AB3D1230B660C0140B68D08B41183158BE56DFC6
+#endif // FOO_BAR_1D08EB689524E37BC2F368DFD1D52149C99647EF
 

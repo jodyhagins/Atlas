@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_A6BF0226B1FAB4ECE8E2B58018268EAD7F85BAAC
-#define FOO_BAR_A6BF0226B1FAB4ECE8E2B58018268EAD7F85BAAC
+#ifndef FOO_BAR_50421E1617857E243DCAD60DB8653A4037A5F72D
+#define FOO_BAR_50421E1617857E243DCAD60DB8653A4037A5F72D
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -77,6 +77,7 @@
 
 namespace atlas {
 
+template<typename T>
 struct strong_type_tag
 {
 #if defined(__cpp_impl_three_way_comparison) && \
@@ -1794,7 +1795,7 @@ namespace test {
  * - default_value: ""
  */
 struct NonNegativeInt
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<NonNegativeInt>
 {
     int value;
 
@@ -1990,7 +1991,7 @@ namespace test {
  * - default_value: ""
  */
 struct NonNegativeChecked
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<NonNegativeChecked>
 {
     uint8_t value;
 
@@ -2093,7 +2094,7 @@ namespace test {
  * - default_value: ""
  */
 struct NonNegativeSaturating
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<NonNegativeSaturating>
 {
     uint8_t value;
 
@@ -2171,5 +2172,5 @@ struct NonNegativeSaturating
 };
 } // namespace test
 
-#endif // FOO_BAR_A6BF0226B1FAB4ECE8E2B58018268EAD7F85BAAC
+#endif // FOO_BAR_50421E1617857E243DCAD60DB8653A4037A5F72D
 

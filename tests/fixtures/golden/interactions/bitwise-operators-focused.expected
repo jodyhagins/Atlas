@@ -1,5 +1,5 @@
-#ifndef TEST_27F6167498092E55E8F1E6014DA2CEF52701A063
-#define TEST_27F6167498092E55E8F1E6014DA2CEF52701A063
+#ifndef TEST_1857289F55DBB1275C61022C3402311727AA305F
+#define TEST_1857289F55DBB1275C61022C3402311727AA305F
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -72,6 +72,7 @@
 
 namespace atlas {
 
+template<typename T>
 struct strong_type_tag
 {
 #if defined(__cpp_impl_three_way_comparison) && \
@@ -640,7 +641,7 @@ template <
     typename L,
     typename R,
     typename std::enable_if<
-        std::is_base_of<atlas::strong_type_tag, L>::value,
+        atlas::is_atlas_type<L>::value,
         bool>::type = true>
 inline auto
 operator&=(L & lhs, R const & rhs)
@@ -697,7 +698,7 @@ template <
     typename L,
     typename R,
     typename std::enable_if<
-        std::is_base_of<atlas::strong_type_tag, L>::value,
+        atlas::is_atlas_type<L>::value,
         bool>::type = true>
 inline auto
 operator^=(L & lhs, R const & rhs)
@@ -754,7 +755,7 @@ template <
     typename L,
     typename R,
     typename std::enable_if<
-        std::is_base_of<atlas::strong_type_tag, L>::value,
+        atlas::is_atlas_type<L>::value,
         bool>::type = true>
 inline auto
 operator|=(L & lhs, R const & rhs)
@@ -812,5 +813,5 @@ noexcept(
 
 } // namespace graphics::color
 
-#endif // TEST_27F6167498092E55E8F1E6014DA2CEF52701A063
+#endif // TEST_1857289F55DBB1275C61022C3402311727AA305F
 

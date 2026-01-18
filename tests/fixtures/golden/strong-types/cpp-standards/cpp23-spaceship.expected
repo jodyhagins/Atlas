@@ -1,5 +1,5 @@
-#ifndef TEST_CPP23_F2086365556594FEFBC6DCD33EB7ABF4F02EC647
-#define TEST_CPP23_F2086365556594FEFBC6DCD33EB7ABF4F02EC647
+#ifndef TEST_CPP23_4C00C7535D7B09A5096BCACF573F8EF7A6FFF36E
+#define TEST_CPP23_4C00C7535D7B09A5096BCACF573F8EF7A6FFF36E
 
 static_assert(__cplusplus >= 202302L,
     "This file requires C++23 or later. Compile with -std=c++23 or higher.");
@@ -74,6 +74,7 @@ static_assert(__cplusplus >= 202302L,
 
 namespace atlas {
 
+template<typename T>
 struct strong_type_tag
 {
 #if defined(__cpp_impl_three_way_comparison) && \
@@ -599,7 +600,7 @@ namespace test {
  * - default_value: ""
  */
 struct Timestamp
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<Timestamp>
 {
     long value;
 
@@ -718,5 +719,5 @@ struct Timestamp
 };
 } // namespace test
 
-#endif // TEST_CPP23_F2086365556594FEFBC6DCD33EB7ABF4F02EC647
+#endif // TEST_CPP23_4C00C7535D7B09A5096BCACF573F8EF7A6FFF36E
 

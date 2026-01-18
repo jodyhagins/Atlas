@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_A89FEDD03ED796300DF4862EDC8BCE78A7D8A09B
-#define FOO_BAR_A89FEDD03ED796300DF4862EDC8BCE78A7D8A09B
+#ifndef FOO_BAR_F68464A82AEF86FACFCDD6CA379C67122362D4AE
+#define FOO_BAR_F68464A82AEF86FACFCDD6CA379C67122362D4AE
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -71,6 +71,7 @@
 
 namespace atlas {
 
+template<typename T>
 struct strong_type_tag
 {
 #if defined(__cpp_impl_three_way_comparison) && \
@@ -596,7 +597,7 @@ namespace test {
  * - default_value: ""
  */
 struct MultiplyDivideType
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<MultiplyDivideType>
 {
     int value;
 
@@ -692,5 +693,5 @@ struct MultiplyDivideType
 };
 } // namespace test
 
-#endif // FOO_BAR_A89FEDD03ED796300DF4862EDC8BCE78A7D8A09B
+#endif // FOO_BAR_F68464A82AEF86FACFCDD6CA379C67122362D4AE
 

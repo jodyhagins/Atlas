@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_6D4E171CC32C33A5A67F80709A4C1955F20F0D3F
-#define FOO_BAR_6D4E171CC32C33A5A67F80709A4C1955F20F0D3F
+#ifndef FOO_BAR_5125B01A9B9C89C2B68237CB4602E7C68756832F
+#define FOO_BAR_5125B01A9B9C89C2B68237CB4602E7C68756832F
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -76,6 +76,7 @@
 
 namespace atlas {
 
+template<typename T>
 struct strong_type_tag
 {
 #if defined(__cpp_impl_three_way_comparison) && \
@@ -1006,7 +1007,7 @@ namespace data {
  * - default_value: ""
  */
 struct NonEmptyUsername
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<NonEmptyUsername>
 {
     std::string value;
 
@@ -1412,7 +1413,7 @@ namespace data {
  * - default_value: ""
  */
 struct PositiveScore
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<PositiveScore>
 {
     int value;
 
@@ -1549,5 +1550,5 @@ struct PositiveScore
 };
 } // namespace data
 
-#endif // FOO_BAR_6D4E171CC32C33A5A67F80709A4C1955F20F0D3F
+#endif // FOO_BAR_5125B01A9B9C89C2B68237CB4602E7C68756832F
 

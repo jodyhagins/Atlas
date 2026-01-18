@@ -1,5 +1,5 @@
-#ifndef TEST_OPTIONAL_STRONG_15F47992F843FFC4B867D410BBA4D93485C1273B
-#define TEST_OPTIONAL_STRONG_15F47992F843FFC4B867D410BBA4D93485C1273B
+#ifndef TEST_OPTIONAL_STRONG_A1FA04CD8827250FE1D658C53454D86DBDDC599D
+#define TEST_OPTIONAL_STRONG_A1FA04CD8827250FE1D658C53454D86DBDDC599D
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -74,6 +74,7 @@
 
 namespace atlas {
 
+template<typename T>
 struct strong_type_tag
 {
 #if defined(__cpp_impl_three_way_comparison) && \
@@ -684,7 +685,7 @@ namespace test {
  * - default_value: ""
  */
 struct WithStrong
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<WithStrong>
 {
     double value;
 
@@ -938,7 +939,7 @@ namespace test {
  * - default_value: ""
  */
 struct WithoutStrong
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<WithoutStrong>
 {
     double value;
 
@@ -1192,7 +1193,7 @@ namespace test {
  * - default_value: ""
  */
 struct ComplexWithStrong
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<ComplexWithStrong>
 {
     std::vector<int> value;
 
@@ -1342,7 +1343,7 @@ namespace test {
  * - default_value: ""
  */
 struct ComplexWithoutStrong
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<ComplexWithoutStrong>
 {
     std::vector<int> value;
 
@@ -1492,7 +1493,7 @@ namespace global {
  * - default_value: ""
  */
 struct InlineNsWithStrong
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<InlineNsWithStrong>
 {
     geo::Point value;
 
@@ -1565,7 +1566,7 @@ namespace global {
  * - default_value: ""
  */
 struct InlineNsWithoutStrong
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<InlineNsWithoutStrong>
 {
     geo::Distance value;
 
@@ -1638,7 +1639,7 @@ namespace test {
  * - default_value: ""
  */
 struct AllOpsStrong
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<AllOpsStrong>
 {
     int value;
 
@@ -1953,7 +1954,7 @@ namespace test {
  * - default_value: ""
  */
 struct AllOpsNoStrong
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<AllOpsNoStrong>
 {
     int value;
 
@@ -2253,5 +2254,5 @@ struct AllOpsNoStrong
 };
 } // namespace test
 
-#endif // TEST_OPTIONAL_STRONG_15F47992F843FFC4B867D410BBA4D93485C1273B
+#endif // TEST_OPTIONAL_STRONG_A1FA04CD8827250FE1D658C53454D86DBDDC599D
 

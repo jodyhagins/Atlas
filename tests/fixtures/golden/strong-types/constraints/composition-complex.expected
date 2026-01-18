@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_0D42ECFDEAB5F9A6401F65EE1715EAC28334A122
-#define FOO_BAR_0D42ECFDEAB5F9A6401F65EE1715EAC28334A122
+#ifndef FOO_BAR_504A1D968ED9F7E02A1EF9E61457267B1A1A4AD0
+#define FOO_BAR_504A1D968ED9F7E02A1EF9E61457267B1A1A4AD0
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -79,6 +79,7 @@
 
 namespace atlas {
 
+template<typename T>
 struct strong_type_tag
 {
 #if defined(__cpp_impl_three_way_comparison) && \
@@ -1453,7 +1454,7 @@ namespace net {
  * - default_value: ""
  */
 struct ServerPort
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<ServerPort>
 {
     std::uint16_t value;
 
@@ -1637,5 +1638,5 @@ struct ServerPort
 };
 } // namespace net
 
-#endif // FOO_BAR_0D42ECFDEAB5F9A6401F65EE1715EAC28334A122
+#endif // FOO_BAR_504A1D968ED9F7E02A1EF9E61457267B1A1A4AD0
 

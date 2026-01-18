@@ -1793,8 +1793,8 @@ TEST_SUITE("Compilation Tests: Drilling Multiple Files")
 
     TEST_CASE("Hash: first header without, second with - drilling works")
     {
-        // Problem 1: First header has NO auto_hash, second header HAS auto_hash.
-        // The hash drilling from the second header must be visible.
+        // Problem 1: First header has NO auto_hash, second header HAS
+        // auto_hash. The hash drilling from the second header must be visible.
         auto temp_dir = fs::temp_directory_path() /
             ("atlas_hash_first_without_" + std::to_string(::getpid()));
         fs::create_directories(temp_dir);

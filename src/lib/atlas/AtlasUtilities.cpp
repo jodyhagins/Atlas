@@ -321,6 +321,7 @@ preamble(PreambleOptions options)
 
 namespace atlas {
 
+template<typename T>
 struct strong_type_tag
 {
 #if defined(__cpp_impl_three_way_comparison) && \

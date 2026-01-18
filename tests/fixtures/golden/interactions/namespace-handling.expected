@@ -1,5 +1,5 @@
-#ifndef TEST_348BD636F9404DB9F518B9A1702E6FB8CBE153A9
-#define TEST_348BD636F9404DB9F518B9A1702E6FB8CBE153A9
+#ifndef TEST_2C164793AB0CE5FB4D3F35D7D0A4F9D1946A8558
+#define TEST_2C164793AB0CE5FB4D3F35D7D0A4F9D1946A8558
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -72,6 +72,7 @@
 
 namespace atlas {
 
+template<typename T>
 struct strong_type_tag
 {
 #if defined(__cpp_impl_three_way_comparison) && \
@@ -640,7 +641,7 @@ template <
     typename L,
     typename R,
     typename std::enable_if<
-        std::is_base_of<atlas::strong_type_tag, L>::value,
+        atlas::is_atlas_type<L>::value,
         bool>::type = true>
 inline auto
 operator*=(L & lhs, R const & rhs)
@@ -676,5 +677,5 @@ noexcept(
     return finance::core::Money{lhs.value * rhs.value};
 }
 
-#endif // TEST_348BD636F9404DB9F518B9A1702E6FB8CBE153A9
+#endif // TEST_2C164793AB0CE5FB4D3F35D7D0A4F9D1946A8558
 

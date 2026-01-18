@@ -1,5 +1,5 @@
-#ifndef CUSTOM_PREFIX_B8D242DD085C7AE4E17215F83B2840052DBE1F61
-#define CUSTOM_PREFIX_B8D242DD085C7AE4E17215F83B2840052DBE1F61
+#ifndef CUSTOM_PREFIX_C07DFB85FAD9E7B5DAF27C7AD3B2BF13A4955E25
+#define CUSTOM_PREFIX_C07DFB85FAD9E7B5DAF27C7AD3B2BF13A4955E25
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -71,6 +71,7 @@
 
 namespace atlas {
 
+template<typename T>
 struct strong_type_tag
 {
 #if defined(__cpp_impl_three_way_comparison) && \
@@ -596,7 +597,7 @@ namespace test {
  * - default_value: ""
  */
 struct GuardPrefixType
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<GuardPrefixType>
 {
     int value;
 
@@ -643,5 +644,5 @@ struct GuardPrefixType
 };
 } // namespace test
 
-#endif // CUSTOM_PREFIX_B8D242DD085C7AE4E17215F83B2840052DBE1F61
+#endif // CUSTOM_PREFIX_C07DFB85FAD9E7B5DAF27C7AD3B2BF13A4955E25
 

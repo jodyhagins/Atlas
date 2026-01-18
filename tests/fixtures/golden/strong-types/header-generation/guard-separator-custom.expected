@@ -1,5 +1,5 @@
-#ifndef MY_APP__F9231C1D447357428A4B74B390C043D7A3F6D96B
-#define MY_APP__F9231C1D447357428A4B74B390C043D7A3F6D96B
+#ifndef MY_APP__7483A121E814E94EA3B5BF41E9EBA7C48F70D0A0
+#define MY_APP__7483A121E814E94EA3B5BF41E9EBA7C48F70D0A0
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -71,6 +71,7 @@
 
 namespace atlas {
 
+template<typename T>
 struct strong_type_tag
 {
 #if defined(__cpp_impl_three_way_comparison) && \
@@ -596,7 +597,7 @@ namespace test {
  * - default_value: ""
  */
 struct GuardSeparatorType
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<GuardSeparatorType>
 {
     int value;
 
@@ -643,5 +644,5 @@ struct GuardSeparatorType
 };
 } // namespace test
 
-#endif // MY_APP__F9231C1D447357428A4B74B390C043D7A3F6D96B
+#endif // MY_APP__7483A121E814E94EA3B5BF41E9EBA7C48F70D0A0
 

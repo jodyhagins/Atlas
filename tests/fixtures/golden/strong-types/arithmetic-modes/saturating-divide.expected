@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_5BFC6EE14E56354BB4A09FBE3B6CB23A5B6CFFFA
-#define FOO_BAR_5BFC6EE14E56354BB4A09FBE3B6CB23A5B6CFFFA
+#ifndef FOO_BAR_643E8212E2C44F1A428D93D0682FD8C7E6ACBC02
+#define FOO_BAR_643E8212E2C44F1A428D93D0682FD8C7E6ACBC02
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -73,6 +73,7 @@
 
 namespace atlas {
 
+template<typename T>
 struct strong_type_tag
 {
 #if defined(__cpp_impl_three_way_comparison) && \
@@ -1026,7 +1027,7 @@ namespace test {
  * - default_value: ""
  */
 struct Distance
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<Distance>
 {
     int value;
 
@@ -1090,7 +1091,7 @@ namespace test {
  * - default_value: ""
  */
 struct Count
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<Count>
 {
     unsigned int value;
 
@@ -1154,7 +1155,7 @@ namespace test {
  * - default_value: ""
  */
 struct Ratio
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<Ratio>
 {
     double value;
 
@@ -1203,5 +1204,5 @@ struct Ratio
 };
 } // namespace test
 
-#endif // FOO_BAR_5BFC6EE14E56354BB4A09FBE3B6CB23A5B6CFFFA
+#endif // FOO_BAR_643E8212E2C44F1A428D93D0682FD8C7E6ACBC02
 

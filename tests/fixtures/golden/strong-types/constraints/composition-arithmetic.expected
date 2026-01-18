@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_8991D706A48148E5DD958EDEA5E947FA5E97F546
-#define FOO_BAR_8991D706A48148E5DD958EDEA5E947FA5E97F546
+#ifndef FOO_BAR_0060AE19E0F9F07EA0BC1960296709FC5FBD5D7E
+#define FOO_BAR_0060AE19E0F9F07EA0BC1960296709FC5FBD5D7E
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -77,6 +77,7 @@
 
 namespace atlas {
 
+template<typename T>
 struct strong_type_tag
 {
 #if defined(__cpp_impl_three_way_comparison) && \
@@ -1794,7 +1795,7 @@ namespace test {
  * - default_value: ""
  */
 struct BoundedDefaultArith
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<BoundedDefaultArith>
 {
     std::uint8_t value;
 
@@ -1974,7 +1975,7 @@ namespace test {
  * - default_value: ""
  */
 struct BoundedCheckedArith
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<BoundedCheckedArith>
 {
     std::uint8_t value;
 
@@ -2134,7 +2135,7 @@ namespace test {
  * - default_value: ""
  */
 struct BoundedSaturatingArith
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<BoundedSaturatingArith>
 {
     std::uint8_t value;
 
@@ -2274,7 +2275,7 @@ namespace test {
  * - default_value: ""
  */
 struct BoundedWrappingArith
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<BoundedWrappingArith>
 {
     std::uint8_t value;
 
@@ -2433,5 +2434,5 @@ struct BoundedWrappingArith
 };
 } // namespace test
 
-#endif // FOO_BAR_8991D706A48148E5DD958EDEA5E947FA5E97F546
+#endif // FOO_BAR_0060AE19E0F9F07EA0BC1960296709FC5FBD5D7E
 

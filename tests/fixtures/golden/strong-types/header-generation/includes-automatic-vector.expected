@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_24A50050BBFDBACA2E5BB45D0A38F07DD778182C
-#define FOO_BAR_24A50050BBFDBACA2E5BB45D0A38F07DD778182C
+#ifndef FOO_BAR_CE6B34A36CDFD6B6DCA002FBA3CFDA1A41926B39
+#define FOO_BAR_CE6B34A36CDFD6B6DCA002FBA3CFDA1A41926B39
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -72,6 +72,7 @@
 
 namespace atlas {
 
+template<typename T>
 struct strong_type_tag
 {
 #if defined(__cpp_impl_three_way_comparison) && \
@@ -597,7 +598,7 @@ namespace test {
  * - default_value: ""
  */
 struct AutoIncludeVector
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<AutoIncludeVector>
 {
     std::vector<int> value;
 
@@ -644,5 +645,5 @@ struct AutoIncludeVector
 };
 } // namespace test
 
-#endif // FOO_BAR_24A50050BBFDBACA2E5BB45D0A38F07DD778182C
+#endif // FOO_BAR_CE6B34A36CDFD6B6DCA002FBA3CFDA1A41926B39
 

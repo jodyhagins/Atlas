@@ -361,7 +361,7 @@ TEST_SUITE("Optional Size and Performance")
         // Optional is NOT trivially copyable because it has custom move
         // operations that reset moved-from objects to nil_value
         CHECK_FALSE(std::is_trivially_copyable<
-              atlas::Nilable<test::WithSpaceship>>::value);
+                    atlas::Nilable<test::WithSpaceship>>::value);
         // But it should still be copyable and movable
         CHECK(std::is_copy_constructible<
               atlas::Nilable<test::WithSpaceship>>::value);

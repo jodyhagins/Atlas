@@ -1,5 +1,5 @@
-#ifndef TEST_CPP14_56DAA7435515D6B70704ECCA23911D8C8FB86FE8
-#define TEST_CPP14_56DAA7435515D6B70704ECCA23911D8C8FB86FE8
+#ifndef TEST_CPP14_831D3E23803371A16C6DB49399B03E77B9EDFE74
+#define TEST_CPP14_831D3E23803371A16C6DB49399B03E77B9EDFE74
 
 static_assert(__cplusplus >= 201402L,
     "This file requires C++14 or later. Compile with -std=c++14 or higher.");
@@ -74,6 +74,7 @@ static_assert(__cplusplus >= 201402L,
 
 namespace atlas {
 
+template<typename T>
 struct strong_type_tag
 {
 #if defined(__cpp_impl_three_way_comparison) && \
@@ -599,7 +600,7 @@ namespace test {
  * - default_value: ""
  */
 struct Value
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<Value>
 {
     double value;
 
@@ -755,5 +756,5 @@ struct Value
 };
 } // namespace test
 
-#endif // TEST_CPP14_56DAA7435515D6B70704ECCA23911D8C8FB86FE8
+#endif // TEST_CPP14_831D3E23803371A16C6DB49399B03E77B9EDFE74
 

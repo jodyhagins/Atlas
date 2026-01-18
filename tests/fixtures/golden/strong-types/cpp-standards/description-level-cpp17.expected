@@ -1,5 +1,5 @@
-#ifndef TEST_CPP17_DESC_D73783FD01228146D8307165F2BC5725F5AC2213
-#define TEST_CPP17_DESC_D73783FD01228146D8307165F2BC5725F5AC2213
+#ifndef TEST_CPP17_DESC_C4CE73D6EC8EB8CA2CBC9789727F9AB12C3A6195
+#define TEST_CPP17_DESC_C4CE73D6EC8EB8CA2CBC9789727F9AB12C3A6195
 
 static_assert(__cplusplus >= 201703L,
     "This file requires C++17 or later. Compile with -std=c++17 or higher.");
@@ -74,6 +74,7 @@ static_assert(__cplusplus >= 201703L,
 
 namespace atlas {
 
+template<typename T>
 struct strong_type_tag
 {
 #if defined(__cpp_impl_three_way_comparison) && \
@@ -599,7 +600,7 @@ namespace test {
  * - default_value: ""
  */
 struct Distance
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<Distance>
 {
     int value;
 
@@ -739,5 +740,5 @@ struct Distance
 };
 } // namespace test
 
-#endif // TEST_CPP17_DESC_D73783FD01228146D8307165F2BC5725F5AC2213
+#endif // TEST_CPP17_DESC_C4CE73D6EC8EB8CA2CBC9789727F9AB12C3A6195
 

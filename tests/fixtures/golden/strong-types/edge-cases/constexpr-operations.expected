@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_27B171624D3824AF798173F9453ABBAABA631420
-#define FOO_BAR_27B171624D3824AF798173F9453ABBAABA631420
+#ifndef FOO_BAR_8DFEFBDBCF34794EA02A6A0A415919EC33398211
+#define FOO_BAR_8DFEFBDBCF34794EA02A6A0A415919EC33398211
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -71,6 +71,7 @@
 
 namespace atlas {
 
+template<typename T>
 struct strong_type_tag
 {
 #if defined(__cpp_impl_three_way_comparison) && \
@@ -597,7 +598,7 @@ namespace edge_cases {
  * - default_value: ""
  */
 struct ConstexprOperations
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<ConstexprOperations>
 {
     int value;
 
@@ -746,5 +747,5 @@ struct ConstexprOperations
 } // namespace edge_cases
 } // namespace test
 
-#endif // FOO_BAR_27B171624D3824AF798173F9453ABBAABA631420
+#endif // FOO_BAR_8DFEFBDBCF34794EA02A6A0A415919EC33398211
 

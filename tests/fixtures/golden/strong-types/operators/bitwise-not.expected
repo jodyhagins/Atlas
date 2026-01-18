@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_D2E878F1B9C0624B470D74C8F998B7A99876F4B6
-#define FOO_BAR_D2E878F1B9C0624B470D74C8F998B7A99876F4B6
+#ifndef FOO_BAR_F0CE8B106CDB00A8926872A4304DD07924E31DEC
+#define FOO_BAR_F0CE8B106CDB00A8926872A4304DD07924E31DEC
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -71,6 +71,7 @@
 
 namespace atlas {
 
+template<typename T>
 struct strong_type_tag
 {
 #if defined(__cpp_impl_three_way_comparison) && \
@@ -596,7 +597,7 @@ namespace test {
  * - default_value: ""
  */
 struct BitwiseNotType
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<BitwiseNotType>
 {
     int value;
 
@@ -647,5 +648,5 @@ struct BitwiseNotType
 };
 } // namespace test
 
-#endif // FOO_BAR_D2E878F1B9C0624B470D74C8F998B7A99876F4B6
+#endif // FOO_BAR_F0CE8B106CDB00A8926872A4304DD07924E31DEC
 

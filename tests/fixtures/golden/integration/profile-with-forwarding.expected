@@ -1,5 +1,5 @@
-#ifndef TEST_41197AFDD3EA22B6C34D883F015D081578A9B3CE
-#define TEST_41197AFDD3EA22B6C34D883F015D081578A9B3CE
+#ifndef TEST_5C1126AB403DF758EF6642902D3DA54575D88EC2
+#define TEST_5C1126AB403DF758EF6642902D3DA54575D88EC2
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -75,6 +75,7 @@
 
 namespace atlas {
 
+template<typename T>
 struct strong_type_tag
 {
 #if defined(__cpp_impl_three_way_comparison) && \
@@ -685,7 +686,7 @@ namespace test {
  * - default_value: ""
  */
 struct StringWrapper
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<StringWrapper>
 {
     std::string value;
 
@@ -892,7 +893,7 @@ namespace test {
  * - default_value: ""
  */
 struct VectorWrapper
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<VectorWrapper>
 {
     std::vector<int> value;
 
@@ -1217,7 +1218,7 @@ namespace test {
  * - default_value: ""
  */
 struct StringWithExtra
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<StringWithExtra>
 {
     std::string value;
 
@@ -1487,7 +1488,7 @@ namespace test {
  * - default_value: ""
  */
 struct ContainerWithComparison
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<ContainerWithComparison>
 {
     std::vector<int> value;
 
@@ -1856,7 +1857,7 @@ namespace test {
  * - default_value: ""
  */
 struct ComparisonOnly
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<ComparisonOnly>
 {
     int value;
 
@@ -1973,7 +1974,7 @@ namespace test {
  * - default_value: ""
  */
 struct AliasedWrapper
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<AliasedWrapper>
 {
     std::string value;
 
@@ -2139,7 +2140,7 @@ namespace test {
  * - default_value: ""
  */
 struct ImmutableWrapper
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<ImmutableWrapper>
 {
     std::string value;
 
@@ -2243,7 +2244,7 @@ namespace test {
  * - default_value: ""
  */
 struct MixedForwarding
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<MixedForwarding>
 {
     std::string value;
 
@@ -2628,7 +2629,7 @@ namespace test {
  * - default_value: ""
  */
 struct MixedForwardingConst
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<MixedForwardingConst>
 {
     std::string value;
 
@@ -2843,5 +2844,5 @@ struct MixedForwardingConst
 };
 } // namespace test
 
-#endif // TEST_41197AFDD3EA22B6C34D883F015D081578A9B3CE
+#endif // TEST_5C1126AB403DF758EF6642902D3DA54575D88EC2
 

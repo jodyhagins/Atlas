@@ -262,8 +262,8 @@ TEST_SUITE("StrongTypeGenerator")
             }
             CHECK(count == 1);
 
-            // Verify strong_type_tag is defined exactly once
-            std::string strong_type_tag = "struct strong_type_tag";
+            // Verify strong_type_tag is defined exactly once (as a template)
+            std::string strong_type_tag = "struct strong_type_tag\n{";
             count = 0;
             pos = 0;
             while ((pos = code.find(strong_type_tag, pos)) != std::string::npos)

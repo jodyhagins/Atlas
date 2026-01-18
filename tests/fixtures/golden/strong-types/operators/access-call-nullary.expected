@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_35D6537F971B3FB1D569A05C90FC81D0DC0599C1
-#define FOO_BAR_35D6537F971B3FB1D569A05C90FC81D0DC0599C1
+#ifndef FOO_BAR_DC8332714CE33A9F640CEF9D0C6DB4F2AC25129E
+#define FOO_BAR_DC8332714CE33A9F640CEF9D0C6DB4F2AC25129E
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -71,6 +71,7 @@
 
 namespace atlas {
 
+template<typename T>
 struct strong_type_tag
 {
 #if defined(__cpp_impl_three_way_comparison) && \
@@ -596,7 +597,7 @@ namespace test {
  * - default_value: ""
  */
 struct CallNullaryType
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<CallNullaryType>
 {
     int value;
 
@@ -646,5 +647,5 @@ struct CallNullaryType
 };
 } // namespace test
 
-#endif // FOO_BAR_35D6537F971B3FB1D569A05C90FC81D0DC0599C1
+#endif // FOO_BAR_DC8332714CE33A9F640CEF9D0C6DB4F2AC25129E
 

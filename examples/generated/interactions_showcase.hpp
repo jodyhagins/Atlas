@@ -1,5 +1,5 @@
-#ifndef EXAMPLE_INTERACTIONS_221B4644637D559A9D12570FC413F46CF2C79216
-#define EXAMPLE_INTERACTIONS_221B4644637D559A9D12570FC413F46CF2C79216
+#ifndef EXAMPLE_INTERACTIONS_9117164626BE44E4F68F5D2676C61DCF66202C3D
+#define EXAMPLE_INTERACTIONS_9117164626BE44E4F68F5D2676C61DCF66202C3D
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -72,6 +72,7 @@
 
 namespace atlas {
 
+template<typename T>
 struct strong_type_tag
 {
 #if defined(__cpp_impl_three_way_comparison) && \
@@ -724,7 +725,7 @@ template <
     typename L,
     typename R,
     typename std::enable_if<
-        std::is_base_of<atlas::strong_type_tag, L>::value,
+        atlas::is_atlas_type<L>::value,
         bool>::type = true>
 inline auto
 operator%=(L & lhs, R const & rhs)
@@ -781,7 +782,7 @@ template <
     typename L,
     typename R,
     typename std::enable_if<
-        std::is_base_of<atlas::strong_type_tag, L>::value,
+        atlas::is_atlas_type<L>::value,
         bool>::type = true>
 inline auto
 operator&=(L & lhs, R const & rhs)
@@ -838,7 +839,7 @@ template <
     typename L,
     typename R,
     typename std::enable_if<
-        std::is_base_of<atlas::strong_type_tag, L>::value,
+        atlas::is_atlas_type<L>::value,
         bool>::type = true>
 inline auto
 operator*=(L & lhs, R const & rhs)
@@ -895,7 +896,7 @@ template <
     typename L,
     typename R,
     typename std::enable_if<
-        std::is_base_of<atlas::strong_type_tag, L>::value,
+        atlas::is_atlas_type<L>::value,
         bool>::type = true>
 inline auto
 operator+=(L & lhs, R const & rhs)
@@ -952,7 +953,7 @@ template <
     typename L,
     typename R,
     typename std::enable_if<
-        std::is_base_of<atlas::strong_type_tag, L>::value,
+        atlas::is_atlas_type<L>::value,
         bool>::type = true>
 inline auto
 operator-=(L & lhs, R const & rhs)
@@ -1009,7 +1010,7 @@ template <
     typename L,
     typename R,
     typename std::enable_if<
-        std::is_base_of<atlas::strong_type_tag, L>::value,
+        atlas::is_atlas_type<L>::value,
         bool>::type = true>
 inline auto
 operator/=(L & lhs, R const & rhs)
@@ -1066,7 +1067,7 @@ template <
     typename L,
     typename R,
     typename std::enable_if<
-        std::is_base_of<atlas::strong_type_tag, L>::value,
+        atlas::is_atlas_type<L>::value,
         bool>::type = true>
 inline auto
 operator<<=(L & lhs, R const & rhs)
@@ -1123,7 +1124,7 @@ template <
     typename L,
     typename R,
     typename std::enable_if<
-        std::is_base_of<atlas::strong_type_tag, L>::value,
+        atlas::is_atlas_type<L>::value,
         bool>::type = true>
 inline auto
 operator>>=(L & lhs, R const & rhs)
@@ -1180,7 +1181,7 @@ template <
     typename L,
     typename R,
     typename std::enable_if<
-        std::is_base_of<atlas::strong_type_tag, L>::value,
+        atlas::is_atlas_type<L>::value,
         bool>::type = true>
 inline auto
 operator^=(L & lhs, R const & rhs)
@@ -1237,7 +1238,7 @@ template <
     typename L,
     typename R,
     typename std::enable_if<
-        std::is_base_of<atlas::strong_type_tag, L>::value,
+        atlas::is_atlas_type<L>::value,
         bool>::type = true>
 inline auto
 operator|=(L & lhs, R const & rhs)
@@ -1774,4 +1775,4 @@ noexcept(
 
 } // namespace security
 
-#endif // EXAMPLE_INTERACTIONS_221B4644637D559A9D12570FC413F46CF2C79216
+#endif // EXAMPLE_INTERACTIONS_9117164626BE44E4F68F5D2676C61DCF66202C3D

@@ -1,5 +1,5 @@
-#ifndef TEST_8632BA1AEF2D539707CBFFDA01935E4C9A92DE07
-#define TEST_8632BA1AEF2D539707CBFFDA01935E4C9A92DE07
+#ifndef TEST_6B77BFE8F7444CD399755B24F5CF3F4B9F7556D4
+#define TEST_6B77BFE8F7444CD399755B24F5CF3F4B9F7556D4
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -71,6 +71,7 @@
 
 namespace atlas {
 
+template<typename T>
 struct strong_type_tag
 {
 #if defined(__cpp_impl_three_way_comparison) && \
@@ -597,7 +598,7 @@ namespace ns {
  * - default_value: ""
  */
 struct TypeWithGlobal
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<TypeWithGlobal>
 {
     int value;
 
@@ -710,7 +711,7 @@ namespace ns {
  * - default_value: ""
  */
 struct TypeWithSpecific
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<TypeWithSpecific>
 {
     double value;
 
@@ -807,5 +808,5 @@ struct TypeWithSpecific
 } // namespace ns
 } // namespace specific
 
-#endif // TEST_8632BA1AEF2D539707CBFFDA01935E4C9A92DE07
+#endif // TEST_6B77BFE8F7444CD399755B24F5CF3F4B9F7556D4
 

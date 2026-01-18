@@ -1,5 +1,5 @@
-#ifndef EXAMPLE_ECE1953A78304BC27A00F783642CF4AB14C8E4A1
-#define EXAMPLE_ECE1953A78304BC27A00F783642CF4AB14C8E4A1
+#ifndef EXAMPLE_1668DF18F0759391E0AE403423011B30BD8317FC
+#define EXAMPLE_1668DF18F0759391E0AE403423011B30BD8317FC
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -91,6 +91,7 @@
 
 namespace atlas {
 
+template<typename T>
 struct strong_type_tag
 {
 #if defined(__cpp_impl_three_way_comparison) && \
@@ -2225,7 +2226,7 @@ namespace profiles {
  * - default_value: "0.0"
  */
 struct Price
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<Price>
 {
     double value = static_cast<double>(0.0);
 
@@ -2464,7 +2465,7 @@ namespace profiles {
  * - default_value: "0"
  */
 struct Quantity
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<Quantity>
 {
     int value = static_cast<int>(0);
 
@@ -2659,7 +2660,7 @@ namespace profiles {
  * - default_value: ""
  */
 struct Identifier
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<Identifier>
 {
     std::string value;
 
@@ -2734,7 +2735,7 @@ namespace core {
  * - default_value: "0.0"
  */
 struct Money
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<Money>
 {
     double value = static_cast<double>(0.0);
 
@@ -3003,7 +3004,7 @@ namespace v1 {
  * - default_value: "0"
  */
 class UserId
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<UserId>
 {
     unsigned long value = static_cast<unsigned long>(0);
 
@@ -3140,7 +3141,7 @@ namespace units {
  * - default_value: ""
  */
 struct Meters
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<Meters>
 {
     double value;
 
@@ -3411,7 +3412,7 @@ namespace units {
  * - default_value: ""
  */
 struct Seconds
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<Seconds>
 {
     double value;
 
@@ -3682,7 +3683,7 @@ namespace units {
  * - default_value: ""
  */
 struct MetersPerSecond
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<MetersPerSecond>
 {
     double value;
 
@@ -3952,7 +3953,7 @@ namespace data {
  * - default_value: "0"
  */
 struct ByteCount
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<ByteCount>
 {
     size_t value = static_cast<size_t>(0);
 
@@ -4298,7 +4299,7 @@ namespace color {
  * - default_value: "0"
  */
 struct RedChannel
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<RedChannel>
 {
     uint8_t value = static_cast<uint8_t>(0);
 
@@ -4658,7 +4659,7 @@ namespace security {
  * - default_value: ""
  */
 class EncryptedData
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<EncryptedData>
 {
     std::string value;
 
@@ -4762,7 +4763,7 @@ namespace geo {
  * - default_value: "0.0"
  */
 struct Latitude
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<Latitude>
 {
     double value = static_cast<double>(0.0);
 
@@ -4924,7 +4925,7 @@ namespace geo {
  * - default_value: "0.0"
  */
 struct Longitude
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<Longitude>
 {
     double value = static_cast<double>(0.0);
 
@@ -5086,7 +5087,7 @@ namespace concurrency {
  * - default_value: ""
  */
 struct ThreadId
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<ThreadId>
 {
     int value;
 
@@ -5190,7 +5191,7 @@ namespace rational {
  * - default_value: ""
  */
 struct Numerator
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<Numerator>
 {
     long value;
 
@@ -5416,7 +5417,7 @@ namespace rational {
  * - default_value: "1"
  */
 struct Denominator
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<Denominator>
 {
     long value = static_cast<long>(1);
 
@@ -5612,7 +5613,7 @@ namespace ipv4 {
  * - default_value: "0"
  */
 struct Octet
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<Octet>
 {
     uint8_t value = static_cast<uint8_t>(0);
 
@@ -5852,7 +5853,7 @@ namespace config {
  * - default_value: ""
  */
 class ConfigKey
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<ConfigKey>
 {
     std::string value;
 
@@ -6031,7 +6032,7 @@ namespace containers {
  * - default_value: """"
  */
 struct IterableString
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<IterableString>
 {
     std::string value = static_cast<std::string>("");
 
@@ -6148,7 +6149,7 @@ namespace containers {
  * - default_value: ""
  */
 struct IntVector
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<IntVector>
 {
     std::vector<int> value;
 
@@ -6287,7 +6288,7 @@ namespace containers {
  * - default_value: ""
  */
 class DataBuffer
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<DataBuffer>
 {
     std::vector<uint8_t> value;
 
@@ -6438,7 +6439,7 @@ namespace formatting {
  * - default_value: ""
  */
 struct FormattedString
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<FormattedString>
 {
     std::string value;
 
@@ -6511,7 +6512,7 @@ namespace formatting {
  * - default_value: ""
  */
 struct FormattedInt
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<FormattedInt>
 {
     int value;
 
@@ -6573,7 +6574,7 @@ namespace text {
  * - default_value: ""
  */
 struct AssignableString
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<AssignableString>
 {
     std::string value;
 
@@ -6683,7 +6684,7 @@ namespace config {
  * - default_value: ""
  */
 struct AssignablePort
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<AssignablePort>
 {
     int value;
 
@@ -6793,7 +6794,7 @@ namespace text {
  * - default_value: ""
  */
 struct CastableString
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<CastableString>
 {
     std::string value;
 
@@ -6876,7 +6877,7 @@ namespace text {
  * - default_value: ""
  */
 class ViewableText
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<ViewableText>
 {
     std::string value;
 
@@ -6959,7 +6960,7 @@ namespace flags {
  * - default_value: ""
  */
 struct EnableFlag
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<EnableFlag>
 {
     int value;
 
@@ -7032,7 +7033,7 @@ namespace optional_strong {
  * - default_value: "20.0"
  */
 struct Temperature
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<Temperature>
 {
     double value = static_cast<double>(20.0);
 
@@ -7226,7 +7227,7 @@ struct Temperature
  * - default_value: ""
  */
 struct GlobalEventId
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<GlobalEventId>
 {
     unsigned long value;
 
@@ -7299,7 +7300,7 @@ namespace constants {
  * - default_value: ""
  */
 struct HttpStatusCode
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<HttpStatusCode>
 {
     unsigned short value;
 
@@ -7455,7 +7456,7 @@ namespace constants {
  * - default_value: ""
  */
 struct Priority
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<Priority>
 {
     int value;
 
@@ -7590,7 +7591,7 @@ namespace inline_syntax {
  * - default_value: ""
  */
 struct RequestCount
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<RequestCount>
 {
     unsigned int value;
 
@@ -7774,7 +7775,7 @@ namespace inline_syntax {
  * - default_value: ""
  */
 struct SessionTimeout
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<SessionTimeout>
 {
     std::chrono::seconds value;
 
@@ -7910,7 +7911,7 @@ namespace forwarding {
  * - default_value: ""
  */
 struct SafeString
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<SafeString>
 {
     std::string value;
 
@@ -8141,7 +8142,7 @@ namespace forwarding {
  * - default_value: ""
  */
 struct DistanceValue
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<DistanceValue>
 {
     double value;
 
@@ -8449,7 +8450,7 @@ namespace forwarding {
  * - default_value: ""
  */
 struct ImmutableConfig
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<ImmutableConfig>
 {
     std::map<std::string, std::string> value;
 
@@ -8597,7 +8598,7 @@ namespace forwarding {
  * - default_value: ""
  */
 struct TaskQueue
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<TaskQueue>
 {
     std::deque<std::string> value;
 
@@ -8913,7 +8914,7 @@ namespace forwarding {
  * - default_value: ""
  */
 struct ResourceHandle
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<ResourceHandle>
 {
     std::unique_ptr<int> value;
 
@@ -9140,7 +9141,7 @@ namespace forwarding {
  * - default_value: ""
  */
 struct ManagedString
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<ManagedString>
 {
     std::string value;
 
@@ -9423,7 +9424,7 @@ namespace pricing {
  * - default_value: "1.0"
  */
 struct Price
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<Price>
 {
     double value = static_cast<double>(1.0);
 
@@ -9675,7 +9676,7 @@ namespace measurements {
  * - default_value: "0.0"
  */
 struct Distance
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<Distance>
 {
     double value = static_cast<double>(0.0);
 
@@ -9873,7 +9874,7 @@ namespace rational {
  * - default_value: "1"
  */
 struct Divisor
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<Divisor>
 {
     int value = static_cast<int>(1);
 
@@ -10010,7 +10011,7 @@ namespace controls {
  * - default_value: "50"
  */
 struct Volume
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<Volume>
 {
     int value = static_cast<int>(50);
 
@@ -10221,7 +10222,7 @@ namespace config {
  * - default_value: "8080"
  */
 struct ServerPort
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<ServerPort>
 {
     uint16_t value = static_cast<uint16_t>(8080);
 
@@ -10378,7 +10379,7 @@ namespace stats {
  * - default_value: "0"
  */
 struct Percentage
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<Percentage>
 {
     int value = static_cast<int>(0);
 
@@ -10589,7 +10590,7 @@ namespace credentials {
  * - default_value: ""
  */
 struct Username
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<Username>
 {
     std::string value;
 
@@ -10710,7 +10711,7 @@ namespace collections {
  * - default_value: ""
  */
 struct NonEmptyList
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<NonEmptyList>
 {
     std::vector<int> value;
 
@@ -10859,7 +10860,7 @@ namespace resources {
  * - default_value: ""
  */
 struct ResourceHandle
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<ResourceHandle>
 {
     void* value;
 
@@ -10942,7 +10943,7 @@ namespace dsp {
  * - default_value: ""
  */
 struct BoundedChecked
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<BoundedChecked>
 {
     uint8_t value;
 
@@ -11082,7 +11083,7 @@ namespace color {
  * - default_value: "1"
  */
 struct PositiveSaturating
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<PositiveSaturating>
 {
     uint8_t value = static_cast<uint8_t>(1);
 
@@ -11177,7 +11178,7 @@ namespace metrics {
  * - default_value: "0"
  */
 struct NonNegativeWrapping
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<NonNegativeWrapping>
 {
     uint8_t value = static_cast<uint8_t>(0);
 
@@ -11288,7 +11289,7 @@ namespace stats {
  * - default_value: "100"
  */
 struct HealthPoints
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<HealthPoints>
 {
     uint16_t value = static_cast<uint16_t>(100);
 
@@ -11396,7 +11397,7 @@ namespace sensors {
  * - default_value: "20"
  */
 struct CelsiusTemp
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<CelsiusTemp>
 {
     int value = static_cast<int>(20);
 
@@ -11553,7 +11554,7 @@ namespace data {
  * - default_value: "1"
  */
 struct Age
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<Age>
 {
     unsigned int value = static_cast<unsigned int>(1);
 
@@ -11674,7 +11675,7 @@ namespace rendering {
  * - default_value: "0"
  */
 struct ColorChannel
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<ColorChannel>
 {
     uint8_t value = static_cast<uint8_t>(0);
 
@@ -11885,7 +11886,7 @@ namespace power {
  * - default_value: "100"
  */
 struct BatteryLevel
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<BatteryLevel>
 {
     uint8_t value = static_cast<uint8_t>(100);
 
@@ -12041,7 +12042,7 @@ namespace config {
  * - default_value: "30"
  */
 struct TimeoutSeconds
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<TimeoutSeconds>
 {
     unsigned int value = static_cast<unsigned int>(30);
 
@@ -12185,7 +12186,7 @@ namespace security {
  * - default_value: ""
  */
 class ApiKey
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<ApiKey>
 {
     std::string value;
 
@@ -12269,7 +12270,7 @@ namespace scheduling {
  * - default_value: "0"
  */
 struct ThreadPriority
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<ThreadPriority>
 {
     int value = static_cast<int>(0);
 
@@ -12426,7 +12427,7 @@ namespace resilience {
  * - default_value: "0"
  */
 struct RetryCount
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<RetryCount>
 {
     unsigned int value = static_cast<unsigned int>(0);
 
@@ -12546,7 +12547,7 @@ namespace coordinates {
  * - default_value: "0.0"
  */
 struct Latitude
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<Latitude>
 {
     double value = static_cast<double>(0.0);
 
@@ -12703,7 +12704,7 @@ namespace coordinates {
  * - default_value: "0.0"
  */
 struct Longitude
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<Longitude>
 {
     double value = static_cast<double>(0.0);
 
@@ -12860,7 +12861,7 @@ namespace qos {
  * - default_value: "0"
  */
 struct QoSLevel
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<QoSLevel>
 {
     uint8_t value = static_cast<uint8_t>(0);
 
@@ -13017,7 +13018,7 @@ namespace display {
  * - default_value: "10"
  */
 struct ZoomLevel
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<ZoomLevel>
 {
     uint8_t value = static_cast<uint8_t>(10);
 
@@ -13222,7 +13223,7 @@ namespace calculations {
  * - default_value: "1.0"
  */
 struct SafeDivisor
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<SafeDivisor>
 {
     double value = static_cast<double>(1.0);
 
@@ -13359,7 +13360,7 @@ namespace kinematics {
  * - default_value: "1.0"
  */
 struct Speed
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<Speed>
 {
     double value = static_cast<double>(1.0);
 
@@ -13611,7 +13612,7 @@ namespace paths {
  * - default_value: ""
  */
 struct Filename
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<Filename>
 {
     std::string value;
 
@@ -13748,7 +13749,7 @@ namespace protocol {
  * - default_value: "200"
  */
 struct StatusCode
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<StatusCode>
 {
     uint16_t value = static_cast<uint16_t>(200);
 
@@ -13889,4 +13890,4 @@ struct StatusCode
 } // namespace protocol
 } // namespace http
 
-#endif // EXAMPLE_ECE1953A78304BC27A00F783642CF4AB14C8E4A1
+#endif // EXAMPLE_1668DF18F0759391E0AE403423011B30BD8317FC

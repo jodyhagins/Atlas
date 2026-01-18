@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_69F7FB184FB35802B6D1C625AAC04DC925DEF552
-#define FOO_BAR_69F7FB184FB35802B6D1C625AAC04DC925DEF552
+#ifndef FOO_BAR_43026953E7E7FDE1D5B3B3A0939AAF6D982FDC72
+#define FOO_BAR_43026953E7E7FDE1D5B3B3A0939AAF6D982FDC72
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -77,6 +77,7 @@
 
 namespace atlas {
 
+template<typename T>
 struct strong_type_tag
 {
 #if defined(__cpp_impl_three_way_comparison) && \
@@ -1794,7 +1795,7 @@ namespace test {
  * - default_value: ""
  */
 struct PositiveInt
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<PositiveInt>
 {
     int value;
 
@@ -1936,7 +1937,7 @@ namespace test {
  * - default_value: ""
  */
 struct PositiveChecked
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<PositiveChecked>
 {
     std::uint8_t value;
 
@@ -2039,7 +2040,7 @@ namespace test {
  * - default_value: ""
  */
 struct PositiveSaturating
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<PositiveSaturating>
 {
     std::uint8_t value;
 
@@ -2132,7 +2133,7 @@ namespace test {
  * - default_value: ""
  */
 struct PositiveWrapping
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<PositiveWrapping>
 {
     std::uint8_t value;
 
@@ -2226,5 +2227,5 @@ struct PositiveWrapping
 };
 } // namespace test
 
-#endif // FOO_BAR_69F7FB184FB35802B6D1C625AAC04DC925DEF552
+#endif // FOO_BAR_43026953E7E7FDE1D5B3B3A0939AAF6D982FDC72
 

@@ -18,7 +18,12 @@
 
 // Define test enum BEFORE including generated types (they reference it)
 namespace test {
-enum class Color : int { Red = 1, Green = 2, Blue = 3 };
+enum class Color : int
+{
+    Red = 1,
+    Green = 2,
+    Blue = 3
+};
 }
 
 #include "undress_test_types.hpp"
@@ -30,21 +35,30 @@ enum class Color : int { Red = 1, Green = 2, Blue = 3 };
 #include "doctest.hpp"
 
 // Test enums for unwrap
-enum class ScopedColor : int { Red = 1, Green = 2, Blue = 3 };
-enum UnscopedSize : short { Small = 10, Medium = 20, Large = 30 };
+enum class ScopedColor : int
+{
+    Red = 1,
+    Green = 2,
+    Blue = 3
+};
+
+enum UnscopedSize : short
+{
+    Small = 10,
+    Medium = 20,
+    Large = 30
+};
 
 // Detection idiom for SFINAE tests
 template <typename T, typename = void>
-struct is_unwrappable : std::false_type
-{
-};
+struct is_unwrappable
+: std::false_type
+{ };
 
 template <typename T>
-struct is_unwrappable<
-    T,
-    decltype(atlas::unwrap(std::declval<T &>()), void())> : std::true_type
-{
-};
+struct is_unwrappable<T, decltype(atlas::unwrap(std::declval<T &>()), void())>
+: std::true_type
+{ };
 
 // ======================================================================
 // TEST SUITE: BASIC VALUE CATEGORIES

@@ -128,7 +128,7 @@ TEST_SUITE("TemplateOrchestrator Tests")
         // Verify basic structure
         CHECK(contains(code, "namespace myns"));
         CHECK(contains(code, "struct MyType"));
-        CHECK(contains(code, ": private atlas::strong_type_tag"));
+        CHECK(contains(code, ": private atlas::strong_type_tag<"));
         CHECK(contains(code, "int value;"));
         CHECK(contains(code, "using atlas_value_type = int"));
     }
@@ -295,7 +295,7 @@ TEST_SUITE("TemplateOrchestrator Tests")
 
         // Should have basic structure
         CHECK(contains(code, "struct FullFeatured"));
-        CHECK(contains(code, ": private atlas::strong_type_tag"));
+        CHECK(contains(code, ": private atlas::strong_type_tag<"));
     }
 
     TEST_CASE("Orchestrator - Specializations rendered outside class")

@@ -1,5 +1,5 @@
-#ifndef TEST_4098686362096770E6C8E7C955940A29A0437664
-#define TEST_4098686362096770E6C8E7C955940A29A0437664
+#ifndef TEST_FBA096F64F691E8EE9702689E37A5C05BF4150E2
+#define TEST_FBA096F64F691E8EE9702689E37A5C05BF4150E2
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -72,6 +72,7 @@
 
 namespace atlas {
 
+template<typename T>
 struct strong_type_tag
 {
 #if defined(__cpp_impl_three_way_comparison) && \
@@ -640,7 +641,7 @@ template <
     typename L,
     typename R,
     typename std::enable_if<
-        std::is_base_of<atlas::strong_type_tag, L>::value,
+        atlas::is_atlas_type<L>::value,
         bool>::type = true>
 inline auto
 operator+=(L & lhs, R const & rhs)
@@ -680,5 +681,5 @@ noexcept(
 
 } // namespace test
 
-#endif // TEST_4098686362096770E6C8E7C955940A29A0437664
+#endif // TEST_FBA096F64F691E8EE9702689E37A5C05BF4150E2
 

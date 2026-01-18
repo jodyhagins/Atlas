@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_BBD65202D54493722D9810CDA756D7BC106BD2DB
-#define FOO_BAR_BBD65202D54493722D9810CDA756D7BC106BD2DB
+#ifndef FOO_BAR_860D619211E2EBC7E71756AF410E9207583DBE4C
+#define FOO_BAR_860D619211E2EBC7E71756AF410E9207583DBE4C
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -71,6 +71,7 @@
 
 namespace atlas {
 
+template<typename T>
 struct strong_type_tag
 {
 #if defined(__cpp_impl_three_way_comparison) && \
@@ -596,7 +597,7 @@ namespace test {
  * - default_value: ""
  */
 struct IncrementDecrementType
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<IncrementDecrementType>
 {
     int value;
 
@@ -680,5 +681,5 @@ struct IncrementDecrementType
 };
 } // namespace test
 
-#endif // FOO_BAR_BBD65202D54493722D9810CDA756D7BC106BD2DB
+#endif // FOO_BAR_860D619211E2EBC7E71756AF410E9207583DBE4C
 

@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_8C4D960C04F3A76EB42C17A74B435842562A4628
-#define FOO_BAR_8C4D960C04F3A76EB42C17A74B435842562A4628
+#ifndef FOO_BAR_B7324E8C51AF85021CA0F73B0B7B61E3AC56329A
+#define FOO_BAR_B7324E8C51AF85021CA0F73B0B7B61E3AC56329A
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -71,6 +71,7 @@
 
 namespace atlas {
 
+template<typename T>
 struct strong_type_tag
 {
 #if defined(__cpp_impl_three_way_comparison) && \
@@ -597,7 +598,7 @@ namespace integration {
  * - default_value: ""
  */
 struct SortableInt
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<SortableInt>
 {
     int value;
 
@@ -656,5 +657,5 @@ struct SortableInt
 } // namespace integration
 } // namespace test
 
-#endif // FOO_BAR_8C4D960C04F3A76EB42C17A74B435842562A4628
+#endif // FOO_BAR_B7324E8C51AF85021CA0F73B0B7B61E3AC56329A
 

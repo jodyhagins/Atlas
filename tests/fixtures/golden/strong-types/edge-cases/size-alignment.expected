@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_30FD1824D2F66DF5E537F21DF53D5F0B827D3F28
-#define FOO_BAR_30FD1824D2F66DF5E537F21DF53D5F0B827D3F28
+#ifndef FOO_BAR_6F61731AE6BD3DF52B281F04A097C157FD48F622
+#define FOO_BAR_6F61731AE6BD3DF52B281F04A097C157FD48F622
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -71,6 +71,7 @@
 
 namespace atlas {
 
+template<typename T>
 struct strong_type_tag
 {
 #if defined(__cpp_impl_three_way_comparison) && \
@@ -597,7 +598,7 @@ namespace edge_cases {
  * - default_value: ""
  */
 struct SizeAlignment
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<SizeAlignment>
 {
     int value;
 
@@ -645,5 +646,5 @@ struct SizeAlignment
 } // namespace edge_cases
 } // namespace test
 
-#endif // FOO_BAR_30FD1824D2F66DF5E537F21DF53D5F0B827D3F28
+#endif // FOO_BAR_6F61731AE6BD3DF52B281F04A097C157FD48F622
 

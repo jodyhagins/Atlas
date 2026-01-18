@@ -1,5 +1,5 @@
-#ifndef TEST_940F73D4F69E972D515766C48101986B51330888
-#define TEST_940F73D4F69E972D515766C48101986B51330888
+#ifndef TEST_A9777EDF1A58AEED0705077A80991D544342A078
+#define TEST_A9777EDF1A58AEED0705077A80991D544342A078
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -71,6 +71,7 @@
 
 namespace atlas {
 
+template<typename T>
 struct strong_type_tag
 {
 #if defined(__cpp_impl_three_way_comparison) && \
@@ -597,7 +598,7 @@ namespace ns {
  * - default_value: ""
  */
 struct Price
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<Price>
 {
     double value;
 
@@ -721,7 +722,7 @@ namespace profiles {
  * - default_value: ""
  */
 struct Quantity
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<Quantity>
 {
     int value;
 
@@ -864,7 +865,7 @@ namespace ns {
  * - default_value: ""
  */
 struct Volume
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<Volume>
 {
     double value;
 
@@ -976,7 +977,7 @@ namespace finance {
  * - default_value: ""
  */
 class Currency
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<Currency>
 {
     int value;
 
@@ -1114,7 +1115,7 @@ namespace d {
  * - default_value: ""
  */
 struct Type
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<Type>
 {
     unsigned long value;
 
@@ -1190,7 +1191,7 @@ namespace legacy {
  * - default_value: ""
  */
 struct OldStyle
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<OldStyle>
 {
     float value;
 
@@ -1248,5 +1249,5 @@ struct OldStyle
 };
 } // namespace legacy
 
-#endif // TEST_940F73D4F69E972D515766C48101986B51330888
+#endif // TEST_A9777EDF1A58AEED0705077A80991D544342A078
 

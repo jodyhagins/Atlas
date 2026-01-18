@@ -1,0 +1,51 @@
+# ======================================================================
+# NESTED TYPE SIZE TEST TYPES
+# Verifies that nested Atlas types don't cause size inflation due to
+# Empty Base Optimization (EBO) failures.
+#
+# See PRD-templated-strong-type-tag.md for the motivation:
+# When strong_type_tag was non-templated, nested types like:
+#   struct Outer { Inner value; }
+# where Inner is also an Atlas type, would have size inflation because
+# both types inherited from the same empty base class.
+#
+# With templated strong_type_tag<T>, each type has a unique base class,
+# allowing EBO to work correctly.
+# ======================================================================
+
+# A simple 16-bit wrapper - should be exactly 2 bytes
+[test::nested::ParticipantId]
+description=std::uint16_t; #<cstdint>
+
+# Nested type wrapping ParticipantId - should ALSO be exactly 2 bytes
+# (the key test from the PRD)
+[test::nested::SourceParticipantId]
+description=test::nested::ParticipantId
+
+# Another wrapper to test 3-level nesting
+[test::nested::TargetSourceParticipantId]
+description=test::nested::SourceParticipantId
+
+# Test with 32-bit underlying type
+[test::nested::SessionId]
+description=std::uint32_t; #<cstdint>
+
+# Nested wrapper for 32-bit type
+[test::nested::ClientSessionId]
+description=test::nested::SessionId
+
+# Test with 64-bit underlying type
+[test::nested::OrderId]
+description=std::uint64_t; #<cstdint>
+
+# Nested wrapper for 64-bit type
+[test::nested::MarketOrderId]
+description=test::nested::OrderId
+
+# Test with 8-bit type (minimal case)
+[test::nested::Flag]
+description=std::uint8_t; #<cstdint>
+
+# Nested wrapper for 8-bit type
+[test::nested::StatusFlag]
+description=test::nested::Flag

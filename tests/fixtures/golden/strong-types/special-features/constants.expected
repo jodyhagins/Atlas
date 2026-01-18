@@ -1,5 +1,5 @@
-#ifndef TEST_CONSTANTS_8346ED80DCDB0A7F62461E648F107CEAA0A497A9
-#define TEST_CONSTANTS_8346ED80DCDB0A7F62461E648F107CEAA0A497A9
+#ifndef TEST_CONSTANTS_981772E306D7CDE0919DCFBB88327C459759F05E
+#define TEST_CONSTANTS_981772E306D7CDE0919DCFBB88327C459759F05E
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -72,6 +72,7 @@
 
 namespace atlas {
 
+template<typename T>
 struct strong_type_tag
 {
 #if defined(__cpp_impl_three_way_comparison) && \
@@ -597,7 +598,7 @@ namespace math {
  * - default_value: ""
  */
 struct Angle
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<Angle>
 {
     double value;
 
@@ -742,7 +743,7 @@ namespace text {
  * - default_value: ""
  */
 struct StringConstant
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<StringConstant>
 {
     std::string value;
 
@@ -823,7 +824,7 @@ namespace test {
  * - default_value: "50"
  */
 struct NumericValue
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<NumericValue>
 {
     int value = static_cast<int>(50);
 
@@ -953,7 +954,7 @@ namespace test {
  * - default_value: ""
  */
 class NoConstexprType
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<NoConstexprType>
 {
     int value;
 
@@ -1069,5 +1070,5 @@ inline const test::NoConstexprType test::NoConstexprType::one = test::NoConstexp
 inline const test::NoConstexprType test::NoConstexprType::zero = test::NoConstexprType(0);
 } // namespace test
 
-#endif // TEST_CONSTANTS_8346ED80DCDB0A7F62461E648F107CEAA0A497A9
+#endif // TEST_CONSTANTS_981772E306D7CDE0919DCFBB88327C459759F05E
 

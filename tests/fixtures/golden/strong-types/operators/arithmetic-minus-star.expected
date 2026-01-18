@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_57164B0F2DE3DE6EB0E3B03A1E0A1C8459CED6D1
-#define FOO_BAR_57164B0F2DE3DE6EB0E3B03A1E0A1C8459CED6D1
+#ifndef FOO_BAR_F598E29EDE78BB861CA5CA49269B0EBA4926ADAC
+#define FOO_BAR_F598E29EDE78BB861CA5CA49269B0EBA4926ADAC
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -71,6 +71,7 @@
 
 namespace atlas {
 
+template<typename T>
 struct strong_type_tag
 {
 #if defined(__cpp_impl_three_way_comparison) && \
@@ -596,7 +597,7 @@ namespace test {
  * - default_value: ""
  */
 struct MinusStarType
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<MinusStarType>
 {
     int value;
 
@@ -677,5 +678,5 @@ struct MinusStarType
 };
 } // namespace test
 
-#endif // FOO_BAR_57164B0F2DE3DE6EB0E3B03A1E0A1C8459CED6D1
+#endif // FOO_BAR_F598E29EDE78BB861CA5CA49269B0EBA4926ADAC
 

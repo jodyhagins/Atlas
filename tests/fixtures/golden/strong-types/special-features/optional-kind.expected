@@ -1,5 +1,5 @@
-#ifndef TEST_OPTIONAL_KIND_C3A5D25C50876F7E9D3A838FF3AF6D562079B45E
-#define TEST_OPTIONAL_KIND_C3A5D25C50876F7E9D3A838FF3AF6D562079B45E
+#ifndef TEST_OPTIONAL_KIND_F2B3FF2FF16F1F9CE6A0A4E74C4284E6F4336E00
+#define TEST_OPTIONAL_KIND_F2B3FF2FF16F1F9CE6A0A4E74C4284E6F4336E00
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -74,6 +74,7 @@
 
 namespace atlas {
 
+template<typename T>
 struct strong_type_tag
 {
 #if defined(__cpp_impl_three_way_comparison) && \
@@ -684,7 +685,7 @@ namespace test {
  * - default_value: ""
  */
 struct ExplicitStruct
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<ExplicitStruct>
 {
     int value;
 
@@ -795,7 +796,7 @@ namespace test {
  * - default_value: ""
  */
 struct DefaultStruct
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<DefaultStruct>
 {
     double value;
 
@@ -966,7 +967,7 @@ namespace test {
  * - default_value: ""
  */
 class ExplicitClass
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<ExplicitClass>
 {
     unsigned int value;
 
@@ -1101,7 +1102,7 @@ namespace test {
  * - default_value: ""
  */
 struct DefaultStructComplex
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<DefaultStructComplex>
 {
     std::string value;
 
@@ -1174,7 +1175,7 @@ namespace mixed {
  * - default_value: ""
  */
 struct One
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<One>
 {
     int value;
 
@@ -1285,7 +1286,7 @@ namespace mixed {
  * - default_value: ""
  */
 struct Two
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<Two>
 {
     double value;
 
@@ -1366,7 +1367,7 @@ namespace mixed {
  * - default_value: ""
  */
 class Three
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<Three>
 {
     unsigned value;
 
@@ -1414,5 +1415,5 @@ public:
 };
 } // namespace mixed
 
-#endif // TEST_OPTIONAL_KIND_C3A5D25C50876F7E9D3A838FF3AF6D562079B45E
+#endif // TEST_OPTIONAL_KIND_F2B3FF2FF16F1F9CE6A0A4E74C4284E6F4336E00
 

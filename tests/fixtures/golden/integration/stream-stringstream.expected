@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_ED9773CB0EE2E31430F4CB88E11D8017E6B7BF61
-#define FOO_BAR_ED9773CB0EE2E31430F4CB88E11D8017E6B7BF61
+#ifndef FOO_BAR_BD0407C03CA15DEA1232657B791A49C6793CAFFA
+#define FOO_BAR_BD0407C03CA15DEA1232657B791A49C6793CAFFA
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -74,6 +74,7 @@
 
 namespace atlas {
 
+template<typename T>
 struct strong_type_tag
 {
 #if defined(__cpp_impl_three_way_comparison) && \
@@ -749,7 +750,7 @@ namespace integration {
  * - default_value: ""
  */
 struct StreamableInt
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<StreamableInt>
 {
     int value;
 
@@ -797,5 +798,5 @@ struct StreamableInt
 } // namespace integration
 } // namespace test
 
-#endif // FOO_BAR_ED9773CB0EE2E31430F4CB88E11D8017E6B7BF61
+#endif // FOO_BAR_BD0407C03CA15DEA1232657B791A49C6793CAFFA
 

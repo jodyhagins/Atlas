@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_206AB67025956D8DE2ECAA12FCCB18C28C28755B
-#define FOO_BAR_206AB67025956D8DE2ECAA12FCCB18C28C28755B
+#ifndef FOO_BAR_0A8964C8CBD016D614FAC981B19503A0BC677854
+#define FOO_BAR_0A8964C8CBD016D614FAC981B19503A0BC677854
 
 static_assert(__cplusplus >= 202002L,
     "This file requires C++20 or later. Compile with -std=c++20 or higher.");
@@ -80,6 +80,7 @@ static_assert(__cplusplus >= 202002L,
 
 namespace atlas {
 
+template<typename T>
 struct strong_type_tag
 {
 #if defined(__cpp_impl_three_way_comparison) && \
@@ -1369,7 +1370,7 @@ namespace test {
  * - default_value: ""
  */
 struct Percentage
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<Percentage>
 {
     int value;
 
@@ -1524,7 +1525,7 @@ namespace physics {
  * - default_value: ""
  */
 struct Temperature
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<Temperature>
 {
     double value;
 
@@ -1704,7 +1705,7 @@ namespace test {
  * - default_value: ""
  */
 struct BoundedChecked
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<BoundedChecked>
 {
     std::uint8_t value;
 
@@ -1820,7 +1821,7 @@ namespace test {
  * - default_value: ""
  */
 struct FortyTwo
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<FortyTwo>
 {
     int value;
 
@@ -1903,7 +1904,7 @@ namespace test {
  * - default_value: ""
  */
 struct BoundedString
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<BoundedString>
 {
     std::string value;
 
@@ -2043,5 +2044,5 @@ struct BoundedString
 };
 } // namespace test
 
-#endif // FOO_BAR_206AB67025956D8DE2ECAA12FCCB18C28C28755B
+#endif // FOO_BAR_0A8964C8CBD016D614FAC981B19503A0BC677854
 

@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_70B12EF05C473EE7DB0C847073E3194261E9CB42
-#define FOO_BAR_70B12EF05C473EE7DB0C847073E3194261E9CB42
+#ifndef FOO_BAR_B470192EE6440B526C121A5A4688681B676747FE
+#define FOO_BAR_B470192EE6440B526C121A5A4688681B676747FE
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -74,6 +74,7 @@
 
 namespace atlas {
 
+template<typename T>
 struct strong_type_tag
 {
 #if defined(__cpp_impl_three_way_comparison) && \
@@ -919,7 +920,7 @@ namespace test {
  * - default_value: ""
  */
 struct NonZeroInt
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<NonZeroInt>
 {
     int value;
 
@@ -1061,7 +1062,7 @@ namespace math {
  * - default_value: ""
  */
 struct Denominator
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<Denominator>
 {
     int value;
 
@@ -1174,7 +1175,7 @@ namespace test {
  * - default_value: ""
  */
 struct NonZeroUChar
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<NonZeroUChar>
 {
     unsigned char value;
 
@@ -1245,5 +1246,5 @@ struct NonZeroUChar
 };
 } // namespace test
 
-#endif // FOO_BAR_70B12EF05C473EE7DB0C847073E3194261E9CB42
+#endif // FOO_BAR_B470192EE6440B526C121A5A4688681B676747FE
 

@@ -256,7 +256,8 @@ generate_strong_types_file(
         .include_hash_drill = any_hash_specialization || auto_opts.auto_hash,
         .include_ostream_drill = any_ostream_operator || auto_opts.auto_ostream,
         .include_istream_drill = any_istream_operator || auto_opts.auto_istream,
-        .include_format_drill = any_formatter_specialization || auto_opts.auto_format,
+        .include_format_drill = any_formatter_specialization ||
+            auto_opts.auto_format,
         .auto_hash = auto_opts.auto_hash || any_hash_specialization,
         .auto_ostream = auto_opts.auto_ostream || any_ostream_operator,
         .auto_istream = auto_opts.auto_istream || any_istream_operator,

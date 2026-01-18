@@ -1,5 +1,5 @@
-#ifndef TEST_MIXED_STANDARDS_847B0D7B8C4941FC446023769F0F2C1358B0939C
-#define TEST_MIXED_STANDARDS_847B0D7B8C4941FC446023769F0F2C1358B0939C
+#ifndef TEST_MIXED_STANDARDS_BDD7CF361DDC85E8729267CD4971356E5612126C
+#define TEST_MIXED_STANDARDS_BDD7CF361DDC85E8729267CD4971356E5612126C
 
 static_assert(__cplusplus >= 202002L,
     "This file requires C++20 or later. Compile with -std=c++20 or higher.");
@@ -74,6 +74,7 @@ static_assert(__cplusplus >= 202002L,
 
 namespace atlas {
 
+template<typename T>
 struct strong_type_tag
 {
 #if defined(__cpp_impl_three_way_comparison) && \
@@ -599,7 +600,7 @@ namespace test {
  * - default_value: ""
  */
 struct Type1
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<Type1>
 {
     int value;
 
@@ -710,7 +711,7 @@ namespace test {
  * - default_value: ""
  */
 struct Type2
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<Type2>
 {
     int value;
 
@@ -821,7 +822,7 @@ namespace test {
  * - default_value: ""
  */
 struct Type3
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<Type3>
 {
     int value;
 
@@ -940,5 +941,5 @@ struct Type3
 };
 } // namespace test
 
-#endif // TEST_MIXED_STANDARDS_847B0D7B8C4941FC446023769F0F2C1358B0939C
+#endif // TEST_MIXED_STANDARDS_BDD7CF361DDC85E8729267CD4971356E5612126C
 

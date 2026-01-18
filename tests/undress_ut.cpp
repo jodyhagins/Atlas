@@ -22,7 +22,12 @@
 
 // Define test enum BEFORE including generated types (they reference it)
 namespace test {
-enum class Color : int { Red = 1, Green = 2, Blue = 3 };
+enum class Color : int
+{
+    Red = 1,
+    Green = 2,
+    Blue = 3
+};
 }
 
 #include "undress_test_types.hpp"
@@ -254,8 +259,19 @@ TEST_SUITE("atlas::undress - Edge Cases")
 // ======================================================================
 
 // Test enums for undress
-enum class ScopedColor : int { Red = 1, Green = 2, Blue = 3 };
-enum UnscopedSize : short { Small = 10, Medium = 20, Large = 30 };
+enum class ScopedColor : int
+{
+    Red = 1,
+    Green = 2,
+    Blue = 3
+};
+
+enum UnscopedSize : short
+{
+    Small = 10,
+    Medium = 20,
+    Large = 30
+};
 
 TEST_SUITE("atlas::undress - Enums")
 {
@@ -314,8 +330,12 @@ TEST_SUITE("atlas::undress - Enums")
 
     TEST_CASE("undress and unwrap yield same result for enums")
     {
-        CHECK(atlas::undress(ScopedColor::Red) == atlas::unwrap(ScopedColor::Red));
-        CHECK(atlas::undress(ScopedColor::Green) == atlas::unwrap(ScopedColor::Green));
+        CHECK(
+            atlas::undress(ScopedColor::Red) ==
+            atlas::unwrap(ScopedColor::Red));
+        CHECK(
+            atlas::undress(ScopedColor::Green) ==
+            atlas::unwrap(ScopedColor::Green));
         CHECK(atlas::undress(Small) == atlas::unwrap(Small));
         CHECK(atlas::undress(Large) == atlas::unwrap(Large));
     }
@@ -369,12 +389,16 @@ TEST_SUITE("atlas::holds_enum")
 
 // Detection idiom for SFINAE tests
 template <typename T, typename = void>
-struct is_undress_enumable : std::false_type {};
+struct is_undress_enumable
+: std::false_type
+{ };
 
 template <typename T>
 struct is_undress_enumable<
     T,
-    decltype(atlas::undress_enum(std::declval<T &>()), void())> : std::true_type {};
+    decltype(atlas::undress_enum(std::declval<T &>()), void())>
+: std::true_type
+{ };
 
 TEST_SUITE("atlas::undress_enum")
 {

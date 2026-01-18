@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_0E291DED57BA34B1CA02DB30B573C35C2FE388E2
-#define FOO_BAR_0E291DED57BA34B1CA02DB30B573C35C2FE388E2
+#ifndef FOO_BAR_1525AD496E66DAB9ECB83494EC0204C6A095A3D4
+#define FOO_BAR_1525AD496E66DAB9ECB83494EC0204C6A095A3D4
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -74,6 +74,7 @@
 
 namespace atlas {
 
+template<typename T>
 struct strong_type_tag
 {
 #if defined(__cpp_impl_three_way_comparison) && \
@@ -659,7 +660,7 @@ namespace test {
  * - default_value: ""
  */
 struct ArrowStringWrapper
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<ArrowStringWrapper>
 {
     std::string value;
 
@@ -740,7 +741,7 @@ namespace test {
  * - default_value: ""
  */
 struct ArrowRawPointer
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<ArrowRawPointer>
 {
     int* value;
 
@@ -821,7 +822,7 @@ namespace test {
  * - default_value: ""
  */
 struct ArrowSharedPtr
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<ArrowSharedPtr>
 {
     std::shared_ptr<int> value;
 
@@ -902,7 +903,7 @@ namespace test {
  * - default_value: ""
  */
 struct ArrowUniquePtr
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<ArrowUniquePtr>
 {
     std::unique_ptr<int> value;
 
@@ -983,7 +984,7 @@ namespace test {
  * - default_value: ""
  */
 struct ArrowOptional
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<ArrowOptional>
 {
     std::optional<int> value;
 
@@ -1049,5 +1050,5 @@ struct ArrowOptional
 };
 } // namespace test
 
-#endif // FOO_BAR_0E291DED57BA34B1CA02DB30B573C35C2FE388E2
+#endif // FOO_BAR_1525AD496E66DAB9ECB83494EC0204C6A095A3D4
 

@@ -1,5 +1,5 @@
-#ifndef my_app_types_1b4d2837d97b484511d60bf2d17c938db4e9448b
-#define my_app_types_1b4d2837d97b484511d60bf2d17c938db4e9448b
+#ifndef my_app_types_446609fa45ca4954b2ec301c9e6db314373e6bcb
+#define my_app_types_446609fa45ca4954b2ec301c9e6db314373e6bcb
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -71,6 +71,7 @@
 
 namespace atlas {
 
+template<typename T>
 struct strong_type_tag
 {
 #if defined(__cpp_impl_three_way_comparison) && \
@@ -596,7 +597,7 @@ namespace test {
  * - default_value: ""
  */
 struct LowercaseGuardType
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<LowercaseGuardType>
 {
     int value;
 
@@ -643,5 +644,5 @@ struct LowercaseGuardType
 };
 } // namespace test
 
-#endif // my_app_types_1b4d2837d97b484511d60bf2d17c938db4e9448b
+#endif // my_app_types_446609fa45ca4954b2ec301c9e6db314373e6bcb
 

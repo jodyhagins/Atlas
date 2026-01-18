@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_A6ABFD83FBF19A1E1C0C65D9BC2EA1B2F7DE985B
-#define FOO_BAR_A6ABFD83FBF19A1E1C0C65D9BC2EA1B2F7DE985B
+#ifndef FOO_BAR_DAFEE739E928FC768DD794D1C22ECC089E92F9C2
+#define FOO_BAR_DAFEE739E928FC768DD794D1C22ECC089E92F9C2
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -72,6 +72,7 @@
 
 namespace atlas {
 
+template<typename T>
 struct strong_type_tag
 {
 #if defined(__cpp_impl_three_way_comparison) && \
@@ -658,7 +659,7 @@ namespace edge_cases {
  * - default_value: ""
  */
 struct MoveOnlyUniquePtr
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<MoveOnlyUniquePtr>
 {
     std::unique_ptr<int> value;
 
@@ -736,5 +737,5 @@ struct MoveOnlyUniquePtr
 } // namespace edge_cases
 } // namespace test
 
-#endif // FOO_BAR_A6ABFD83FBF19A1E1C0C65D9BC2EA1B2F7DE985B
+#endif // FOO_BAR_DAFEE739E928FC768DD794D1C22ECC089E92F9C2
 

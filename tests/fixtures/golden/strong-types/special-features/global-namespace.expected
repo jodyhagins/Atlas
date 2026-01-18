@@ -1,5 +1,5 @@
-#ifndef WJH_IPC_28F22293E76B937F5B9010AEC459EA464E26413C
-#define WJH_IPC_28F22293E76B937F5B9010AEC459EA464E26413C
+#ifndef WJH_IPC_68EB9B38459CD06A84304BE6014C9966FD8AAD78
+#define WJH_IPC_68EB9B38459CD06A84304BE6014C9966FD8AAD78
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -73,6 +73,7 @@
 
 namespace atlas {
 
+template<typename T>
 struct strong_type_tag
 {
 #if defined(__cpp_impl_three_way_comparison) && \
@@ -659,7 +660,7 @@ namespace ipc {
  * - default_value: "0.0"
  */
 struct Distance
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<Distance>
 {
     double value = static_cast<double>(0.0);
 
@@ -915,7 +916,7 @@ namespace ipc {
  * - default_value: ""
  */
 struct Handle
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<Handle>
 {
     size_t value;
 
@@ -1014,5 +1015,5 @@ struct Handle
 } // namespace ipc
 } // namespace wjh
 
-#endif // WJH_IPC_28F22293E76B937F5B9010AEC459EA464E26413C
+#endif // WJH_IPC_68EB9B38459CD06A84304BE6014C9966FD8AAD78
 

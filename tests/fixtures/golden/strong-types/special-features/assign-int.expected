@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_8023C4489C4B400AB2CAB75B88EC6586A64C296D
-#define FOO_BAR_8023C4489C4B400AB2CAB75B88EC6586A64C296D
+#ifndef FOO_BAR_EC1B87EAEBB74734467FDBB5145A2CCEF99B96D3
+#define FOO_BAR_EC1B87EAEBB74734467FDBB5145A2CCEF99B96D3
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -74,6 +74,7 @@
 
 namespace atlas {
 
+template<typename T>
 struct strong_type_tag
 {
 #if defined(__cpp_impl_three_way_comparison) && \
@@ -599,7 +600,7 @@ namespace test {
  * - default_value: ""
  */
 struct AssignIntType
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<AssignIntType>
 {
     int value;
 
@@ -672,5 +673,5 @@ struct AssignIntType
 };
 } // namespace test
 
-#endif // FOO_BAR_8023C4489C4B400AB2CAB75B88EC6586A64C296D
+#endif // FOO_BAR_EC1B87EAEBB74734467FDBB5145A2CCEF99B96D3
 

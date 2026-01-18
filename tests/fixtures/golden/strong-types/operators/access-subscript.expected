@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_81C0489B9C143CF917A0DAA8EA55BDE750CB39C3
-#define FOO_BAR_81C0489B9C143CF917A0DAA8EA55BDE750CB39C3
+#ifndef FOO_BAR_344B71D1E379D25C184E4A4A9F6B22211B79B39D
+#define FOO_BAR_344B71D1E379D25C184E4A4A9F6B22211B79B39D
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -72,6 +72,7 @@
 
 namespace atlas {
 
+template<typename T>
 struct strong_type_tag
 {
 #if defined(__cpp_impl_three_way_comparison) && \
@@ -597,7 +598,7 @@ namespace test {
  * - default_value: ""
  */
 struct SubscriptType
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<SubscriptType>
 {
     std::string value;
 
@@ -666,5 +667,5 @@ struct SubscriptType
 };
 } // namespace test
 
-#endif // FOO_BAR_81C0489B9C143CF917A0DAA8EA55BDE750CB39C3
+#endif // FOO_BAR_344B71D1E379D25C184E4A4A9F6B22211B79B39D
 

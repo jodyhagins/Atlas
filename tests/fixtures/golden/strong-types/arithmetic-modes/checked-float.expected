@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_3EC6D19E60F7756C09A8D698BFD9B621B9A1E86E
-#define FOO_BAR_3EC6D19E60F7756C09A8D698BFD9B621B9A1E86E
+#ifndef FOO_BAR_A3378C71D3D2AE7F2C83DB9378EF765B776F0E07
+#define FOO_BAR_A3378C71D3D2AE7F2C83DB9378EF765B776F0E07
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -74,6 +74,7 @@
 
 namespace atlas {
 
+template<typename T>
 struct strong_type_tag
 {
 #if defined(__cpp_impl_three_way_comparison) && \
@@ -1043,7 +1044,7 @@ namespace test {
  * - default_value: ""
  */
 struct CheckedFloat
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<CheckedFloat>
 {
     double value;
 
@@ -1147,5 +1148,5 @@ struct CheckedFloat
 };
 } // namespace test
 
-#endif // FOO_BAR_3EC6D19E60F7756C09A8D698BFD9B621B9A1E86E
+#endif // FOO_BAR_A3378C71D3D2AE7F2C83DB9378EF765B776F0E07
 

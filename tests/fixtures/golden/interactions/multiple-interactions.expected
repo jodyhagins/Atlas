@@ -1,5 +1,5 @@
-#ifndef TEST_F0F5DFD28D62C58AEDF28C1E5C0E43C637E69BA3
-#define TEST_F0F5DFD28D62C58AEDF28C1E5C0E43C637E69BA3
+#ifndef TEST_FDC84495496BF34EB71FF8D5211744732B799AA0
+#define TEST_FDC84495496BF34EB71FF8D5211744732B799AA0
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -72,6 +72,7 @@
 
 namespace atlas {
 
+template<typename T>
 struct strong_type_tag
 {
 #if defined(__cpp_impl_three_way_comparison) && \
@@ -647,7 +648,7 @@ template <
     typename L,
     typename R,
     typename std::enable_if<
-        std::is_base_of<atlas::strong_type_tag, L>::value,
+        atlas::is_atlas_type<L>::value,
         bool>::type = true>
 inline auto
 operator*=(L & lhs, R const & rhs)
@@ -704,7 +705,7 @@ template <
     typename L,
     typename R,
     typename std::enable_if<
-        std::is_base_of<atlas::strong_type_tag, L>::value,
+        atlas::is_atlas_type<L>::value,
         bool>::type = true>
 inline auto
 operator+=(L & lhs, R const & rhs)
@@ -761,7 +762,7 @@ template <
     typename L,
     typename R,
     typename std::enable_if<
-        std::is_base_of<atlas::strong_type_tag, L>::value,
+        atlas::is_atlas_type<L>::value,
         bool>::type = true>
 inline auto
 operator-=(L & lhs, R const & rhs)
@@ -818,7 +819,7 @@ template <
     typename L,
     typename R,
     typename std::enable_if<
-        std::is_base_of<atlas::strong_type_tag, L>::value,
+        atlas::is_atlas_type<L>::value,
         bool>::type = true>
 inline auto
 operator/=(L & lhs, R const & rhs)
@@ -921,5 +922,5 @@ noexcept(
 
 } // namespace physics::units
 
-#endif // TEST_F0F5DFD28D62C58AEDF28C1E5C0E43C637E69BA3
+#endif // TEST_FDC84495496BF34EB71FF8D5211744732B799AA0
 

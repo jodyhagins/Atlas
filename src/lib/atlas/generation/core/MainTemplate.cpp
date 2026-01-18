@@ -54,7 +54,7 @@ get_template_impl() const noexcept
  * - default_value: "{{{desc.default_value}}}"
  */
 {{{desc.kind}}} {{{full_class_name}}}
-: private atlas::strong_type_tag
+: private atlas::strong_type_tag<{{{class_name}}}>
 {
 {{#has_default_value}}
     {{{underlying_type}}} {{{value}}} = static_cast<{{{underlying_type}}}>{{{default_initializer}}};
