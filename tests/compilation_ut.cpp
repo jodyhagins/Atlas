@@ -1639,7 +1639,9 @@ int main() {
         }
     }
 
-    TEST_CASE("Formatter drills through nested strong types")
+    TEST_CASE(
+        "Formatter drills through nested strong types" *
+        doctest::skip(not CompilationTester::is_format_supported()))
     {
         CompilationTester tester;
 
@@ -1661,8 +1663,6 @@ description=strong test::Inner; no-constexpr, c++20
 )";
 
         auto test_code = R"(
-#include <version>
-#if defined(__cpp_lib_format) && __cpp_lib_format >= 202110L
 #include <cassert>
 #include <format>
 #include <string>
@@ -1681,20 +1681,17 @@ int main() {
 
     return 0;
 }
-#else
-int main() { return 0; }
-#endif
 )";
         auto result = tester.compile_and_run(description, test_code, "c++20");
 
+        INFO("Formatter drilling through nested types failed:");
+        INFO(result.output);
         CHECK(result.success);
-        if (not result.success) {
-            INFO("Formatter drilling through nested types failed:");
-            INFO(result.output);
-        }
     }
 
-    TEST_CASE("Formatter drills enum to underlying type")
+    TEST_CASE(
+        "Formatter drills enum to underlying type" *
+        doctest::skip(not CompilationTester::is_format_supported()))
     {
         CompilationTester tester;
 
@@ -1715,8 +1712,6 @@ description=strong test::Color; no-constexpr, c++20, #"format_color.hpp"
 )";
 
         auto test_code = R"(
-#include <version>
-#if defined(__cpp_lib_format) && __cpp_lib_format >= 202110L
 #include <cassert>
 #include <format>
 #include <string>
@@ -1733,17 +1728,12 @@ int main() {
 
     return 0;
 }
-#else
-int main() { return 0; }
-#endif
 )";
         auto result = tester.compile_and_run(description, test_code, "c++20");
 
+        INFO("Formatter drilling enum to underlying type failed:");
+        INFO(result.output);
         CHECK(result.success);
-        if (not result.success) {
-            INFO("Formatter drilling enum to underlying type failed:");
-            INFO(result.output);
-        }
     }
 }
 
@@ -2239,7 +2229,9 @@ int main() {
     // Format drilling tests
     // -------------------------------------------------------------------------
 
-    TEST_CASE("Format: first header without, second with - drilling works")
+    TEST_CASE(
+        "Format: first header without, second with - drilling works" *
+        doctest::skip(not CompilationTester::is_format_supported()))
     {
         auto temp_dir = fs::temp_directory_path() /
             ("atlas_format_first_without_" + std::to_string(::getpid()));
@@ -2313,7 +2305,9 @@ int main() { return 0; }  // Skip if format not available
         fs::remove_all(temp_dir, ec);
     }
 
-    TEST_CASE("Format: both headers with")
+    TEST_CASE(
+        "Format: both headers with" *
+        doctest::skip(not CompilationTester::is_format_supported()))
     {
         auto temp_dir = fs::temp_directory_path() /
             ("atlas_format_both_with_" + std::to_string(::getpid()));

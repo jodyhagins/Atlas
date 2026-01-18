@@ -73,6 +73,50 @@ class CompilationTester
     int counter_ = 0;
 
 public:
+    // Check if std::format is supported by the compiler
+    // Uses static cache so it's only checked once
+    static bool is_format_supported()
+    {
+        static int cached = -1; // -1 = not checked, 0 = no, 1 = yes
+
+        if (cached >= 0) {
+            return cached == 1;
+        }
+
+        // Create test file that checks for std::format
+        auto temp_dir = fs::temp_directory_path() /
+            ("atlas_format_check_" + std::to_string(::getpid()));
+        fs::create_directories(temp_dir);
+
+        auto test_file = temp_dir / "test.cpp";
+        std::ofstream out(test_file);
+        out << "#include <version>\n";
+        out << "#if defined(__cpp_lib_format) && __cpp_lib_format >= 202110L\n";
+        out << "#include <format>\n";
+        out << "int main() { return 0; }\n";
+        out << "#else\n";
+        out << "#error \"std::format not supported\"\n";
+        out << "#endif\n";
+        out.close();
+
+        // Try to compile with C++20
+        auto exe_path = temp_dir / "test";
+        std::ostringstream cmd;
+        cmd << wjh::atlas::test::find_working_compiler()
+            << " -std=c++20 " << test_file.string() << " -o "
+            << exe_path.string() << " 2>&1";
+
+        auto result = exec_command(cmd.str());
+
+        // Clean up
+        std::error_code ec;
+        fs::remove_all(temp_dir, ec);
+
+        // Cache and return result
+        cached = (result.exit_code == 0) ? 1 : 0;
+        return cached == 1;
+    }
+
     // Check if a C++ standard is supported by the compiler
     // Uses static cache so each standard is only checked once
     static bool is_cpp_standard_supported(std::string const & cpp_standard)
