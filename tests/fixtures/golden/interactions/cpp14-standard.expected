@@ -1,5 +1,5 @@
-#ifndef TEST_B44AED07E743C4AE1EC9C1C640FB3AF8D8420097
-#define TEST_B44AED07E743C4AE1EC9C1C640FB3AF8D8420097
+#ifndef TEST_48705EC48A6A730E2A5F74682D278EA6B8C25881
+#define TEST_48705EC48A6A730E2A5F74682D278EA6B8C25881
 
 static_assert(__cplusplus >= 201402L,
     "This file requires C++14 or later. Compile with -std=c++14 or higher.");
@@ -379,6 +379,17 @@ undress_enum_impl(T const & t, PriorityTag<0>)
     return t;
 }
 
+// Base case: rvalue enum - return by value (avoids dangling reference)
+template <typename T>
+constexpr auto
+undress_enum_impl(T && t, PriorityTag<0>)
+-> typename std::enable_if<
+    not std::is_lvalue_reference<T>::value && std::is_enum<T>::value,
+    T>::type
+{
+    return t;
+}
+
 // Recursive case: drill through atlas types
 template <typename T>
 constexpr auto
@@ -670,5 +681,5 @@ noexcept(
 
 } // namespace test
 
-#endif // TEST_B44AED07E743C4AE1EC9C1C640FB3AF8D8420097
+#endif // TEST_48705EC48A6A730E2A5F74682D278EA6B8C25881
 

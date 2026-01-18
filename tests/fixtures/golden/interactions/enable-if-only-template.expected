@@ -1,5 +1,5 @@
-#ifndef TEST_85C60CFD78D7761D7B4A9DDADF030739F3CC0353
-#define TEST_85C60CFD78D7761D7B4A9DDADF030739F3CC0353
+#ifndef TEST_B0E7469D2F61BA9321AF8AD0CDF40AD82566201F
+#define TEST_B0E7469D2F61BA9321AF8AD0CDF40AD82566201F
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -376,6 +376,17 @@ undress_enum_impl(T const & t, PriorityTag<0>)
     return t;
 }
 
+// Base case: rvalue enum - return by value (avoids dangling reference)
+template <typename T>
+constexpr auto
+undress_enum_impl(T && t, PriorityTag<0>)
+-> typename std::enable_if<
+    not std::is_lvalue_reference<T>::value && std::is_enum<T>::value,
+    T>::type
+{
+    return t;
+}
+
 // Recursive case: drill through atlas types
 template <typename T>
 constexpr auto
@@ -735,5 +746,5 @@ noexcept(
 
 } // namespace math
 
-#endif // TEST_85C60CFD78D7761D7B4A9DDADF030739F3CC0353
+#endif // TEST_B0E7469D2F61BA9321AF8AD0CDF40AD82566201F
 

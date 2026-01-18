@@ -1,5 +1,5 @@
-#ifndef TEST_2C164793AB0CE5FB4D3F35D7D0A4F9D1946A8558
-#define TEST_2C164793AB0CE5FB4D3F35D7D0A4F9D1946A8558
+#ifndef TEST_A86CE309225A391A965863598B172CA23D20388D
+#define TEST_A86CE309225A391A965863598B172CA23D20388D
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -376,6 +376,17 @@ undress_enum_impl(T const & t, PriorityTag<0>)
     return t;
 }
 
+// Base case: rvalue enum - return by value (avoids dangling reference)
+template <typename T>
+constexpr auto
+undress_enum_impl(T && t, PriorityTag<0>)
+-> typename std::enable_if<
+    not std::is_lvalue_reference<T>::value && std::is_enum<T>::value,
+    T>::type
+{
+    return t;
+}
+
 // Recursive case: drill through atlas types
 template <typename T>
 constexpr auto
@@ -677,5 +688,5 @@ noexcept(
     return finance::core::Money{lhs.value * rhs.value};
 }
 
-#endif // TEST_2C164793AB0CE5FB4D3F35D7D0A4F9D1946A8558
+#endif // TEST_A86CE309225A391A965863598B172CA23D20388D
 

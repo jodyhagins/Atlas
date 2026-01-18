@@ -1,5 +1,5 @@
-#ifndef EXAMPLE_INTERACTIONS_9117164626BE44E4F68F5D2676C61DCF66202C3D
-#define EXAMPLE_INTERACTIONS_9117164626BE44E4F68F5D2676C61DCF66202C3D
+#ifndef EXAMPLE_INTERACTIONS_1C7CBDA87E386B3A43D9C97C26031B142D607D46
+#define EXAMPLE_INTERACTIONS_1C7CBDA87E386B3A43D9C97C26031B142D607D46
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -372,6 +372,17 @@ template <typename T>
 constexpr auto
 undress_enum_impl(T const & t, PriorityTag<0>)
 -> typename std::enable_if<std::is_enum<T>::value, T const &>::type
+{
+    return t;
+}
+
+// Base case: rvalue enum - return by value (avoids dangling reference)
+template <typename T>
+constexpr auto
+undress_enum_impl(T && t, PriorityTag<0>)
+-> typename std::enable_if<
+    not std::is_lvalue_reference<T>::value && std::is_enum<T>::value,
+    T>::type
 {
     return t;
 }
@@ -1775,4 +1786,4 @@ noexcept(
 
 } // namespace security
 
-#endif // EXAMPLE_INTERACTIONS_9117164626BE44E4F68F5D2676C61DCF66202C3D
+#endif // EXAMPLE_INTERACTIONS_1C7CBDA87E386B3A43D9C97C26031B142D607D46

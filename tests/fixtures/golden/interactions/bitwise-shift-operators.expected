@@ -1,5 +1,5 @@
-#ifndef TEST_680E8B5CE9829F36E5D7E21F36191DA766035D50
-#define TEST_680E8B5CE9829F36E5D7E21F36191DA766035D50
+#ifndef TEST_A892EAA62D2F1DAFFFC67C7888A2113B7562223E
+#define TEST_A892EAA62D2F1DAFFFC67C7888A2113B7562223E
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -372,6 +372,17 @@ template <typename T>
 constexpr auto
 undress_enum_impl(T const & t, PriorityTag<0>)
 -> typename std::enable_if<std::is_enum<T>::value, T const &>::type
+{
+    return t;
+}
+
+// Base case: rvalue enum - return by value (avoids dangling reference)
+template <typename T>
+constexpr auto
+undress_enum_impl(T && t, PriorityTag<0>)
+-> typename std::enable_if<
+    not std::is_lvalue_reference<T>::value && std::is_enum<T>::value,
+    T>::type
 {
     return t;
 }
@@ -756,5 +767,5 @@ noexcept(
 
 } // namespace net::ipv4
 
-#endif // TEST_680E8B5CE9829F36E5D7E21F36191DA766035D50
+#endif // TEST_A892EAA62D2F1DAFFFC67C7888A2113B7562223E
 

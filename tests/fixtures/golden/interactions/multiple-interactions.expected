@@ -1,5 +1,5 @@
-#ifndef TEST_FDC84495496BF34EB71FF8D5211744732B799AA0
-#define TEST_FDC84495496BF34EB71FF8D5211744732B799AA0
+#ifndef TEST_E4BE31D910373758F780BC75252CA3A4351C262D
+#define TEST_E4BE31D910373758F780BC75252CA3A4351C262D
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -372,6 +372,17 @@ template <typename T>
 constexpr auto
 undress_enum_impl(T const & t, PriorityTag<0>)
 -> typename std::enable_if<std::is_enum<T>::value, T const &>::type
+{
+    return t;
+}
+
+// Base case: rvalue enum - return by value (avoids dangling reference)
+template <typename T>
+constexpr auto
+undress_enum_impl(T && t, PriorityTag<0>)
+-> typename std::enable_if<
+    not std::is_lvalue_reference<T>::value && std::is_enum<T>::value,
+    T>::type
 {
     return t;
 }
@@ -922,5 +933,5 @@ noexcept(
 
 } // namespace physics::units
 
-#endif // TEST_FDC84495496BF34EB71FF8D5211744732B799AA0
+#endif // TEST_E4BE31D910373758F780BC75252CA3A4351C262D
 

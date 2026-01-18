@@ -1,5 +1,5 @@
-#ifndef TEST_785F6C8BFA3995365FF841284C2682A3AEB94233
-#define TEST_785F6C8BFA3995365FF841284C2682A3AEB94233
+#ifndef TEST_7FE902D1C711941EE8605458410641B0F6303DEC
+#define TEST_7FE902D1C711941EE8605458410641B0F6303DEC
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -379,6 +379,17 @@ undress_enum_impl(T const & t, PriorityTag<0>)
     return t;
 }
 
+// Base case: rvalue enum - return by value (avoids dangling reference)
+template <typename T>
+constexpr auto
+undress_enum_impl(T && t, PriorityTag<0>)
+-> typename std::enable_if<
+    not std::is_lvalue_reference<T>::value && std::is_enum<T>::value,
+    T>::type
+{
+    return t;
+}
+
 // Recursive case: drill through atlas types
 template <typename T>
 constexpr auto
@@ -700,5 +711,5 @@ noexcept(
 
 } // namespace physics
 
-#endif // TEST_785F6C8BFA3995365FF841284C2682A3AEB94233
+#endif // TEST_7FE902D1C711941EE8605458410641B0F6303DEC
 

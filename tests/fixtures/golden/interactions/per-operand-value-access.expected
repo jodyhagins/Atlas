@@ -1,5 +1,5 @@
-#ifndef TEST_351CB5CEDC345D3AAAF76521E54769DC9E8A6361
-#define TEST_351CB5CEDC345D3AAAF76521E54769DC9E8A6361
+#ifndef TEST_C02F04C7968A196421879E273C06DB563FC9828F
+#define TEST_C02F04C7968A196421879E273C06DB563FC9828F
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -376,6 +376,17 @@ undress_enum_impl(T const & t, PriorityTag<0>)
     return t;
 }
 
+// Base case: rvalue enum - return by value (avoids dangling reference)
+template <typename T>
+constexpr auto
+undress_enum_impl(T && t, PriorityTag<0>)
+-> typename std::enable_if<
+    not std::is_lvalue_reference<T>::value && std::is_enum<T>::value,
+    T>::type
+{
+    return t;
+}
+
 // Recursive case: drill through atlas types
 template <typename T>
 constexpr auto
@@ -681,5 +692,5 @@ noexcept(
 
 } // namespace mylib
 
-#endif // TEST_351CB5CEDC345D3AAAF76521E54769DC9E8A6361
+#endif // TEST_C02F04C7968A196421879E273C06DB563FC9828F
 

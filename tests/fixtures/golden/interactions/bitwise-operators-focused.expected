@@ -1,5 +1,5 @@
-#ifndef TEST_1857289F55DBB1275C61022C3402311727AA305F
-#define TEST_1857289F55DBB1275C61022C3402311727AA305F
+#ifndef TEST_74B51546DF851ED654D0F3AC91443F0A467E8D64
+#define TEST_74B51546DF851ED654D0F3AC91443F0A467E8D64
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -372,6 +372,17 @@ template <typename T>
 constexpr auto
 undress_enum_impl(T const & t, PriorityTag<0>)
 -> typename std::enable_if<std::is_enum<T>::value, T const &>::type
+{
+    return t;
+}
+
+// Base case: rvalue enum - return by value (avoids dangling reference)
+template <typename T>
+constexpr auto
+undress_enum_impl(T && t, PriorityTag<0>)
+-> typename std::enable_if<
+    not std::is_lvalue_reference<T>::value && std::is_enum<T>::value,
+    T>::type
 {
     return t;
 }
@@ -813,5 +824,5 @@ noexcept(
 
 } // namespace graphics::color
 
-#endif // TEST_1857289F55DBB1275C61022C3402311727AA305F
+#endif // TEST_74B51546DF851ED654D0F3AC91443F0A467E8D64
 
