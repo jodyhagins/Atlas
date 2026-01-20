@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_1D08EB689524E37BC2F368DFD1D52149C99647EF
-#define FOO_BAR_1D08EB689524E37BC2F368DFD1D52149C99647EF
+#ifndef FOO_BAR_B61AE2B67DB95104F5D68FCC603AAA16C7F0F99B
+#define FOO_BAR_B61AE2B67DB95104F5D68FCC603AAA16C7F0F99B
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -1090,9 +1090,16 @@ struct BoundedInt
 #endif
 };
 
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wexit-time-destructors"
+#pragma clang diagnostic ignored "-Wglobal-constructors"
+#endif
 inline constexpr test::templates::BoundedInt test::templates::BoundedInt::max = test::templates::BoundedInt(100);
-
 inline constexpr test::templates::BoundedInt test::templates::BoundedInt::min = test::templates::BoundedInt(0);
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 } // namespace templates
 } // namespace test
 
@@ -1707,9 +1714,16 @@ struct EnhancedInt
     }
 };
 
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wexit-time-destructors"
+#pragma clang diagnostic ignored "-Wglobal-constructors"
+#endif
 inline constexpr test::templates::EnhancedInt test::templates::EnhancedInt::is_template = test::templates::EnhancedInt(1);
-
 inline constexpr test::templates::EnhancedInt test::templates::EnhancedInt::special = test::templates::EnhancedInt(42);
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 } // namespace templates
 } // namespace test
 
@@ -1777,5 +1791,5 @@ struct VectorWrapper
 } // namespace templates
 } // namespace test
 
-#endif // FOO_BAR_1D08EB689524E37BC2F368DFD1D52149C99647EF
+#endif // FOO_BAR_B61AE2B67DB95104F5D68FCC603AAA16C7F0F99B
 

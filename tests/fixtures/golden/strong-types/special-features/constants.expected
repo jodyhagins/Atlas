@@ -1,5 +1,5 @@
-#ifndef TEST_CONSTANTS_981772E306D7CDE0919DCFBB88327C459759F05E
-#define TEST_CONSTANTS_981772E306D7CDE0919DCFBB88327C459759F05E
+#ifndef TEST_CONSTANTS_725D286FD448A9776B7B71EAC370594807DFD3CA
+#define TEST_CONSTANTS_725D286FD448A9776B7B71EAC370594807DFD3CA
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -732,11 +732,17 @@ struct Angle
     }
 };
 
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wexit-time-destructors"
+#pragma clang diagnostic ignored "-Wglobal-constructors"
+#endif
 inline constexpr math::Angle math::Angle::pi = math::Angle(3.14159);
-
 inline constexpr math::Angle math::Angle::tau = math::Angle(6.28318);
-
 inline constexpr math::Angle math::Angle::zero = math::Angle(0.0);
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 } // namespace math
 
 
@@ -815,9 +821,16 @@ struct StringConstant
     }
 };
 
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wexit-time-destructors"
+#pragma clang diagnostic ignored "-Wglobal-constructors"
+#endif
 inline constexpr text::StringConstant text::StringConstant::default_name = text::StringConstant("unknown");
-
 inline constexpr text::StringConstant text::StringConstant::empty = text::StringConstant("");
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 } // namespace text
 
 
@@ -945,9 +958,16 @@ struct NumericValue
     }
 };
 
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wexit-time-destructors"
+#pragma clang diagnostic ignored "-Wglobal-constructors"
+#endif
 inline constexpr test::NumericValue test::NumericValue::max = test::NumericValue(100);
-
 inline constexpr test::NumericValue test::NumericValue::min = test::NumericValue(0);
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 } // namespace test
 
 
@@ -1076,10 +1096,17 @@ public:
     }
 };
 
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wexit-time-destructors"
+#pragma clang diagnostic ignored "-Wglobal-constructors"
+#endif
 inline const test::NoConstexprType test::NoConstexprType::one = test::NoConstexprType(1);
-
 inline const test::NoConstexprType test::NoConstexprType::zero = test::NoConstexprType(0);
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 } // namespace test
 
-#endif // TEST_CONSTANTS_981772E306D7CDE0919DCFBB88327C459759F05E
+#endif // TEST_CONSTANTS_725D286FD448A9776B7B71EAC370594807DFD3CA
 

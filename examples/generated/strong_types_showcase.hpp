@@ -1,5 +1,5 @@
-#ifndef EXAMPLE_1668DF18F0759391E0AE403423011B30BD8317FC
-#define EXAMPLE_1668DF18F0759391E0AE403423011B30BD8317FC
+#ifndef EXAMPLE_0A788EA5F219881DAF4F78A45DA6B49C14881F75
+#define EXAMPLE_0A788EA5F219881DAF4F78A45DA6B49C14881F75
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -7439,15 +7439,19 @@ struct HttpStatusCode
 #endif
 };
 
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wexit-time-destructors"
+#pragma clang diagnostic ignored "-Wglobal-constructors"
+#endif
 inline constexpr demo::constants::HttpStatusCode demo::constants::HttpStatusCode::bad_request = demo::constants::HttpStatusCode(400);
-
 inline constexpr demo::constants::HttpStatusCode demo::constants::HttpStatusCode::created = demo::constants::HttpStatusCode(201);
-
 inline constexpr demo::constants::HttpStatusCode demo::constants::HttpStatusCode::not_found = demo::constants::HttpStatusCode(404);
-
 inline constexpr demo::constants::HttpStatusCode demo::constants::HttpStatusCode::ok = demo::constants::HttpStatusCode(200);
-
 inline constexpr demo::constants::HttpStatusCode demo::constants::HttpStatusCode::server_error = demo::constants::HttpStatusCode(500);
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 } // namespace constants
 } // namespace demo
 
@@ -7576,13 +7580,18 @@ struct Priority
     }
 };
 
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wexit-time-destructors"
+#pragma clang diagnostic ignored "-Wglobal-constructors"
+#endif
 inline constexpr demo::constants::Priority demo::constants::Priority::critical = demo::constants::Priority(4);
-
 inline constexpr demo::constants::Priority demo::constants::Priority::high = demo::constants::Priority(3);
-
 inline constexpr demo::constants::Priority demo::constants::Priority::low = demo::constants::Priority(1);
-
 inline constexpr demo::constants::Priority demo::constants::Priority::medium = demo::constants::Priority(2);
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 } // namespace constants
 } // namespace demo
 
@@ -13901,4 +13910,4 @@ struct StatusCode
 } // namespace protocol
 } // namespace http
 
-#endif // EXAMPLE_1668DF18F0759391E0AE403423011B30BD8317FC
+#endif // EXAMPLE_0A788EA5F219881DAF4F78A45DA6B49C14881F75

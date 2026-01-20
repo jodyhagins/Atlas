@@ -200,10 +200,7 @@ get_template_impl() const noexcept
     {{>istream_operator}}
     {{/istream_operator}}
 };
-{{#constants}}
-
 {{>constants}}
-{{/constants}}
 {{#namespace_close}}
 {{{.}}}{{/namespace_close}}
 {{#hash_specialization}}

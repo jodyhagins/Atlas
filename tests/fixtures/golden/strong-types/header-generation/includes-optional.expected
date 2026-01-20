@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_7C1248B158C259847DFC91E5BCAE71280DB12FE0
-#define FOO_BAR_7C1248B158C259847DFC91E5BCAE71280DB12FE0
+#ifndef FOO_BAR_80BACA468B6E706F01A766B26F2BB01E810F58A4
+#define FOO_BAR_80BACA468B6E706F01A766B26F2BB01E810F58A4
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -1460,8 +1460,16 @@ public:
 #endif
 };
 
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wexit-time-destructors"
+#pragma clang diagnostic ignored "-Wglobal-constructors"
+#endif
 inline constexpr test::Int test::Int::nil_value = test::Int(std::numeric_limits<int>::min());
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 } // namespace test
 
-#endif // FOO_BAR_7C1248B158C259847DFC91E5BCAE71280DB12FE0
+#endif // FOO_BAR_80BACA468B6E706F01A766B26F2BB01E810F58A4
 

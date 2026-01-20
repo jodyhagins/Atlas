@@ -75,6 +75,9 @@ protected:
     [[nodiscard]]
     boost::json::object prepare_variables_impl(
         ClassInfo const & info) const override;
+
+    [[nodiscard]]
+    std::string render_impl(ClassInfo const & info) const override;
 };
 
 } // namespace wjh::atlas::generation

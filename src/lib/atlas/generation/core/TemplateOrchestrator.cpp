@@ -366,12 +366,13 @@ build_partials(ClassInfo const & info)
             return;
         }
 
-        // Special handling for constant templates:
+        // Special handling for constant declarations template:
         // Store the template string (not rendered) because MainTemplate will
         // iterate over the constants array and render the partial multiple
-        // times
-        if (tmpl.id() == "features.constant_declarations" ||
-            tmpl.id() == "features.constant_definitions")
+        // times inside the class body.
+        // Note: constant_definitions uses render_impl to generate all
+        // definitions with pragma wrapper, so it goes through normal rendering.
+        if (tmpl.id() == "features.constant_declarations")
         {
             std::string partial_name = to_partial_name(tmpl.id());
             std::string template_str = std::string(tmpl.get_template());
