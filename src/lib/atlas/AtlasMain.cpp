@@ -61,10 +61,10 @@ atlas_main(int argc, char ** argv)
             // Parse as type file and generate strong types
             auto file_result = AtlasCommandLine::parse_input_file(args);
             PreambleOptions auto_opts{
-                .auto_hash = file_result.auto_hash,
-                .auto_ostream = file_result.auto_ostream,
-                .auto_istream = file_result.auto_istream,
-                .auto_format = file_result.auto_format};
+                .auto_hash = file_result.auto_hash || args.auto_hash,
+                .auto_ostream = file_result.auto_ostream || args.auto_ostream,
+                .auto_istream = file_result.auto_istream || args.auto_istream,
+                .auto_format = file_result.auto_format || args.auto_format};
             output = generate_strong_types_file(
                 file_result.types,
                 file_result.guard_prefix,

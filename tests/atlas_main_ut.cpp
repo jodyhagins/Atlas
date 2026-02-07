@@ -144,6 +144,218 @@ TEST_SUITE("Atlas Main Tests")
             std::string::npos);
     }
 
+    TEST_CASE("CLI --auto-hash=yes generates auto hash boilerplate")
+    {
+        char const * argv[] = {
+            "atlas",
+            "--kind=struct",
+            "--namespace=test",
+            "--name=HashType",
+            "--description=strong int",
+            "--auto-hash=yes"};
+
+        StdoutCapture capture;
+        int result = atlas_main(6, const_cast<char **>(argv));
+
+        CHECK(result == EXIT_SUCCESS);
+        auto output = capture.get();
+        CHECK(
+            output.find("WJH_ATLAS_83B11BF12B6945019DF71C7517A1D6DA") !=
+            std::string::npos);
+    }
+
+    TEST_CASE("CLI --auto-ostream=yes generates auto ostream boilerplate")
+    {
+        char const * argv[] = {
+            "atlas",
+            "--kind=struct",
+            "--namespace=test",
+            "--name=OstreamType",
+            "--description=strong int",
+            "--auto-ostream=yes"};
+
+        StdoutCapture capture;
+        int result = atlas_main(6, const_cast<char **>(argv));
+
+        CHECK(result == EXIT_SUCCESS);
+        auto output = capture.get();
+        CHECK(
+            output.find("WJH_ATLAS_204DEDF8AD1A4B8EA2910C659C4523BC") !=
+            std::string::npos);
+    }
+
+    TEST_CASE("CLI --auto-istream=yes generates auto istream boilerplate")
+    {
+        char const * argv[] = {
+            "atlas",
+            "--kind=struct",
+            "--namespace=test",
+            "--name=IstreamType",
+            "--description=strong int",
+            "--auto-istream=yes"};
+
+        StdoutCapture capture;
+        int result = atlas_main(6, const_cast<char **>(argv));
+
+        CHECK(result == EXIT_SUCCESS);
+        auto output = capture.get();
+        CHECK(
+            output.find("WJH_ATLAS_8E1585765002403FBFA3B92531F0A25E") !=
+            std::string::npos);
+    }
+
+    TEST_CASE("CLI --auto-format=yes generates auto format boilerplate")
+    {
+        char const * argv[] = {
+            "atlas",
+            "--kind=struct",
+            "--namespace=test",
+            "--name=FormatType",
+            "--description=strong int",
+            "--auto-format=yes"};
+
+        StdoutCapture capture;
+        int result = atlas_main(6, const_cast<char **>(argv));
+
+        CHECK(result == EXIT_SUCCESS);
+        auto output = capture.get();
+        CHECK(
+            output.find("WJH_ATLAS_A3A2ADA707CA47BE9EB94254C729C906") !=
+            std::string::npos);
+    }
+
+    TEST_CASE("CLI --auto-* flags work with --input=file")
+    {
+        // Create temp file with a simple type and NO auto_* directives
+        std::string const temp_file = [] {
+            std::string file_template;
+            if (auto tmpdir = ::getenv("TMPDIR")) {
+                file_template = tmpdir;
+            } else {
+                file_template = "/tmp";
+            }
+            file_template += "/atlas.XXXXXX";
+            int fd = ::mkstemp(file_template.data());
+            if (fd < 0) {
+                throw std::runtime_error(
+                    "mkstemp failed with \"" + file_template +
+                    "\": maybe set TMPDIR to a directory you can write to");
+            }
+            auto const s = std::string("[test::AutoCliFile]\n"
+                                       "kind=struct\n"
+                                       "description=strong int\n");
+            ::write(fd, s.data(), s.size());
+            ::close(fd);
+            return file_template;
+        }();
+
+        std::string const input_arg = "--input=" + temp_file;
+        char const * argv[] = {
+            "atlas",
+            input_arg.c_str(),
+            "--auto-hash=yes",
+            "--auto-ostream=yes",
+            "--auto-istream=yes",
+            "--auto-format=yes"};
+
+        StdoutCapture capture;
+        int result = atlas_main(6, const_cast<char **>(argv));
+
+        std::remove(temp_file.c_str());
+
+        CHECK(result == EXIT_SUCCESS);
+        auto output = capture.get();
+        CHECK(
+            output.find("WJH_ATLAS_83B11BF12B6945019DF71C7517A1D6DA") !=
+            std::string::npos);
+        CHECK(
+            output.find("WJH_ATLAS_204DEDF8AD1A4B8EA2910C659C4523BC") !=
+            std::string::npos);
+        CHECK(
+            output.find("WJH_ATLAS_8E1585765002403FBFA3B92531F0A25E") !=
+            std::string::npos);
+        CHECK(
+            output.find("WJH_ATLAS_A3A2ADA707CA47BE9EB94254C729C906") !=
+            std::string::npos);
+    }
+
+    TEST_CASE("CLI --auto-* flags merge with file-level auto settings")
+    {
+        // Create temp file with auto_hash=true at file level
+        std::string const temp_file = [] {
+            std::string file_template;
+            if (auto tmpdir = ::getenv("TMPDIR")) {
+                file_template = tmpdir;
+            } else {
+                file_template = "/tmp";
+            }
+            file_template += "/atlas.XXXXXX";
+            int fd = ::mkstemp(file_template.data());
+            if (fd < 0) {
+                throw std::runtime_error(
+                    "mkstemp failed with \"" + file_template +
+                    "\": maybe set TMPDIR to a directory you can write to");
+            }
+            auto const s = std::string("auto_hash=true\n"
+                                       "[test::MergeAutoType]\n"
+                                       "kind=struct\n"
+                                       "description=strong int\n");
+            ::write(fd, s.data(), s.size());
+            ::close(fd);
+            return file_template;
+        }();
+
+        std::string const input_arg = "--input=" + temp_file;
+        char const * argv[] = {
+            "atlas",
+            input_arg.c_str(),
+            "--auto-ostream=yes"};
+
+        StdoutCapture capture;
+        int result = atlas_main(3, const_cast<char **>(argv));
+
+        std::remove(temp_file.c_str());
+
+        CHECK(result == EXIT_SUCCESS);
+        auto output = capture.get();
+        // auto hash from file-level
+        CHECK(
+            output.find("WJH_ATLAS_83B11BF12B6945019DF71C7517A1D6DA") !=
+            std::string::npos);
+        // auto ostream from CLI
+        CHECK(
+            output.find("WJH_ATLAS_204DEDF8AD1A4B8EA2910C659C4523BC") !=
+            std::string::npos);
+    }
+
+    TEST_CASE("Without --auto-* flags boilerplates are absent")
+    {
+        char const * argv[] = {
+            "atlas",
+            "--kind=struct",
+            "--namespace=test",
+            "--name=PlainType",
+            "--description=strong int"};
+
+        StdoutCapture capture;
+        int result = atlas_main(5, const_cast<char **>(argv));
+
+        CHECK(result == EXIT_SUCCESS);
+        auto output = capture.get();
+        CHECK(
+            output.find("WJH_ATLAS_83B11BF12B6945019DF71C7517A1D6DA") ==
+            std::string::npos);
+        CHECK(
+            output.find("WJH_ATLAS_204DEDF8AD1A4B8EA2910C659C4523BC") ==
+            std::string::npos);
+        CHECK(
+            output.find("WJH_ATLAS_8E1585765002403FBFA3B92531F0A25E") ==
+            std::string::npos);
+        CHECK(
+            output.find("WJH_ATLAS_A3A2ADA707CA47BE9EB94254C729C906") ==
+            std::string::npos);
+    }
+
     TEST_CASE("Command-line and file-based generation produce identical output")
     {
         // Create a comprehensive test with many features to ensure consistency
