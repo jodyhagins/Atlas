@@ -1,5 +1,5 @@
-#ifndef EXAMPLE_0A788EA5F219881DAF4F78A45DA6B49C14881F75
-#define EXAMPLE_0A788EA5F219881DAF4F78A45DA6B49C14881F75
+#ifndef EXAMPLE_C23348041E8BC14E6F9855163C97EFD25B1037DD
+#define EXAMPLE_C23348041E8BC14E6F9855163C97EFD25B1037DD
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -170,6 +170,8 @@ void atlas_value_for();
 struct value_by_ref
 { };
 struct value_by_val
+{ };
+struct ref_tag
 { };
 
 // ----------------------------------------------------------------------------
@@ -490,7 +492,29 @@ cast_impl(U && u, PriorityTag<1>)
     return static_cast<TargetT>(std::forward<U>(u));
 }
 
-template <typename TargetT, typename U>
+// Reference target + rvalue source: use ref_tag path (no temporaries)
+template <
+    typename TargetT, typename U,
+    typename std::enable_if<
+        std::is_reference<TargetT>::value &&
+        !std::is_lvalue_reference<U>::value,
+        bool>::type = true>
+constexpr auto
+cast_impl(U && u, PriorityTag<0>)
+-> decltype(cast_impl<TargetT>(
+    atlas_value_for(std::move(u), ref_tag{}), cast_tag{}))
+{
+    return cast_impl<TargetT>(
+        atlas_value_for(std::move(u), ref_tag{}), cast_tag{});
+}
+
+// Everything else: lvalue sources already return refs; value targets are safe
+template <
+    typename TargetT, typename U,
+    typename std::enable_if<
+        !std::is_reference<TargetT>::value ||
+        std::is_lvalue_reference<U>::value,
+        bool>::type = true>
 constexpr auto
 cast_impl(U && u, PriorityTag<0>)
 -> decltype(cast_impl<TargetT>(atlas_value_for(std::forward<U>(u)), cast_tag{}))
@@ -528,6 +552,25 @@ end_(T && t) noexcept(noexcept(end(std::forward<T>(t))))
 {
     return end(std::forward<T>(t));
 }
+
+// ----------------------------------------------------------------------------
+// from_atlas_cast support utilities
+// ----------------------------------------------------------------------------
+
+template <typename FromT, typename ToT>
+using forward_like_t = typename std::conditional<
+    is_lref<FromT>::value,
+    ToT const &,
+    ToT &&>::type;
+
+template <typename SourceT, typename TargetT, typename = void>
+struct is_atlas_castable : std::false_type {};
+
+template <typename SourceT, typename TargetT>
+struct is_atlas_castable<SourceT, TargetT,
+    void_t<decltype(cast_impl<TargetT const &>(
+        std::declval<remove_cvref_t<SourceT> const &>(), cast_tag{}))>>
+: std::true_type {};
 
 } // namespace atlas_detail
 
@@ -2270,6 +2313,13 @@ struct Price
     {
         return std::move(self.value);
     }
+    friend constexpr auto atlas_value_for(
+        Price && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> double &&
+    {
+        return static_cast<double &&>(self.value);
+    }
 
     /**
      * Apply * assignment to the wrapped objects.
@@ -2509,6 +2559,13 @@ struct Quantity
     {
         return std::move(self.value);
     }
+    friend constexpr auto atlas_value_for(
+        Quantity && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> int &&
+    {
+        return static_cast<int &&>(self.value);
+    }
 
     /**
      * Apply * assignment to the wrapped objects.
@@ -2704,6 +2761,13 @@ struct Identifier
     {
         return std::move(self.value);
     }
+    friend constexpr auto atlas_value_for(
+        Identifier && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> std::string &&
+    {
+        return static_cast<std::string &&>(self.value);
+    }
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -2778,6 +2842,13 @@ struct Money
             double>::type
     {
         return std::move(self.value);
+    }
+    friend constexpr auto atlas_value_for(
+        Money && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> double &&
+    {
+        return static_cast<double &&>(self.value);
     }
 
     /**
@@ -3049,6 +3120,13 @@ public:
     {
         return std::move(self.value);
     }
+    friend constexpr auto atlas_value_for(
+        UserId && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> unsigned long &&
+    {
+        return static_cast<unsigned long &&>(self.value);
+    }
 
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
@@ -3184,6 +3262,13 @@ struct Meters
             double>::type
     {
         return std::move(self.value);
+    }
+    friend constexpr auto atlas_value_for(
+        Meters && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> double &&
+    {
+        return static_cast<double &&>(self.value);
     }
 
     /**
@@ -3456,6 +3541,13 @@ struct Seconds
     {
         return std::move(self.value);
     }
+    friend constexpr auto atlas_value_for(
+        Seconds && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> double &&
+    {
+        return static_cast<double &&>(self.value);
+    }
 
     /**
      * Apply the unary - operator to the wrapped object.
@@ -3727,6 +3819,13 @@ struct MetersPerSecond
     {
         return std::move(self.value);
     }
+    friend constexpr auto atlas_value_for(
+        MetersPerSecond && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> double &&
+    {
+        return static_cast<double &&>(self.value);
+    }
 
     /**
      * Apply the unary - operator to the wrapped object.
@@ -3996,6 +4095,13 @@ struct ByteCount
             size_t>::type
     {
         return std::move(self.value);
+    }
+    friend constexpr auto atlas_value_for(
+        ByteCount && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> size_t &&
+    {
+        return static_cast<size_t &&>(self.value);
     }
 
     /**
@@ -4342,6 +4448,13 @@ struct RedChannel
             uint8_t>::type
     {
         return std::move(self.value);
+    }
+    friend constexpr auto atlas_value_for(
+        RedChannel && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> uint8_t &&
+    {
+        return static_cast<uint8_t &&>(self.value);
     }
 
     /**
@@ -4704,6 +4817,13 @@ public:
     {
         return std::move(self.value);
     }
+    friend constexpr auto atlas_value_for(
+        EncryptedData && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> std::string &&
+    {
+        return static_cast<std::string &&>(self.value);
+    }
 
     /**
      * Apply << assignment to the wrapped objects.
@@ -4806,6 +4926,13 @@ struct Latitude
             double>::type
     {
         return std::move(self.value);
+    }
+    friend constexpr auto atlas_value_for(
+        Latitude && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> double &&
+    {
+        return static_cast<double &&>(self.value);
     }
 
     /**
@@ -4969,6 +5096,13 @@ struct Longitude
     {
         return std::move(self.value);
     }
+    friend constexpr auto atlas_value_for(
+        Longitude && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> double &&
+    {
+        return static_cast<double &&>(self.value);
+    }
 
     /**
      * Apply the unary - operator to the wrapped object.
@@ -5131,6 +5265,13 @@ struct ThreadId
     {
         return std::move(self.value);
     }
+    friend auto atlas_value_for(
+        ThreadId && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> int &&
+    {
+        return static_cast<int &&>(self.value);
+    }
 
     /**
      * Apply << assignment to the wrapped objects.
@@ -5234,6 +5375,13 @@ struct Numerator
             long>::type
     {
         return std::move(self.value);
+    }
+    friend constexpr auto atlas_value_for(
+        Numerator && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> long &&
+    {
+        return static_cast<long &&>(self.value);
     }
 
     /**
@@ -5461,6 +5609,13 @@ struct Denominator
     {
         return std::move(self.value);
     }
+    friend constexpr auto atlas_value_for(
+        Denominator && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> long &&
+    {
+        return static_cast<long &&>(self.value);
+    }
 
     /**
      * Apply * assignment to the wrapped objects.
@@ -5656,6 +5811,13 @@ struct Octet
             uint8_t>::type
     {
         return std::move(self.value);
+    }
+    friend constexpr auto atlas_value_for(
+        Octet && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> uint8_t &&
+    {
+        return static_cast<uint8_t &&>(self.value);
     }
 
     /**
@@ -5898,6 +6060,13 @@ public:
     {
         return std::move(self.value);
     }
+    friend constexpr auto atlas_value_for(
+        ConfigKey && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> std::string &&
+    {
+        return static_cast<std::string &&>(self.value);
+    }
 
     /**
      * Subscript operator that forwards to the wrapped object.
@@ -6076,6 +6245,13 @@ struct IterableString
     {
         return std::move(self.value);
     }
+    friend constexpr auto atlas_value_for(
+        IterableString && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> std::string &&
+    {
+        return static_cast<std::string &&>(self.value);
+    }
 
     /**
      * Iterator type aliases for container-like interface.
@@ -6192,6 +6368,13 @@ struct IntVector
             std::vector<int>>::type
     {
         return std::move(self.value);
+    }
+    friend constexpr auto atlas_value_for(
+        IntVector && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> std::vector<int> &&
+    {
+        return static_cast<std::vector<int> &&>(self.value);
     }
 
     /**
@@ -6332,6 +6515,13 @@ public:
             std::vector<uint8_t>>::type
     {
         return std::move(self.value);
+    }
+    friend constexpr auto atlas_value_for(
+        DataBuffer && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> std::vector<uint8_t> &&
+    {
+        return static_cast<std::vector<uint8_t> &&>(self.value);
     }
 
     /**
@@ -6483,6 +6673,13 @@ struct FormattedString
     {
         return std::move(self.value);
     }
+    friend constexpr auto atlas_value_for(
+        FormattedString && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> std::string &&
+    {
+        return static_cast<std::string &&>(self.value);
+    }
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -6555,6 +6752,13 @@ struct FormattedInt
             int>::type
     {
         return std::move(self.value);
+    }
+    friend constexpr auto atlas_value_for(
+        FormattedInt && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> int &&
+    {
+        return static_cast<int &&>(self.value);
     }
 
     /**
@@ -6654,6 +6858,13 @@ struct AssignableString
             std::string>::type
     {
         return std::move(self.value);
+    }
+    friend constexpr auto atlas_value_for(
+        AssignableString && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> std::string &&
+    {
+        return static_cast<std::string &&>(self.value);
     }
 
     /**
@@ -6765,6 +6976,13 @@ struct AssignablePort
     {
         return std::move(self.value);
     }
+    friend constexpr auto atlas_value_for(
+        AssignablePort && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> int &&
+    {
+        return static_cast<int &&>(self.value);
+    }
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -6837,6 +7055,13 @@ struct CastableString
             std::string>::type
     {
         return std::move(self.value);
+    }
+    friend constexpr auto atlas_value_for(
+        CastableString && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> std::string &&
+    {
+        return static_cast<std::string &&>(self.value);
     }
 
     /**
@@ -6922,6 +7147,13 @@ public:
     {
         return std::move(self.value);
     }
+    friend constexpr auto atlas_value_for(
+        ViewableText && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> std::string &&
+    {
+        return static_cast<std::string &&>(self.value);
+    }
 
     /**
      * Explicit cast to bool
@@ -7004,6 +7236,13 @@ struct EnableFlag
     {
         return std::move(self.value);
     }
+    friend constexpr auto atlas_value_for(
+        EnableFlag && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> int &&
+    {
+        return static_cast<int &&>(self.value);
+    }
 
     /**
      * Implicit cast to bool
@@ -7076,6 +7315,13 @@ struct Temperature
             double>::type
     {
         return std::move(self.value);
+    }
+    friend constexpr auto atlas_value_for(
+        Temperature && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> double &&
+    {
+        return static_cast<double &&>(self.value);
     }
 
     /**
@@ -7271,6 +7517,13 @@ struct GlobalEventId
     {
         return std::move(self.value);
     }
+    friend constexpr auto atlas_value_for(
+        GlobalEventId && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> unsigned long &&
+    {
+        return static_cast<unsigned long &&>(self.value);
+    }
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -7353,6 +7606,13 @@ struct HttpStatusCode
             unsigned short>::type
     {
         return std::move(self.value);
+    }
+    friend constexpr auto atlas_value_for(
+        HttpStatusCode && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> unsigned short &&
+    {
+        return static_cast<unsigned short &&>(self.value);
     }
 
 #if defined(__cpp_impl_three_way_comparison) && \
@@ -7512,6 +7772,13 @@ struct Priority
     {
         return std::move(self.value);
     }
+    friend constexpr auto atlas_value_for(
+        Priority && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> int &&
+    {
+        return static_cast<int &&>(self.value);
+    }
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -7643,6 +7910,13 @@ struct RequestCount
             unsigned int>::type
     {
         return std::move(self.value);
+    }
+    friend constexpr auto atlas_value_for(
+        RequestCount && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> unsigned int &&
+    {
+        return static_cast<unsigned int &&>(self.value);
     }
 
     /**
@@ -7828,6 +8102,13 @@ struct SessionTimeout
     {
         return std::move(self.value);
     }
+    friend constexpr auto atlas_value_for(
+        SessionTimeout && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> std::chrono::seconds &&
+    {
+        return static_cast<std::chrono::seconds &&>(self.value);
+    }
 
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
@@ -7963,6 +8244,13 @@ struct SafeString
             std::string>::type
     {
         return std::move(self.value);
+    }
+    friend constexpr auto atlas_value_for(
+        SafeString && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> std::string &&
+    {
+        return static_cast<std::string &&>(self.value);
     }
 
     /**
@@ -8194,6 +8482,13 @@ struct DistanceValue
             double>::type
     {
         return std::move(self.value);
+    }
+    friend constexpr auto atlas_value_for(
+        DistanceValue && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> double &&
+    {
+        return static_cast<double &&>(self.value);
     }
 
     /**
@@ -8503,6 +8798,13 @@ struct ImmutableConfig
     {
         return std::move(self.value);
     }
+    friend constexpr auto atlas_value_for(
+        ImmutableConfig && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> std::map<std::string, std::string> &&
+    {
+        return static_cast<std::map<std::string, std::string> &&>(self.value);
+    }
 
     /**
      * @brief Forward at to wrapped object
@@ -8650,6 +8952,13 @@ struct TaskQueue
             std::deque<std::string>>::type
     {
         return std::move(self.value);
+    }
+    friend constexpr auto atlas_value_for(
+        TaskQueue && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> std::deque<std::string> &&
+    {
+        return static_cast<std::deque<std::string> &&>(self.value);
     }
 
     /**
@@ -8967,6 +9276,13 @@ struct ResourceHandle
     {
         return std::move(self.value);
     }
+    friend constexpr auto atlas_value_for(
+        ResourceHandle && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> std::unique_ptr<int> &&
+    {
+        return static_cast<std::unique_ptr<int> &&>(self.value);
+    }
 
     /**
      * Return the result of casting the wrapped object to bool.
@@ -9193,6 +9509,13 @@ struct ManagedString
             std::string>::type
     {
         return std::move(self.value);
+    }
+    friend constexpr auto atlas_value_for(
+        ManagedString && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> std::string &&
+    {
+        return static_cast<std::string &&>(self.value);
     }
 
     /**
@@ -9485,6 +9808,13 @@ struct Price
     {
         return std::move(self.value);
     }
+    friend constexpr auto atlas_value_for(
+        Price && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> double &&
+    {
+        return static_cast<double &&>(self.value);
+    }
 
     /**
      * Apply * assignment to the wrapped objects.
@@ -9737,6 +10067,13 @@ struct Distance
     {
         return std::move(self.value);
     }
+    friend constexpr auto atlas_value_for(
+        Distance && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> double &&
+    {
+        return static_cast<double &&>(self.value);
+    }
 
     /**
      * Apply + assignment to the wrapped objects.
@@ -9935,6 +10272,13 @@ struct Divisor
     {
         return std::move(self.value);
     }
+    friend constexpr auto atlas_value_for(
+        Divisor && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> int &&
+    {
+        return static_cast<int &&>(self.value);
+    }
 
     /**
      * Apply * assignment to the wrapped objects.
@@ -10084,6 +10428,13 @@ struct Volume
             int>::type
     {
         return std::move(self.value);
+    }
+    friend constexpr auto atlas_value_for(
+        Volume && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> int &&
+    {
+        return static_cast<int &&>(self.value);
     }
 
     /**
@@ -10296,6 +10647,13 @@ struct ServerPort
     {
         return std::move(self.value);
     }
+    friend constexpr auto atlas_value_for(
+        ServerPort && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> uint16_t &&
+    {
+        return static_cast<uint16_t &&>(self.value);
+    }
 
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
@@ -10452,6 +10810,13 @@ struct Percentage
             int>::type
     {
         return std::move(self.value);
+    }
+    friend constexpr auto atlas_value_for(
+        Percentage && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> int &&
+    {
+        return static_cast<int &&>(self.value);
     }
 
     /**
@@ -10651,6 +11016,13 @@ struct Username
     {
         return std::move(self.value);
     }
+    friend constexpr auto atlas_value_for(
+        Username && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> std::string &&
+    {
+        return static_cast<std::string &&>(self.value);
+    }
 
     /**
      * Apply << assignment to the wrapped objects.
@@ -10771,6 +11143,13 @@ struct NonEmptyList
             std::vector<int>>::type
     {
         return std::move(self.value);
+    }
+    friend constexpr auto atlas_value_for(
+        NonEmptyList && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> std::vector<int> &&
+    {
+        return static_cast<std::vector<int> &&>(self.value);
     }
 
     /**
@@ -10920,6 +11299,13 @@ struct ResourceHandle
             void*>::type
     {
         return std::move(self.value);
+    }
+    friend constexpr auto atlas_value_for(
+        ResourceHandle && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> void* &&
+    {
+        return static_cast<void* &&>(self.value);
     }
 
     /**
@@ -11083,6 +11469,13 @@ struct BoundedChecked
     {
         return std::move(self.value);
     }
+    friend constexpr auto atlas_value_for(
+        BoundedChecked && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> uint8_t &&
+    {
+        return static_cast<uint8_t &&>(self.value);
+    }
 };
 } // namespace dsp
 } // namespace audio
@@ -11177,6 +11570,13 @@ struct PositiveSaturating
             uint8_t>::type
     {
         return std::move(self.value);
+    }
+    friend constexpr auto atlas_value_for(
+        PositiveSaturating && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> uint8_t &&
+    {
+        return static_cast<uint8_t &&>(self.value);
     }
 };
 } // namespace color
@@ -11289,6 +11689,13 @@ struct NonNegativeWrapping
     {
         return std::move(self.value);
     }
+    friend constexpr auto atlas_value_for(
+        NonNegativeWrapping && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> uint8_t &&
+    {
+        return static_cast<uint8_t &&>(self.value);
+    }
 };
 } // namespace metrics
 } // namespace counter
@@ -11397,6 +11804,13 @@ struct HealthPoints
     {
         return std::move(self.value);
     }
+    friend constexpr auto atlas_value_for(
+        HealthPoints && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> uint16_t &&
+    {
+        return static_cast<uint16_t &&>(self.value);
+    }
 };
 } // namespace stats
 } // namespace game
@@ -11470,6 +11884,13 @@ struct CelsiusTemp
             int>::type
     {
         return std::move(self.value);
+    }
+    friend constexpr auto atlas_value_for(
+        CelsiusTemp && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> int &&
+    {
+        return static_cast<int &&>(self.value);
     }
 
 #if defined(__cpp_impl_three_way_comparison) && \
@@ -11615,6 +12036,13 @@ struct Age
     {
         return std::move(self.value);
     }
+    friend constexpr auto atlas_value_for(
+        Age && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> unsigned int &&
+    {
+        return static_cast<unsigned int &&>(self.value);
+    }
 
     /**
      * Apply << assignment to the wrapped objects.
@@ -11748,6 +12176,13 @@ struct ColorChannel
             uint8_t>::type
     {
         return std::move(self.value);
+    }
+    friend constexpr auto atlas_value_for(
+        ColorChannel && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> uint8_t &&
+    {
+        return static_cast<uint8_t &&>(self.value);
     }
 
     /**
@@ -11960,6 +12395,13 @@ struct BatteryLevel
     {
         return std::move(self.value);
     }
+    friend constexpr auto atlas_value_for(
+        BatteryLevel && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> uint8_t &&
+    {
+        return static_cast<uint8_t &&>(self.value);
+    }
 
     /**
      * Apply - assignment to the wrapped objects.
@@ -12102,6 +12544,13 @@ struct TimeoutSeconds
             unsigned int>::type
     {
         return std::move(self.value);
+    }
+    friend constexpr auto atlas_value_for(
+        TimeoutSeconds && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> unsigned int &&
+    {
+        return static_cast<unsigned int &&>(self.value);
     }
 
 #if defined(__cpp_impl_three_way_comparison) && \
@@ -12248,6 +12697,13 @@ public:
     {
         return std::move(self.value);
     }
+    friend constexpr auto atlas_value_for(
+        ApiKey && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> std::string &&
+    {
+        return static_cast<std::string &&>(self.value);
+    }
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -12343,6 +12799,13 @@ struct ThreadPriority
             int>::type
     {
         return std::move(self.value);
+    }
+    friend constexpr auto atlas_value_for(
+        ThreadPriority && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> int &&
+    {
+        return static_cast<int &&>(self.value);
     }
 
 #if defined(__cpp_impl_three_way_comparison) && \
@@ -12488,6 +12951,13 @@ struct RetryCount
     {
         return std::move(self.value);
     }
+    friend constexpr auto atlas_value_for(
+        RetryCount && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> unsigned int &&
+    {
+        return static_cast<unsigned int &&>(self.value);
+    }
 
     /**
      * Apply the prefix ++ operator to the wrapped object.
@@ -12620,6 +13090,13 @@ struct Latitude
             double>::type
     {
         return std::move(self.value);
+    }
+    friend constexpr auto atlas_value_for(
+        Latitude && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> double &&
+    {
+        return static_cast<double &&>(self.value);
     }
 
 #if defined(__cpp_impl_three_way_comparison) && \
@@ -12778,6 +13255,13 @@ struct Longitude
     {
         return std::move(self.value);
     }
+    friend constexpr auto atlas_value_for(
+        Longitude && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> double &&
+    {
+        return static_cast<double &&>(self.value);
+    }
 
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
@@ -12935,6 +13419,13 @@ struct QoSLevel
     {
         return std::move(self.value);
     }
+    friend constexpr auto atlas_value_for(
+        QoSLevel && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> uint8_t &&
+    {
+        return static_cast<uint8_t &&>(self.value);
+    }
 
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
@@ -13091,6 +13582,13 @@ struct ZoomLevel
             uint8_t>::type
     {
         return std::move(self.value);
+    }
+    friend constexpr auto atlas_value_for(
+        ZoomLevel && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> uint8_t &&
+    {
+        return static_cast<uint8_t &&>(self.value);
     }
 
     /**
@@ -13284,6 +13782,13 @@ struct SafeDivisor
     {
         return std::move(self.value);
     }
+    friend constexpr auto atlas_value_for(
+        SafeDivisor && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> double &&
+    {
+        return static_cast<double &&>(self.value);
+    }
 
     /**
      * Apply * assignment to the wrapped objects.
@@ -13420,6 +13925,13 @@ struct Speed
             double>::type
     {
         return std::move(self.value);
+    }
+    friend constexpr auto atlas_value_for(
+        Speed && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> double &&
+    {
+        return static_cast<double &&>(self.value);
     }
 
     /**
@@ -13673,6 +14185,13 @@ struct Filename
     {
         return std::move(self.value);
     }
+    friend constexpr auto atlas_value_for(
+        Filename && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> std::string &&
+    {
+        return static_cast<std::string &&>(self.value);
+    }
 
     /**
      * Apply + assignment to the wrapped objects.
@@ -13823,6 +14342,13 @@ struct StatusCode
     {
         return std::move(self.value);
     }
+    friend constexpr auto atlas_value_for(
+        StatusCode && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> uint16_t &&
+    {
+        return static_cast<uint16_t &&>(self.value);
+    }
 
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
@@ -13910,4 +14436,4 @@ struct StatusCode
 } // namespace protocol
 } // namespace http
 
-#endif // EXAMPLE_0A788EA5F219881DAF4F78A45DA6B49C14881F75
+#endif // EXAMPLE_C23348041E8BC14E6F9855163C97EFD25B1037DD

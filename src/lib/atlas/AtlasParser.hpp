@@ -56,6 +56,7 @@ struct FileParseResult
     std::string guard_separator = "_";
     bool upcase_guard = true;
     int file_level_cpp_standard = 11;
+    bool auto_from_atlas_cast = false;
     std::vector<StrongTypeDescription> types;
 
     // Auto-generation options

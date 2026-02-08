@@ -296,3 +296,36 @@ target_include_directories(nested_type_size_ut PRIVATE
 )
 add_test(NAME NestedTypeSizeTests COMMAND nested_type_size_ut)
 
+# from_atlas_cast constructor tests
+set(FROM_CAST_INPUT "${CMAKE_CURRENT_SOURCE_DIR}/from_atlas_cast_test_types.atlas")
+set(FROM_CAST_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/from_atlas_cast_test_types.hpp")
+add_custom_command(
+    OUTPUT ${FROM_CAST_OUTPUT}
+    COMMAND atlas --input=${FROM_CAST_INPUT} --output=${FROM_CAST_OUTPUT}
+    DEPENDS atlas ${FROM_CAST_INPUT}
+    COMMENT "Generating from_atlas_cast test types"
+)
+add_executable(from_atlas_cast_ut
+    from_atlas_cast_ut.cpp
+    ${FROM_CAST_OUTPUT}
+)
+target_link_libraries(from_atlas_cast_ut PRIVATE doctest::doctest)
+target_include_directories(from_atlas_cast_ut PRIVATE
+    ${CMAKE_CURRENT_BINARY_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/lib/atlas
+)
+add_test(NAME FromAtlasCastTests COMMAND from_atlas_cast_ut)
+
+# Return type tests - verifies atlas_value_for, unwrap, undress, cast return types
+# Reuses undress test types
+add_executable(return_type_ut
+    return_type_ut.cpp
+    ${TO_UNDERLYING_OUTPUT}
+)
+target_link_libraries(return_type_ut PRIVATE doctest::doctest)
+target_include_directories(return_type_ut PRIVATE
+    ${CMAKE_CURRENT_BINARY_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/lib/atlas
+)
+add_test(NAME ReturnTypeTests COMMAND return_type_ut)
+

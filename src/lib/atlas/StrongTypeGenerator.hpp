@@ -306,6 +306,14 @@ struct StrongTypeDescription
      * Set to true when constraint_type is non-empty.
      */
     bool has_constraint = false;
+
+    /**
+     * When true, generates a constructor that accepts another atlas type
+     * and constructs via atlas::cast drilling. This enables construction
+     * from any atlas type whose underlying value chain reaches a type
+     * convertible to this type's underlying type.
+     */
+    bool generate_from_atlas_cast = false;
 };
 
 struct StrongTypeGenerator

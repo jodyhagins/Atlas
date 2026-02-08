@@ -245,6 +245,9 @@ struct ClassInfo
     // Template assignment
     bool template_assignment_operator = false;
 
+    // From atlas cast constructor
+    bool from_atlas_cast_constructor = false;
+
     // Cast operators
     std::vector<CastOperator> explicit_cast_operators = {};
     std::vector<CastOperator> implicit_cast_operators = {};

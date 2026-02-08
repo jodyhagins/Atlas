@@ -401,6 +401,8 @@ struct value_by_ref
 { };
 struct value_by_val
 { };
+struct ref_tag
+{ };
 
 // ----------------------------------------------------------------------------
 // Base case: T does not have atlas_value_type
@@ -720,7 +722,29 @@ cast_impl(U && u, PriorityTag<1>)
     return static_cast<TargetT>(std::forward<U>(u));
 }
 
-template <typename TargetT, typename U>
+// Reference target + rvalue source: use ref_tag path (no temporaries)
+template <
+    typename TargetT, typename U,
+    typename std::enable_if<
+        std::is_reference<TargetT>::value &&
+        !std::is_lvalue_reference<U>::value,
+        bool>::type = true>
+constexpr auto
+cast_impl(U && u, PriorityTag<0>)
+-> decltype(cast_impl<TargetT>(
+    atlas_value_for(std::move(u), ref_tag{}), cast_tag{}))
+{
+    return cast_impl<TargetT>(
+        atlas_value_for(std::move(u), ref_tag{}), cast_tag{});
+}
+
+// Everything else: lvalue sources already return refs; value targets are safe
+template <
+    typename TargetT, typename U,
+    typename std::enable_if<
+        !std::is_reference<TargetT>::value ||
+        std::is_lvalue_reference<U>::value,
+        bool>::type = true>
 constexpr auto
 cast_impl(U && u, PriorityTag<0>)
 -> decltype(cast_impl<TargetT>(atlas_value_for(std::forward<U>(u)), cast_tag{}))
@@ -758,6 +782,25 @@ end_(T && t) noexcept(noexcept(end(std::forward<T>(t))))
 {
     return end(std::forward<T>(t));
 }
+
+// ----------------------------------------------------------------------------
+// from_atlas_cast support utilities
+// ----------------------------------------------------------------------------
+
+template <typename FromT, typename ToT>
+using forward_like_t = typename std::conditional<
+    is_lref<FromT>::value,
+    ToT const &,
+    ToT &&>::type;
+
+template <typename SourceT, typename TargetT, typename = void>
+struct is_atlas_castable : std::false_type {};
+
+template <typename SourceT, typename TargetT>
+struct is_atlas_castable<SourceT, TargetT,
+    void_t<decltype(cast_impl<TargetT const &>(
+        std::declval<remove_cvref_t<SourceT> const &>(), cast_tag{}))>>
+: std::true_type {};
 )";
 
     // Hash drilling boilerplate - only included when hash specialization is

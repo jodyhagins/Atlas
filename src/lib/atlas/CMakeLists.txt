@@ -135,7 +135,9 @@ add_library(atlas_lib STATIC
     generation/features/IteratorSupportTemplate.cpp
     generation/features/IteratorSupportTemplate.hpp
     generation/features/ForwardedMemfnTemplate.cpp
-    generation/features/ForwardedMemfnTemplate.hpp)
+    generation/features/ForwardedMemfnTemplate.hpp
+    generation/features/FromAtlasCastConstructor.cpp
+    generation/features/FromAtlasCastConstructor.hpp)
 
 # Include directories
 target_include_directories(atlas_lib

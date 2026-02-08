@@ -1,0 +1,38 @@
+# Test types for from_atlas_cast runtime tests
+
+[type]
+kind=struct
+namespace=test
+name=IntTypeA
+description=int; from_atlas_cast
+
+[type]
+kind=struct
+namespace=test
+name=IntTypeB
+description=int; from_atlas_cast
+
+[type]
+kind=struct
+namespace=test
+name=NestedType
+description=test::IntTypeA; from_atlas_cast
+
+[type]
+kind=struct
+namespace=test
+name=StringTypeA
+description=std::string; no-constexpr; from_atlas_cast
+
+[type]
+kind=struct
+namespace=test
+name=StringTypeB
+description=std::string; no-constexpr; from_atlas_cast
+
+# Type WITHOUT from_atlas_cast - should NOT accept other atlas types
+[type]
+kind=struct
+namespace=test
+name=NoFromCastType
+description=int

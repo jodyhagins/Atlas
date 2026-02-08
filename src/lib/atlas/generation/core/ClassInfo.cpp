@@ -609,6 +609,11 @@ process_feature_flags(ClassInfo & info, std::string_view sv)
         return true;
     }
 
+    if (sv == "from_atlas_cast") {
+        info.desc.generate_from_atlas_cast = true;
+        return true;
+    }
+
     return false;
 }
 
@@ -1079,6 +1084,10 @@ enable_optional_features(ClassInfo & info)
     if (info.desc.generate_template_assignment) {
         info.template_assignment_operator = true;
     }
+
+    if (info.desc.generate_from_atlas_cast) {
+        info.from_atlas_cast_constructor = true;
+    }
 }
 
 /**
@@ -1410,6 +1419,9 @@ to_json() const
 
     // Template assignment
     result["template_assignment_operator"] = template_assignment_operator;
+
+    // From atlas cast constructor
+    result["from_atlas_cast_constructor"] = from_atlas_cast_constructor;
 
     // Cast operators
     result["explicit_cast_operators"] = vector_to_json(explicit_cast_operators);

@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_D8293A99184C0263A2DCE5977821B115533A7988
-#define FOO_BAR_D8293A99184C0263A2DCE5977821B115533A7988
+#ifndef FOO_BAR_3D3E70BB96E76CBAE4A44C1F1F81559B0CEE629C
+#define FOO_BAR_3D3E70BB96E76CBAE4A44C1F1F81559B0CEE629C
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -153,6 +153,8 @@ void atlas_value_for();
 struct value_by_ref
 { };
 struct value_by_val
+{ };
+struct ref_tag
 { };
 
 // ----------------------------------------------------------------------------
@@ -473,7 +475,29 @@ cast_impl(U && u, PriorityTag<1>)
     return static_cast<TargetT>(std::forward<U>(u));
 }
 
-template <typename TargetT, typename U>
+// Reference target + rvalue source: use ref_tag path (no temporaries)
+template <
+    typename TargetT, typename U,
+    typename std::enable_if<
+        std::is_reference<TargetT>::value &&
+        !std::is_lvalue_reference<U>::value,
+        bool>::type = true>
+constexpr auto
+cast_impl(U && u, PriorityTag<0>)
+-> decltype(cast_impl<TargetT>(
+    atlas_value_for(std::move(u), ref_tag{}), cast_tag{}))
+{
+    return cast_impl<TargetT>(
+        atlas_value_for(std::move(u), ref_tag{}), cast_tag{});
+}
+
+// Everything else: lvalue sources already return refs; value targets are safe
+template <
+    typename TargetT, typename U,
+    typename std::enable_if<
+        !std::is_reference<TargetT>::value ||
+        std::is_lvalue_reference<U>::value,
+        bool>::type = true>
 constexpr auto
 cast_impl(U && u, PriorityTag<0>)
 -> decltype(cast_impl<TargetT>(atlas_value_for(std::forward<U>(u)), cast_tag{}))
@@ -511,6 +535,25 @@ end_(T && t) noexcept(noexcept(end(std::forward<T>(t))))
 {
     return end(std::forward<T>(t));
 }
+
+// ----------------------------------------------------------------------------
+// from_atlas_cast support utilities
+// ----------------------------------------------------------------------------
+
+template <typename FromT, typename ToT>
+using forward_like_t = typename std::conditional<
+    is_lref<FromT>::value,
+    ToT const &,
+    ToT &&>::type;
+
+template <typename SourceT, typename TargetT, typename = void>
+struct is_atlas_castable : std::false_type {};
+
+template <typename SourceT, typename TargetT>
+struct is_atlas_castable<SourceT, TargetT,
+    void_t<decltype(cast_impl<TargetT const &>(
+        std::declval<remove_cvref_t<SourceT> const &>(), cast_tag{}))>>
+: std::true_type {};
 
 } // namespace atlas_detail
 
@@ -1122,6 +1165,13 @@ struct CheckedInt
     {
         return std::move(self.value);
     }
+    friend constexpr auto atlas_value_for(
+        CheckedInt && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> int &&
+    {
+        return static_cast<int &&>(self.value);
+    }
 };
 } // namespace test
 
@@ -1207,8 +1257,15 @@ struct CheckedLong
     {
         return std::move(self.value);
     }
+    friend constexpr auto atlas_value_for(
+        CheckedLong && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> long &&
+    {
+        return static_cast<long &&>(self.value);
+    }
 };
 } // namespace test
 
-#endif // FOO_BAR_D8293A99184C0263A2DCE5977821B115533A7988
+#endif // FOO_BAR_3D3E70BB96E76CBAE4A44C1F1F81559B0CEE629C
 

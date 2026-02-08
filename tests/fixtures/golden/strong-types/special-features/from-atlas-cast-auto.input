@@ -1,0 +1,11 @@
+# Test: auto_from_atlas_cast file-level directive
+# Feature: All types in file get from_atlas_cast constructor
+# Expected: Both types get the from_atlas_cast constructor
+
+auto_from_atlas_cast=true
+
+[struct test::TypeA]
+description=strong int
+
+[struct test::TypeB]
+description=strong int

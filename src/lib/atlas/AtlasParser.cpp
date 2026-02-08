@@ -501,6 +501,9 @@ parse_file_level_config(
                 "Invalid cpp_standard at line " + std::to_string(line_number) +
                 " in " + filename + ": " + e.what());
         }
+    } else if (key == "auto_from_atlas_cast") {
+        result.auto_from_atlas_cast =
+            parser_utils::parse_bool(value, "auto_from_atlas_cast");
     } else if (key == "profile") {
         // Parse profile=NAME; features...
         // value contains everything after the = sign (e.g.,
@@ -667,7 +670,8 @@ build_type_description(
         .guard_separator = result.guard_separator,
         .upcase_guard = result.upcase_guard,
         .cpp_standard = result.file_level_cpp_standard,
-        .forwarded_memfns = current_forward};
+        .forwarded_memfns = current_forward,
+        .generate_from_atlas_cast = result.auto_from_atlas_cast};
 }
 
 // Check if any type definition has been started

@@ -1,5 +1,5 @@
-#ifndef TEST_OPTIONAL_STRONG_A1FA04CD8827250FE1D658C53454D86DBDDC599D
-#define TEST_OPTIONAL_STRONG_A1FA04CD8827250FE1D658C53454D86DBDDC599D
+#ifndef TEST_OPTIONAL_STRONG_24D7E9CB53299CF2D10304843EDD6DDE5CE04C18
+#define TEST_OPTIONAL_STRONG_24D7E9CB53299CF2D10304843EDD6DDE5CE04C18
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -153,6 +153,8 @@ void atlas_value_for();
 struct value_by_ref
 { };
 struct value_by_val
+{ };
+struct ref_tag
 { };
 
 // ----------------------------------------------------------------------------
@@ -473,7 +475,29 @@ cast_impl(U && u, PriorityTag<1>)
     return static_cast<TargetT>(std::forward<U>(u));
 }
 
-template <typename TargetT, typename U>
+// Reference target + rvalue source: use ref_tag path (no temporaries)
+template <
+    typename TargetT, typename U,
+    typename std::enable_if<
+        std::is_reference<TargetT>::value &&
+        !std::is_lvalue_reference<U>::value,
+        bool>::type = true>
+constexpr auto
+cast_impl(U && u, PriorityTag<0>)
+-> decltype(cast_impl<TargetT>(
+    atlas_value_for(std::move(u), ref_tag{}), cast_tag{}))
+{
+    return cast_impl<TargetT>(
+        atlas_value_for(std::move(u), ref_tag{}), cast_tag{});
+}
+
+// Everything else: lvalue sources already return refs; value targets are safe
+template <
+    typename TargetT, typename U,
+    typename std::enable_if<
+        !std::is_reference<TargetT>::value ||
+        std::is_lvalue_reference<U>::value,
+        bool>::type = true>
 constexpr auto
 cast_impl(U && u, PriorityTag<0>)
 -> decltype(cast_impl<TargetT>(atlas_value_for(std::forward<U>(u)), cast_tag{}))
@@ -511,6 +535,25 @@ end_(T && t) noexcept(noexcept(end(std::forward<T>(t))))
 {
     return end(std::forward<T>(t));
 }
+
+// ----------------------------------------------------------------------------
+// from_atlas_cast support utilities
+// ----------------------------------------------------------------------------
+
+template <typename FromT, typename ToT>
+using forward_like_t = typename std::conditional<
+    is_lref<FromT>::value,
+    ToT const &,
+    ToT &&>::type;
+
+template <typename SourceT, typename TargetT, typename = void>
+struct is_atlas_castable : std::false_type {};
+
+template <typename SourceT, typename TargetT>
+struct is_atlas_castable<SourceT, TargetT,
+    void_t<decltype(cast_impl<TargetT const &>(
+        std::declval<remove_cvref_t<SourceT> const &>(), cast_tag{}))>>
+: std::true_type {};
 
 } // namespace atlas_detail
 
@@ -728,6 +771,13 @@ struct WithStrong
             double>::type
     {
         return std::move(self.value);
+    }
+    friend constexpr auto atlas_value_for(
+        WithStrong && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> double &&
+    {
+        return static_cast<double &&>(self.value);
     }
 
     /**
@@ -983,6 +1033,13 @@ struct WithoutStrong
     {
         return std::move(self.value);
     }
+    friend constexpr auto atlas_value_for(
+        WithoutStrong && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> double &&
+    {
+        return static_cast<double &&>(self.value);
+    }
 
     /**
      * Apply * assignment to the wrapped objects.
@@ -1237,6 +1294,13 @@ struct ComplexWithStrong
     {
         return std::move(self.value);
     }
+    friend constexpr auto atlas_value_for(
+        ComplexWithStrong && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> std::vector<int> &&
+    {
+        return static_cast<std::vector<int> &&>(self.value);
+    }
 
     /**
      * Subscript operator that forwards to the wrapped object.
@@ -1386,6 +1450,13 @@ struct ComplexWithoutStrong
             std::vector<int>>::type
     {
         return std::move(self.value);
+    }
+    friend constexpr auto atlas_value_for(
+        ComplexWithoutStrong && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> std::vector<int> &&
+    {
+        return static_cast<std::vector<int> &&>(self.value);
     }
 
     /**
@@ -1537,6 +1608,13 @@ struct InlineNsWithStrong
     {
         return std::move(self.value);
     }
+    friend constexpr auto atlas_value_for(
+        InlineNsWithStrong && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> geo::Point &&
+    {
+        return static_cast<geo::Point &&>(self.value);
+    }
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -1610,6 +1688,13 @@ struct InlineNsWithoutStrong
     {
         return std::move(self.value);
     }
+    friend constexpr auto atlas_value_for(
+        InlineNsWithoutStrong && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> geo::Distance &&
+    {
+        return static_cast<geo::Distance &&>(self.value);
+    }
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -1682,6 +1767,13 @@ struct AllOpsStrong
             int>::type
     {
         return std::move(self.value);
+    }
+    friend constexpr auto atlas_value_for(
+        AllOpsStrong && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> int &&
+    {
+        return static_cast<int &&>(self.value);
     }
 
     /**
@@ -1998,6 +2090,13 @@ struct AllOpsNoStrong
     {
         return std::move(self.value);
     }
+    friend constexpr auto atlas_value_for(
+        AllOpsNoStrong && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> int &&
+    {
+        return static_cast<int &&>(self.value);
+    }
 
     /**
      * Apply the prefix ++ operator to the wrapped object.
@@ -2265,5 +2364,5 @@ struct AllOpsNoStrong
 };
 } // namespace test
 
-#endif // TEST_OPTIONAL_STRONG_A1FA04CD8827250FE1D658C53454D86DBDDC599D
+#endif // TEST_OPTIONAL_STRONG_24D7E9CB53299CF2D10304843EDD6DDE5CE04C18
 

@@ -27,6 +27,17 @@ Quick facts:
 - All types share a header guard with SHA1 hash (collision-proof, even when you try)
 - The `strong` keyword in descriptions is optional (see "Optional Strong Keyword" section below)
 
+### File-Level Directives
+
+These directives appear before the first `[type]` section and apply to all types in the file:
+
+| Directive | Behavior |
+|-----------|----------|
+| `guard_prefix=PREFIX` | Custom prefix for header guard |
+| `cpp_standard=N` | Minimum C++ standard (11, 14, 17, 20, 23) |
+| `profile=NAME; features` | Define a reusable feature profile |
+| `auto_from_atlas_cast=true` | Enable `from_atlas_cast` constructor on all types in the file |
+
 ## Optional Strong Keyword
 
 The `strong` keyword in descriptions is now optional. Both of these are equivalent:
@@ -474,6 +485,11 @@ atlas --kind=struct --namespace=util --name=MyString \
 | `iterable` | Member `begin()/end()` for range-based for loops |
 | `assign` | Template assignment operator allowing assignment from compatible types |
 
+### Construction
+| Option | Behavior |
+|--------|----------|
+| `from_atlas_cast` | Constructor accepting other atlas types whose underlying value is reachable via `atlas::cast` |
+
 ### Control
 | Option | Behavior |
 |--------|----------|
@@ -654,6 +670,70 @@ Without a mode specified, arithmetic uses unchecked operations (standard C++ beh
 
 ```
 description=int; +, -, *  # No checking, standard overflow behavior
+```
+
+## Cross-Type Construction (`from_atlas_cast`)
+
+Atlas strong types have no implicit conversions by design. This means you can't construct one atlas type from another, even if they share the same underlying type:
+
+```cpp
+TcpBindAddress addr{UdpBindAddress{...}};  // Error: no matching constructor
+```
+
+The `from_atlas_cast` feature adds an opt-in constructor that handles this by drilling through the wrapping chain via `atlas::cast`:
+
+```
+[struct net::TcpBindAddress]
+description=std::string; from_atlas_cast, ==, hash
+
+[struct net::UdpBindAddress]
+description=std::string; from_atlas_cast, ==, hash
+```
+
+Now cross-type construction works:
+```cpp
+UdpBindAddress udp{"192.168.1.1:8080"};
+TcpBindAddress tcp{udp};  // OK: drills through to shared std::string
+```
+
+### How It Works
+
+The generated constructor uses SFINAE to accept any atlas type whose underlying value chain reaches a type convertible to this type's underlying type:
+
+```cpp
+// Accepts any atlas type ArgT where:
+// 1. ArgT is an atlas type (has atlas_value_type)
+// 2. ArgT is not the same type (copy/move ctors handle that)
+// 3. ArgT is not directly constructible to underlying (variadic ctor handles that)
+// 4. atlas::cast can reach the underlying type from ArgT
+template <typename ArgT, typename = /* SFINAE guards */>
+constexpr explicit TcpBindAddress(ArgT && arg);
+```
+
+Value categories are preserved: lvalue sources copy, rvalue sources move.
+
+### File-Level Directive
+
+To enable `from_atlas_cast` on all types in a file:
+
+```
+auto_from_atlas_cast=true
+
+[struct net::TcpBindAddress]
+description=std::string; ==, hash
+
+[struct net::UdpBindAddress]
+description=std::string; ==, hash
+```
+
+### Multi-Level Drilling
+
+The constructor works with nested atlas types. If `A` wraps `B` and `B` wraps `int`, then a `from_atlas_cast`-enabled type wrapping `int` can be constructed from any of `A`, `B`, or another `int`-wrapping atlas type:
+
+```cpp
+InnerType inner{42};
+OuterType outer{inner};      // OuterType wraps InnerType
+IntWrapper w{outer};          // Drills through OuterType -> InnerType -> int
 ```
 
 ## Constrained Types

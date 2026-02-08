@@ -28,6 +28,7 @@ BOOST_DESCRIBE_STRUCT(
      upcase_guard,
      generate_iterators,
      generate_formatter,
+     generate_from_atlas_cast,
      cpp_standard))
 
 #endif // WJH_ATLAS_B306007996634FDDB32F24301C6C15D9

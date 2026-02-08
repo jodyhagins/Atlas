@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_B61AE2B67DB95104F5D68FCC603AAA16C7F0F99B
-#define FOO_BAR_B61AE2B67DB95104F5D68FCC603AAA16C7F0F99B
+#ifndef FOO_BAR_6FBD61D416773FDC2606069BB2A8B7977DEF3C5C
+#define FOO_BAR_6FBD61D416773FDC2606069BB2A8B7977DEF3C5C
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -153,6 +153,8 @@ void atlas_value_for();
 struct value_by_ref
 { };
 struct value_by_val
+{ };
+struct ref_tag
 { };
 
 // ----------------------------------------------------------------------------
@@ -473,7 +475,29 @@ cast_impl(U && u, PriorityTag<1>)
     return static_cast<TargetT>(std::forward<U>(u));
 }
 
-template <typename TargetT, typename U>
+// Reference target + rvalue source: use ref_tag path (no temporaries)
+template <
+    typename TargetT, typename U,
+    typename std::enable_if<
+        std::is_reference<TargetT>::value &&
+        !std::is_lvalue_reference<U>::value,
+        bool>::type = true>
+constexpr auto
+cast_impl(U && u, PriorityTag<0>)
+-> decltype(cast_impl<TargetT>(
+    atlas_value_for(std::move(u), ref_tag{}), cast_tag{}))
+{
+    return cast_impl<TargetT>(
+        atlas_value_for(std::move(u), ref_tag{}), cast_tag{});
+}
+
+// Everything else: lvalue sources already return refs; value targets are safe
+template <
+    typename TargetT, typename U,
+    typename std::enable_if<
+        !std::is_reference<TargetT>::value ||
+        std::is_lvalue_reference<U>::value,
+        bool>::type = true>
 constexpr auto
 cast_impl(U && u, PriorityTag<0>)
 -> decltype(cast_impl<TargetT>(atlas_value_for(std::forward<U>(u)), cast_tag{}))
@@ -511,6 +535,25 @@ end_(T && t) noexcept(noexcept(end(std::forward<T>(t))))
 {
     return end(std::forward<T>(t));
 }
+
+// ----------------------------------------------------------------------------
+// from_atlas_cast support utilities
+// ----------------------------------------------------------------------------
+
+template <typename FromT, typename ToT>
+using forward_like_t = typename std::conditional<
+    is_lref<FromT>::value,
+    ToT const &,
+    ToT &&>::type;
+
+template <typename SourceT, typename TargetT, typename = void>
+struct is_atlas_castable : std::false_type {};
+
+template <typename SourceT, typename TargetT>
+struct is_atlas_castable<SourceT, TargetT,
+    void_t<decltype(cast_impl<TargetT const &>(
+        std::declval<remove_cvref_t<SourceT> const &>(), cast_tag{}))>>
+: std::true_type {};
 
 } // namespace atlas_detail
 
@@ -644,6 +687,13 @@ struct Optional_int
             std::optional<int>>::type
     {
         return std::move(self.value);
+    }
+    friend constexpr auto atlas_value_for(
+        Optional_int && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> std::optional<int> &&
+    {
+        return static_cast<std::optional<int> &&>(self.value);
     }
 
     /**
@@ -791,6 +841,13 @@ struct OptionalDouble
     {
         return std::move(self.value);
     }
+    friend constexpr auto atlas_value_for(
+        OptionalDouble && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> std::optional<double> &&
+    {
+        return static_cast<std::optional<double> &&>(self.value);
+    }
 
     /**
      * Return the result of casting the wrapped object to bool.
@@ -937,6 +994,13 @@ struct IntStringPair
     {
         return std::move(self.value);
     }
+    friend constexpr auto atlas_value_for(
+        IntStringPair && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> std::pair<int, std::string> &&
+    {
+        return static_cast<std::pair<int, std::string> &&>(self.value);
+    }
 
     /**
      * Is @p lhs.value == @p rhs.value?
@@ -1004,6 +1068,13 @@ struct BoundedInt
             int>::type
     {
         return std::move(self.value);
+    }
+    friend constexpr auto atlas_value_for(
+        BoundedInt && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> int &&
+    {
+        return static_cast<int &&>(self.value);
     }
 
 #if defined(__cpp_impl_three_way_comparison) && \
@@ -1151,6 +1222,13 @@ struct IntContainer
             std::vector<int>>::type
     {
         return std::move(self.value);
+    }
+    friend constexpr auto atlas_value_for(
+        IntContainer && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> std::vector<int> &&
+    {
+        return static_cast<std::vector<int> &&>(self.value);
     }
 
     /**
@@ -1320,6 +1398,13 @@ struct DefaultInt
     {
         return std::move(self.value);
     }
+    friend constexpr auto atlas_value_for(
+        DefaultInt && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> int &&
+    {
+        return static_cast<int &&>(self.value);
+    }
 
     /**
      * Is @p lhs.value == @p rhs.value?
@@ -1383,6 +1468,13 @@ struct NamespacedInt
             int>::type
     {
         return std::move(self.value);
+    }
+    friend constexpr auto atlas_value_for(
+        NamespacedInt && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> int &&
+    {
+        return static_cast<int &&>(self.value);
     }
 
     /**
@@ -1449,6 +1541,13 @@ public:
     {
         return std::move(self.value);
     }
+    friend constexpr auto atlas_value_for(
+        ClassWrapper && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> int &&
+    {
+        return static_cast<int &&>(self.value);
+    }
 
     /**
      * Is @p lhs.value == @p rhs.value?
@@ -1512,6 +1611,13 @@ struct ArithmeticLong
             long>::type
     {
         return std::move(self.value);
+    }
+    friend constexpr auto atlas_value_for(
+        ArithmeticLong && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> long &&
+    {
+        return static_cast<long &&>(self.value);
     }
 
     /**
@@ -1701,6 +1807,13 @@ struct EnhancedInt
     {
         return std::move(self.value);
     }
+    friend constexpr auto atlas_value_for(
+        EnhancedInt && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> int &&
+    {
+        return static_cast<int &&>(self.value);
+    }
 
     /**
      * Is @p lhs.value == @p rhs.value?
@@ -1776,6 +1889,13 @@ struct VectorWrapper
     {
         return std::move(self.value);
     }
+    friend constexpr auto atlas_value_for(
+        VectorWrapper && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> std::vector<int> &&
+    {
+        return static_cast<std::vector<int> &&>(self.value);
+    }
 
     /**
      * Is @p lhs.value == @p rhs.value?
@@ -1791,5 +1911,5 @@ struct VectorWrapper
 } // namespace templates
 } // namespace test
 
-#endif // FOO_BAR_B61AE2B67DB95104F5D68FCC603AAA16C7F0F99B
+#endif // FOO_BAR_6FBD61D416773FDC2606069BB2A8B7977DEF3C5C
 

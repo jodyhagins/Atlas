@@ -124,6 +124,8 @@ to_partial_name(std::string_view template_id)
         {"features.forwarded_memfn", "forwarded_memfn"},
         {"features.iterator_support", "iterator_support_member"},
         {"features.template_assignment", "template_assignment_operator"},
+        {"features.from_atlas_cast_constructor",
+         "from_atlas_cast_constructor"},
     };
 
     auto it = id_to_partial.find(template_id);

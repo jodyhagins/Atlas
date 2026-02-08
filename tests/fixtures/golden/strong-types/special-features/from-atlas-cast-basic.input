@@ -1,0 +1,6 @@
+# Test: from_atlas_cast constructor
+# Feature: Constructor from another atlas type via atlas::cast drilling
+# Expected: template<typename ArgT> explicit constructor with SFINAE guards
+
+[struct test::CastableType]
+description=strong int; from_atlas_cast

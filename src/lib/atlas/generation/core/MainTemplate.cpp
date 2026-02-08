@@ -119,6 +119,9 @@ get_template_impl() const noexcept
     {{#template_assignment_operator}}
     {{>template_assignment_operator}}
     {{/template_assignment_operator}}
+    {{#from_atlas_cast_constructor}}
+    {{>from_atlas_cast_constructor}}
+    {{/from_atlas_cast_constructor}}
 
     /**
      * Access to immediate underlying value via ADL.
@@ -135,6 +138,13 @@ get_template_impl() const noexcept
             {{{underlying_type}}}>::type
     {
         return std::move(self.{{{value}}});
+    }
+    friend {{{const_expr}}}auto atlas_value_for(
+        {{{class_name}}} && self,
+        atlas::atlas_detail::ref_tag) noexcept
+        -> {{{underlying_type}}} &&
+    {
+        return static_cast<{{{underlying_type}}} &&>(self.{{{value}}});
     }
     {{#explicit_cast_operators}}
     {{>explicit_cast_operator}}
