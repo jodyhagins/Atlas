@@ -58,37 +58,10 @@ generate_strong_type(StrongTypeDescription const & desc)
     return gen(desc);
 }
 
-struct SplitCode
-{
-    std::string full_code;
-    std::string preamble; // Everything before the marker
-    std::string type_specific; // Everything after the marker
-};
-
-SplitCode
-split_generated_code(std::string const & code)
-{
-    constexpr auto marker = "/// These are the droids you are looking for!";
-    auto pos = code.find(marker);
-
-    SplitCode result;
-    result.full_code = code;
-    if (pos != std::string::npos) {
-        result.preamble = code.substr(0, pos);
-        result.type_specific = code.substr(pos + std::strlen(marker));
-    } else {
-        // Fallback if marker not found
-        result.type_specific = code;
-    }
-    return result;
-}
-
 TEST_SUITE("StrongTypeGenerator")
 {
     TEST_CASE("Default Initialization Code Generation")
     {
-        CodeStructureParser parser;
-
         SUBCASE("explicit non-zero default value") {
             auto code = generate_strong_type(make_description(
                 "struct",
@@ -296,8 +269,6 @@ TEST_SUITE("StrongTypeGenerator")
 
     TEST_CASE("C++11 Compatibility")
     {
-        CodeStructureParser parser;
-
         SUBCASE("type traits use C++11 syntax") {
             auto desc = make_description(
                 "struct",

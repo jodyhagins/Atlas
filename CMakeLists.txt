@@ -70,6 +70,11 @@ if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
             add_link_options(--coverage)
         endif()
     endif()
+
+    # Suppress GCC notes about ABI changes for parameter passing of small structs
+    if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+        add_compile_options(-Wno-psabi)
+    endif()
 endif()
 
 if(ATLAS_USE_SYSTEM_BOOST)

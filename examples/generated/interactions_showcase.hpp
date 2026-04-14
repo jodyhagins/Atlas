@@ -1,5 +1,5 @@
-#ifndef EXAMPLE_INTERACTIONS_D56613DA2669FA3245C1F67921BF586916C63163
-#define EXAMPLE_INTERACTIONS_D56613DA2669FA3245C1F67921BF586916C63163
+#ifndef EXAMPLE_INTERACTIONS_9429D5488F76D47DBB847015FF742D3EFE759618
+#define EXAMPLE_INTERACTIONS_9429D5488F76D47DBB847015FF742D3EFE759618
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -463,13 +463,37 @@ struct holds_enum_impl<
 using cast_tag = PriorityTag<1>;
 
 // Trait to check if static_cast<TargetT>(U) is well-formed.
-// Used to guard PriorityTag<0> overloads so GCC does not recurse into their
-// trailing return types when the direct cast already succeeds.
 template <typename TargetT, typename U, typename = void>
 struct is_directly_castable : std::false_type {};
 
 template <typename TargetT, typename U>
 struct is_directly_castable<TargetT, U,
+    void_t<decltype(static_cast<TargetT>(std::declval<U>()))>>
+: std::true_type {};
+
+// Recursive castability check via struct template specialization.
+// GCC evaluates trailing return types of function template overloads eagerly
+// during overload resolution -- before checking enable_if default arguments --
+// which causes infinite recursion when the trailing return type contains a
+// recursive call to cast_impl.  Struct template partial specializations do not
+// have this problem: the enable_if in the third parameter is fully resolved
+// before the base class (which carries the recursive check) is instantiated.
+template <typename TargetT, typename U, typename = void>
+struct can_cast_impl;
+
+template <typename TargetT, typename U, typename = void>
+struct can_cast_via_unwrap : std::false_type {};
+
+template <typename TargetT, typename U>
+struct can_cast_via_unwrap<TargetT, U,
+    void_t<decltype(atlas_value_for(std::declval<U>()))>>
+: can_cast_impl<TargetT, decltype(atlas_value_for(std::declval<U>()))> {};
+
+template <typename TargetT, typename U, typename>
+struct can_cast_impl : can_cast_via_unwrap<TargetT, U> {};
+
+template <typename TargetT, typename U>
+struct can_cast_impl<TargetT, U,
     void_t<decltype(static_cast<TargetT>(std::declval<U>()))>>
 : std::true_type {};
 
@@ -488,14 +512,13 @@ cast_impl(U && u, PriorityTag<1>)
 template <
     typename TargetT, typename U,
     typename std::enable_if<
+        can_cast_impl<TargetT, U>::value &&
         !is_directly_castable<TargetT, U>::value &&
         std::is_reference<TargetT>::value &&
         !std::is_lvalue_reference<U>::value,
         bool>::type = true>
-constexpr auto
+constexpr TargetT
 cast_impl(U && u, PriorityTag<0>)
--> decltype(cast_impl<TargetT>(
-    atlas_value_for(std::move(u), ref_tag{}), cast_tag{}))
 {
     return cast_impl<TargetT>(
         atlas_value_for(std::move(u), ref_tag{}), cast_tag{});
@@ -505,13 +528,13 @@ cast_impl(U && u, PriorityTag<0>)
 template <
     typename TargetT, typename U,
     typename std::enable_if<
+        can_cast_impl<TargetT, U>::value &&
         !is_directly_castable<TargetT, U>::value &&
         (!std::is_reference<TargetT>::value ||
          std::is_lvalue_reference<U>::value),
         bool>::type = true>
-constexpr auto
+constexpr TargetT
 cast_impl(U && u, PriorityTag<0>)
--> decltype(cast_impl<TargetT>(atlas_value_for(std::forward<U>(u)), cast_tag{}))
 {
     return cast_impl<TargetT>(atlas_value_for(std::forward<U>(u)), cast_tag{});
 }
@@ -1842,4 +1865,4 @@ noexcept(
 
 } // namespace security
 
-#endif // EXAMPLE_INTERACTIONS_D56613DA2669FA3245C1F67921BF586916C63163
+#endif // EXAMPLE_INTERACTIONS_9429D5488F76D47DBB847015FF742D3EFE759618

@@ -336,7 +336,7 @@ TEST_SUITE("Atlas Main Tests")
             auto const s = std::string("[test::AutoCliFile]\n"
                                        "kind=struct\n"
                                        "description=strong int\n");
-            ::write(fd, s.data(), s.size());
+            if (::write(fd, s.data(), s.size()) == -1) { ::close(fd); FAIL("write failed"); }
             ::close(fd);
             return file_template;
         }();
@@ -392,7 +392,7 @@ TEST_SUITE("Atlas Main Tests")
                                        "[test::MergeAutoType]\n"
                                        "kind=struct\n"
                                        "description=strong int\n");
-            ::write(fd, s.data(), s.size());
+            if (::write(fd, s.data(), s.size()) == -1) { ::close(fd); FAIL("write failed"); }
             ::close(fd);
             return file_template;
         }();
@@ -492,7 +492,7 @@ TEST_SUITE("Atlas Main Tests")
                                        "[test::ComprehensiveType]\n"
                                        "kind=struct\n") +
                 description + "\n";
-            ::write(fd, s.data(), s.size());
+            if (::write(fd, s.data(), s.size()) == -1) { ::close(fd); FAIL("write failed"); }
             ::close(fd);
             return file_template;
         }();

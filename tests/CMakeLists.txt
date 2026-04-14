@@ -59,11 +59,14 @@ function(add_atlas_test)
     target_link_libraries(${ARG_TARGET} PRIVATE ${LIBS})
 
     # Include directories
-    set(INCLUDES ${CMAKE_CURRENT_SOURCE_DIR})
+    target_include_directories(${ARG_TARGET} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
     if(ARG_USE_RAPIDCHECK)
-        list(APPEND INCLUDES ${rapidcheck_SOURCE_DIR}/extras/doctest/include)
+        target_include_directories(${ARG_TARGET} SYSTEM PRIVATE
+            ${rapidcheck_SOURCE_DIR}/extras/doctest/include)
     endif()
-    target_include_directories(${ARG_TARGET} PRIVATE ${INCLUDES})
+
+    # Apply project warning flags
+    target_apply_atlas_warnings(${ARG_TARGET})
 
     # Add test
     if(ARG_TEST_NAME)

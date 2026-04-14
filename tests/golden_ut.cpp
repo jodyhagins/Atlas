@@ -216,7 +216,6 @@ test_golden_file(fs::path const & test_file_path)
             expected_lines.size(),
             generated_lines.size());
         size_t diff_count = 0;
-        size_t context_lines = 3; // Lines of context around differences
 
         for (size_t i = 0; i < max_lines && diff_count < 20; ++i) {
             bool has_expected = i < expected_lines.size();
