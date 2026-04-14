@@ -1,5 +1,5 @@
-#ifndef EXAMPLE_C23348041E8BC14E6F9855163C97EFD25B1037DD
-#define EXAMPLE_C23348041E8BC14E6F9855163C97EFD25B1037DD
+#ifndef EXAMPLE_A950265731720B631DFCF64D43221EAB95E121EB
+#define EXAMPLE_A950265731720B631DFCF64D43221EAB95E121EB
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -30,11 +30,9 @@
 #include <format>
 #include <functional>
 #include <iostream>
-#include <istream>
 #include <limits>
 #include <map>
 #include <memory>
-#include <ostream>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -2174,6 +2172,34 @@ struct std::hash<T>
             atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{});
     }
 };
+#else // pre-C++20
+namespace atlas {
+namespace atlas_detail {
+
+// Base class for per-type std::hash specializations.
+// The template <typename U = T> trick defers instantiation of the
+// return type until operator() is actually called, providing a
+// SFINAE-like effect for most cases. Note: this relies on hash_drill
+// producing a substitution failure (not a hard error) for non-hashable
+// types, which holds for all atlas-generated types.
+template <typename T>
+struct hash_base
+{
+    template <typename U = T>
+    ATLAS_NODISCARD
+    auto operator()(U const & t) const
+    noexcept(noexcept(hash_drill(
+        atlas_value_for(t), PriorityTag<2>{})))
+    -> decltype(hash_drill(
+        atlas_value_for(t), PriorityTag<2>{}))
+    {
+        return hash_drill(
+            atlas_value_for(t), PriorityTag<2>{});
+    }
+};
+
+} // namespace atlas_detail
+} // namespace atlas
 #endif // C++20
 #endif // WJH_ATLAS_83B11BF12B6945019DF71C7517A1D6DA
 
@@ -2276,7 +2302,7 @@ namespace profiles {
  * - kind: struct
  * - type_namespace: demo::profiles
  * - type_name: Price
- * - description: strong double; !=, *, +, -, /, <, <=, ==, >, >=, hash
+ * - description: strong double; !=, *, +, -, /, <, <=, ==, >, >=
  * - default_value: "0.0"
  */
 struct Price
@@ -2511,6 +2537,13 @@ struct Price
 } // namespace demo
 
 
+#if __cplusplus < 202002L
+template <>
+struct std::hash<demo::profiles::Price>
+: atlas::atlas_detail::hash_base<demo::profiles::Price>
+{};
+#endif
+
 namespace demo {
 namespace profiles {
 
@@ -2522,7 +2555,7 @@ namespace profiles {
  * - kind: struct
  * - type_namespace: demo::profiles
  * - type_name: Quantity
- * - description: strong int; !=, *, +, -, /, ==, hash
+ * - description: strong int; !=, *, +, -, /, ==
  * - default_value: "0"
  */
 struct Quantity
@@ -2713,6 +2746,13 @@ struct Quantity
 } // namespace demo
 
 
+#if __cplusplus < 202002L
+template <>
+struct std::hash<demo::profiles::Quantity>
+: atlas::atlas_detail::hash_base<demo::profiles::Quantity>
+{};
+#endif
+
 namespace demo {
 namespace profiles {
 
@@ -2724,7 +2764,7 @@ namespace profiles {
  * - kind: struct
  * - type_namespace: demo::profiles
  * - type_name: Identifier
- * - description: strong std::string; !=, ==, hash, in, out
+ * - description: strong std::string; !=, ==
  * - default_value: ""
  */
 struct Identifier
@@ -2795,6 +2835,13 @@ struct Identifier
 } // namespace demo
 
 
+#if __cplusplus < 202002L
+template <>
+struct std::hash<demo::profiles::Identifier>
+: atlas::atlas_detail::hash_base<demo::profiles::Identifier>
+{};
+#endif
+
 namespace finance {
 namespace core {
 
@@ -2806,7 +2853,7 @@ namespace core {
  * - kind: struct
  * - type_namespace: finance::core
  * - type_name: Money
- * - description: strong double; !=, *, +, -, /, <, <<, <=, ==, >, >=, hash
+ * - description: strong double; !=, *, +, -, /, <, <<, <=, ==, >, >=
  * - default_value: "0.0"
  */
 struct Money
@@ -3071,6 +3118,13 @@ struct Money
 } // namespace finance
 
 
+#if __cplusplus < 202002L
+template <>
+struct std::hash<finance::core::Money>
+: atlas::atlas_detail::hash_base<finance::core::Money>
+{};
+#endif
+
 namespace ids {
 namespace v1 {
 
@@ -3082,7 +3136,7 @@ namespace v1 {
  * - kind: class
  * - type_namespace: ids::v1
  * - type_name: UserId
- * - description: strong unsigned long; <=>, hash, no-constexpr-hash
+ * - description: strong unsigned long; <=>
  * - default_value: "0"
  */
 class UserId
@@ -3214,6 +3268,13 @@ public:
 } // namespace v1
 } // namespace ids
 
+
+#if __cplusplus < 202002L
+template <>
+struct std::hash<ids::v1::UserId>
+: atlas::atlas_detail::hash_base<ids::v1::UserId>
+{};
+#endif
 
 namespace physics {
 namespace units {
@@ -3493,6 +3554,13 @@ struct Meters
 } // namespace physics
 
 
+#if __cplusplus < 202002L
+template <>
+struct std::hash<physics::units::Meters>
+: atlas::atlas_detail::hash_base<physics::units::Meters>
+{};
+#endif
+
 namespace physics {
 namespace units {
 
@@ -3771,6 +3839,13 @@ struct Seconds
 } // namespace physics
 
 
+#if __cplusplus < 202002L
+template <>
+struct std::hash<physics::units::Seconds>
+: atlas::atlas_detail::hash_base<physics::units::Seconds>
+{};
+#endif
+
 namespace physics {
 namespace units {
 
@@ -4048,6 +4123,13 @@ struct MetersPerSecond
 } // namespace units
 } // namespace physics
 
+
+#if __cplusplus < 202002L
+template <>
+struct std::hash<physics::units::MetersPerSecond>
+: atlas::atlas_detail::hash_base<physics::units::MetersPerSecond>
+{};
+#endif
 
 namespace data {
 
@@ -4400,6 +4482,13 @@ struct ByteCount
 };
 } // namespace data
 
+
+#if __cplusplus < 202002L
+template <>
+struct std::hash<data::ByteCount>
+: atlas::atlas_detail::hash_base<data::ByteCount>
+{};
+#endif
 
 namespace graphics {
 namespace color {
@@ -4769,6 +4858,13 @@ struct RedChannel
 } // namespace graphics
 
 
+#if __cplusplus < 202002L
+template <>
+struct std::hash<graphics::color::RedChannel>
+: atlas::atlas_detail::hash_base<graphics::color::RedChannel>
+{};
+#endif
+
 namespace security {
 
 /**
@@ -4779,7 +4875,7 @@ namespace security {
  * - kind: class
  * - type_namespace: security
  * - type_name: EncryptedData
- * - description: strong std::string; !=, <<, ==, hash
+ * - description: strong std::string; !=, <<, ==
  * - default_value: ""
  */
 class EncryptedData
@@ -4879,6 +4975,13 @@ public:
 };
 } // namespace security
 
+
+#if __cplusplus < 202002L
+template <>
+struct std::hash<security::EncryptedData>
+: atlas::atlas_detail::hash_base<security::EncryptedData>
+{};
+#endif
 
 namespace geo {
 
@@ -5049,6 +5152,13 @@ struct Latitude
 } // namespace geo
 
 
+#if __cplusplus < 202002L
+template <>
+struct std::hash<geo::Latitude>
+: atlas::atlas_detail::hash_base<geo::Latitude>
+{};
+#endif
+
 namespace geo {
 
 /**
@@ -5218,6 +5328,13 @@ struct Longitude
 } // namespace geo
 
 
+#if __cplusplus < 202002L
+template <>
+struct std::hash<geo::Longitude>
+: atlas::atlas_detail::hash_base<geo::Longitude>
+{};
+#endif
+
 namespace concurrency {
 
 /**
@@ -5228,7 +5345,7 @@ namespace concurrency {
  * - kind: struct
  * - type_namespace: concurrency
  * - type_name: ThreadId
- * - description: strong int; !=, <<, ==, hash, no-constexpr, no-constexpr-hash
+ * - description: strong int; !=, <<, ==, no-constexpr
  * - default_value: ""
  */
 struct ThreadId
@@ -5327,6 +5444,13 @@ struct ThreadId
 };
 } // namespace concurrency
 
+
+#if __cplusplus < 202002L
+template <>
+struct std::hash<concurrency::ThreadId>
+: atlas::atlas_detail::hash_base<concurrency::ThreadId>
+{};
+#endif
 
 namespace math {
 namespace rational {
@@ -5561,6 +5685,13 @@ struct Numerator
 } // namespace math
 
 
+#if __cplusplus < 202002L
+template <>
+struct std::hash<math::rational::Numerator>
+: atlas::atlas_detail::hash_base<math::rational::Numerator>
+{};
+#endif
+
 namespace math {
 namespace rational {
 
@@ -5763,6 +5894,13 @@ struct Denominator
 } // namespace rational
 } // namespace math
 
+
+#if __cplusplus < 202002L
+template <>
+struct std::hash<math::rational::Denominator>
+: atlas::atlas_detail::hash_base<math::rational::Denominator>
+{};
+#endif
 
 namespace net {
 namespace ipv4 {
@@ -6011,6 +6149,13 @@ struct Octet
 } // namespace net
 
 
+#if __cplusplus < 202002L
+template <>
+struct std::hash<net::ipv4::Octet>
+: atlas::atlas_detail::hash_base<net::ipv4::Octet>
+{};
+#endif
+
 namespace app {
 namespace config {
 
@@ -6022,7 +6167,7 @@ namespace config {
  * - kind: class
  * - type_namespace: app::config
  * - type_name: ConfigKey
- * - description: strong std::string; !=, +, <, <<, ==, [], hash
+ * - description: strong std::string; !=, +, <, <<, ==, []
  * - default_value: ""
  */
 class ConfigKey
@@ -6198,6 +6343,13 @@ public:
 } // namespace app
 
 
+#if __cplusplus < 202002L
+template <>
+struct std::hash<app::config::ConfigKey>
+: atlas::atlas_detail::hash_base<app::config::ConfigKey>
+{};
+#endif
+
 namespace containers {
 
 /**
@@ -6321,6 +6473,13 @@ struct IterableString
 };
 } // namespace containers
 
+
+#if __cplusplus < 202002L
+template <>
+struct std::hash<containers::IterableString>
+: atlas::atlas_detail::hash_base<containers::IterableString>
+{};
+#endif
 
 namespace containers {
 
@@ -6468,6 +6627,13 @@ struct IntVector
 } // namespace containers
 
 
+#if __cplusplus < 202002L
+template <>
+struct std::hash<containers::IntVector>
+: atlas::atlas_detail::hash_base<containers::IntVector>
+{};
+#endif
+
 namespace containers {
 
 /**
@@ -6478,7 +6644,7 @@ namespace containers {
  * - kind: class
  * - type_namespace: containers
  * - type_name: DataBuffer
- * - description: strong std::vector<uint8_t>; !=, ==, [], hash, iterable
+ * - description: strong std::vector<uint8_t>; !=, ==, [], iterable
  * - default_value: ""
  */
 class DataBuffer
@@ -6626,6 +6792,13 @@ public:
 } // namespace containers
 
 
+#if __cplusplus < 202002L
+template <>
+struct std::hash<containers::DataBuffer>
+: atlas::atlas_detail::hash_base<containers::DataBuffer>
+{};
+#endif
+
 namespace formatting {
 
 /**
@@ -6636,7 +6809,7 @@ namespace formatting {
  * - kind: struct
  * - type_namespace: formatting
  * - type_name: FormattedString
- * - description: strong std::string; !=, ==, fmt, hash, out
+ * - description: strong std::string; !=, ==
  * - default_value: ""
  */
 struct FormattedString
@@ -6706,6 +6879,13 @@ struct FormattedString
 } // namespace formatting
 
 
+#if __cplusplus < 202002L
+template <>
+struct std::hash<formatting::FormattedString>
+: atlas::atlas_detail::hash_base<formatting::FormattedString>
+{};
+#endif
+
 namespace formatting {
 
 /**
@@ -6716,7 +6896,7 @@ namespace formatting {
  * - kind: struct
  * - type_namespace: formatting
  * - type_name: FormattedInt
- * - description: strong int; ==, fmt
+ * - description: strong int; ==
  * - default_value: ""
  */
 struct FormattedInt
@@ -6775,6 +6955,13 @@ struct FormattedInt
 } // namespace formatting
 
 
+#if __cplusplus < 202002L
+template <>
+struct std::hash<formatting::FormattedInt>
+: atlas::atlas_detail::hash_base<formatting::FormattedInt>
+{};
+#endif
+
 namespace text {
 
 /**
@@ -6785,7 +6972,7 @@ namespace text {
  * - kind: struct
  * - type_namespace: text
  * - type_name: AssignableString
- * - description: strong std::string; !=, ==, assign, out
+ * - description: strong std::string; !=, ==, assign
  * - default_value: ""
  */
 struct AssignableString
@@ -6891,6 +7078,13 @@ struct AssignableString
 };
 } // namespace text
 
+
+#if __cplusplus < 202002L
+template <>
+struct std::hash<text::AssignableString>
+: atlas::atlas_detail::hash_base<text::AssignableString>
+{};
+#endif
 
 namespace config {
 
@@ -7009,6 +7203,13 @@ struct AssignablePort
 } // namespace config
 
 
+#if __cplusplus < 202002L
+template <>
+struct std::hash<config::AssignablePort>
+: atlas::atlas_detail::hash_base<config::AssignablePort>
+{};
+#endif
+
 namespace text {
 
 /**
@@ -7098,6 +7299,13 @@ struct CastableString
 };
 } // namespace text
 
+
+#if __cplusplus < 202002L
+template <>
+struct std::hash<text::CastableString>
+: atlas::atlas_detail::hash_base<text::CastableString>
+{};
+#endif
 
 namespace text {
 
@@ -7189,6 +7397,13 @@ public:
 } // namespace text
 
 
+#if __cplusplus < 202002L
+template <>
+struct std::hash<text::ViewableText>
+: atlas::atlas_detail::hash_base<text::ViewableText>
+{};
+#endif
+
 namespace flags {
 
 /**
@@ -7267,6 +7482,13 @@ struct EnableFlag
 };
 } // namespace flags
 
+
+#if __cplusplus < 202002L
+template <>
+struct std::hash<flags::EnableFlag>
+: atlas::atlas_detail::hash_base<flags::EnableFlag>
+{};
+#endif
 
 namespace demo {
 namespace optional_strong {
@@ -7471,6 +7693,13 @@ struct Temperature
 } // namespace demo
 
 
+#if __cplusplus < 202002L
+template <>
+struct std::hash<demo::optional_strong::Temperature>
+: atlas::atlas_detail::hash_base<demo::optional_strong::Temperature>
+{};
+#endif
+
 
 /**
  * @brief Strong type wrapper for unsigned long
@@ -7480,7 +7709,7 @@ struct Temperature
  * - kind: struct
  * - type_namespace: ::
  * - type_name: GlobalEventId
- * - description: unsigned long; !=, ==, hash
+ * - description: unsigned long; !=, ==
  * - default_value: ""
  */
 struct GlobalEventId
@@ -7548,6 +7777,13 @@ struct GlobalEventId
     }
 };
 
+
+#if __cplusplus < 202002L
+template <>
+struct std::hash<GlobalEventId>
+: atlas::atlas_detail::hash_base<GlobalEventId>
+{};
+#endif
 
 namespace demo {
 namespace constants {
@@ -7716,6 +7952,13 @@ inline constexpr demo::constants::HttpStatusCode demo::constants::HttpStatusCode
 } // namespace demo
 
 
+#if __cplusplus < 202002L
+template <>
+struct std::hash<demo::constants::HttpStatusCode>
+: atlas::atlas_detail::hash_base<demo::constants::HttpStatusCode>
+{};
+#endif
+
 namespace demo {
 namespace constants {
 
@@ -7862,6 +8105,13 @@ inline constexpr demo::constants::Priority demo::constants::Priority::medium = d
 } // namespace constants
 } // namespace demo
 
+
+#if __cplusplus < 202002L
+template <>
+struct std::hash<demo::constants::Priority>
+: atlas::atlas_detail::hash_base<demo::constants::Priority>
+{};
+#endif
 
 namespace demo {
 namespace inline_syntax {
@@ -8054,6 +8304,13 @@ struct RequestCount
 } // namespace demo
 
 
+#if __cplusplus < 202002L
+template <>
+struct std::hash<demo::inline_syntax::RequestCount>
+: atlas::atlas_detail::hash_base<demo::inline_syntax::RequestCount>
+{};
+#endif
+
 namespace demo {
 namespace inline_syntax {
 
@@ -8197,6 +8454,13 @@ struct SessionTimeout
 } // namespace demo
 
 
+#if __cplusplus < 202002L
+template <>
+struct std::hash<demo::inline_syntax::SessionTimeout>
+: atlas::atlas_detail::hash_base<demo::inline_syntax::SessionTimeout>
+{};
+#endif
+
 namespace demo {
 namespace forwarding {
 
@@ -8208,7 +8472,7 @@ namespace forwarding {
  * - kind: struct
  * - type_namespace: demo::forwarding
  * - type_name: SafeString
- * - description: std::string; forward=size,empty,length; !=, ==, hash
+ * - description: std::string; forward=size,empty,length; !=, ==
  * - default_value: ""
  */
 struct SafeString
@@ -8434,6 +8698,13 @@ struct SafeString
 } // namespace forwarding
 } // namespace demo
 
+
+#if __cplusplus < 202002L
+template <>
+struct std::hash<demo::forwarding::SafeString>
+: atlas::atlas_detail::hash_base<demo::forwarding::SafeString>
+{};
+#endif
 
 namespace demo {
 namespace forwarding {
@@ -8750,6 +9021,13 @@ struct DistanceValue
 } // namespace demo
 
 
+#if __cplusplus < 202002L
+template <>
+struct std::hash<demo::forwarding::DistanceValue>
+: atlas::atlas_detail::hash_base<demo::forwarding::DistanceValue>
+{};
+#endif
+
 namespace demo {
 namespace forwarding {
 
@@ -8904,6 +9182,13 @@ struct ImmutableConfig
 } // namespace forwarding
 } // namespace demo
 
+
+#if __cplusplus < 202002L
+template <>
+struct std::hash<demo::forwarding::ImmutableConfig>
+: atlas::atlas_detail::hash_base<demo::forwarding::ImmutableConfig>
+{};
+#endif
 
 namespace demo {
 namespace forwarding {
@@ -9228,6 +9513,13 @@ struct TaskQueue
 } // namespace demo
 
 
+#if __cplusplus < 202002L
+template <>
+struct std::hash<demo::forwarding::TaskQueue>
+: atlas::atlas_detail::hash_base<demo::forwarding::TaskQueue>
+{};
+#endif
+
 namespace demo {
 namespace forwarding {
 
@@ -9462,6 +9754,13 @@ struct ResourceHandle
 } // namespace demo
 
 
+#if __cplusplus < 202002L
+template <>
+struct std::hash<demo::forwarding::ResourceHandle>
+: atlas::atlas_detail::hash_base<demo::forwarding::ResourceHandle>
+{};
+#endif
+
 namespace demo {
 namespace forwarding {
 
@@ -9473,7 +9772,7 @@ namespace forwarding {
  * - kind: struct
  * - type_namespace: demo::forwarding
  * - type_name: ManagedString
- * - description: std::string; !=, ==, hash
+ * - description: std::string; !=, ==
  * - default_value: ""
  */
 struct ManagedString
@@ -9752,6 +10051,13 @@ struct ManagedString
 } // namespace demo
 
 
+#if __cplusplus < 202002L
+template <>
+struct std::hash<demo::forwarding::ManagedString>
+: atlas::atlas_detail::hash_base<demo::forwarding::ManagedString>
+{};
+#endif
+
 namespace finance {
 namespace pricing {
 
@@ -10011,6 +10317,13 @@ struct Price
 } // namespace finance
 
 
+#if __cplusplus < 202002L
+template <>
+struct std::hash<finance::pricing::Price>
+: atlas::atlas_detail::hash_base<finance::pricing::Price>
+{};
+#endif
+
 namespace physics {
 namespace measurements {
 
@@ -10216,6 +10529,13 @@ struct Distance
 } // namespace physics
 
 
+#if __cplusplus < 202002L
+template <>
+struct std::hash<physics::measurements::Distance>
+: atlas::atlas_detail::hash_base<physics::measurements::Distance>
+{};
+#endif
+
 namespace math {
 namespace rational {
 
@@ -10359,6 +10679,13 @@ struct Divisor
 } // namespace rational
 } // namespace math
 
+
+#if __cplusplus < 202002L
+template <>
+struct std::hash<math::rational::Divisor>
+: atlas::atlas_detail::hash_base<math::rational::Divisor>
+{};
+#endif
 
 namespace audio {
 namespace controls {
@@ -10578,6 +10905,13 @@ struct Volume
 } // namespace audio
 
 
+#if __cplusplus < 202002L
+template <>
+struct std::hash<audio::controls::Volume>
+: atlas::atlas_detail::hash_base<audio::controls::Volume>
+{};
+#endif
+
 namespace net {
 namespace config {
 
@@ -10741,6 +11075,13 @@ struct ServerPort
 } // namespace config
 } // namespace net
 
+
+#if __cplusplus < 202002L
+template <>
+struct std::hash<net::config::ServerPort>
+: atlas::atlas_detail::hash_base<net::config::ServerPort>
+{};
+#endif
 
 namespace math {
 namespace stats {
@@ -10960,6 +11301,13 @@ struct Percentage
 } // namespace math
 
 
+#if __cplusplus < 202002L
+template <>
+struct std::hash<math::stats::Percentage>
+: atlas::atlas_detail::hash_base<math::stats::Percentage>
+{};
+#endif
+
 namespace auth {
 namespace credentials {
 
@@ -10971,7 +11319,7 @@ namespace credentials {
  * - kind: struct
  * - type_namespace: auth::credentials
  * - type_name: Username
- * - description: std::string; !=, <, <<, ==, hash, non_empty
+ * - description: std::string; !=, <, <<, ==, non_empty
  * - default_value: ""
  */
 struct Username
@@ -11087,6 +11435,13 @@ struct Username
 } // namespace credentials
 } // namespace auth
 
+
+#if __cplusplus < 202002L
+template <>
+struct std::hash<auth::credentials::Username>
+: atlas::atlas_detail::hash_base<auth::credentials::Username>
+{};
+#endif
 
 namespace data {
 namespace collections {
@@ -11244,6 +11599,13 @@ struct NonEmptyList
 } // namespace data
 
 
+#if __cplusplus < 202002L
+template <>
+struct std::hash<data::collections::NonEmptyList>
+: atlas::atlas_detail::hash_base<data::collections::NonEmptyList>
+{};
+#endif
+
 namespace sys {
 namespace resources {
 
@@ -11333,6 +11695,13 @@ struct ResourceHandle
 } // namespace resources
 } // namespace sys
 
+
+#if __cplusplus < 202002L
+template <>
+struct std::hash<sys::resources::ResourceHandle>
+: atlas::atlas_detail::hash_base<sys::resources::ResourceHandle>
+{};
+#endif
 
 namespace audio {
 namespace dsp {
@@ -11481,6 +11850,13 @@ struct BoundedChecked
 } // namespace audio
 
 
+#if __cplusplus < 202002L
+template <>
+struct std::hash<audio::dsp::BoundedChecked>
+: atlas::atlas_detail::hash_base<audio::dsp::BoundedChecked>
+{};
+#endif
+
 namespace graphics {
 namespace color {
 
@@ -11582,6 +11958,13 @@ struct PositiveSaturating
 } // namespace color
 } // namespace graphics
 
+
+#if __cplusplus < 202002L
+template <>
+struct std::hash<graphics::color::PositiveSaturating>
+: atlas::atlas_detail::hash_base<graphics::color::PositiveSaturating>
+{};
+#endif
 
 namespace counter {
 namespace metrics {
@@ -11701,6 +12084,13 @@ struct NonNegativeWrapping
 } // namespace counter
 
 
+#if __cplusplus < 202002L
+template <>
+struct std::hash<counter::metrics::NonNegativeWrapping>
+: atlas::atlas_detail::hash_base<counter::metrics::NonNegativeWrapping>
+{};
+#endif
+
 namespace game {
 namespace stats {
 
@@ -11815,6 +12205,13 @@ struct HealthPoints
 } // namespace stats
 } // namespace game
 
+
+#if __cplusplus < 202002L
+template <>
+struct std::hash<game::stats::HealthPoints>
+: atlas::atlas_detail::hash_base<game::stats::HealthPoints>
+{};
+#endif
 
 namespace weather {
 namespace sensors {
@@ -11980,6 +12377,13 @@ struct CelsiusTemp
 } // namespace weather
 
 
+#if __cplusplus < 202002L
+template <>
+struct std::hash<weather::sensors::CelsiusTemp>
+: atlas::atlas_detail::hash_base<weather::sensors::CelsiusTemp>
+{};
+#endif
+
 namespace demographics {
 namespace data {
 
@@ -12107,6 +12511,13 @@ struct Age
 } // namespace data
 } // namespace demographics
 
+
+#if __cplusplus < 202002L
+template <>
+struct std::hash<demographics::data::Age>
+: atlas::atlas_detail::hash_base<demographics::data::Age>
+{};
+#endif
 
 namespace graphics {
 namespace rendering {
@@ -12326,6 +12737,13 @@ struct ColorChannel
 } // namespace graphics
 
 
+#if __cplusplus < 202002L
+template <>
+struct std::hash<graphics::rendering::ColorChannel>
+: atlas::atlas_detail::hash_base<graphics::rendering::ColorChannel>
+{};
+#endif
+
 namespace mobile {
 namespace power {
 
@@ -12489,6 +12907,13 @@ struct BatteryLevel
 } // namespace mobile
 
 
+#if __cplusplus < 202002L
+template <>
+struct std::hash<mobile::power::BatteryLevel>
+: atlas::atlas_detail::hash_base<mobile::power::BatteryLevel>
+{};
+#endif
+
 namespace db {
 namespace config {
 
@@ -12640,6 +13065,13 @@ struct TimeoutSeconds
 } // namespace db
 
 
+#if __cplusplus < 202002L
+template <>
+struct std::hash<db::config::TimeoutSeconds>
+: atlas::atlas_detail::hash_base<db::config::TimeoutSeconds>
+{};
+#endif
+
 namespace api {
 namespace security {
 
@@ -12651,7 +13083,7 @@ namespace security {
  * - kind: class
  * - type_namespace: api::security
  * - type_name: ApiKey
- * - description: std::string; !=, ==, hash, non_empty
+ * - description: std::string; !=, ==, non_empty
  * - default_value: ""
  */
 class ApiKey
@@ -12730,6 +13162,13 @@ public:
 } // namespace security
 } // namespace api
 
+
+#if __cplusplus < 202002L
+template <>
+struct std::hash<api::security::ApiKey>
+: atlas::atlas_detail::hash_base<api::security::ApiKey>
+{};
+#endif
 
 namespace sys {
 namespace scheduling {
@@ -12895,6 +13334,13 @@ struct ThreadPriority
 } // namespace sys
 
 
+#if __cplusplus < 202002L
+template <>
+struct std::hash<sys::scheduling::ThreadPriority>
+: atlas::atlas_detail::hash_base<sys::scheduling::ThreadPriority>
+{};
+#endif
+
 namespace net {
 namespace resilience {
 
@@ -13021,6 +13467,13 @@ struct RetryCount
 } // namespace resilience
 } // namespace net
 
+
+#if __cplusplus < 202002L
+template <>
+struct std::hash<net::resilience::RetryCount>
+: atlas::atlas_detail::hash_base<net::resilience::RetryCount>
+{};
+#endif
 
 namespace geo {
 namespace coordinates {
@@ -13186,6 +13639,13 @@ struct Latitude
 } // namespace geo
 
 
+#if __cplusplus < 202002L
+template <>
+struct std::hash<geo::coordinates::Latitude>
+: atlas::atlas_detail::hash_base<geo::coordinates::Latitude>
+{};
+#endif
+
 namespace geo {
 namespace coordinates {
 
@@ -13350,6 +13810,13 @@ struct Longitude
 } // namespace geo
 
 
+#if __cplusplus < 202002L
+template <>
+struct std::hash<geo::coordinates::Longitude>
+: atlas::atlas_detail::hash_base<geo::coordinates::Longitude>
+{};
+#endif
+
 namespace net {
 namespace qos {
 
@@ -13513,6 +13980,13 @@ struct QoSLevel
 } // namespace qos
 } // namespace net
 
+
+#if __cplusplus < 202002L
+template <>
+struct std::hash<net::qos::QoSLevel>
+: atlas::atlas_detail::hash_base<net::qos::QoSLevel>
+{};
+#endif
 
 namespace maps {
 namespace display {
@@ -13726,6 +14200,13 @@ struct ZoomLevel
 } // namespace maps
 
 
+#if __cplusplus < 202002L
+template <>
+struct std::hash<maps::display::ZoomLevel>
+: atlas::atlas_detail::hash_base<maps::display::ZoomLevel>
+{};
+#endif
+
 namespace math {
 namespace calculations {
 
@@ -13869,6 +14350,13 @@ struct SafeDivisor
 } // namespace calculations
 } // namespace math
 
+
+#if __cplusplus < 202002L
+template <>
+struct std::hash<math::calculations::SafeDivisor>
+: atlas::atlas_detail::hash_base<math::calculations::SafeDivisor>
+{};
+#endif
 
 namespace physics {
 namespace kinematics {
@@ -14129,6 +14617,13 @@ struct Speed
 } // namespace physics
 
 
+#if __cplusplus < 202002L
+template <>
+struct std::hash<physics::kinematics::Speed>
+: atlas::atlas_detail::hash_base<physics::kinematics::Speed>
+{};
+#endif
+
 namespace fs {
 namespace paths {
 
@@ -14272,6 +14767,13 @@ struct Filename
 } // namespace paths
 } // namespace fs
 
+
+#if __cplusplus < 202002L
+template <>
+struct std::hash<fs::paths::Filename>
+: atlas::atlas_detail::hash_base<fs::paths::Filename>
+{};
+#endif
 
 namespace http {
 namespace protocol {
@@ -14436,4 +14938,11 @@ struct StatusCode
 } // namespace protocol
 } // namespace http
 
-#endif // EXAMPLE_C23348041E8BC14E6F9855163C97EFD25B1037DD
+
+#if __cplusplus < 202002L
+template <>
+struct std::hash<http::protocol::StatusCode>
+: atlas::atlas_detail::hash_base<http::protocol::StatusCode>
+{};
+#endif
+#endif // EXAMPLE_A950265731720B631DFCF64D43221EAB95E121EB

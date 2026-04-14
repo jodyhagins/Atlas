@@ -3,6 +3,7 @@
 guard_prefix=DOMAIN_TYPES
 guard_separator=_
 upcase_guard=true
+auto_ostream=true
 
 [type]
 kind=struct
@@ -22,14 +23,14 @@ default_value=0
 kind=struct
 namespace=domain
 name=Money
-description=strong double; +, -, *, /, ==, !=, <, <=, >, >=, out, no-constexpr
+description=strong double; +, -, *, /, ==, !=, <, <=, >, >=, no-constexpr
 default_value=0.0
 
 [type]
 kind=struct
 namespace=domain
 name=Quantity
-description=strong int; +, -, ++, --, ==, !=, <, <=, >, >=, out, no-constexpr
+description=strong int; +, -, ++, --, ==, !=, <, <=, >, >=, no-constexpr
 default_value=0
 
 [type]

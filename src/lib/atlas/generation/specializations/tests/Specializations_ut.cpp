@@ -40,42 +40,31 @@ TEST_SUITE("HashSpecialization")
         CHECK_FALSE(spec.should_apply(info));
     }
 
-    TEST_CASE("get_template contains std::hash specialization")
+    TEST_CASE("get_template is a pre-C++20 hash_base one-liner")
     {
         HashSpecialization spec;
         auto tmpl = spec.get_template();
 
+        // Pre-C++20 guard
+        CHECK(
+            tmpl.find("#if __cplusplus < 202002L") !=
+            std::string_view::npos);
+        CHECK(tmpl.find("#endif") != std::string_view::npos);
+
+        // Inherits from hash_base
         CHECK(tmpl.find("template <>") != std::string_view::npos);
         CHECK(tmpl.find("struct std::hash<") != std::string_view::npos);
-        CHECK(tmpl.find("ATLAS_NODISCARD") != std::string_view::npos);
-        CHECK(tmpl.find("std::size_t operator ()") != std::string_view::npos);
-        CHECK(tmpl.find("noexcept") != std::string_view::npos);
-    }
-
-    TEST_CASE("get_template delegates to underlying type's hash")
-    {
-        HashSpecialization spec;
-        auto tmpl = spec.get_template();
-
         CHECK(
-            tmpl.find("std::hash<{{{underlying_type}}}>{}") !=
+            tmpl.find("atlas::atlas_detail::hash_base<") !=
             std::string_view::npos);
+
+        // Uses full_qualified_name mustache variable
         CHECK(
-            tmpl.find("static_cast<{{{underlying_type}}} const &>(t)") !=
+            tmpl.find("{{{full_qualified_name}}}") !=
             std::string_view::npos);
     }
 
-    TEST_CASE("get_template uses hash_const_expr for constexpr control")
-    {
-        HashSpecialization spec;
-        auto tmpl = spec.get_template();
-
-        CHECK(
-            tmpl.find("{{{hash_const_expr}}}std::size_t") !=
-            std::string_view::npos);
-    }
-
-    TEST_CASE("prepare_variables returns valid JSON with required fields")
+    TEST_CASE("prepare_variables includes full_qualified_name")
     {
         HashSpecialization spec;
         StrongTypeDescription desc;
@@ -87,8 +76,6 @@ TEST_SUITE("HashSpecialization")
         auto vars = spec.prepare_variables(info);
 
         CHECK(vars.contains("full_qualified_name"));
-        CHECK(vars.contains("underlying_type"));
-        CHECK(vars.contains("hash_const_expr"));
     }
 
     TEST_CASE("prepare_variables includes namespace in full_qualified_name")
@@ -108,7 +95,7 @@ TEST_SUITE("HashSpecialization")
         CHECK(fqn.c_str() == std::string("MyNamespace::TestType"));
     }
 
-    TEST_CASE("render produces code with std::hash specialization")
+    TEST_CASE("render produces pre-C++20 hash_base inheritance")
     {
         HashSpecialization spec;
         StrongTypeDescription desc;
@@ -119,8 +106,14 @@ TEST_SUITE("HashSpecialization")
         auto info = ClassInfo::parse(desc);
         auto rendered = spec.render(info);
 
-        CHECK(rendered.find("std::hash<TestType>") != std::string::npos);
-        CHECK(rendered.find("std::hash<int>") != std::string::npos);
+        CHECK(
+            rendered.find("std::hash<TestType>") != std::string::npos);
+        CHECK(
+            rendered.find("atlas::atlas_detail::hash_base<TestType>") !=
+            std::string::npos);
+        CHECK(
+            rendered.find("#if __cplusplus < 202002L") !=
+            std::string::npos);
     }
 
     TEST_CASE("render with namespace uses fully qualified name")
@@ -138,9 +131,12 @@ TEST_SUITE("HashSpecialization")
         CHECK(
             rendered.find("std::hash<MyNamespace::TestType>") !=
             std::string::npos);
+        CHECK(
+            rendered.find("hash_base<MyNamespace::TestType>") !=
+            std::string::npos);
     }
 
-    TEST_CASE("render with no-constexpr-hash omits constexpr")
+    TEST_CASE("render with no-constexpr-hash still produces hash_base inheritance")
     {
         HashSpecialization spec;
         StrongTypeDescription desc;
@@ -151,11 +147,10 @@ TEST_SUITE("HashSpecialization")
         auto info = ClassInfo::parse(desc);
         auto rendered = spec.render(info);
 
-        // The hash_const_expr should be empty, so constexpr should not appear
-        // before std::size_t We can check that "constexpr std::size_t" doesn't
-        // appear
-        CHECK(rendered.find("constexpr std::size_t") == std::string::npos);
-        CHECK(rendered.find("std::size_t operator") != std::string::npos);
+        // Per-type specialization is the same one-liner regardless of
+        // constexpr setting (constexpr is controlled at preamble level)
+        CHECK(
+            rendered.find("hash_base<TestType>") != std::string::npos);
     }
 }
 
@@ -167,8 +162,10 @@ TEST_SUITE("FormatterSpecialization")
         CHECK(spec.id() == "specializations.formatter");
     }
 
-    TEST_CASE("should_apply returns true when formatter is enabled")
+    TEST_CASE("should_apply returns false - formatter is preamble-only")
     {
+        // Per-type formatter specialization is disabled; auto_format at
+        // file level handles it via the preamble.
         FormatterSpecialization spec;
         StrongTypeDescription desc;
         desc.type_name = "TestType";
@@ -176,7 +173,7 @@ TEST_SUITE("FormatterSpecialization")
         desc.generate_formatter = true;
 
         auto info = ClassInfo::parse(desc);
-        CHECK(spec.should_apply(info));
+        CHECK_FALSE(spec.should_apply(info));
     }
 
     TEST_CASE("should_apply returns false when formatter is not enabled")
@@ -202,13 +199,16 @@ TEST_SUITE("FormatterSpecialization")
         CHECK(tmpl.find("std::format_context") != std::string_view::npos);
     }
 
-    TEST_CASE("get_template inherits from underlying formatter")
+    TEST_CASE("get_template uses drill-based formatting")
     {
         FormatterSpecialization spec;
         auto tmpl = spec.get_template();
 
         CHECK(
-            tmpl.find(": std::formatter<{{{underlying_type}}}>") !=
+            tmpl.find("format_drilled_type_t") !=
+            std::string_view::npos);
+        CHECK(
+            tmpl.find("format_value_drill") !=
             std::string_view::npos);
     }
 
@@ -223,19 +223,6 @@ TEST_SUITE("FormatterSpecialization")
         CHECK(
             tmpl.find("__cpp_lib_format >= 202110L") != std::string_view::npos);
         CHECK(tmpl.find("#endif") != std::string_view::npos);
-    }
-
-    TEST_CASE("get_template delegates to underlying formatter")
-    {
-        FormatterSpecialization spec;
-        auto tmpl = spec.get_template();
-
-        CHECK(
-            tmpl.find("std::formatter<{{{underlying_type}}}>::format") !=
-            std::string_view::npos);
-        CHECK(
-            tmpl.find("static_cast<{{{underlying_type}}} const &>(t)") !=
-            std::string_view::npos);
     }
 
     TEST_CASE("prepare_variables returns valid JSON with required fields")
@@ -271,45 +258,6 @@ TEST_SUITE("FormatterSpecialization")
         auto fqn = vars.at("full_qualified_name").as_string();
         CHECK(fqn.c_str() == std::string("MyNamespace::TestType"));
     }
-
-    TEST_CASE("render produces code with std::formatter specialization")
-    {
-        FormatterSpecialization spec;
-        StrongTypeDescription desc;
-        desc.type_name = "TestType";
-        desc.cpp_standard = 20;
-        desc.description = "std::string";
-        desc.generate_formatter = true;
-
-        auto info = ClassInfo::parse(desc);
-        auto rendered = spec.render(info);
-
-        CHECK(
-            rendered.find("#if defined(__cpp_lib_format)") !=
-            std::string::npos);
-        CHECK(rendered.find("std::formatter<TestType>") != std::string::npos);
-        CHECK(
-            rendered.find("std::formatter<std::string>") != std::string::npos);
-        CHECK(rendered.find("#endif") != std::string::npos);
-    }
-
-    TEST_CASE("render with namespace uses fully qualified name")
-    {
-        FormatterSpecialization spec;
-        StrongTypeDescription desc;
-        desc.type_name = "TestType";
-        desc.type_namespace = "MyNamespace";
-        desc.cpp_standard = 20;
-        desc.description = "int";
-        desc.generate_formatter = true;
-
-        auto info = ClassInfo::parse(desc);
-        auto rendered = spec.render(info);
-
-        CHECK(
-            rendered.find("std::formatter<MyNamespace::TestType>") !=
-            std::string::npos);
-    }
 }
 
 TEST_SUITE("Specializations Integration")
@@ -323,8 +271,10 @@ TEST_SUITE("Specializations Integration")
         CHECK(formatter_spec.id() == "specializations.formatter");
     }
 
-    TEST_CASE("Both specializations can be enabled together")
+    TEST_CASE("Hash applies but formatter does not for per-type tokens")
     {
+        // Per-type 'hash' enables hash_specialization, but per-type
+        // formatter is disabled (uses preamble-only approach).
         StrongTypeDescription desc;
         desc.type_name = "TestType";
         desc.cpp_standard = 20;
@@ -336,31 +286,25 @@ TEST_SUITE("Specializations Integration")
 
         auto info = ClassInfo::parse(desc);
         CHECK(hash_spec.should_apply(info));
-        CHECK(formatter_spec.should_apply(info));
+        CHECK_FALSE(formatter_spec.should_apply(info));
     }
 
-    TEST_CASE("Each specialization renders independently")
+    TEST_CASE("Hash renders pre-C++20 specialization independently")
     {
         StrongTypeDescription desc;
         desc.type_name = "TestType";
         desc.type_namespace = "MyNamespace";
         desc.cpp_standard = 20;
         desc.description = "std::string; hash";
-        desc.generate_formatter = true;
 
         HashSpecialization hash_spec;
-        FormatterSpecialization formatter_spec;
 
         auto info = ClassInfo::parse(desc);
         auto hash_rendered = hash_spec.render(info);
-        auto formatter_rendered = formatter_spec.render(info);
 
         // Hash should contain std::hash but not std::formatter
         CHECK(hash_rendered.find("std::hash<") != std::string::npos);
         CHECK(hash_rendered.find("std::formatter<") == std::string::npos);
-
-        // Formatter should contain std::formatter but not std::hash
-        CHECK(formatter_rendered.find("std::formatter<") != std::string::npos);
-        CHECK(formatter_rendered.find("std::hash<") == std::string::npos);
+        CHECK(hash_rendered.find("hash_base<") != std::string::npos);
     }
 }

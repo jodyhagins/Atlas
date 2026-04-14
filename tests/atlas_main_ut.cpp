@@ -164,6 +164,98 @@ TEST_SUITE("Atlas Main Tests")
             std::string::npos);
     }
 
+    TEST_CASE("auto_hash omits constexpr operator() by default")
+    {
+        char const * argv[] = {
+            "atlas",
+            "--kind=struct",
+            "--namespace=test",
+            "--name=HashType",
+            "--description=strong int",
+            "--auto-hash=yes"};
+
+        StdoutCapture capture;
+        int result = atlas_main(6, const_cast<char **>(argv));
+
+        CHECK(result == EXIT_SUCCESS);
+        auto output = capture.get();
+        // C++20 path should NOT have constexpr by default
+        CHECK(
+            output.find("constexpr std::size_t operator()") ==
+            std::string::npos);
+        // But should still have the hash boilerplate
+        CHECK(
+            output.find("WJH_ATLAS_83B11BF12B6945019DF71C7517A1D6DA") !=
+            std::string::npos);
+    }
+
+    TEST_CASE("auto_hash with constexpr_hash=true enables constexpr")
+    {
+        char const * argv[] = {
+            "atlas",
+            "--kind=struct",
+            "--namespace=test",
+            "--name=HashType",
+            "--description=strong int",
+            "--auto-hash=yes",
+            "--constexpr-hash=true"};
+
+        StdoutCapture capture;
+        int result = atlas_main(7, const_cast<char **>(argv));
+
+        CHECK(result == EXIT_SUCCESS);
+        auto output = capture.get();
+        // C++20 path should have constexpr when explicitly enabled
+        CHECK(
+            output.find("constexpr std::size_t operator()") !=
+            std::string::npos);
+    }
+
+    TEST_CASE("auto_hash generates pre-C++20 hash_base in preamble")
+    {
+        char const * argv[] = {
+            "atlas",
+            "--kind=struct",
+            "--namespace=test",
+            "--name=HashType",
+            "--description=strong int",
+            "--auto-hash=yes"};
+
+        StdoutCapture capture;
+        int result = atlas_main(6, const_cast<char **>(argv));
+
+        CHECK(result == EXIT_SUCCESS);
+        auto output = capture.get();
+        CHECK(output.find("struct hash_base") != std::string::npos);
+        CHECK(output.find("#else // pre-C++20") != std::string::npos);
+    }
+
+    TEST_CASE("auto_hash generates per-type hash specialization for pre-C++20")
+    {
+        char const * argv[] = {
+            "atlas",
+            "--kind=struct",
+            "--namespace=test",
+            "--name=HashType",
+            "--description=strong int",
+            "--auto-hash=yes"};
+
+        StdoutCapture capture;
+        int result = atlas_main(6, const_cast<char **>(argv));
+
+        CHECK(result == EXIT_SUCCESS);
+        auto output = capture.get();
+        // Per-type one-liner for pre-C++20
+        CHECK(
+            output.find(
+                "struct std::hash<test::HashType>\n"
+                ": atlas::atlas_detail::hash_base<test::HashType>") !=
+            std::string::npos);
+        // Wrapped in pre-C++20 guard
+        CHECK(
+            output.find("#if __cplusplus < 202002L") != std::string::npos);
+    }
+
     TEST_CASE("CLI --auto-ostream=yes generates auto ostream boilerplate")
     {
         char const * argv[] = {

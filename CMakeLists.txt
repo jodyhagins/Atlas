@@ -19,12 +19,15 @@ configure_file(
     @ONLY)
 
 # Set default build type to Release if not specified
-if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
-    set(CMAKE_BUILD_TYPE "Release"
-        CACHE STRING "Choose the type of build."
-        FORCE)
-    set_property(CACHE CMAKE_BUILD_TYPE
-        PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
+# Guard to top-level only so FetchContent consumers keep their own build type.
+if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
+    if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+        set(CMAKE_BUILD_TYPE "Release"
+            CACHE STRING "Choose the type of build."
+            FORCE)
+        set_property(CACHE CMAKE_BUILD_TYPE
+            PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
+    endif()
 endif()
 
 # Set C++20 standard
@@ -46,20 +49,30 @@ include(cmake/CompilerWarnings.cmake)
 include(FetchContent)
 
 # Options
-option(USE_SYSTEM_BOOST "Use system Boost installation" OFF)
+option(ATLAS_USE_SYSTEM_BOOST "Use system Boost installation" OFF)
 option(ATLAS_BUILD_TESTS "Build Atlas tests (requires CMake 3 for doctest)" ON)
-option(ENABLE_COVERAGE "Enable coverage reporting" OFF)
+option(ATLAS_ENABLE_COVERAGE "Enable coverage reporting" OFF)
+option(ATLAS_SANITIZE "Enable address sanitizer" OFF)
 
-# Coverage support (must be set before adding subdirectories/targets)
-if(ENABLE_COVERAGE)
-    if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-        message(STATUS "Enabling coverage support")
-        add_compile_options(--coverage -fprofile-arcs -ftest-coverage)
-        add_link_options(--coverage)
+# Sanitizer and coverage use add_compile_options which applies to all
+# targets in this directory tree. Guard to top-level only so parent
+# projects that include Atlas via FetchContent are not affected.
+if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
+    if(ATLAS_SANITIZE)
+        add_compile_options(-fsanitize=address -g)
+        add_link_options(-fsanitize=address)
+    endif()
+
+    if(ATLAS_ENABLE_COVERAGE)
+        if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+            message(STATUS "Enabling coverage support")
+            add_compile_options(--coverage -fprofile-arcs -ftest-coverage)
+            add_link_options(--coverage)
+        endif()
     endif()
 endif()
 
-if(USE_SYSTEM_BOOST)
+if(ATLAS_USE_SYSTEM_BOOST)
     find_package(Boost
         REQUIRED
         COMPONENTS json)
@@ -107,58 +120,120 @@ target_apply_atlas_warnings(atlas)
 set(Atlas_EXECUTABLE $<TARGET_FILE:atlas>
     CACHE INTERNAL "Path to atlas executable")
 
-# Tests
-if(ATLAS_BUILD_TESTS AND CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
-    enable_testing()
-    add_subdirectory(tests)
-    add_subdirectory(examples)
-endif()
+if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
+    # Tests
+    if(ATLAS_BUILD_TESTS)
+        enable_testing()
+        add_subdirectory(tests)
+        add_subdirectory(examples)
+    endif()
 
-# Installation rules
-include(CMakePackageConfigHelpers)
+    # Installation rules
+    include(CMakePackageConfigHelpers)
 
-# Install the executable (atlas_lib is an internal implementation detail and not exported)
-install(TARGETS atlas
-    EXPORT AtlasTargets
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+    # Install the executable (atlas_lib is an internal implementation detail
+    # and not exported)
+    install(TARGETS atlas
+        EXPORT AtlasTargets
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-# Note: atlas_lib is NOT exported or installed
-# The library uses Boost internally which cannot be reliably exported from FetchContent
-# Users should use the atlas executable tool, not link against the library
+    # Note: atlas_lib is NOT exported or installed
+    # The library uses Boost internally which cannot be reliably exported
+    # from FetchContent. Users should use the atlas executable tool, not
+    # link against the library
+    
+    # Headers are not installed since atlas_lib is not exported
+    # Users should use the atlas executable tool to generate code
 
-# Headers are not installed since atlas_lib is not exported
-# Users should use the atlas executable tool to generate code
+    # Export targets for find_package
+    install(EXPORT AtlasTargets
+        FILE AtlasTargets.cmake
+        NAMESPACE Atlas::
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Atlas)
 
-# Export targets for find_package
-install(EXPORT AtlasTargets
-    FILE AtlasTargets.cmake
-    NAMESPACE Atlas::
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Atlas)
-
-# Create config file
-configure_package_config_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/cmake/AtlasConfig.cmake.in
-    ${CMAKE_CURRENT_BINARY_DIR}/AtlasConfig.cmake
-    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Atlas)
-
-# Create version file
-write_basic_package_version_file(
-    ${CMAKE_CURRENT_BINARY_DIR}/AtlasConfigVersion.cmake
-    VERSION ${PROJECT_VERSION}
-    COMPATIBILITY SameMajorVersion)
-
-# Install config files
-install(
-    FILES
+    # Create config file
+    configure_package_config_file(
+        ${CMAKE_CURRENT_SOURCE_DIR}/cmake/AtlasConfig.cmake.in
         ${CMAKE_CURRENT_BINARY_DIR}/AtlasConfig.cmake
-        ${CMAKE_CURRENT_BINARY_DIR}/AtlasConfigVersion.cmake
-        ${CMAKE_CURRENT_SOURCE_DIR}/cmake/AtlasHelpers.cmake
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Atlas)
+        INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Atlas)
 
-# Export targets for use in build tree (for FetchContent users)
-export(EXPORT AtlasTargets
-    FILE ${CMAKE_CURRENT_BINARY_DIR}/AtlasTargets.cmake
-    NAMESPACE Atlas::)
+    # Create version file
+    write_basic_package_version_file(
+        ${CMAKE_CURRENT_BINARY_DIR}/AtlasConfigVersion.cmake
+        VERSION ${PROJECT_VERSION}
+        COMPATIBILITY SameMajorVersion)
+
+    # Install config files
+    install(
+        FILES
+            ${CMAKE_CURRENT_BINARY_DIR}/AtlasConfig.cmake
+            ${CMAKE_CURRENT_BINARY_DIR}/AtlasConfigVersion.cmake
+            ${CMAKE_CURRENT_SOURCE_DIR}/cmake/AtlasHelpers.cmake
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Atlas)
+
+
+    # Export targets for use in build tree (e.g., for superbuilds or
+    # projects that use find_package with CMAKE_PREFIX_PATH pointing here)
+    export(EXPORT AtlasTargets
+        FILE ${CMAKE_CURRENT_BINARY_DIR}/AtlasTargets.cmake
+        NAMESPACE Atlas::)
+
+    # Add custom coverage target
+    if(ATLAS_BUILD_TESTS)
+        find_program(LCOV_PATH lcov)
+        find_program(GENHTML_PATH genhtml)
+
+        # Try to find llvm-cov for better branch coverage on Clang
+        # Use wrapper script if available, otherwise try to find llvm-cov directly
+        set(LLVM_GCOV_WRAPPER "${CMAKE_SOURCE_DIR}/scripts/llvm-gcov.sh")
+        if(EXISTS ${LLVM_GCOV_WRAPPER} AND CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+            set(GCOV_TOOL ${LLVM_GCOV_WRAPPER})
+            message(STATUS "Using llvm-cov via wrapper for coverage (better branch coverage support)")
+        else()
+            set(GCOV_TOOL gcov)
+        endif()
+
+        if(LCOV_PATH AND GENHTML_PATH)
+            add_custom_target(coverage
+                COMMAND ${CMAKE_COMMAND} -E echo "Cleaning dependency coverage data..."
+                COMMAND find ${CMAKE_BINARY_DIR} -name "*.gcda" -path "*/_deps/*" -delete
+                COMMAND ${CMAKE_COMMAND} -E echo "Running tests for coverage..."
+                COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
+                COMMAND ${CMAKE_COMMAND} -E echo "Collecting coverage data..."
+                COMMAND ${LCOV_PATH} --capture --directory ${CMAKE_BINARY_DIR} --output-file coverage_raw.info
+                    --rc branch_coverage=1 --rc derive_function_end_line=0
+                    --exclude '*/_deps/*' --exclude '*/build/_deps/*'
+                    --ignore-errors mismatch,source,unused --gcov-tool ${GCOV_TOOL}
+                COMMAND ${CMAKE_COMMAND} -E echo "Filtering to project sources only..."
+                COMMAND ${LCOV_PATH} --remove coverage_raw.info '/usr/*' '*/tests/*' '*/_deps/*' '*/doctest.hpp'
+                    --output-file coverage.info --rc branch_coverage=1 --rc derive_function_end_line=0
+                    --ignore-errors unused
+                COMMAND ${CMAKE_COMMAND} -E echo "Generating HTML report..."
+                COMMAND ${GENHTML_PATH} coverage.info --output-directory coverage_html --rc branch_coverage=1
+                    --ignore-errors source,inconsistent --title "Atlas Coverage Report" --legend
+                COMMAND ${CMAKE_COMMAND} -E echo ""
+                COMMAND ${CMAKE_COMMAND} -E echo "========================================"
+                COMMAND ${CMAKE_COMMAND} -E echo "Coverage report generated successfully!"
+                COMMAND ${CMAKE_COMMAND} -E echo ""
+                COMMAND ${CMAKE_COMMAND} -E echo "View the report:"
+                COMMAND ${CMAKE_COMMAND} -E echo "  open ${CMAKE_BINARY_DIR}/coverage_html/index.html"
+                COMMAND ${CMAKE_COMMAND} -E echo ""
+                COMMAND ${CMAKE_COMMAND} -E echo "Or run: scripts/show_coverage.sh"
+                COMMAND ${CMAKE_COMMAND} -E echo "========================================"
+                WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+                COMMENT "Generating coverage report")
+        else()
+            add_custom_target(coverage
+                COMMAND ${CMAKE_COMMAND} -E echo "Running tests..."
+                COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
+                COMMAND ${CMAKE_COMMAND} -E echo "Generating basic coverage report..."
+                COMMAND ${CMAKE_COMMAND} -E echo
+                    "Install lcov for HTML reports: brew install lcov (macOS) or apt-get install lcov (Linux)"
+                WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+                COMMENT "Running tests (lcov not found for detailed coverage)")
+        endif()
+    endif()
+endif()
 
 # Copy helper functions to build tree for FetchContent users
 configure_file(
@@ -171,60 +246,4 @@ configure_file(
 if(NOT CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
     # Atlas is being included as a subdirectory/FetchContent - make helpers available
     include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/AtlasHelpers.cmake)
-endif()
-
-# Add custom coverage target
-if(ATLAS_BUILD_TESTS)
-    find_program(LCOV_PATH lcov)
-    find_program(GENHTML_PATH genhtml)
-
-    # Try to find llvm-cov for better branch coverage on Clang
-    # Use wrapper script if available, otherwise try to find llvm-cov directly
-    set(LLVM_GCOV_WRAPPER "${CMAKE_SOURCE_DIR}/scripts/llvm-gcov.sh")
-    if(EXISTS ${LLVM_GCOV_WRAPPER} AND CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-        set(GCOV_TOOL ${LLVM_GCOV_WRAPPER})
-        message(STATUS "Using llvm-cov via wrapper for coverage (better branch coverage support)")
-    else()
-        set(GCOV_TOOL gcov)
-    endif()
-
-    if(LCOV_PATH AND GENHTML_PATH)
-        add_custom_target(coverage
-            COMMAND ${CMAKE_COMMAND} -E echo "Cleaning dependency coverage data..."
-            COMMAND find ${CMAKE_BINARY_DIR} -name "*.gcda" -path "*/_deps/*" -delete
-            COMMAND ${CMAKE_COMMAND} -E echo "Running tests for coverage..."
-            COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
-            COMMAND ${CMAKE_COMMAND} -E echo "Collecting coverage data..."
-            COMMAND ${LCOV_PATH} --capture --directory ${CMAKE_BINARY_DIR} --output-file coverage_raw.info
-                --rc branch_coverage=1 --rc derive_function_end_line=0
-                --exclude '*/_deps/*' --exclude '*/build/_deps/*'
-                --ignore-errors mismatch,source,unused --gcov-tool ${GCOV_TOOL}
-            COMMAND ${CMAKE_COMMAND} -E echo "Filtering to project sources only..."
-            COMMAND ${LCOV_PATH} --remove coverage_raw.info '/usr/*' '*/tests/*' '*/_deps/*' '*/doctest.hpp'
-                --output-file coverage.info --rc branch_coverage=1 --rc derive_function_end_line=0
-                --ignore-errors unused
-            COMMAND ${CMAKE_COMMAND} -E echo "Generating HTML report..."
-            COMMAND ${GENHTML_PATH} coverage.info --output-directory coverage_html --rc branch_coverage=1
-                --ignore-errors source,inconsistent --title "Atlas Coverage Report" --legend
-            COMMAND ${CMAKE_COMMAND} -E echo ""
-            COMMAND ${CMAKE_COMMAND} -E echo "========================================"
-            COMMAND ${CMAKE_COMMAND} -E echo "Coverage report generated successfully!"
-            COMMAND ${CMAKE_COMMAND} -E echo ""
-            COMMAND ${CMAKE_COMMAND} -E echo "View the report:"
-            COMMAND ${CMAKE_COMMAND} -E echo "  open ${CMAKE_BINARY_DIR}/coverage_html/index.html"
-            COMMAND ${CMAKE_COMMAND} -E echo ""
-            COMMAND ${CMAKE_COMMAND} -E echo "Or run: scripts/show_coverage.sh"
-            COMMAND ${CMAKE_COMMAND} -E echo "========================================"
-            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-            COMMENT "Generating coverage report")
-    else()
-        add_custom_target(coverage
-            COMMAND ${CMAKE_COMMAND} -E echo "Running tests..."
-            COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
-            COMMAND ${CMAKE_COMMAND} -E echo "Generating basic coverage report..."
-            COMMAND ${CMAKE_COMMAND} -E echo
-                "Install lcov for HTML reports: brew install lcov (macOS) or apt-get install lcov (Linux)"
-            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-            COMMENT "Running tests (lcov not found for detailed coverage)")
-    endif()
 endif()

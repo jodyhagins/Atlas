@@ -169,6 +169,21 @@ generate_strong_types_file(
     for (auto const & desc : descriptions) {
         auto info = ClassInfo::parse(desc, &warnings);
 
+        // When auto_hash is enabled at file level, every type gets a
+        // per-type hash specialization (needed for the pre-C++20 path).
+        if (auto_opts.auto_hash && !info.hash_specialization) {
+            info.hash_specialization = true;
+            info.includes_vec.push_back("<functional>");
+            // set_qualified_name() in parse() skips types without
+            // hash_specialization, so populate it now.
+            if (not info.class_namespace.empty()) {
+                info.full_qualified_name = info.class_namespace +
+                    "::" + info.full_class_name;
+            } else {
+                info.full_qualified_name = info.full_class_name;
+            }
+        }
+
         if (info.cpp_standard > max_cpp_standard) {
             max_cpp_standard = info.cpp_standard;
         }
@@ -261,7 +276,8 @@ generate_strong_types_file(
         .auto_hash = auto_opts.auto_hash || any_hash_specialization,
         .auto_ostream = auto_opts.auto_ostream || any_ostream_operator,
         .auto_istream = auto_opts.auto_istream || any_istream_operator,
-        .auto_format = auto_opts.auto_format || any_formatter_specialization};
+        .auto_format = auto_opts.auto_format || any_formatter_specialization,
+        .constexpr_hash = auto_opts.constexpr_hash};
     auto preamble_includes = get_preamble_includes(preamble_opts);
     for (auto const & include : preamble_includes) {
         all_includes.insert(include);

@@ -64,6 +64,7 @@ struct FileParseResult
     bool auto_ostream = false;
     bool auto_istream = false;
     bool auto_format = false;
+    bool constexpr_hash = false;
 };
 
 /**

@@ -10,6 +10,7 @@ For when you have more than one type (which is always):
 
 ```
 guard_prefix=MY_APP_TYPES    # optional, but recommended
+auto_ostream=true
 
 [type]
 kind=struct
@@ -18,7 +19,7 @@ name=Distance
 description=strong int; +, -, ==, <=>
 
 [struct util::Counter]
-description=int; ++, --, out
+description=int; ++, --
 ```
 
 Quick facts:
@@ -36,6 +37,11 @@ These directives appear before the first `[type]` section and apply to all types
 | `guard_prefix=PREFIX` | Custom prefix for header guard |
 | `cpp_standard=N` | Minimum C++ standard (11, 14, 17, 20, 23) |
 | `profile=NAME; features` | Define a reusable feature profile |
+| `auto_hash=true` | Generate `std::hash<T>` for all atlas types in the file (C++20 concept-constrained; pre-C++20 via per-type specializations) |
+| `constexpr_hash=true` | Make `auto_hash` operator() constexpr (default: false). Only use when all types wrap constexpr-hashable underlying types (e.g., `int`, not `std::string`). |
+| `auto_ostream=true` | Generate `operator<<` for all atlas types in the file (SFINAE-constrained) |
+| `auto_istream=true` | Generate `operator>>` for all atlas types in the file (SFINAE-constrained) |
+| `auto_format=true` | Generate `std::formatter<T>` for all atlas types in the file (C++20, requires `__cpp_lib_format`) |
 | `auto_from_atlas_cast=true` | Enable `from_atlas_cast` constructor on all types in the file |
 
 ## Optional Strong Keyword
@@ -478,10 +484,10 @@ atlas --kind=struct --namespace=util --name=MyString \
 | `cast<Type>` | Explicit cast operator to `Type` (requires `static_cast`) |
 | `explicit_cast<Type>` | Explicit cast operator to `Type` (alias for `cast<Type>`) |
 | `implicit_cast<Type>` | Implicit cast operator to `Type` (reduces type safety, use sparingly) |
-| `out` | `operator<<` for output streams |
-| `in` | `operator>>` for input streams |
-| `fmt` | `std::formatter` specialization for C++20 `std::format` (wrapped in feature test macro) |
-| `hash` | `std::hash` specialization |
+| `out` | **Deprecated.** Use `auto_ostream=true` at file level. (Still parses; enables `auto_ostream` for ALL types in the file.) |
+| `in` | **Deprecated.** Use `auto_istream=true` at file level. (Still parses; enables `auto_istream` for ALL types in the file.) |
+| `fmt` | **Deprecated.** Use `auto_format=true` at file level. (Still parses; enables `auto_format` for ALL types in the file.) |
+| `hash` | **Deprecated.** Use `auto_hash=true` at file level. (Still parses; enables `auto_hash` for ALL types in the file.) |
 | `iterable` | Member `begin()/end()` for range-based for loops |
 | `assign` | Template assignment operator allowing assignment from compatible types |
 
@@ -494,7 +500,7 @@ atlas --kind=struct --namespace=util --name=MyString \
 | Option | Behavior |
 |--------|----------|
 | `no-constexpr` | Remove `constexpr` from all operations |
-| `no-constexpr-hash` | Remove `constexpr` from hash only |
+| `no-constexpr-hash` | **Deprecated.** Has no effect — hash is non-constexpr by default. Use `constexpr_hash=true` at file level to opt in. |
 | `#<header>` or `#"header"` | Explicit include directive |
 
 ## Default Values
@@ -540,7 +546,7 @@ When Atlas guesses wrong or you need a non-standard header, use `#<header>` to e
 
 ```
 double; +, -, *, /, <=>                            # Math-friendly double (strong keyword optional)
-std::string; ==, !=, out, no-constexpr-hash        # String with runtime hash
+std::string; ==, !=, no-constexpr                  # String (use auto_hash/auto_ostream at file level)
 int; ++, --, bool, #<iostream>                     # Counter with explicit include
 std::vector<int>; ==, [], iterable                 # Iterable container wrapper
 std::string; ==, cast<std::string_view>            # String with explicit cast to view

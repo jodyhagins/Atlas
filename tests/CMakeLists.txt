@@ -85,6 +85,13 @@ add_atlas_test(TARGET template_system_ut TEST_NAME TemplateSystemTests)
 add_atlas_test(TARGET type_tokenizer_ut TEST_NAME TypeTokenizerTests)
 add_atlas_test(TARGET token_to_header_mapper_ut TEST_NAME TokenToHeaderMapperTests)
 
+# Specialization template tests (Hash, Formatter)
+add_executable(specializations_ut
+    ${CMAKE_SOURCE_DIR}/src/lib/atlas/generation/specializations/tests/Specializations_ut.cpp)
+target_link_libraries(specializations_ut PRIVATE atlas_lib Boost::json doctest::doctest)
+target_apply_atlas_warnings(specializations_ut)
+add_test(NAME SpecializationsTests COMMAND specializations_ut)
+
 # Tests that need special properties
 add_atlas_test(TARGET golden_ut TEST_NAME GoldenTests)
 set_tests_properties(GoldenTests PROPERTIES ENVIRONMENT "SOURCE_DIR=${CMAKE_SOURCE_DIR}")

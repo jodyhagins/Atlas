@@ -98,6 +98,11 @@ struct PreambleOptions
     bool auto_ostream = false;
     bool auto_istream = false;
     bool auto_format = false;
+
+    // Controls whether the auto_hash operator() is constexpr.
+    // Default false; set true only when all types in the file wrap
+    // constexpr-hashable underlying types (e.g., int, not std::string).
+    bool constexpr_hash = false;
 };
 
 /**

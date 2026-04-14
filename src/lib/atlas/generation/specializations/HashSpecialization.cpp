@@ -16,38 +16,25 @@ std::string_view
 HashSpecialization::
 get_template_impl() const
 {
+    // Pre-C++20: one-liner inheriting from hash_base.
+    // In C++20+ the concept-constrained partial specialization in the
+    // preamble handles all types, so these are skipped.
     static constexpr std::string_view tmpl = R"(
-/**
- * @brief std::hash specialization for {{{full_qualified_name}}}
- *
- * Drills down to find the first hashable type in the wrapping chain.
- * Falls back to underlying type for enums without std::hash.
- */
+#if __cplusplus < 202002L
 template <>
 struct std::hash<{{{full_qualified_name}}}>
-{
-    ATLAS_NODISCARD
-    auto operator()({{{full_qualified_name}}} const & t) const
-    noexcept(noexcept(atlas::atlas_detail::hash_drill(
-        atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{})))
-    -> decltype(atlas::atlas_detail::hash_drill(
-        atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{}))
-    {
-        return atlas::atlas_detail::hash_drill(
-            atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{});
-    }
-};
+: atlas::atlas_detail::hash_base<{{{full_qualified_name}}}>
+{};
+#endif
 )";
     return tmpl;
 }
 
 bool
 HashSpecialization::
-should_apply_impl(ClassInfo const &) const
+should_apply_impl(ClassInfo const & info) const
 {
-    // Per-type hash specialization is disabled.
-    // Use auto_hash=true at file level for automatic std::hash support.
-    return false;
+    return info.hash_specialization;
 }
 
 boost::json::object

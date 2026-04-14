@@ -355,10 +355,10 @@ Common operators supported in the `DESCRIPTION` parameter:
 - `out` - output stream (`operator<<`)
 
 ### Hash Support
-- `hash` - enables `std::hash` specialization
+- `hash` - **Deprecated.** Use `auto_hash=true` at file level instead.
 
 ### Constexpr Control
-- `no-constexpr-hash` - disable constexpr hash (for runtime-only types)
+- `no-constexpr-hash` - **Deprecated.** Has no effect — hash is non-constexpr by default. Use `constexpr_hash=true` at file level to opt in.
 
 See the [Atlas documentation](../README.md) for the complete operator list and advanced features.
 

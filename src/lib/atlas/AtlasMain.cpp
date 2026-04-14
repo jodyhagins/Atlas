@@ -64,7 +64,9 @@ atlas_main(int argc, char ** argv)
                 .auto_hash = file_result.auto_hash || args.auto_hash,
                 .auto_ostream = file_result.auto_ostream || args.auto_ostream,
                 .auto_istream = file_result.auto_istream || args.auto_istream,
-                .auto_format = file_result.auto_format || args.auto_format};
+                .auto_format = file_result.auto_format || args.auto_format,
+                .constexpr_hash =
+                    file_result.constexpr_hash || args.constexpr_hash};
             output = generate_strong_types_file(
                 file_result.types,
                 file_result.guard_prefix,
@@ -83,7 +85,8 @@ atlas_main(int argc, char ** argv)
             .auto_hash = args.auto_hash,
             .auto_ostream = args.auto_ostream,
             .auto_istream = args.auto_istream,
-            .auto_format = args.auto_format};
+            .auto_format = args.auto_format,
+            .constexpr_hash = args.constexpr_hash};
         output = generate_strong_types_file(
             {description},
             args.guard_prefix,

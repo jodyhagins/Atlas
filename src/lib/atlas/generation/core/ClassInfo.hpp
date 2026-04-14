@@ -220,6 +220,7 @@ struct ClassInfo
 
     // Specialization support
     bool hash_specialization = false;
+    bool no_constexpr_hash = false;  // tracks deprecated no-constexpr-hash token
     bool formatter_specialization = false;
 
     // Fully qualified name for specializations

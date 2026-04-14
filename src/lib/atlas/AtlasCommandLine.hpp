@@ -53,6 +53,7 @@ public:
         bool auto_ostream = false;
         bool auto_istream = false;
         bool auto_format = false;
+        bool constexpr_hash = false;
     };
 
     struct FileGenerationResult
@@ -68,6 +69,7 @@ public:
         bool auto_ostream = false;
         bool auto_istream = false;
         bool auto_format = false;
+        bool constexpr_hash = false;
     };
 
     // Parse command line arguments

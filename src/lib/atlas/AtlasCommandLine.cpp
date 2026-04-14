@@ -156,6 +156,7 @@ parse_input_file(Arguments const & args)
         result.auto_ostream = parse_result.auto_ostream;
         result.auto_istream = parse_result.auto_istream;
         result.auto_format = parse_result.auto_format;
+        result.constexpr_hash = parse_result.constexpr_hash;
 
         return result;
     } catch (AtlasParserError const & e) {
@@ -218,8 +219,12 @@ OPTIONAL ARGUMENTS:
                                 and description-level specifications.
                                 (default: 11)
 
-    --auto-hash=<bool>          Enable automatic std::hash support (C++20)
+    --auto-hash=<bool>          Enable automatic std::hash support
                                 Values: true/false, 1/0, yes/no
+    --constexpr-hash=<bool>     Make auto_hash operator() constexpr
+                                (default: false). Set true only when all
+                                types wrap constexpr-hashable underlying
+                                types (e.g., int, not std::string).
     --auto-ostream=<bool>       Enable automatic operator<< support
                                 Values: true/false, 1/0, yes/no
     --auto-istream=<bool>       Enable automatic operator>> support
@@ -304,7 +309,7 @@ PROFILES:
     profile=NAME; feature1, feature2, ...
 
     Use profiles in descriptions with {NAME} syntax:
-    description=strong int; {NUMERIC}, hash
+    description=strong int; {NUMERIC}
 
     Profiles can be composed and features are automatically deduplicated.
     Profiles must be defined before use in type definitions.
@@ -363,8 +368,8 @@ OPERATOR REFERENCE:
     Assignment:     assign (template assignment operator)
     Casts:          cast<Type> or explicit_cast<Type> (explicit cast)
                     implicit_cast<Type> (implicit cast, use sparingly)
-    Hash:           hash (enables std::hash specialization)
-                    no-constexpr-hash (hash without constexpr)
+    Hash:           hash (deprecated, use auto_hash=true at file level)
+                    no-constexpr-hash (deprecated, no effect)
     Subscript:      [] (supports C++23 multidimensional subscripts)
     Custom:         #<header> or #"header" for custom includes
     Modes:          checked, saturating, or wrapping
@@ -402,12 +407,12 @@ CONSTEXPR BEHAVIOR:
     expressions.
 
     no-constexpr         Removes constexpr from all operations
-    no-constexpr-hash    Removes constexpr only from hash
+    no-constexpr-hash    Deprecated, no effect (hash is non-constexpr by
+                         default; use constexpr_hash=true to opt in)
 
     Examples:
-        "strong int; +, -, hash"              # All constexpr
-        "strong std::string; ==, no-constexpr-hash" # Ops constexpr, hash isn't
-        "strong std::string; ==, hash, no-constexpr" # Nothing constexpr
+        "strong int; +, -"                    # All constexpr
+        "strong std::string; ==, no-constexpr" # Nothing constexpr
 
 For more information, see the Atlas documentation.
 )_";

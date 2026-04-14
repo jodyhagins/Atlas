@@ -151,6 +151,52 @@ check_for_redundant_operators(
     }
 }
 
+// Check for deprecated per-type tokens (hash, no-constexpr-hash, out, in, fmt)
+void
+check_for_deprecated_tokens(
+    ClassInfo const & info,
+    std::vector<wjh::atlas::StrongTypeGenerator::Warning> * warnings)
+{
+    if (not warnings) {
+        return;
+    }
+
+    auto type_name = info.class_namespace.empty()
+        ? info.full_class_name
+        : info.class_namespace + "::" + info.full_class_name;
+
+    if (info.no_constexpr_hash) {
+        warnings->push_back(
+            {.message = "Per-type 'no-constexpr-hash' is deprecated and has "
+                        "no effect. Hash is non-constexpr by default. "
+                        "Use 'constexpr_hash=true' at file level to opt in.",
+             .type_name = type_name});
+    } else if (info.hash_specialization) {
+        warnings->push_back(
+            {.message = "Per-type 'hash' is deprecated. "
+                        "Use 'auto_hash=true' at file level instead.",
+             .type_name = type_name});
+    }
+    if (info.ostream_operator) {
+        warnings->push_back(
+            {.message = "Per-type 'out' is deprecated. "
+                        "Use 'auto_ostream=true' at file level instead.",
+             .type_name = type_name});
+    }
+    if (info.istream_operator) {
+        warnings->push_back(
+            {.message = "Per-type 'in' is deprecated. "
+                        "Use 'auto_istream=true' at file level instead.",
+             .type_name = type_name});
+    }
+    if (info.formatter_specialization) {
+        warnings->push_back(
+            {.message = "Per-type 'fmt' is deprecated. "
+                        "Use 'auto_format=true' at file level instead.",
+             .type_name = type_name});
+    }
+}
+
 // ============================================================================
 // Forward Specification Parsing
 // ============================================================================
@@ -569,6 +615,7 @@ process_specializations(ClassInfo & info, std::string_view sv)
 
     if (sv == "no-constexpr-hash") {
         info.hash_specialization = true;
+        info.no_constexpr_hash = true;
         info.hash_const_expr = "";
         info.includes_vec.push_back("<functional>");
         return true;
@@ -1546,6 +1593,7 @@ parse(
         state.has_relational_ops,
         info,
         warnings);
+    check_for_deprecated_tokens(info, warnings);
     populate_casts_and_constants(info);
     finalize_spaceship_operators(info, state);
     finalize_default_values(info, desc);

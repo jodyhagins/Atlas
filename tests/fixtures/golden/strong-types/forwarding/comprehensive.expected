@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_92CEA6AF0AE1C044CEC4A06F8AC8150574143E33
-#define FOO_BAR_92CEA6AF0AE1C044CEC4A06F8AC8150574143E33
+#ifndef FOO_BAR_5E993C2A8C29AA9D2B4A7C2A902BFCC98948740A
+#define FOO_BAR_5E993C2A8C29AA9D2B4A7C2A902BFCC98948740A
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -809,6 +809,34 @@ struct std::hash<T>
             atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{});
     }
 };
+#else // pre-C++20
+namespace atlas {
+namespace atlas_detail {
+
+// Base class for per-type std::hash specializations.
+// The template <typename U = T> trick defers instantiation of the
+// return type until operator() is actually called, providing a
+// SFINAE-like effect for most cases. Note: this relies on hash_drill
+// producing a substitution failure (not a hard error) for non-hashable
+// types, which holds for all atlas-generated types.
+template <typename T>
+struct hash_base
+{
+    template <typename U = T>
+    ATLAS_NODISCARD
+    auto operator()(U const & t) const
+    noexcept(noexcept(hash_drill(
+        atlas_value_for(t), PriorityTag<2>{})))
+    -> decltype(hash_drill(
+        atlas_value_for(t), PriorityTag<2>{}))
+    {
+        return hash_drill(
+            atlas_value_for(t), PriorityTag<2>{});
+    }
+};
+
+} // namespace atlas_detail
+} // namespace atlas
 #endif // C++20
 #endif // WJH_ATLAS_83B11BF12B6945019DF71C7517A1D6DA
 
@@ -2560,6 +2588,13 @@ struct AdvancedString
 };
 } // namespace test
 
+
+#if __cplusplus < 202002L
+template <>
+struct std::hash<test::AdvancedString>
+: atlas::atlas_detail::hash_base<test::AdvancedString>
+{};
+#endif
 
 namespace test {
 
@@ -4353,5 +4388,5 @@ struct ReadOnlyText
 };
 } // namespace test
 
-#endif // FOO_BAR_92CEA6AF0AE1C044CEC4A06F8AC8150574143E33
+#endif // FOO_BAR_5E993C2A8C29AA9D2B4A7C2A902BFCC98948740A
 

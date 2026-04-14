@@ -5,46 +5,49 @@
 guard_prefix=EXAMPLE
 guard_separator=_
 upcase_guard=true
+auto_hash=true
+auto_ostream=true
+auto_istream=true
+auto_format=true
 
 # Profile definitions - reusable feature bundles
 profile=NUMERIC; +, -, *, /
 profile=COMPARABLE; ==, !=, <, <=, >, >=
-profile=HASHABLE; ==, !=, hash
-profile=STREAMABLE; out, in
+profile=EQUALITY; ==, !=
 
 # Profile demo: Using profiles to reduce verbosity
 [type]
 kind=struct
 namespace=demo::profiles
 name=Price
-description=strong double; {NUMERIC}, {COMPARABLE}, hash
+description=strong double; {NUMERIC}, {COMPARABLE}
 default_value=0.0
 
 [type]
 kind=struct
 namespace=demo::profiles
 name=Quantity
-description=strong int; {NUMERIC}, {HASHABLE}
+description=strong int; {NUMERIC}, {EQUALITY}
 default_value=0
 
 [type]
 kind=struct
 namespace=demo::profiles
 name=Identifier
-description=strong std::string; {HASHABLE}, {STREAMABLE}
+description=strong std::string; {EQUALITY}
 
 [type]
 kind=struct
 namespace=finance::core
 name=Money
-description=strong double; +, -, *, /, ==, !=, <, <=, >, >=, <<, hash
+description=strong double; +, -, *, /, ==, !=, <, <=, >, >=, <<
 default_value=0.0
 
 [type]
 kind=class
 namespace=ids::v1
 name=UserId
-description=strong unsigned long; <=>, hash, no-constexpr-hash
+description=strong unsigned long; <=>
 default_value=0
 
 [type]
@@ -83,7 +86,7 @@ default_value=0
 kind=class
 namespace=security
 name=EncryptedData
-description=strong std::string; ==, !=, <<, hash
+description=strong std::string; ==, !=, <<
 
 [type]
 kind=struct
@@ -103,7 +106,7 @@ default_value=0.0
 kind=struct
 namespace=concurrency
 name=ThreadId
-description=strong int; ==, !=, <<, hash, no-constexpr, no-constexpr-hash
+description=strong int; ==, !=, <<, no-constexpr
 
 [type]
 kind=struct
@@ -129,7 +132,7 @@ default_value=0
 kind=class
 namespace=app::config
 name=ConfigKey
-description=strong std::string; +, ==, !=, <, <<, hash, []
+description=strong std::string; +, ==, !=, <, <<, []
 
 [type]
 kind=struct
@@ -148,25 +151,25 @@ description=strong std::vector<int>; ==, iterable, []
 kind=class
 namespace=containers
 name=DataBuffer
-description=strong std::vector<uint8_t>; ==, !=, iterable, [], hash
+description=strong std::vector<uint8_t>; ==, !=, iterable, []
 
 [type]
 kind=struct
 namespace=formatting
 name=FormattedString
-description=strong std::string; ==, !=, fmt, out, hash
+description=strong std::string; ==, !=
 
 [type]
 kind=struct
 namespace=formatting
 name=FormattedInt
-description=strong int; ==, fmt
+description=strong int; ==
 
 [type]
 kind=struct
 namespace=text
 name=AssignableString
-description=strong std::string; ==, !=, assign, out
+description=strong std::string; ==, !=, assign
 
 [type]
 kind=struct
@@ -207,7 +210,7 @@ default_value=20.0
 kind=struct
 namespace=::
 name=GlobalEventId
-description=unsigned long; ==, !=, hash
+description=unsigned long; ==, !=
 
 # Named constants - similar to scoped enum values
 [type]
@@ -243,7 +246,7 @@ description=std::chrono::seconds; <=>
 kind=struct
 namespace=demo::forwarding
 name=SafeString
-description=std::string; forward=size,empty,length; ==, !=, hash
+description=std::string; forward=size,empty,length; ==, !=
 
 # Member Function aliasing - rename forwarded member functions
 [type]
@@ -278,7 +281,7 @@ description=std::unique_ptr<int>; forward=get,reset; ->, @, bool
 kind=struct
 namespace=demo::forwarding
 name=ManagedString
-description=std::string; ==, !=, hash
+description=std::string; ==, !=
 forward=size:length,empty:is_empty
 forward=clear,append
 
@@ -344,7 +347,7 @@ default_value=0
 kind=struct
 namespace=auth::credentials
 name=Username
-description=std::string; non_empty, ==, !=, <, <<, hash
+description=std::string; non_empty, ==, !=, <, <<
 
 # Non-empty container - vector must have at least one element
 [type]
@@ -446,7 +449,7 @@ default_value=30
 kind=class
 namespace=api::security
 name=ApiKey
-description=std::string; non_empty, ==, !=, hash
+description=std::string; non_empty, ==, !=
 
 # Thread priority level bounded to valid range
 [type]

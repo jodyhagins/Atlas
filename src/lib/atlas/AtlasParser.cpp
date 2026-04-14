@@ -522,6 +522,9 @@ parse_file_level_config(
         }
     } else if (key == "auto_hash") {
         result.auto_hash = parser_utils::parse_bool(value, "auto_hash");
+    } else if (key == "constexpr_hash") {
+        result.constexpr_hash =
+            parser_utils::parse_bool(value, "constexpr_hash");
     } else if (key == "auto_ostream") {
         result.auto_ostream = parser_utils::parse_bool(value, "auto_ostream");
     } else if (key == "auto_istream") {
@@ -1557,6 +1560,10 @@ parse_arguments(std::vector<std::string> const & args)
             }
         } else if (key == "auto-hash") {
             result.auto_hash = parser_utils::parse_bool(value, "--auto-hash");
+        } else if (key == "constexpr-hash") {
+            result.constexpr_hash = parser_utils::parse_bool(
+                value,
+                "--constexpr-hash");
         } else if (key == "auto-ostream") {
             result.auto_ostream = parser_utils::parse_bool(
                 value,

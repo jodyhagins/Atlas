@@ -27,7 +27,7 @@ FetchContent_Declare(Atlas
 FetchContent_MakeAvailable(Atlas)
 
 # Generate a strong type with minimal syntax
-atlas_add_type(UserId int "<=>, fmt, hash" TARGET my_library)
+atlas_add_type(UserId int "<=>" TARGET my_library)
 ```
 
 That's it! The helper function automatically:
@@ -64,16 +64,22 @@ See [`docs/AtlasHelpers.md`](docs/AtlasHelpers.md) for complete reference of all
 
 ## Installation
 
-Build and install:
+Build:
 ```bash
-cmake -B build -DCMAKE_BUILD_TYPE=Release
-cmake --build build
-cmake --install build --prefix /usr/local
+cmake --build --preset debug
 ```
 
 Run tests:
 ```bash
-cd build && ctest --output-on-failure
+ctest --preset debug
+```
+
+Available presets: `debug`, `release`, `debug-gcc`, `release-gcc`, and ASan variants (`debug-clang`, `release-clang`). See `cmake --list-presets` for the full list.
+
+Install from a release build:
+```bash
+cmake --build --preset release
+cmake --install .build/release-clang --prefix /usr/local
 ```
 
 Run code coverage:
@@ -163,7 +169,8 @@ Common options (because we're all about that opt-in life):
 - Stream: `in`, `out` — `std::cout` compatibility sold separately
 - Callable: `()`, `(&)` — yes, your strong type can be a functor. Why? Because C++.
 - Pointer-like: `@`, `->`, `&of` — make it look like a pointer without the segfaults
-- Containers: `[]`, `hash`, `iterable` — for those fancy data structures
+- Containers: `[]`, `iterable` — for those fancy data structures
+- File-level: `auto_hash`, `auto_ostream`, `auto_format` — enable `std::hash`, `operator<<`, `std::formatter` for all types
 - Constants: Named constants with `constants=name:value; name2:value2` — static members like scoped enums
 - Profiles: Reusable feature bundles with `profile=NAME; features...` and `{NAME}` references
 - Special: `bool`, `no-constexpr` — the "it's complicated" options
@@ -190,7 +197,7 @@ description=int; bounded<0,100>, +, -, <=>, saturating
 description=double; positive, +, -, *, /
 
 [struct auth::Username]
-description=std::string; non_empty, ==, hash
+description=std::string; non_empty, ==
 ```
 
 Generated types validate at construction and after operations:

@@ -197,13 +197,13 @@ forward=size, empty, clear, length
 description=int; positive, cast<double>, cast<long>
 
 [test::features::BoundedWithHash]
-description=int; bounded<0,100>, ==, hash, no-constexpr-hash
+description=int; bounded<0,100>, ==
 
 [test::features::NonNegativeWithComparison]
 description=int; non_negative, ==, !=, <, <=, >, >=
 
 [test::features::ComplexComposition]
-description=std::uint16_t; bounded<1024,65535>, +, -, checked, <=>, hash, #<cstdint>, no-constexpr-hash
+description=std::uint16_t; bounded<1024,65535>, +, -, checked, <=>, #<cstdint>
 
 [test::features::NonNullWithForwarding]
 description=std::unique_ptr<int>; non_null, no-constexpr, ==, !=, ->, #<memory>

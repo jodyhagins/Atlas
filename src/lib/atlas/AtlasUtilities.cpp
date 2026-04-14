@@ -1031,9 +1031,13 @@ using format_drilled_type_t =
 #endif // WJH_ATLAS_9B74AE244B4F4EB68DF9D80B67E1EB05
 )";
 
-    // Auto hash boilerplate - C++20 constrained partial specialization of
-    // std::hash for all atlas types. Requires hash_drill boilerplate.
-    static constexpr char const auto_hash_boilerplate[] = R"(
+    // Auto hash boilerplate - provides std::hash support for all atlas types.
+    // C++20+: concept-constrained partial specialization handles all types.
+    // Pre-C++20: hash_base<T> provides the implementation; per-type explicit
+    // specializations inherit from it (emitted by HashSpecialization).
+
+    // C++20 path: open guard and concept definition
+    static constexpr char const auto_hash_cpp20_head[] = R"(
 #ifndef WJH_ATLAS_83B11BF12B6945019DF71C7517A1D6DA
 #define WJH_ATLAS_83B11BF12B6945019DF71C7517A1D6DA
 #if __cplusplus >= 202002L
@@ -1054,7 +1058,10 @@ template <typename T>
     requires atlas::atlas_detail::atlas_hashable<T>
 struct std::hash<T>
 {
-    std::size_t operator()(T const & t) const
+    )";
+
+    // C++20 path: close the struct and #if
+    static constexpr char const auto_hash_cpp20_tail[] = R"(std::size_t operator()(T const & t) const
     noexcept(noexcept(atlas::atlas_detail::hash_drill(
         atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{})))
     {
@@ -1062,7 +1069,41 @@ struct std::hash<T>
             atlas_value_for(t), atlas::atlas_detail::PriorityTag<2>{});
     }
 };
-#endif // C++20
+)";
+
+    // Pre-C++20 path: hash_base for per-type inheritance
+    static constexpr char const auto_hash_pre_cpp20[] = R"(#else // pre-C++20
+namespace atlas {
+namespace atlas_detail {
+
+// Base class for per-type std::hash specializations.
+// The template <typename U = T> trick defers instantiation of the
+// return type until operator() is actually called, providing a
+// SFINAE-like effect for most cases. Note: this relies on hash_drill
+// producing a substitution failure (not a hard error) for non-hashable
+// types, which holds for all atlas-generated types.
+template <typename T>
+struct hash_base
+{
+    template <typename U = T>
+    ATLAS_NODISCARD
+    auto operator()(U const & t) const
+    noexcept(noexcept(hash_drill(
+        atlas_value_for(t), PriorityTag<2>{})))
+    -> decltype(hash_drill(
+        atlas_value_for(t), PriorityTag<2>{}))
+    {
+        return hash_drill(
+            atlas_value_for(t), PriorityTag<2>{});
+    }
+};
+
+} // namespace atlas_detail
+} // namespace atlas
+)";
+
+    // Close guards
+    static constexpr char const auto_hash_close[] = R"(#endif // C++20
 #endif // WJH_ATLAS_83B11BF12B6945019DF71C7517A1D6DA
 )";
 
@@ -3318,7 +3359,13 @@ public:
     // Auto-generation boilerplates - provide automatic support for all atlas
     // types
     if (options.auto_hash) {
-        result += auto_hash_boilerplate;
+        result += auto_hash_cpp20_head;
+        if (options.constexpr_hash) {
+            result += "constexpr ";
+        }
+        result += auto_hash_cpp20_tail;
+        result += auto_hash_pre_cpp20;
+        result += auto_hash_close;
     }
     if (options.auto_format) {
         result += auto_format_boilerplate;

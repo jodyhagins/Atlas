@@ -115,7 +115,7 @@ description=int; positive, cast<double>, cast<long>
 
 # Constraint + Hash
 [test::BoundedWithHash]
-description=int; bounded<0,100>, ==, hash, no-constexpr-hash
+description=int; bounded<0,100>, ==
 
 # Constraint + Comparison Operators
 [test::NonNegativeWithComparison]
@@ -123,7 +123,7 @@ description=int; non_negative, ==, !=, <, <=, >, >=
 
 # Constraint + Multiple Features
 [test::ComplexComposition]
-description=std::uint16_t; bounded<1024,65535>, +, -, checked, <=>, hash, #<cstdint>, no-constexpr-hash
+description=std::uint16_t; bounded<1024,65535>, +, -, checked, <=>, #<cstdint>
 
 # Non-null with operator->
 [test::NonNullWithForwarding]

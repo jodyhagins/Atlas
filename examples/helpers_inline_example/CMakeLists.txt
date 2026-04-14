@@ -31,6 +31,7 @@ add_atlas_strong_types_inline(
     "
 # Common strong types for our application
 guard_prefix=COMMON_TYPES
+auto_ostream=true
 
 [type]
 kind=struct
@@ -50,14 +51,14 @@ default_value=-1
 kind=struct
 namespace=app
 name=Distance
-description=strong double; +, -, *, /, ==, !=, <, <=, >, >=, out, no-constexpr
+description=strong double; +, -, *, /, ==, !=, <, <=, >, >=, no-constexpr
 default_value=0.0
 
 [type]
 kind=struct
 namespace=app
 name=Timestamp
-description=strong int64_t; ==, !=, <, <=, >, >=, out, no-constexpr
+description=strong int64_t; ==, !=, <, <=, >, >=, no-constexpr
 ")
 
 # Main executable
