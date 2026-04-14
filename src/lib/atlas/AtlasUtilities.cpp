@@ -711,6 +711,17 @@ struct holds_enum_impl<
 
 using cast_tag = PriorityTag<1>;
 
+// Trait to check if static_cast<TargetT>(U) is well-formed.
+// Used to guard PriorityTag<0> overloads so GCC does not recurse into their
+// trailing return types when the direct cast already succeeds.
+template <typename TargetT, typename U, typename = void>
+struct is_directly_castable : std::false_type {};
+
+template <typename TargetT, typename U>
+struct is_directly_castable<TargetT, U,
+    void_t<decltype(static_cast<TargetT>(std::declval<U>()))>>
+: std::true_type {};
+
 // ----------------------------------------------------------------------------
 // cast_impl: Drill down to find the first type castable to TargetT
 // ----------------------------------------------------------------------------
@@ -726,6 +737,7 @@ cast_impl(U && u, PriorityTag<1>)
 template <
     typename TargetT, typename U,
     typename std::enable_if<
+        !is_directly_castable<TargetT, U>::value &&
         std::is_reference<TargetT>::value &&
         !std::is_lvalue_reference<U>::value,
         bool>::type = true>
@@ -742,8 +754,9 @@ cast_impl(U && u, PriorityTag<0>)
 template <
     typename TargetT, typename U,
     typename std::enable_if<
-        !std::is_reference<TargetT>::value ||
-        std::is_lvalue_reference<U>::value,
+        !is_directly_castable<TargetT, U>::value &&
+        (!std::is_reference<TargetT>::value ||
+         std::is_lvalue_reference<U>::value),
         bool>::type = true>
 constexpr auto
 cast_impl(U && u, PriorityTag<0>)
