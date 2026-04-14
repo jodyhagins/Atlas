@@ -1,5 +1,5 @@
-#ifndef TEST_9E8AE02F66E8A5565929DF35CC4FAAE9211E165F
-#define TEST_9E8AE02F66E8A5565929DF35CC4FAAE9211E165F
+#ifndef TEST_1677F4091A1C411F538E3087340A5CBEC44D2FB6
+#define TEST_1677F4091A1C411F538E3087340A5CBEC44D2FB6
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -677,6 +677,8 @@ cast(U && u)
 // Custom value accessors for non-Atlas types
 // These allow atlas::undress() to work with external library types
 // Users can override by providing atlas_value_for(T const&) without the tag parameter
+#ifndef ATLAS_VALUE_FOR_C26EF9D14FE5399F79611B1BD003BFA4D73EE874
+#define ATLAS_VALUE_FOR_C26EF9D14FE5399F79611B1BD003BFA4D73EE874
 namespace atlas {
 inline constexpr auto
 atlas_value_for(::external::Delta const& v, value_tag)
@@ -684,13 +686,15 @@ atlas_value_for(::external::Delta const& v, value_tag)
 {
     return v.getValue();
 }
-
 } // namespace atlas
+#endif // ATLAS_VALUE_FOR_C26EF9D14FE5399F79611B1BD003BFA4D73EE874
 
 
 // Compound assignment operators for cross-type interactions
 // These use ADL to be found automatically for atlas strong types
 // The decltype ensures they only match when the binary operator is defined
+#ifndef ATLAS_COMPOUND_ASSIGN_PLUS
+#define ATLAS_COMPOUND_ASSIGN_PLUS
 namespace atlas {
 
 namespace atlas_detail {
@@ -749,8 +753,8 @@ noexcept(noexcept(atlas_detail::compound_assign_impl_plus(
         rhs,
         atlas_detail::has_compound_op_plus<L, R>{});
 }
-
 } // namespace atlas
+#endif // ATLAS_COMPOUND_ASSIGN_PLUS
 
 
 //////////////////////////////////////////////////////////////////////
@@ -771,5 +775,5 @@ noexcept(
 
 } // namespace mylib
 
-#endif // TEST_9E8AE02F66E8A5565929DF35CC4FAAE9211E165F
+#endif // TEST_1677F4091A1C411F538E3087340A5CBEC44D2FB6
 

@@ -1,5 +1,5 @@
-#ifndef TEST_DCB7A6824CAA2F94146413237B5CF046763DC8C9
-#define TEST_DCB7A6824CAA2F94146413237B5CF046763DC8C9
+#ifndef TEST_1666CBFFB386F10A9A2432275D89909A59607F6D
+#define TEST_1666CBFFB386F10A9A2432275D89909A59607F6D
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -677,6 +677,8 @@ cast(U && u)
 // Custom value accessors for non-Atlas types
 // These allow atlas::undress() to work with external library types
 // Users can override by providing atlas_value_for(T const&) without the tag parameter
+#ifndef ATLAS_VALUE_FOR_6EC444E1F35CBFDEBAF23FAE6901951164A3474D
+#define ATLAS_VALUE_FOR_6EC444E1F35CBFDEBAF23FAE6901951164A3474D
 namespace atlas {
 inline constexpr auto
 atlas_value_for(::net::ipv4::Octet const& v, value_tag)
@@ -684,13 +686,15 @@ atlas_value_for(::net::ipv4::Octet const& v, value_tag)
 {
     return v.value;
 }
-
 } // namespace atlas
+#endif // ATLAS_VALUE_FOR_6EC444E1F35CBFDEBAF23FAE6901951164A3474D
 
 
 // Compound assignment operators for cross-type interactions
 // These use ADL to be found automatically for atlas strong types
 // The decltype ensures they only match when the binary operator is defined
+#ifndef ATLAS_COMPOUND_ASSIGN_LSHIFT
+#define ATLAS_COMPOUND_ASSIGN_LSHIFT
 namespace atlas {
 
 namespace atlas_detail {
@@ -749,6 +753,11 @@ noexcept(noexcept(atlas_detail::compound_assign_impl_lshift(
         rhs,
         atlas_detail::has_compound_op_lshift<L, R>{});
 }
+} // namespace atlas
+#endif // ATLAS_COMPOUND_ASSIGN_LSHIFT
+#ifndef ATLAS_COMPOUND_ASSIGN_RSHIFT
+#define ATLAS_COMPOUND_ASSIGN_RSHIFT
+namespace atlas {
 
 namespace atlas_detail {
 template <typename L, typename R, typename = void>
@@ -806,8 +815,8 @@ noexcept(noexcept(atlas_detail::compound_assign_impl_rshift(
         rhs,
         atlas_detail::has_compound_op_rshift<L, R>{});
 }
-
 } // namespace atlas
+#endif // ATLAS_COMPOUND_ASSIGN_RSHIFT
 
 
 //////////////////////////////////////////////////////////////////////
@@ -846,5 +855,5 @@ noexcept(
 
 } // namespace net::ipv4
 
-#endif // TEST_DCB7A6824CAA2F94146413237B5CF046763DC8C9
+#endif // TEST_1666CBFFB386F10A9A2432275D89909A59607F6D
 

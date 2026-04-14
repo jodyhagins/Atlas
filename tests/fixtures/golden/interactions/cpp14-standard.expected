@@ -1,5 +1,5 @@
-#ifndef TEST_0CC8EBA2333F6D0845EB21A224A026EF6F7539CF
-#define TEST_0CC8EBA2333F6D0845EB21A224A026EF6F7539CF
+#ifndef TEST_F88EDC80C27623F424957E905CA4923195E60743
+#define TEST_F88EDC80C27623F424957E905CA4923195E60743
 
 static_assert(__cplusplus >= 201402L,
     "This file requires C++14 or later. Compile with -std=c++14 or higher.");
@@ -680,6 +680,8 @@ cast(U && u)
 // Compound assignment operators for cross-type interactions
 // These use ADL to be found automatically for atlas strong types
 // The decltype ensures they only match when the binary operator is defined
+#ifndef ATLAS_COMPOUND_ASSIGN_PLUS
+#define ATLAS_COMPOUND_ASSIGN_PLUS
 namespace atlas {
 
 namespace atlas_detail {
@@ -738,8 +740,8 @@ noexcept(noexcept(atlas_detail::compound_assign_impl_plus(
         rhs,
         atlas_detail::has_compound_op_plus<L, R>{});
 }
-
 } // namespace atlas
+#endif // ATLAS_COMPOUND_ASSIGN_PLUS
 
 
 //////////////////////////////////////////////////////////////////////
@@ -760,5 +762,5 @@ noexcept(
 
 } // namespace test
 
-#endif // TEST_0CC8EBA2333F6D0845EB21A224A026EF6F7539CF
+#endif // TEST_F88EDC80C27623F424957E905CA4923195E60743
 

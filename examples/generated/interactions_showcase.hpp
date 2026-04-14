@@ -1,5 +1,5 @@
-#ifndef EXAMPLE_INTERACTIONS_9429D5488F76D47DBB847015FF742D3EFE759618
-#define EXAMPLE_INTERACTIONS_9429D5488F76D47DBB847015FF742D3EFE759618
+#ifndef EXAMPLE_INTERACTIONS_D2BD7298C047E43102AE41F14E95B1675093DF8D
+#define EXAMPLE_INTERACTIONS_D2BD7298C047E43102AE41F14E95B1675093DF8D
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -677,6 +677,8 @@ cast(U && u)
 // Custom value accessors for non-Atlas types
 // These allow atlas::undress() to work with external library types
 // Users can override by providing atlas_value_for(T const&) without the tag parameter
+#ifndef ATLAS_VALUE_FOR_5AE2F0C38A1B51E2848B34AA874619AB13A18648
+#define ATLAS_VALUE_FOR_5AE2F0C38A1B51E2848B34AA874619AB13A18648
 namespace atlas {
 inline auto
 atlas_value_for(::concurrency::ThreadId const& v, value_tag)
@@ -684,97 +686,159 @@ atlas_value_for(::concurrency::ThreadId const& v, value_tag)
 {
     return v.value;
 }
+} // namespace atlas
+#endif // ATLAS_VALUE_FOR_5AE2F0C38A1B51E2848B34AA874619AB13A18648
 
+#ifndef ATLAS_VALUE_FOR_9E93889E6849D788FAF3607FB5535E1CE5A67A74
+#define ATLAS_VALUE_FOR_9E93889E6849D788FAF3607FB5535E1CE5A67A74
+namespace atlas {
 inline constexpr auto
 atlas_value_for(::data::ByteCount const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
 }
+} // namespace atlas
+#endif // ATLAS_VALUE_FOR_9E93889E6849D788FAF3607FB5535E1CE5A67A74
 
+#ifndef ATLAS_VALUE_FOR_282F01C745B95B195C3A228752CD426F6F2A7EA5
+#define ATLAS_VALUE_FOR_282F01C745B95B195C3A228752CD426F6F2A7EA5
+namespace atlas {
 inline constexpr auto
 atlas_value_for(::finance::core::Money const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
 }
+} // namespace atlas
+#endif // ATLAS_VALUE_FOR_282F01C745B95B195C3A228752CD426F6F2A7EA5
 
+#ifndef ATLAS_VALUE_FOR_242FE7E2B6BFD5A5CB90E8A76A196D909112D2EF
+#define ATLAS_VALUE_FOR_242FE7E2B6BFD5A5CB90E8A76A196D909112D2EF
+namespace atlas {
 inline constexpr auto
 atlas_value_for(::geo::Latitude const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
 }
+} // namespace atlas
+#endif // ATLAS_VALUE_FOR_242FE7E2B6BFD5A5CB90E8A76A196D909112D2EF
 
+#ifndef ATLAS_VALUE_FOR_D9AAAB19011D32A23EB7743D0702A8AA183381CF
+#define ATLAS_VALUE_FOR_D9AAAB19011D32A23EB7743D0702A8AA183381CF
+namespace atlas {
 inline constexpr auto
 atlas_value_for(::geo::Longitude const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
 }
+} // namespace atlas
+#endif // ATLAS_VALUE_FOR_D9AAAB19011D32A23EB7743D0702A8AA183381CF
 
+#ifndef ATLAS_VALUE_FOR_F58580460B6C9A8D57C0BA387337ED386FE8ECBA
+#define ATLAS_VALUE_FOR_F58580460B6C9A8D57C0BA387337ED386FE8ECBA
+namespace atlas {
 inline constexpr auto
 atlas_value_for(::graphics::color::RedChannel const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
 }
+} // namespace atlas
+#endif // ATLAS_VALUE_FOR_F58580460B6C9A8D57C0BA387337ED386FE8ECBA
 
+#ifndef ATLAS_VALUE_FOR_B11EE8022D3EE5EA828D53E8BACD360B25DF3C6F
+#define ATLAS_VALUE_FOR_B11EE8022D3EE5EA828D53E8BACD360B25DF3C6F
+namespace atlas {
 inline constexpr auto
 atlas_value_for(::math::rational::Denominator const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
 }
+} // namespace atlas
+#endif // ATLAS_VALUE_FOR_B11EE8022D3EE5EA828D53E8BACD360B25DF3C6F
 
+#ifndef ATLAS_VALUE_FOR_9D0C7EBA5A0EA3BDCF2F9284DE0C1804E1F2C8F3
+#define ATLAS_VALUE_FOR_9D0C7EBA5A0EA3BDCF2F9284DE0C1804E1F2C8F3
+namespace atlas {
 inline constexpr auto
 atlas_value_for(::math::rational::Numerator const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
 }
+} // namespace atlas
+#endif // ATLAS_VALUE_FOR_9D0C7EBA5A0EA3BDCF2F9284DE0C1804E1F2C8F3
 
+#ifndef ATLAS_VALUE_FOR_6EC444E1F35CBFDEBAF23FAE6901951164A3474D
+#define ATLAS_VALUE_FOR_6EC444E1F35CBFDEBAF23FAE6901951164A3474D
+namespace atlas {
 inline constexpr auto
 atlas_value_for(::net::ipv4::Octet const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
 }
+} // namespace atlas
+#endif // ATLAS_VALUE_FOR_6EC444E1F35CBFDEBAF23FAE6901951164A3474D
 
+#ifndef ATLAS_VALUE_FOR_14009497481C2A57D435C8AEB3286A885A73FE85
+#define ATLAS_VALUE_FOR_14009497481C2A57D435C8AEB3286A885A73FE85
+namespace atlas {
 inline constexpr auto
 atlas_value_for(::physics::units::Meters const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
 }
+} // namespace atlas
+#endif // ATLAS_VALUE_FOR_14009497481C2A57D435C8AEB3286A885A73FE85
 
+#ifndef ATLAS_VALUE_FOR_EDD62B58EA0529141FCADE81D7851C188196BB9B
+#define ATLAS_VALUE_FOR_EDD62B58EA0529141FCADE81D7851C188196BB9B
+namespace atlas {
 inline constexpr auto
 atlas_value_for(::physics::units::MetersPerSecond const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
 }
+} // namespace atlas
+#endif // ATLAS_VALUE_FOR_EDD62B58EA0529141FCADE81D7851C188196BB9B
 
+#ifndef ATLAS_VALUE_FOR_056FDDA2CE95E47E5ED8BBC058E33A673B38F91B
+#define ATLAS_VALUE_FOR_056FDDA2CE95E47E5ED8BBC058E33A673B38F91B
+namespace atlas {
 inline constexpr auto
 atlas_value_for(::physics::units::Seconds const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
 }
+} // namespace atlas
+#endif // ATLAS_VALUE_FOR_056FDDA2CE95E47E5ED8BBC058E33A673B38F91B
 
+#ifndef ATLAS_VALUE_FOR_7C5790CDE86891CA456E9068F12D4225E1D86042
+#define ATLAS_VALUE_FOR_7C5790CDE86891CA456E9068F12D4225E1D86042
+namespace atlas {
 inline constexpr auto
 atlas_value_for(::security::EncryptedData const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
 }
-
 } // namespace atlas
+#endif // ATLAS_VALUE_FOR_7C5790CDE86891CA456E9068F12D4225E1D86042
 
 
 // Compound assignment operators for cross-type interactions
 // These use ADL to be found automatically for atlas strong types
 // The decltype ensures they only match when the binary operator is defined
+#ifndef ATLAS_COMPOUND_ASSIGN_MODULO
+#define ATLAS_COMPOUND_ASSIGN_MODULO
 namespace atlas {
 
 namespace atlas_detail {
@@ -833,6 +897,11 @@ noexcept(noexcept(atlas_detail::compound_assign_impl_modulo(
         rhs,
         atlas_detail::has_compound_op_modulo<L, R>{});
 }
+} // namespace atlas
+#endif // ATLAS_COMPOUND_ASSIGN_MODULO
+#ifndef ATLAS_COMPOUND_ASSIGN_BITAND
+#define ATLAS_COMPOUND_ASSIGN_BITAND
+namespace atlas {
 
 namespace atlas_detail {
 template <typename L, typename R, typename = void>
@@ -890,6 +959,11 @@ noexcept(noexcept(atlas_detail::compound_assign_impl_bitand(
         rhs,
         atlas_detail::has_compound_op_bitand<L, R>{});
 }
+} // namespace atlas
+#endif // ATLAS_COMPOUND_ASSIGN_BITAND
+#ifndef ATLAS_COMPOUND_ASSIGN_TIMES
+#define ATLAS_COMPOUND_ASSIGN_TIMES
+namespace atlas {
 
 namespace atlas_detail {
 template <typename L, typename R, typename = void>
@@ -947,6 +1021,11 @@ noexcept(noexcept(atlas_detail::compound_assign_impl_times(
         rhs,
         atlas_detail::has_compound_op_times<L, R>{});
 }
+} // namespace atlas
+#endif // ATLAS_COMPOUND_ASSIGN_TIMES
+#ifndef ATLAS_COMPOUND_ASSIGN_PLUS
+#define ATLAS_COMPOUND_ASSIGN_PLUS
+namespace atlas {
 
 namespace atlas_detail {
 template <typename L, typename R, typename = void>
@@ -1004,6 +1083,11 @@ noexcept(noexcept(atlas_detail::compound_assign_impl_plus(
         rhs,
         atlas_detail::has_compound_op_plus<L, R>{});
 }
+} // namespace atlas
+#endif // ATLAS_COMPOUND_ASSIGN_PLUS
+#ifndef ATLAS_COMPOUND_ASSIGN_MINUS
+#define ATLAS_COMPOUND_ASSIGN_MINUS
+namespace atlas {
 
 namespace atlas_detail {
 template <typename L, typename R, typename = void>
@@ -1061,6 +1145,11 @@ noexcept(noexcept(atlas_detail::compound_assign_impl_minus(
         rhs,
         atlas_detail::has_compound_op_minus<L, R>{});
 }
+} // namespace atlas
+#endif // ATLAS_COMPOUND_ASSIGN_MINUS
+#ifndef ATLAS_COMPOUND_ASSIGN_DIVIDE
+#define ATLAS_COMPOUND_ASSIGN_DIVIDE
+namespace atlas {
 
 namespace atlas_detail {
 template <typename L, typename R, typename = void>
@@ -1118,6 +1207,11 @@ noexcept(noexcept(atlas_detail::compound_assign_impl_divide(
         rhs,
         atlas_detail::has_compound_op_divide<L, R>{});
 }
+} // namespace atlas
+#endif // ATLAS_COMPOUND_ASSIGN_DIVIDE
+#ifndef ATLAS_COMPOUND_ASSIGN_LSHIFT
+#define ATLAS_COMPOUND_ASSIGN_LSHIFT
+namespace atlas {
 
 namespace atlas_detail {
 template <typename L, typename R, typename = void>
@@ -1175,6 +1269,11 @@ noexcept(noexcept(atlas_detail::compound_assign_impl_lshift(
         rhs,
         atlas_detail::has_compound_op_lshift<L, R>{});
 }
+} // namespace atlas
+#endif // ATLAS_COMPOUND_ASSIGN_LSHIFT
+#ifndef ATLAS_COMPOUND_ASSIGN_RSHIFT
+#define ATLAS_COMPOUND_ASSIGN_RSHIFT
+namespace atlas {
 
 namespace atlas_detail {
 template <typename L, typename R, typename = void>
@@ -1232,6 +1331,11 @@ noexcept(noexcept(atlas_detail::compound_assign_impl_rshift(
         rhs,
         atlas_detail::has_compound_op_rshift<L, R>{});
 }
+} // namespace atlas
+#endif // ATLAS_COMPOUND_ASSIGN_RSHIFT
+#ifndef ATLAS_COMPOUND_ASSIGN_BITXOR
+#define ATLAS_COMPOUND_ASSIGN_BITXOR
+namespace atlas {
 
 namespace atlas_detail {
 template <typename L, typename R, typename = void>
@@ -1289,6 +1393,11 @@ noexcept(noexcept(atlas_detail::compound_assign_impl_bitxor(
         rhs,
         atlas_detail::has_compound_op_bitxor<L, R>{});
 }
+} // namespace atlas
+#endif // ATLAS_COMPOUND_ASSIGN_BITXOR
+#ifndef ATLAS_COMPOUND_ASSIGN_BITOR
+#define ATLAS_COMPOUND_ASSIGN_BITOR
+namespace atlas {
 
 namespace atlas_detail {
 template <typename L, typename R, typename = void>
@@ -1346,8 +1455,8 @@ noexcept(noexcept(atlas_detail::compound_assign_impl_bitor(
         rhs,
         atlas_detail::has_compound_op_bitor<L, R>{});
 }
-
 } // namespace atlas
+#endif // ATLAS_COMPOUND_ASSIGN_BITOR
 
 
 //////////////////////////////////////////////////////////////////////
@@ -1865,4 +1974,4 @@ noexcept(
 
 } // namespace security
 
-#endif // EXAMPLE_INTERACTIONS_9429D5488F76D47DBB847015FF742D3EFE759618
+#endif // EXAMPLE_INTERACTIONS_D2BD7298C047E43102AE41F14E95B1675093DF8D

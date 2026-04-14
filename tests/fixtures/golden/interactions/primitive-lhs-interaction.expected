@@ -1,5 +1,5 @@
-#ifndef TEST_60682E01F67D52FB15F85C52D92E2A6A054ADC91
-#define TEST_60682E01F67D52FB15F85C52D92E2A6A054ADC91
+#ifndef TEST_DA414B95268CEA5171D6AFF6AC7F3B49E63A632C
+#define TEST_DA414B95268CEA5171D6AFF6AC7F3B49E63A632C
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -677,6 +677,8 @@ cast(U && u)
 // Custom value accessors for non-Atlas types
 // These allow atlas::undress() to work with external library types
 // Users can override by providing atlas_value_for(T const&) without the tag parameter
+#ifndef ATLAS_VALUE_FOR_14009497481C2A57D435C8AEB3286A885A73FE85
+#define ATLAS_VALUE_FOR_14009497481C2A57D435C8AEB3286A885A73FE85
 namespace atlas {
 inline constexpr auto
 atlas_value_for(::physics::units::Meters const& v, value_tag)
@@ -684,13 +686,15 @@ atlas_value_for(::physics::units::Meters const& v, value_tag)
 {
     return v.value;
 }
-
 } // namespace atlas
+#endif // ATLAS_VALUE_FOR_14009497481C2A57D435C8AEB3286A885A73FE85
 
 
 // Compound assignment operators for cross-type interactions
 // These use ADL to be found automatically for atlas strong types
 // The decltype ensures they only match when the binary operator is defined
+#ifndef ATLAS_COMPOUND_ASSIGN_TIMES
+#define ATLAS_COMPOUND_ASSIGN_TIMES
 namespace atlas {
 
 namespace atlas_detail {
@@ -749,6 +753,11 @@ noexcept(noexcept(atlas_detail::compound_assign_impl_times(
         rhs,
         atlas_detail::has_compound_op_times<L, R>{});
 }
+} // namespace atlas
+#endif // ATLAS_COMPOUND_ASSIGN_TIMES
+#ifndef ATLAS_COMPOUND_ASSIGN_DIVIDE
+#define ATLAS_COMPOUND_ASSIGN_DIVIDE
+namespace atlas {
 
 namespace atlas_detail {
 template <typename L, typename R, typename = void>
@@ -806,8 +815,8 @@ noexcept(noexcept(atlas_detail::compound_assign_impl_divide(
         rhs,
         atlas_detail::has_compound_op_divide<L, R>{});
 }
-
 } // namespace atlas
+#endif // ATLAS_COMPOUND_ASSIGN_DIVIDE
 
 
 //////////////////////////////////////////////////////////////////////
@@ -837,5 +846,5 @@ noexcept(
 
 } // namespace physics::units
 
-#endif // TEST_60682E01F67D52FB15F85C52D92E2A6A054ADC91
+#endif // TEST_DA414B95268CEA5171D6AFF6AC7F3B49E63A632C
 

@@ -1,5 +1,5 @@
-#ifndef TEST_5EF4287C6CEF9E64BE545D81360362569FCD7BA4
-#define TEST_5EF4287C6CEF9E64BE545D81360362569FCD7BA4
+#ifndef TEST_18E50EF014EEF34F8213FBE89BF3460AF0A5AC2A
+#define TEST_18E50EF014EEF34F8213FBE89BF3460AF0A5AC2A
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -677,6 +677,8 @@ cast(U && u)
 // Custom value accessors for non-Atlas types
 // These allow atlas::undress() to work with external library types
 // Users can override by providing atlas_value_for(T const&) without the tag parameter
+#ifndef ATLAS_VALUE_FOR_14009497481C2A57D435C8AEB3286A885A73FE85
+#define ATLAS_VALUE_FOR_14009497481C2A57D435C8AEB3286A885A73FE85
 namespace atlas {
 inline constexpr auto
 atlas_value_for(::physics::units::Meters const& v, value_tag)
@@ -684,20 +686,27 @@ atlas_value_for(::physics::units::Meters const& v, value_tag)
 {
     return v.value;
 }
+} // namespace atlas
+#endif // ATLAS_VALUE_FOR_14009497481C2A57D435C8AEB3286A885A73FE85
 
+#ifndef ATLAS_VALUE_FOR_056FDDA2CE95E47E5ED8BBC058E33A673B38F91B
+#define ATLAS_VALUE_FOR_056FDDA2CE95E47E5ED8BBC058E33A673B38F91B
+namespace atlas {
 inline constexpr auto
 atlas_value_for(::physics::units::Seconds const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
 }
-
 } // namespace atlas
+#endif // ATLAS_VALUE_FOR_056FDDA2CE95E47E5ED8BBC058E33A673B38F91B
 
 
 // Compound assignment operators for cross-type interactions
 // These use ADL to be found automatically for atlas strong types
 // The decltype ensures they only match when the binary operator is defined
+#ifndef ATLAS_COMPOUND_ASSIGN_TIMES
+#define ATLAS_COMPOUND_ASSIGN_TIMES
 namespace atlas {
 
 namespace atlas_detail {
@@ -756,6 +765,11 @@ noexcept(noexcept(atlas_detail::compound_assign_impl_times(
         rhs,
         atlas_detail::has_compound_op_times<L, R>{});
 }
+} // namespace atlas
+#endif // ATLAS_COMPOUND_ASSIGN_TIMES
+#ifndef ATLAS_COMPOUND_ASSIGN_PLUS
+#define ATLAS_COMPOUND_ASSIGN_PLUS
+namespace atlas {
 
 namespace atlas_detail {
 template <typename L, typename R, typename = void>
@@ -813,6 +827,11 @@ noexcept(noexcept(atlas_detail::compound_assign_impl_plus(
         rhs,
         atlas_detail::has_compound_op_plus<L, R>{});
 }
+} // namespace atlas
+#endif // ATLAS_COMPOUND_ASSIGN_PLUS
+#ifndef ATLAS_COMPOUND_ASSIGN_MINUS
+#define ATLAS_COMPOUND_ASSIGN_MINUS
+namespace atlas {
 
 namespace atlas_detail {
 template <typename L, typename R, typename = void>
@@ -870,6 +889,11 @@ noexcept(noexcept(atlas_detail::compound_assign_impl_minus(
         rhs,
         atlas_detail::has_compound_op_minus<L, R>{});
 }
+} // namespace atlas
+#endif // ATLAS_COMPOUND_ASSIGN_MINUS
+#ifndef ATLAS_COMPOUND_ASSIGN_DIVIDE
+#define ATLAS_COMPOUND_ASSIGN_DIVIDE
+namespace atlas {
 
 namespace atlas_detail {
 template <typename L, typename R, typename = void>
@@ -927,8 +951,8 @@ noexcept(noexcept(atlas_detail::compound_assign_impl_divide(
         rhs,
         atlas_detail::has_compound_op_divide<L, R>{});
 }
-
 } // namespace atlas
+#endif // ATLAS_COMPOUND_ASSIGN_DIVIDE
 
 
 //////////////////////////////////////////////////////////////////////
@@ -1012,5 +1036,5 @@ noexcept(
 
 } // namespace physics::units
 
-#endif // TEST_5EF4287C6CEF9E64BE545D81360362569FCD7BA4
+#endif // TEST_18E50EF014EEF34F8213FBE89BF3460AF0A5AC2A
 

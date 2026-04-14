@@ -1,5 +1,5 @@
-#ifndef TEST_1DDFAF33CF55D01B016C5D380702AD991E681996
-#define TEST_1DDFAF33CF55D01B016C5D380702AD991E681996
+#ifndef TEST_C905C3F990A35ED7CED4059D1C6C38198705B313
+#define TEST_C905C3F990A35ED7CED4059D1C6C38198705B313
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -677,6 +677,8 @@ cast(U && u)
 // Custom value accessors for non-Atlas types
 // These allow atlas::undress() to work with external library types
 // Users can override by providing atlas_value_for(T const&) without the tag parameter
+#ifndef ATLAS_VALUE_FOR_282F01C745B95B195C3A228752CD426F6F2A7EA5
+#define ATLAS_VALUE_FOR_282F01C745B95B195C3A228752CD426F6F2A7EA5
 namespace atlas {
 inline constexpr auto
 atlas_value_for(::finance::core::Money const& v, value_tag)
@@ -684,13 +686,15 @@ atlas_value_for(::finance::core::Money const& v, value_tag)
 {
     return v.value;
 }
-
 } // namespace atlas
+#endif // ATLAS_VALUE_FOR_282F01C745B95B195C3A228752CD426F6F2A7EA5
 
 
 // Compound assignment operators for cross-type interactions
 // These use ADL to be found automatically for atlas strong types
 // The decltype ensures they only match when the binary operator is defined
+#ifndef ATLAS_COMPOUND_ASSIGN_TIMES
+#define ATLAS_COMPOUND_ASSIGN_TIMES
 namespace atlas {
 
 namespace atlas_detail {
@@ -749,8 +753,8 @@ noexcept(noexcept(atlas_detail::compound_assign_impl_times(
         rhs,
         atlas_detail::has_compound_op_times<L, R>{});
 }
-
 } // namespace atlas
+#endif // ATLAS_COMPOUND_ASSIGN_TIMES
 
 
 //////////////////////////////////////////////////////////////////////
@@ -767,5 +771,5 @@ noexcept(
     return finance::core::Money{lhs.value * rhs.value};
 }
 
-#endif // TEST_1DDFAF33CF55D01B016C5D380702AD991E681996
+#endif // TEST_C905C3F990A35ED7CED4059D1C6C38198705B313
 

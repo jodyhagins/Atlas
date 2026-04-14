@@ -2384,4 +2384,267 @@ int main() { return 0; }  // Skip if format not available
     }
 }
 
+TEST_SUITE("Compilation Tests: Interaction Multiple Headers")
+{
+    // Regression tests for including multiple interaction-generated headers
+    // in the same translation unit.
+    //
+    // Each interaction file that uses a given operator (e.g., +) emits
+    // identical compound-assignment helper definitions. Without include
+    // guards, including two such headers causes redefinition errors.
+    //
+    // Similarly, if two interaction files define atlas_value_for for the
+    // same RHS type, those definitions collide.
+
+    // Helper to generate a types header
+    auto generate_header = [](fs::path const & input, fs::path const & output) {
+        std::vector<std::string> args = {
+            "atlas",
+            "--input=" + input.string(),
+            "--output=" + output.string()};
+        std::vector<char *> argv;
+        for (auto & a : args) {
+            argv.push_back(a.data());
+        }
+        return wjh::atlas::atlas_main(
+            static_cast<int>(argv.size()),
+            argv.data());
+    };
+
+    // Helper to generate an interactions header
+    auto generate_interactions = [](
+        fs::path const & input, fs::path const & output)
+    {
+        std::vector<std::string> args = {
+            "atlas",
+            "--interactions=true",
+            "--input=" + input.string(),
+            "--output=" + output.string()};
+        std::vector<char *> argv;
+        for (auto & a : args) {
+            argv.push_back(a.data());
+        }
+        return wjh::atlas::atlas_main(
+            static_cast<int>(argv.size()),
+            argv.data());
+    };
+
+    TEST_CASE("Interaction: two headers with same operator compile together")
+    {
+        // This is the exact scenario from the bug report: two independent
+        // libraries each define std::string + T <-> std::string for their
+        // own types. Including both interaction headers must not cause
+        // redefinition errors for compound-assignment helpers.
+        auto temp_dir = fs::temp_directory_path() /
+            ("atlas_interaction_multi_" + std::to_string(::getpid()));
+        fs::create_directories(temp_dir);
+
+        // Library A types
+        auto types_a_desc = R"([type]
+kind=struct
+namespace=demo
+name=Foo
+description=std::string; ==; no-constexpr
+)";
+        // Library B types
+        auto types_b_desc = R"([type]
+kind=struct
+namespace=demo
+name=Bar
+description=std::string; ==; no-constexpr
+)";
+
+        auto types_a_input = temp_dir / "lib_a_types.txt";
+        auto types_b_input = temp_dir / "lib_b_types.txt";
+        auto types_a_header = temp_dir / "lib_a_types.hpp";
+        auto types_b_header = temp_dir / "lib_b_types.hpp";
+
+        std::ofstream(types_a_input) << types_a_desc;
+        std::ofstream(types_b_input) << types_b_desc;
+
+        REQUIRE(generate_header(types_a_input, types_a_header) == EXIT_SUCCESS);
+        REQUIRE(generate_header(types_b_input, types_b_header) == EXIT_SUCCESS);
+
+        // Library A interactions: std::string + Foo <-> std::string
+        auto interactions_a_desc = R"(include "lib_a_types.hpp"
+
+namespace=demo
+
+no-constexpr
+
+std::string + Foo <-> std::string
+)";
+        // Library B interactions: std::string + Bar <-> std::string
+        auto interactions_b_desc = R"(include "lib_b_types.hpp"
+
+namespace=demo
+
+no-constexpr
+
+std::string + Bar <-> std::string
+)";
+
+        auto interactions_a_input = temp_dir / "lib_a_interactions.txt";
+        auto interactions_b_input = temp_dir / "lib_b_interactions.txt";
+        auto interactions_a_header = temp_dir / "lib_a_interactions.hpp";
+        auto interactions_b_header = temp_dir / "lib_b_interactions.hpp";
+
+        std::ofstream(interactions_a_input) << interactions_a_desc;
+        std::ofstream(interactions_b_input) << interactions_b_desc;
+
+        REQUIRE(generate_interactions(
+            interactions_a_input, interactions_a_header) == EXIT_SUCCESS);
+        REQUIRE(generate_interactions(
+            interactions_b_input, interactions_b_header) == EXIT_SUCCESS);
+
+        // Test: include both interaction headers and use both types
+        auto test_path = temp_dir / "test.cpp";
+        std::ofstream(test_path) << R"(
+#include "lib_a_interactions.hpp"
+#include "lib_b_interactions.hpp"
+
+#include <cassert>
+#include <string>
+
+int main() {
+    demo::Foo foo{"hello"};
+    demo::Bar bar{"world"};
+
+    auto a = std::string("prefix: ") + foo;
+    auto b = std::string("prefix: ") + bar;
+    auto c = foo + std::string(" suffix");
+    auto d = bar + std::string(" suffix");
+
+    assert(a == "prefix: hello");
+    assert(b == "prefix: world");
+    assert(c == "hello suffix");
+    assert(d == "world suffix");
+
+    return 0;
+}
+)";
+
+        auto exe_path = temp_dir / "test";
+        std::ostringstream cmd;
+        cmd << "cd " << temp_dir << " && "
+            << wjh::atlas::test::find_working_compiler()
+            << " -std=c++20 -I. -o test test.cpp 2>&1";
+
+        auto result = exec_command(cmd.str());
+        INFO("Compilation output: " << result.output);
+        CHECK(result.exit_code == 0);
+
+        if (result.exit_code == 0) {
+            auto run = exec_command(exe_path.string());
+            CHECK(run.exit_code == 0);
+        }
+
+        std::error_code ec;
+        fs::remove_all(temp_dir, ec);
+    }
+
+    TEST_CASE("Interaction: multiple operators across headers compile together")
+    {
+        // Test that multiple different operators (+, -, *) each with
+        // compound-assignment helpers don't collide across headers.
+        auto temp_dir = fs::temp_directory_path() /
+            ("atlas_interaction_multi_ops_" + std::to_string(::getpid()));
+        fs::create_directories(temp_dir);
+
+        auto types_desc = R"([type]
+kind=struct
+namespace=test
+name=Meters
+description=strong double; ==; no-constexpr
+
+[type]
+kind=struct
+namespace=test
+name=Seconds
+description=strong double; ==; no-constexpr
+)";
+
+        auto types_input = temp_dir / "types.txt";
+        auto types_header = temp_dir / "types.hpp";
+        std::ofstream(types_input) << types_desc;
+        REQUIRE(generate_header(types_input, types_header) == EXIT_SUCCESS);
+
+        // Header A: uses + and -
+        auto interactions_a = R"(include "types.hpp"
+
+namespace=test
+no-constexpr
+
+Meters + Meters -> Meters
+Meters - Meters -> Meters
+)";
+        // Header B: uses + and *
+        auto interactions_b = R"(include "types.hpp"
+
+namespace=test
+no-constexpr
+
+Seconds + Seconds -> Seconds
+Seconds * double -> Seconds
+)";
+
+        auto ia_input = temp_dir / "ia.txt";
+        auto ib_input = temp_dir / "ib.txt";
+        auto ia_header = temp_dir / "ia.hpp";
+        auto ib_header = temp_dir / "ib.hpp";
+
+        std::ofstream(ia_input) << interactions_a;
+        std::ofstream(ib_input) << interactions_b;
+
+        REQUIRE(generate_interactions(ia_input, ia_header) == EXIT_SUCCESS);
+        REQUIRE(generate_interactions(ib_input, ib_header) == EXIT_SUCCESS);
+
+        auto test_path = temp_dir / "test.cpp";
+        std::ofstream(test_path) << R"(
+#include "ia.hpp"
+#include "ib.hpp"
+
+#include <cassert>
+#include <cmath>
+
+int main() {
+    test::Meters m1{10.0};
+    test::Meters m2{3.0};
+    test::Seconds s1{5.0};
+    test::Seconds s2{2.0};
+
+    auto m_sum = m1 + m2;
+    auto m_diff = m1 - m2;
+    auto s_sum = s1 + s2;
+    auto s_prod = s1 * 3.0;
+
+    assert(std::abs(atlas::undress(m_sum) - 13.0) < 1e-9);
+    assert(std::abs(atlas::undress(m_diff) - 7.0) < 1e-9);
+    assert(std::abs(atlas::undress(s_sum) - 7.0) < 1e-9);
+    assert(std::abs(atlas::undress(s_prod) - 15.0) < 1e-9);
+
+    return 0;
+}
+)";
+
+        auto exe_path = temp_dir / "test";
+        std::ostringstream cmd;
+        cmd << "cd " << temp_dir << " && "
+            << wjh::atlas::test::find_working_compiler()
+            << " -std=c++20 -I. -o test test.cpp 2>&1";
+
+        auto result = exec_command(cmd.str());
+        INFO("Compilation output: " << result.output);
+        CHECK(result.exit_code == 0);
+
+        if (result.exit_code == 0) {
+            auto run = exec_command(exe_path.string());
+            CHECK(run.exit_code == 0);
+        }
+
+        std::error_code ec;
+        fs::remove_all(temp_dir, ec);
+    }
+}
+
 } // anonymous namespace

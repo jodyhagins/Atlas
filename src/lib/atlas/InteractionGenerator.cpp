@@ -576,10 +576,23 @@ operator () (InteractionFileDescription const & desc) const
 // Custom value accessors for non-Atlas types
 // These allow atlas::undress() to work with external library types
 // Users can override by providing atlas_value_for(T const&) without the tag parameter
-namespace atlas {
 )";
 
         for (auto const & [rhs_type, info] : rhs_value_accessors) {
+            // Generate a unique include guard per type to prevent
+            // redefinition when multiple interaction files define accessors
+            // for the same RHS type
+            std::string guard =
+                "ATLAS_VALUE_FOR_" + get_sha1(rhs_type);
+            // Uppercase the hex hash
+            for (auto & c : guard) {
+                c = static_cast<char>(std::toupper(
+                    static_cast<unsigned char>(c)));
+            }
+
+            body << "#ifndef " << guard << "\n";
+            body << "#define " << guard << "\n";
+            body << "namespace atlas {\n";
             body << "inline ";
             if (info.is_constexpr) {
                 body << "constexpr ";
@@ -593,12 +606,10 @@ namespace atlas {
             body << "    return "
                 << generate_value_access("v", rhs_type, info.access_expr, "")
                 << ";\n";
-            body << "}\n\n";
+            body << "}\n";
+            body << "} // namespace atlas\n";
+            body << "#endif // " << guard << "\n\n";
         }
-
-        body << R"(} // namespace atlas
-
-)";
     }
 
     // Collect unique operator symbols that need compound operators
@@ -628,7 +639,6 @@ namespace atlas {
 // Compound assignment operators for cross-type interactions
 // These use ADL to be found automatically for atlas strong types
 // The decltype ensures they only match when the binary operator is defined
-namespace atlas {
 )";
 
         // Map to create unique IDs for each operator
@@ -654,6 +664,20 @@ namespace atlas {
             // Get unique ID for this operator
             std::string op_id = op_ids.at(compound_op);
 
+            // Generate a unique include guard per compound operator to
+            // prevent redefinition when multiple interaction files use the
+            // same operator
+            std::string upper_id = op_id;
+            for (auto & c : upper_id) {
+                c = static_cast<char>(std::toupper(
+                    static_cast<unsigned char>(c)));
+            }
+            std::string guard = "ATLAS_COMPOUND_ASSIGN_" + upper_id;
+
+            body << "#ifndef " << guard << "\n";
+            body << "#define " << guard << "\n";
+            body << "namespace atlas {\n";
+
             // Populate mustache data
             boost::json::object data{
                 {"compound_op", compound_op},
@@ -668,11 +692,10 @@ namespace atlas {
                 data,
                 boost::json::object{});
             body << oss.str();
-        }
 
-        body << R"(
-} // namespace atlas
-)";
+            body << "} // namespace atlas\n";
+            body << "#endif // " << guard << "\n";
+        }
     }
 
     body << R"(

@@ -1,5 +1,5 @@
-#ifndef TEST_056268B705F7A78B03D2DB80EF7700F08B1B8842
-#define TEST_056268B705F7A78B03D2DB80EF7700F08B1B8842
+#ifndef TEST_8B90AEE6084C1586C1C836279C91891CFBEF52A8
+#define TEST_8B90AEE6084C1586C1C836279C91891CFBEF52A8
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -677,6 +677,8 @@ cast(U && u)
 // Custom value accessors for non-Atlas types
 // These allow atlas::undress() to work with external library types
 // Users can override by providing atlas_value_for(T const&) without the tag parameter
+#ifndef ATLAS_VALUE_FOR_F58580460B6C9A8D57C0BA387337ED386FE8ECBA
+#define ATLAS_VALUE_FOR_F58580460B6C9A8D57C0BA387337ED386FE8ECBA
 namespace atlas {
 inline constexpr auto
 atlas_value_for(::graphics::color::RedChannel const& v, value_tag)
@@ -684,13 +686,15 @@ atlas_value_for(::graphics::color::RedChannel const& v, value_tag)
 {
     return v.value;
 }
-
 } // namespace atlas
+#endif // ATLAS_VALUE_FOR_F58580460B6C9A8D57C0BA387337ED386FE8ECBA
 
 
 // Compound assignment operators for cross-type interactions
 // These use ADL to be found automatically for atlas strong types
 // The decltype ensures they only match when the binary operator is defined
+#ifndef ATLAS_COMPOUND_ASSIGN_BITAND
+#define ATLAS_COMPOUND_ASSIGN_BITAND
 namespace atlas {
 
 namespace atlas_detail {
@@ -749,6 +753,11 @@ noexcept(noexcept(atlas_detail::compound_assign_impl_bitand(
         rhs,
         atlas_detail::has_compound_op_bitand<L, R>{});
 }
+} // namespace atlas
+#endif // ATLAS_COMPOUND_ASSIGN_BITAND
+#ifndef ATLAS_COMPOUND_ASSIGN_BITXOR
+#define ATLAS_COMPOUND_ASSIGN_BITXOR
+namespace atlas {
 
 namespace atlas_detail {
 template <typename L, typename R, typename = void>
@@ -806,6 +815,11 @@ noexcept(noexcept(atlas_detail::compound_assign_impl_bitxor(
         rhs,
         atlas_detail::has_compound_op_bitxor<L, R>{});
 }
+} // namespace atlas
+#endif // ATLAS_COMPOUND_ASSIGN_BITXOR
+#ifndef ATLAS_COMPOUND_ASSIGN_BITOR
+#define ATLAS_COMPOUND_ASSIGN_BITOR
+namespace atlas {
 
 namespace atlas_detail {
 template <typename L, typename R, typename = void>
@@ -863,8 +877,8 @@ noexcept(noexcept(atlas_detail::compound_assign_impl_bitor(
         rhs,
         atlas_detail::has_compound_op_bitor<L, R>{});
 }
-
 } // namespace atlas
+#endif // ATLAS_COMPOUND_ASSIGN_BITOR
 
 
 //////////////////////////////////////////////////////////////////////
@@ -903,5 +917,5 @@ noexcept(
 
 } // namespace graphics::color
 
-#endif // TEST_056268B705F7A78B03D2DB80EF7700F08B1B8842
+#endif // TEST_8B90AEE6084C1586C1C836279C91891CFBEF52A8
 

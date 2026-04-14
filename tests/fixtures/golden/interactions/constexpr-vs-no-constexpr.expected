@@ -1,5 +1,5 @@
-#ifndef TEST_2E5AE1D55FAFAD7D901EEE8132A11EA182CFFC51
-#define TEST_2E5AE1D55FAFAD7D901EEE8132A11EA182CFFC51
+#ifndef TEST_82E17A2CE09485B32CFEFFCA00E59208B6802D2F
+#define TEST_82E17A2CE09485B32CFEFFCA00E59208B6802D2F
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -677,6 +677,8 @@ cast(U && u)
 // Custom value accessors for non-Atlas types
 // These allow atlas::undress() to work with external library types
 // Users can override by providing atlas_value_for(T const&) without the tag parameter
+#ifndef ATLAS_VALUE_FOR_745A3D3ACAE60417F993547564FB4655BFCC753E
+#define ATLAS_VALUE_FOR_745A3D3ACAE60417F993547564FB4655BFCC753E
 namespace atlas {
 inline constexpr auto
 atlas_value_for(::test::FastValue const& v, value_tag)
@@ -684,20 +686,27 @@ atlas_value_for(::test::FastValue const& v, value_tag)
 {
     return v.value;
 }
+} // namespace atlas
+#endif // ATLAS_VALUE_FOR_745A3D3ACAE60417F993547564FB4655BFCC753E
 
+#ifndef ATLAS_VALUE_FOR_503BFAE9360B9A98F4BA951245EEC6D2CA890E22
+#define ATLAS_VALUE_FOR_503BFAE9360B9A98F4BA951245EEC6D2CA890E22
+namespace atlas {
 inline auto
 atlas_value_for(::test::SlowValue const& v, value_tag)
 -> decltype(v.value)
 {
     return v.value;
 }
-
 } // namespace atlas
+#endif // ATLAS_VALUE_FOR_503BFAE9360B9A98F4BA951245EEC6D2CA890E22
 
 
 // Compound assignment operators for cross-type interactions
 // These use ADL to be found automatically for atlas strong types
 // The decltype ensures they only match when the binary operator is defined
+#ifndef ATLAS_COMPOUND_ASSIGN_PLUS
+#define ATLAS_COMPOUND_ASSIGN_PLUS
 namespace atlas {
 
 namespace atlas_detail {
@@ -756,8 +765,8 @@ noexcept(noexcept(atlas_detail::compound_assign_impl_plus(
         rhs,
         atlas_detail::has_compound_op_plus<L, R>{});
 }
-
 } // namespace atlas
+#endif // ATLAS_COMPOUND_ASSIGN_PLUS
 
 
 //////////////////////////////////////////////////////////////////////
@@ -787,5 +796,5 @@ noexcept(
 
 } // namespace test
 
-#endif // TEST_2E5AE1D55FAFAD7D901EEE8132A11EA182CFFC51
+#endif // TEST_82E17A2CE09485B32CFEFFCA00E59208B6802D2F
 
