@@ -7,6 +7,7 @@
 #ifndef WJH_ATLAS_TEMPLATE_SYSTEM_HPP
 #define WJH_ATLAS_TEMPLATE_SYSTEM_HPP
 
+#include <optional>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -24,13 +25,23 @@ class ProfileSystem; // Forward declaration for validation
  *   description=std::optional<{T}>; <=>, bool
  *   forward=has_value, operator*
  *
+ * Templates may declare default values for parameters:
+ *   [template Bool T=bool]
+ *   description=strong {T}; ==, bool
+ *
+ * Like in C++, once a parameter has a default, every parameter that
+ * follows it must also have one.
+ *
  * Instantiated via:
  *   [use Optional ScheduleId]
+ *   [use Bool as IsAdmin]   # uses T=bool default
  */
 struct TypeTemplate
 {
     std::string name; // "Optional"
     std::vector<std::string> parameters; // ["T"]
+    // Parallel to parameters; nullopt for required params, value for defaults.
+    std::vector<std::optional<std::string>> parameter_defaults;
     std::string kind; // "class" or "struct"
     std::string type_namespace; // optional namespace
     std::string description; // "std::optional<{T}>; <=>, bool"

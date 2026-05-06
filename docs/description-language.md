@@ -239,6 +239,8 @@ Template definitions support:
 - `constants=` - constant definitions
 - `forward=` - forwarded member functions
 
+Parameters may also declare defaults inline in the header (`[template Name T=value]`). See "Default Parameter Values" below.
+
 ### Instantiating Templates
 
 ```
@@ -297,6 +299,82 @@ description=strong {T}; {NUMERIC}, ==
 [use ArithmeticValue long as ArithmeticLong]
 # Gets all NUMERIC operators plus ==
 ```
+
+### Default Parameter Values
+
+Template parameters may declare default values. Any of these spellings work:
+
+```
+[template Bool T=bool]
+[template Bool T =bool]
+[template Bool T= bool]
+[template Bool T = bool]
+```
+
+A defaulted parameter may be omitted at the use-site. This is the most concise way to define a family of types that all share the same underlying representation:
+
+```
+auto_hash=true
+auto_ostream=true
+
+[template Bool T=bool]
+description=strong {T}; ==, bool
+default_value=false
+
+[use Bool as IsAdmin]      # T defaults to bool
+[use Bool as IsActive]
+[use Bool as IsVerified]
+
+[use Bool int as IntFlag]  # default may still be overridden
+```
+
+Like in C++, once a parameter has a default, every parameter that follows it must also have one:
+
+```
+# OK
+[template Pair K V=double]
+
+# OK
+[template Pair K=int V=double]
+
+# ERROR: V has a default but L does not
+[template Triple K V=double L]
+```
+
+The default value is opaque substitution text — it is not parsed or validated as a C++ type, so anything legal as a template argument is legal as a default. The same restriction that applies to template arguments applies to defaults: spaces inside the value will be split on, so write `T=std::pair<int,double>`, not `T=std::pair<int, double>`.
+
+When a `[use]` instantiation omits all arguments and has no `as` clause, the auto-generated name reflects the *effective* arguments after defaults are filled in. So `[use Bool]` and `[use Bool bool]` both produce a type named `Bool_bool`.
+
+#### Per-instance constants
+
+Each `[use]` may attach its own constants. Instance constants are merged on top of any constants declared on the template, so a single `[template Bool T=bool]` definition can produce many domain-specific flags, each with its own named values:
+
+```
+[template Bool T=bool]
+description=strong {T}; ==, bool
+default_value=false
+constants=true_value:true; false_value:false   # shared by every instance
+
+[use Bool as IsAdmin]
+constants=admin:true; non_admin:false          # IsAdmin-specific
+
+[use Bool as IsActive]
+constants=enabled:true; disabled:false         # IsActive-specific
+
+[use Bool as IsVerified]
+constants=verified:true; unverified:false; pending:false
+```
+
+Each generated type carries the union of its template's constants and its own:
+
+```cpp
+IsAdmin::admin;        IsAdmin::non_admin;     IsAdmin::true_value;     IsAdmin::false_value;
+IsActive::enabled;     IsActive::disabled;     IsActive::true_value;    IsActive::false_value;
+IsVerified::verified;  IsVerified::unverified; IsVerified::pending;
+IsVerified::true_value; IsVerified::false_value;
+```
+
+Multiple constants on a single line are separated by `;`, not `,`.
 
 ### Template Argument Limitations
 

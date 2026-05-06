@@ -529,3 +529,26 @@ namespace=http::protocol
 name=StatusCode
 description=uint16_t; bounded<100,599>, <=>
 default_value=200
+
+#================================================================================
+# TEMPLATE WITH DEFAULT PARAMETER - Reusable type families
+#================================================================================
+
+# Boolean flag template: T defaults to bool, so [use Bool as Foo] suffices.
+# Each instance declares its own domain-specific constants on top of the
+# template's shared defaults, illustrating the realistic shape of a flag
+# family generated from a single template.
+[template Bool T=bool]
+namespace=demo::flags
+description=strong {T}; ==, bool
+default_value=false
+constants=true_value:true; false_value:false
+
+[use Bool as IsAdmin]
+constants=admin:true; non_admin:false
+
+[use Bool as IsActive]
+constants=enabled:true; disabled:false
+
+[use Bool as IsVerified]
+constants=verified:true; unverified:false; pending:false

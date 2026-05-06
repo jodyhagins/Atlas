@@ -13,6 +13,7 @@
 #include <algorithm>
 #include <cctype>
 #include <fstream>
+#include <optional>
 #include <sstream>
 
 namespace wjh::atlas {
@@ -141,6 +142,8 @@ struct SectionHeaderInfo
     // Template definition: [template Name Params...]
     bool is_template_definition = false;
     std::vector<std::string> template_params; // Parameter names
+    // Parallel to template_params; nullopt = required, value = has default.
+    std::vector<std::optional<std::string>> template_param_defaults;
 
     // Template instantiation: [use TemplateName Args...]
     bool is_template_instantiation = false;
@@ -232,15 +235,120 @@ parse_section_header(
                 std::to_string(line_number) + " in " + filename);
         }
 
-        // Remaining tokens are parameters
-        for (size_t i = 1; i < tokens.size(); ++i) {
-            if (not is_valid_cpp_identifier(tokens[i])) {
+        // Remaining tokens are parameters, optionally with defaults of the
+        // form `T=value`. Whitespace splitting may have separated `=` from
+        // its neighbours, so we walk the tokens and recombine the four
+        // legal forms:
+        //   T              -> required parameter
+        //   T=value        -> parameter with default value
+        //   T= value       -> parameter with default value (split on space)
+        //   T =value       -> parameter with default value (split on space)
+        //   T = value      -> parameter with default value (split on space)
+        auto throw_param_error = [&](std::string const & detail) {
+            throw AtlasParserError(
+                "Invalid template parameter list for '" + info.name + "': " +
+                detail + " at line " + std::to_string(line_number) + " in " +
+                filename);
+        };
+
+        size_t i = 1;
+        while (i < tokens.size()) {
+            std::string const & tok = tokens[i];
+
+            // A bare `=` or a token starting with `=` has no preceding name.
+            if (tok == "=" || (not tok.empty() && tok.front() == '=')) {
+                throw_param_error(
+                    "unexpected '=' without a parameter name before it");
+            }
+
+            std::string param_name;
+            std::optional<std::string> default_value;
+            size_t consumed = 1;
+
+            auto eq_pos = tok.find('=');
+            if (eq_pos == std::string::npos) {
+                // Pure name; check whether next tokens form `= value` or
+                // `=value`.
+                param_name = tok;
+                if (i + 1 < tokens.size()) {
+                    std::string const & next = tokens[i + 1];
+                    if (next == "=") {
+                        // `T = value`
+                        if (i + 2 >= tokens.size()) {
+                            throw_param_error(
+                                "missing default value after '=' for "
+                                "parameter '" +
+                                param_name + "'");
+                        }
+                        std::string const & val = tokens[i + 2];
+                        if (val.find('=') != std::string::npos) {
+                            throw_param_error(
+                                "default value for parameter '" + param_name +
+                                "' must not contain '='");
+                        }
+                        default_value = val;
+                        consumed = 3;
+                    } else if (not next.empty() && next.front() == '=') {
+                        // `T =value`
+                        std::string val = next.substr(1);
+                        if (val.empty()) {
+                            throw_param_error(
+                                "missing default value after '=' for "
+                                "parameter '" +
+                                param_name + "'");
+                        }
+                        if (val.find('=') != std::string::npos) {
+                            throw_param_error(
+                                "default value for parameter '" + param_name +
+                                "' must not contain '='");
+                        }
+                        default_value = val;
+                        consumed = 2;
+                    }
+                    // else: `T <next-name>` -> required, leave default unset
+                }
+            } else {
+                // Token contains `=`. Either `T=` (value is in next token) or
+                // `T=value`.
+                param_name = tok.substr(0, eq_pos);
+                std::string val = tok.substr(eq_pos + 1);
+                if (val.empty()) {
+                    // `T=` -> consume next token as value
+                    if (i + 1 >= tokens.size()) {
+                        throw_param_error(
+                            "missing default value after '=' for "
+                            "parameter '" +
+                            param_name + "'");
+                    }
+                    std::string const & next = tokens[i + 1];
+                    if (next == "=" || next.find('=') != std::string::npos) {
+                        throw_param_error(
+                            "default value for parameter '" + param_name +
+                            "' must not contain '='");
+                    }
+                    default_value = next;
+                    consumed = 2;
+                } else {
+                    if (val.find('=') != std::string::npos) {
+                        throw_param_error(
+                            "default value for parameter '" + param_name +
+                            "' must not contain '='");
+                    }
+                    default_value = val;
+                    consumed = 1;
+                }
+            }
+
+            if (not is_valid_cpp_identifier(param_name)) {
                 throw AtlasParserError(
-                    "Invalid parameter name '" + tokens[i] +
+                    "Invalid parameter name '" + param_name +
                     "' in template header at line " +
                     std::to_string(line_number) + " in " + filename);
             }
-            info.template_params.push_back(tokens[i]);
+
+            info.template_params.push_back(param_name);
+            info.template_param_defaults.push_back(default_value);
+            i += consumed;
         }
 
         return info;
@@ -1118,6 +1226,7 @@ parse_type_definitions(
             TypeTemplate tmpl;
             tmpl.name = section_info.name;
             tmpl.parameters = section_info.template_params;
+            tmpl.parameter_defaults = section_info.template_param_defaults;
             tmpl.kind = current_kind.empty() ? "struct" : current_kind;
             tmpl.type_namespace = current_namespace;
             tmpl.description = current_description;
@@ -1143,8 +1252,8 @@ parse_type_definitions(
             auto const & tmpl = template_system.get_template(
                 section_info.template_name);
 
-            // Check argument count
-            if (section_info.template_args.size() != tmpl.parameters.size()) {
+            // Too many arguments is always wrong.
+            if (section_info.template_args.size() > tmpl.parameters.size()) {
                 throw AtlasParserError(
                     "Template '" + section_info.template_name + "' expects " +
                     std::to_string(tmpl.parameters.size()) +
@@ -1154,23 +1263,44 @@ parse_type_definitions(
                     filename);
             }
 
+            // Build the effective argument list by filling in defaults for
+            // any trailing parameters the caller omitted.
+            std::vector<std::string> effective_args =
+                section_info.template_args;
+            for (size_t i = effective_args.size();
+                 i < tmpl.parameters.size();
+                 ++i)
+            {
+                bool has_default = i < tmpl.parameter_defaults.size() &&
+                    tmpl.parameter_defaults[i].has_value();
+                if (not has_default) {
+                    throw AtlasParserError(
+                        "Template '" + section_info.template_name +
+                        "' missing argument for parameter '" +
+                        tmpl.parameters[i] +
+                        "' (no default value provided) near line " +
+                        std::to_string(line_number) + " in " + filename);
+                }
+                effective_args.push_back(*tmpl.parameter_defaults[i]);
+            }
+
             // Substitute parameters in template fields
             std::string expanded_desc = substitute_template_params(
                 tmpl.description,
                 tmpl.parameters,
-                section_info.template_args);
+                effective_args);
 
             std::string expanded_default = substitute_template_params(
                 tmpl.default_value,
                 tmpl.parameters,
-                section_info.template_args);
+                effective_args);
 
             std::vector<std::string> expanded_constants;
             for (auto const & c : tmpl.constants) {
                 expanded_constants.push_back(substitute_template_params(
                     c,
                     tmpl.parameters,
-                    section_info.template_args));
+                    effective_args));
             }
 
             std::vector<std::string> expanded_forwards;
@@ -1178,7 +1308,7 @@ parse_type_definitions(
                 expanded_forwards.push_back(substitute_template_params(
                     f,
                     tmpl.parameters,
-                    section_info.template_args));
+                    effective_args));
             }
 
             // Add any instance-level constants (additive)
@@ -1202,8 +1332,11 @@ parse_type_definitions(
                 : current_default_value;
 
             // Generate a name from template_name + args (e.g., Optional_int)
+            // Use the effective (post-default-fill) arguments so that
+            // `[use Bool]` and `[use Bool bool]` produce the same generated
+            // name when `T` defaults to `bool`.
             std::string generated_name = section_info.template_name;
-            for (auto const & arg : section_info.template_args) {
+            for (auto const & arg : effective_args) {
                 // Replace :: with _ for qualified names
                 std::string safe_arg = arg;
                 size_t pos = 0;

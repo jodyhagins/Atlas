@@ -67,6 +67,16 @@ register_template(
             "Template '" + tmpl.name + "' must have at least one parameter");
     }
 
+    // The parameter_defaults vector is parallel to parameters; the parser
+    // is responsible for keeping the sizes aligned, but guard against bugs.
+    if (not tmpl.parameter_defaults.empty() &&
+        tmpl.parameter_defaults.size() != tmpl.parameters.size())
+    {
+        throw std::runtime_error(
+            "Template '" + tmpl.name +
+            "' has mismatched parameter and default-value counts");
+    }
+
     // Validate each parameter
     for (auto const & param : tmpl.parameters) {
         if (not is_valid_parameter_name(param)) {
@@ -91,6 +101,25 @@ register_template(
         throw std::runtime_error(
             "Duplicate parameter name '" + *dup + "' in template '" +
             tmpl.name + "'");
+    }
+
+    // Defaults must trail: once a parameter has a default, every subsequent
+    // parameter must also have one (matches C++ default-argument rules).
+    if (not tmpl.parameter_defaults.empty()) {
+        bool seen_default = false;
+        for (size_t i = 0; i < tmpl.parameters.size(); ++i) {
+            bool has_default = tmpl.parameter_defaults[i].has_value();
+            if (has_default) {
+                seen_default = true;
+            } else if (seen_default) {
+                throw std::runtime_error(
+                    "Template '" + tmpl.name + "' parameter '" +
+                    tmpl.parameters[i] +
+                    "' has no default but follows a parameter that does. "
+                    "Once a parameter has a default value, all subsequent "
+                    "parameters must also have defaults.");
+            }
+        }
     }
 
     templates_[tmpl.name] = tmpl;

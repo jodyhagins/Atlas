@@ -111,6 +111,23 @@ test_input_content_error(std::string const & content)
 }
 
 /**
+ * Run atlas on the given content and return the captured result.
+ *
+ * Unlike test_input_content_error, this does not assume an error.
+ * Callers can inspect exit_code/stdout_output to verify success or
+ * the absence of an error.
+ */
+inline ErrorTestResult
+run_atlas_on_content(std::string const & content)
+{
+    TemporaryDirectory temp_dir;
+    auto input_file = temp_dir.path() / "test.input";
+    write_file(input_file, content);
+    return call_atlas_expecting_error(
+        {"atlas", "--input=" + input_file.string()});
+}
+
+/**
  * Create a temporary interaction file and test it
  *
  * Interaction files don't use [type] markers and require --interactions=true
