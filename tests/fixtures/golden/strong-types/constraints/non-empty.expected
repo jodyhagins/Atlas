@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_D553AC419174E1BB415E259F128206CD5E5DDBFC
-#define FOO_BAR_D553AC419174E1BB415E259F128206CD5E5DDBFC
+#ifndef FOO_BAR_365AAC34E4BA2AE6DC748DE215CA907AC77D39D8
+#define FOO_BAR_365AAC34E4BA2AE6DC748DE215CA907AC77D39D8
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -1156,6 +1156,10 @@ struct Username
     {
         return static_cast<std::string &&>(self.value);
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -1178,6 +1182,9 @@ struct Username
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace test
 
@@ -1574,6 +1581,10 @@ struct NonEmptyVector
         return std::move(value).size(std::forward<Args>(args)...);
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -1596,8 +1607,11 @@ struct NonEmptyVector
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace test
 
-#endif // FOO_BAR_D553AC419174E1BB415E259F128206CD5E5DDBFC
+#endif // FOO_BAR_365AAC34E4BA2AE6DC748DE215CA907AC77D39D8
 

@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_2EF505C2D1B1CE82AFC8EF06211735BDD235034C
-#define FOO_BAR_2EF505C2D1B1CE82AFC8EF06211735BDD235034C
+#ifndef FOO_BAR_F10A61EC7EE54A3205B9474FFC3B85F6FA716312
+#define FOO_BAR_F10A61EC7EE54A3205B9474FFC3B85F6FA716312
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -21,6 +21,7 @@
 #endif
 #include <concepts>
 #include <functional>
+#include <string>
 #include <type_traits>
 #include <utility>
 
@@ -940,6 +941,10 @@ struct HashMapKey
     {
         return static_cast<int &&>(self.value);
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value == @p rhs.value?
@@ -951,6 +956,9 @@ struct HashMapKey
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace integration
 } // namespace test
@@ -962,5 +970,5 @@ struct std::hash<test::integration::HashMapKey>
 : atlas::atlas_detail::hash_base<test::integration::HashMapKey>
 {};
 #endif
-#endif // FOO_BAR_2EF505C2D1B1CE82AFC8EF06211735BDD235034C
+#endif // FOO_BAR_F10A61EC7EE54A3205B9474FFC3B85F6FA716312
 

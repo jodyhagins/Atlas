@@ -1,5 +1,5 @@
-#ifndef CUSTOM_PREFIX_5BC67514F3F48F8BFB3C6E69950F518F313EBD00
-#define CUSTOM_PREFIX_5BC67514F3F48F8BFB3C6E69950F518F313EBD00
+#ifndef CUSTOM_PREFIX_612AB85830630B0F17B7EABFFE92159A3CDAF691
+#define CUSTOM_PREFIX_612AB85830630B0F17B7EABFFE92159A3CDAF691
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -19,6 +19,7 @@
 #if __has_include(<version>)
 #include <version>
 #endif
+#include <string>
 #include <type_traits>
 #include <utility>
 
@@ -824,6 +825,10 @@ struct GuardPrefixType
     {
         return static_cast<int &&>(self.value);
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value == @p rhs.value?
@@ -835,8 +840,11 @@ struct GuardPrefixType
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace test
 
-#endif // CUSTOM_PREFIX_5BC67514F3F48F8BFB3C6E69950F518F313EBD00
+#endif // CUSTOM_PREFIX_612AB85830630B0F17B7EABFFE92159A3CDAF691
 

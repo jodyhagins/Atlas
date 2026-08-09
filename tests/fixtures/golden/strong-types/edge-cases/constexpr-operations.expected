@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_2E0951C0F52A2110AFE85F21079C89886ECFA03A
-#define FOO_BAR_2E0951C0F52A2110AFE85F21079C89886ECFA03A
+#ifndef FOO_BAR_1740B0407A573EA38312B9F9732EB75A5E30B248
+#define FOO_BAR_1740B0407A573EA38312B9F9732EB75A5E30B248
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -19,6 +19,7 @@
 #if __has_include(<version>)
 #include <version>
 #endif
+#include <string>
 #include <type_traits>
 #include <utility>
 
@@ -915,6 +916,10 @@ struct ConstexprOperations
         lhs -= rhs;
         return lhs;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value < @p rhs.value?
@@ -937,9 +942,12 @@ struct ConstexprOperations
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace edge_cases
 } // namespace test
 
-#endif // FOO_BAR_2E0951C0F52A2110AFE85F21079C89886ECFA03A
+#endif // FOO_BAR_1740B0407A573EA38312B9F9732EB75A5E30B248
 

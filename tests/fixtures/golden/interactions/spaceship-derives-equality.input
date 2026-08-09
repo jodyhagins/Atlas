@@ -1,0 +1,19 @@
+guard_prefix=TEST
+guard_separator=_
+upcase_guard=true
+
+# A cross-type <=> is a plain (non-defaulted) operator, so C++20 does not
+# synthesize == from it. Atlas derives == so that != works by rewriting.
+#
+# MaxRetries: symmetric, so == is derived in both directions.
+# ExitCode: one direction only.
+# Timeout: an explicit == interaction already covers the pair, so nothing is
+# derived for it.
+namespace=test
+constexpr
+value_access=.value
+
+MaxRetries <=> int <-> auto
+ExitCode <=> int -> auto
+Timeout <=> int <-> auto
+Timeout == int <-> bool

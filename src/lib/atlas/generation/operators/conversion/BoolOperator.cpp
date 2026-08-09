@@ -1,5 +1,6 @@
 #include "BoolOperator.hpp"
 
+#include "atlas/AtlasUtilities.hpp"
 #include "atlas/generation/core/ClassInfo.hpp"
 #include "atlas/generation/core/TemplateRegistry.hpp"
 
@@ -35,6 +36,14 @@ BoolOperator::
 should_apply_impl(ClassInfo const & info) const
 {
     return info.bool_operator;
+}
+
+std::string
+BoolOperator::
+render_impl(ClassInfo const & info) const
+{
+    return float_equal_warning_push() + ITemplate::render_impl(info) +
+        float_equal_warning_pop();
 }
 
 // Self-registration with the template registry

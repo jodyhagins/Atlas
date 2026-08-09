@@ -633,6 +633,125 @@ TEST_SUITE("InteractionGenerator")
         }
     }
 
+    TEST_CASE("Spaceship interactions derive equality")
+    {
+        auto make = [](std::string op, bool symmetric) {
+            return InteractionDescription{
+                .op_symbol = std::move(op),
+                .lhs_type = "MaxRetries",
+                .rhs_type = "int",
+                .result_type = symmetric ? "auto" : "bool",
+                .symmetric = symmetric,
+                .lhs_is_template = false,
+                .rhs_is_template = false,
+                .is_constexpr = true,
+                .interaction_namespace = "demo",
+                .value_access = "atlas::value"};
+        };
+
+        SUBCASE("Symmetric <=> derives == in both directions") {
+            InteractionFileDescription desc;
+            desc.interactions.push_back(make("<=>", true));
+
+            auto code = generate_interactions(desc);
+
+            CHECK(contains(code, "operator<=>(MaxRetries lhs, int rhs)"));
+            CHECK(contains(code, "operator<=>(int lhs, MaxRetries rhs)"));
+            CHECK(contains(code, "operator==(MaxRetries lhs, int rhs)"));
+            CHECK(contains(code, "operator==(int lhs, MaxRetries rhs)"));
+        }
+
+        SUBCASE("Asymmetric <=> derives == in one direction") {
+            InteractionFileDescription desc;
+            auto interaction = make("<=>", false);
+            interaction.result_type = "auto";
+            desc.interactions.push_back(interaction);
+
+            auto code = generate_interactions(desc);
+
+            CHECK(contains(code, "operator==(MaxRetries lhs, int rhs)"));
+            CHECK_FALSE(contains(code, "operator==(int lhs, MaxRetries rhs)"));
+        }
+
+        SUBCASE("An explicit == wins over the derived one") {
+            InteractionFileDescription desc;
+            desc.interactions.push_back(make("<=>", true));
+            desc.interactions.push_back(make("==", true));
+
+            auto code = generate_interactions(desc);
+
+            // Exactly one definition of each direction, or the header would
+            // not compile.
+            auto count = [&](std::string_view needle) {
+                std::size_t n = 0;
+                for (auto pos = code.find(needle);
+                     pos != std::string::npos;
+                     pos = code.find(needle, pos + needle.size()))
+                {
+                    ++n;
+                }
+                return n;
+            };
+
+            CHECK(count("operator==(MaxRetries lhs, int rhs)") == 1);
+            CHECK(count("operator==(int lhs, MaxRetries rhs)") == 1);
+        }
+
+        SUBCASE("Non-spaceship operators derive nothing") {
+            InteractionFileDescription desc;
+            auto interaction = make("+", true);
+            interaction.result_type = "MaxRetries";
+            desc.interactions.push_back(interaction);
+
+            auto code = generate_interactions(desc);
+
+            CHECK_FALSE(contains(code, "operator=="));
+        }
+    }
+
+    TEST_CASE("Equality interactions suppress -Wfloat-equal")
+    {
+        auto make = [](std::string op) {
+            return InteractionDescription{
+                .op_symbol = std::move(op),
+                .lhs_type = "BackoffFactor",
+                .rhs_type = "double",
+                .result_type = "bool",
+                .symmetric = true,
+                .lhs_is_template = false,
+                .rhs_is_template = false,
+                .is_constexpr = true,
+                .interaction_namespace = "demo",
+                .value_access = "atlas::value"};
+        };
+
+        SUBCASE("== and != are wrapped") {
+            for (auto const * op : {"==", "!="}) {
+                CAPTURE(op);
+                InteractionFileDescription desc;
+                desc.interactions.push_back(make(op));
+
+                auto code = generate_interactions(desc);
+
+                CHECK(contains(
+                    code,
+                    "#pragma GCC diagnostic ignored \"-Wfloat-equal\""));
+                CHECK(contains(code, "#pragma GCC diagnostic pop"));
+            }
+        }
+
+        SUBCASE("Ordering operators are not wrapped") {
+            InteractionFileDescription desc;
+            desc.interactions.push_back(make("<"));
+
+            auto code = generate_interactions(desc);
+
+            CHECK_FALSE(contains(
+                code,
+                "#pragma GCC diagnostic ignored \"-Wfloat-equal\""));
+        }
+    }
+
     TEST_CASE("C++ Standard Specification - Edge Cases")
     {
         SUBCASE("static_assert position - immediately after header guard") {

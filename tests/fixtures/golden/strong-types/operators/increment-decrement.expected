@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_11914D2A32AFCD7A90F21EAAF3402951968B6028
-#define FOO_BAR_11914D2A32AFCD7A90F21EAAF3402951968B6028
+#ifndef FOO_BAR_3AF1CBC710F6DB1E3671BFF93324D9BA230B5361
+#define FOO_BAR_3AF1CBC710F6DB1E3671BFF93324D9BA230B5361
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -19,6 +19,7 @@
 #if __has_include(<version>)
 #include <version>
 #endif
+#include <string>
 #include <type_traits>
 #include <utility>
 
@@ -830,7 +831,14 @@ struct IncrementDecrementType
      */
     friend constexpr IncrementDecrementType &
     operator ++ (IncrementDecrementType & t)
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
     noexcept(noexcept(++std::declval<int&>()))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         ++t.value;
         return t;
@@ -840,9 +848,16 @@ struct IncrementDecrementType
      */
     friend constexpr IncrementDecrementType
     operator ++ (IncrementDecrementType & t, int)
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
     noexcept(
         std::is_nothrow_copy_constructible<int>::value &&
         noexcept(++std::declval<int&>()))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         auto result = t;
         ++t.value;
@@ -854,7 +869,14 @@ struct IncrementDecrementType
      */
     friend constexpr IncrementDecrementType &
     operator -- (IncrementDecrementType & t)
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
     noexcept(noexcept(--std::declval<int&>()))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         --t.value;
         return t;
@@ -864,9 +886,16 @@ struct IncrementDecrementType
      */
     friend constexpr IncrementDecrementType
     operator -- (IncrementDecrementType & t, int)
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
     noexcept(
         std::is_nothrow_copy_constructible<int>::value &&
         noexcept(--std::declval<int&>()))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         auto result = t;
         --t.value;
@@ -875,5 +904,5 @@ struct IncrementDecrementType
 };
 } // namespace test
 
-#endif // FOO_BAR_11914D2A32AFCD7A90F21EAAF3402951968B6028
+#endif // FOO_BAR_3AF1CBC710F6DB1E3671BFF93324D9BA230B5361
 

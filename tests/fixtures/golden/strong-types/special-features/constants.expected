@@ -1,5 +1,5 @@
-#ifndef TEST_CONSTANTS_C2BE3DF2297135C6EE492DBA051923712591FA90
-#define TEST_CONSTANTS_C2BE3DF2297135C6EE492DBA051923712591FA90
+#ifndef TEST_CONSTANTS_2E79E4718D080C099E26B32118F78331EAE42625
+#define TEST_CONSTANTS_2E79E4718D080C099E26B32118F78331EAE42625
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -891,6 +891,10 @@ struct Angle
         lhs -= rhs;
         return lhs;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -913,6 +917,9 @@ struct Angle
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 
 #if defined(__clang__)
@@ -987,6 +994,10 @@ struct StringConstant
     {
         return static_cast<std::string &&>(self.value);
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -1009,6 +1020,9 @@ struct StringConstant
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 
 #if defined(__clang__)
@@ -1142,6 +1156,10 @@ struct NumericValue
         lhs -= rhs;
         return lhs;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value == @p rhs.value?
@@ -1153,6 +1171,9 @@ struct NumericValue
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 
 #if defined(__clang__)
@@ -1287,6 +1308,10 @@ public:
         lhs -= rhs;
         return lhs;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value == @p rhs.value?
@@ -1298,6 +1323,9 @@ public:
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 
 #if defined(__clang__)
@@ -1312,5 +1340,5 @@ inline const test::NoConstexprType test::NoConstexprType::zero = test::NoConstex
 #endif
 } // namespace test
 
-#endif // TEST_CONSTANTS_C2BE3DF2297135C6EE492DBA051923712591FA90
+#endif // TEST_CONSTANTS_2E79E4718D080C099E26B32118F78331EAE42625
 

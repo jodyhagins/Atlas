@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_92B2229C15FBEAD038BF8FC4892BF377C39CB82D
-#define FOO_BAR_92B2229C15FBEAD038BF8FC4892BF377C39CB82D
+#ifndef FOO_BAR_6B1F55B3D9EEA0BCFD4DC29C3C555DBC69665625
+#define FOO_BAR_6B1F55B3D9EEA0BCFD4DC29C3C555DBC69665625
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -24,6 +24,7 @@
 #include <limits>
 #include <memory>
 #include <optional>
+#include <string>
 #include <type_traits>
 #include <utility>
 
@@ -1608,6 +1609,10 @@ public:
         return lhs.value >= rhs.value;
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
@@ -1641,6 +1646,9 @@ public:
         return lhs.value != rhs.value;
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 
 #if defined(__clang__)
@@ -1654,5 +1662,5 @@ inline constexpr test::Int test::Int::nil_value = test::Int(std::numeric_limits<
 #endif
 } // namespace test
 
-#endif // FOO_BAR_92B2229C15FBEAD038BF8FC4892BF377C39CB82D
+#endif // FOO_BAR_6B1F55B3D9EEA0BCFD4DC29C3C555DBC69665625
 

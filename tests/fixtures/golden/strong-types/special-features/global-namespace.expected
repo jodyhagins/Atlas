@@ -1,5 +1,5 @@
-#ifndef WJH_IPC_93E22988F95985A77B77AB79D43519E5B0257ACA
-#define WJH_IPC_93E22988F95985A77B77AB79D43519E5B0257ACA
+#ifndef WJH_IPC_7CE95D05AC04C3FAC56A42085AD23697BFBE43D3
+#define WJH_IPC_7CE95D05AC04C3FAC56A42085AD23697BFBE43D3
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -21,6 +21,7 @@
 #endif
 #include <cstddef>
 #include <memory>
+#include <string>
 #include <type_traits>
 #include <utility>
 
@@ -1057,6 +1058,10 @@ struct Distance
         return lhs.value >= rhs.value;
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
@@ -1089,6 +1094,9 @@ struct Distance
     {
         return lhs.value != rhs.value;
     }
+#endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
 #endif
 };
 } // namespace ipc
@@ -1150,6 +1158,10 @@ struct Handle
     {
         return static_cast<size_t &&>(self.value);
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Return the result of casting the wrapped object to bool.
@@ -1160,6 +1172,9 @@ struct Handle
     {
         return static_cast<bool>(value);
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 
     /**
      * Arrow operator - forwards to wrapped type if it's a pointer or
@@ -1190,6 +1205,10 @@ struct Handle
             value,
             atlas::atlas_detail::PriorityTag<1>{});
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -1212,9 +1231,12 @@ struct Handle
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace ipc
 } // namespace wjh
 
-#endif // WJH_IPC_93E22988F95985A77B77AB79D43519E5B0257ACA
+#endif // WJH_IPC_7CE95D05AC04C3FAC56A42085AD23697BFBE43D3
 

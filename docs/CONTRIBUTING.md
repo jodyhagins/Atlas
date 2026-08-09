@@ -18,6 +18,18 @@ First things first: don't be a jerk. See [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.
    ```
 4. If tests pass, you're golden. If not, well... that's what debugging is for.
 
+The test suite compiles generated headers with a real compiler. It picks the
+first of `c++`, `g++`, `clang++`, `cl.exe` that runs, which means it usually
+lands on `c++` -- and on macOS that is Apple clang even if you reach for `g++`,
+because `g++` there is an alias. Warnings only one compiler raises go
+unexercised as a result. Name the compiler explicitly to pin it down:
+
+```bash
+ATLAS_TEST_CXX=g++-14 ctest --output-on-failure
+```
+
+A value that will not run is a hard error, not a silent fallback.
+
 ## Reporting Bugs
 
 Found a bug? Welcome to the club! Open a GitHub issue with:

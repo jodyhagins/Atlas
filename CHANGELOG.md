@@ -21,11 +21,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   standards. `ArithmeticAtlasC` excludes `bool`. The category concepts are spelled as
   conjunctions including `AtlasTypeC` so that they subsume it during overload resolution.
 
+### Fixed
+
+- **A `<=>` interaction now also generates `operator==`.** C++20 rewrites `<`, `<=`,
+  `>`, and `>=` from `operator<=>`, but it synthesizes `==` only from a *defaulted*
+  one -- and a cross-type interaction operator cannot be defaulted. `exit_code != 0`
+  therefore failed to compile, forcing users to write a paired `==` interaction for
+  every `<=>` interaction. Atlas now emits the `==` overload (from which `!=` is
+  rewritten) unless an explicit `==` interaction already covers that pair, in which
+  case the explicit one wins.
+- **Generated floating-point comparisons no longer warn under `-Wfloat-equal`.** A
+  warning raised inside a generated header cannot be fixed by the user, so the
+  generator now wraps its `==`/`!=` comparisons -- per-type, defaulted, and
+  interaction alike -- in a diagnostic push/ignore. The `bool` conversion operator is
+  wrapped too, since GCC reads the cast as a comparison against zero.
+- **Generated `++`/`--` no longer warn under `-Wunevaluated-expression`.** Their
+  `noexcept` specifiers write `++std::declval<T&>()`, which clang flags as a side
+  effect in an unevaluated context. The binary arithmetic and bitwise operators
+  already suppressed this; the increment operators were missed.
+- **Generated headers now include `<string>`.** The preamble's `is_string_atlas` and
+  `StringAtlasC` name `std::string` unconditionally, but `<string>` was only included
+  when a constraint needed it. libc++ pulls it in transitively so the omission was
+  invisible under clang; under libstdc++ any generated header failed to compile
+  pre-C++20 with "'string' is not a member of 'std'".
+
 ### Documentation
 
 - Documented the previously undocumented `atlas::is_atlas_type` trait and
   `atlas::AtlasTypeC` concept, which have always shipped in generated headers. Projects
   were reinventing `atlas_value_type` detection because these were not discoverable.
+- Documented that a `<=>` interaction yields all six comparisons, matching what the
+  per-type `<=>` docs already promised.
 
 ## [1.0.0] - 2025-01-02
 

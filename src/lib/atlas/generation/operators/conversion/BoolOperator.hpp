@@ -32,6 +32,19 @@ protected:
 
     [[nodiscard]]
     bool should_apply_impl(ClassInfo const & info) const override;
+
+    /**
+     * Render the operator inside a -Wfloat-equal suppression
+     *
+     * GCC reads the cast of a floating-point value to bool as a comparison
+     * against zero and warns under -Wfloat-equal. The user cannot silence a
+     * warning raised inside generated code, so the generator does it.
+     *
+     * @param info Strong type class information
+     * @return Rendered operator wrapped in diagnostic push/pop
+     */
+    [[nodiscard]]
+    std::string render_impl(ClassInfo const & info) const override;
 };
 
 } // namespace wjh::atlas::generation

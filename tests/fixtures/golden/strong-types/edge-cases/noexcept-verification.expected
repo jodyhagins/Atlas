@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_3A8DD2CB3C712867267BB3616A49B7A1261BE495
-#define FOO_BAR_3A8DD2CB3C712867267BB3616A49B7A1261BE495
+#ifndef FOO_BAR_67EB24E424FF6CD626F6C8BB0809F9389FB3CC0C
+#define FOO_BAR_67EB24E424FF6CD626F6C8BB0809F9389FB3CC0C
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -19,6 +19,7 @@
 #if __has_include(<version>)
 #include <version>
 #endif
+#include <string>
 #include <type_traits>
 #include <utility>
 
@@ -831,7 +832,14 @@ struct NoexceptVerification
      */
     friend constexpr NoexceptVerification &
     operator ++ (NoexceptVerification & t)
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
     noexcept(noexcept(++std::declval<int&>()))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         ++t.value;
         return t;
@@ -841,9 +849,16 @@ struct NoexceptVerification
      */
     friend constexpr NoexceptVerification
     operator ++ (NoexceptVerification & t, int)
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
     noexcept(
         std::is_nothrow_copy_constructible<int>::value &&
         noexcept(++std::declval<int&>()))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         auto result = t;
         ++t.value;
@@ -879,6 +894,10 @@ struct NoexceptVerification
         lhs += rhs;
         return lhs;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value == @p rhs.value?
@@ -890,9 +909,12 @@ struct NoexceptVerification
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace edge_cases
 } // namespace test
 
-#endif // FOO_BAR_3A8DD2CB3C712867267BB3616A49B7A1261BE495
+#endif // FOO_BAR_67EB24E424FF6CD626F6C8BB0809F9389FB3CC0C
 

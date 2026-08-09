@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_A95CB9DDF5E54C5FDE18C0AE6FE0ADBF687BCADB
-#define FOO_BAR_A95CB9DDF5E54C5FDE18C0AE6FE0ADBF687BCADB
+#ifndef FOO_BAR_45C450787541FB75C36E23F66A31E11ADBACDB47
+#define FOO_BAR_45C450787541FB75C36E23F66A31E11ADBACDB47
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -2080,6 +2080,10 @@ struct PositiveInt
         return lhs.value >= rhs.value;
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
@@ -2112,6 +2116,9 @@ struct PositiveInt
     {
         return lhs.value != rhs.value;
     }
+#endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
 #endif
 };
 } // namespace test
@@ -2442,5 +2449,5 @@ struct PositiveWrapping
 };
 } // namespace test
 
-#endif // FOO_BAR_A95CB9DDF5E54C5FDE18C0AE6FE0ADBF687BCADB
+#endif // FOO_BAR_45C450787541FB75C36E23F66A31E11ADBACDB47
 

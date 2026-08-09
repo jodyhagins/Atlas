@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_4C548F953AC9139F62B27F85631F8642FE0ADD90
-#define FOO_BAR_4C548F953AC9139F62B27F85631F8642FE0ADD90
+#ifndef FOO_BAR_8890773808481DB87C1E250377AE16C078F67AA8
+#define FOO_BAR_8890773808481DB87C1E250377AE16C078F67AA8
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -19,6 +19,7 @@
 #if __has_include(<version>)
 #include <version>
 #endif
+#include <string>
 #include <type_traits>
 #include <utility>
 
@@ -827,6 +828,10 @@ struct DeeplyNestedType
     {
         return static_cast<int &&>(self.value);
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value == @p rhs.value?
@@ -838,11 +843,14 @@ struct DeeplyNestedType
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace d
 } // namespace c
 } // namespace b
 } // namespace a
 
-#endif // FOO_BAR_4C548F953AC9139F62B27F85631F8642FE0ADD90
+#endif // FOO_BAR_8890773808481DB87C1E250377AE16C078F67AA8
 

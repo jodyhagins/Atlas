@@ -200,7 +200,8 @@ public:
     CompileResult compile_and_run(
         std::string const & atlas_description,
         std::string const & test_code,
-        std::string cpp_standard = "c++20")
+        std::string cpp_standard = "c++20",
+        std::string extra_flags = "")
     {
         auto test_id = ++counter_;
 
@@ -252,6 +253,9 @@ public:
         compile_cmd << "cd " << temp_dir_ << " && ";
         compile_cmd << wjh::atlas::test::find_working_compiler()
             << " -std=" << cpp_standard << " ";
+        if (not extra_flags.empty()) {
+            compile_cmd << extra_flags << " ";
+        }
         compile_cmd << "-I. -o " << exe_path.filename().string() << " ";
         compile_cmd << test_path.filename().string() << " 2>&1";
 
@@ -279,7 +283,8 @@ public:
         std::string const & types_description,
         std::string const & interactions_description,
         std::string const & test_code,
-        std::string cpp_standard = "c++20")
+        std::string cpp_standard = "c++20",
+        std::string extra_flags = "")
     {
         auto test_id = ++counter_;
 
@@ -366,6 +371,9 @@ public:
         compile_cmd << "cd " << temp_dir_ << " && ";
         compile_cmd << wjh::atlas::test::find_working_compiler()
             << " -std=" << cpp_standard << " ";
+        if (not extra_flags.empty()) {
+            compile_cmd << extra_flags << " ";
+        }
         compile_cmd << "-I. -o " << exe_path.filename().string() << " ";
         compile_cmd << test_path.filename().string() << " 2>&1";
 

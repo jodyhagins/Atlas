@@ -6,6 +6,7 @@
 // ----------------------------------------------------------------------
 #include "DefaultedEqualityOperator.hpp"
 
+#include "atlas/AtlasUtilities.hpp"
 #include "atlas/generation/core/ClassInfo.hpp"
 #include "atlas/generation/core/TemplateRegistry.hpp"
 
@@ -59,6 +60,14 @@ should_apply_impl(ClassInfo const & info) const
     // Parse to get ClassInfo and check if defaulted equality operator is
     // enabled
     return info.defaulted_equality_operator;
+}
+
+std::string
+DefaultedEqualityOperator::
+render_impl(ClassInfo const & info) const
+{
+    return float_equal_warning_push() + ITemplate::render_impl(info) +
+        float_equal_warning_pop();
 }
 
 // ============================================================================

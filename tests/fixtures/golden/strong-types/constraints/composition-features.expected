@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_1ED5C43E1C2F41ACA61C1A359725ED83649F224B
-#define FOO_BAR_1ED5C43E1C2F41ACA61C1A359725ED83649F224B
+#ifndef FOO_BAR_1F79C8A303290E531F0948AA92F5EDE998A31170
+#define FOO_BAR_1F79C8A303290E531F0948AA92F5EDE998A31170
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -1584,6 +1584,10 @@ struct NonEmptyUsername
         return lhs.value >= rhs.value;
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
@@ -1616,6 +1620,9 @@ struct NonEmptyUsername
     {
         return lhs.value != rhs.value;
     }
+#endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
 #endif
 };
 } // namespace data
@@ -1743,6 +1750,10 @@ struct PositiveScore
         return lhs.value >= rhs.value;
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
@@ -1776,6 +1787,9 @@ struct PositiveScore
         return lhs.value != rhs.value;
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace data
 
@@ -1786,5 +1800,5 @@ struct std::hash<data::PositiveScore>
 : atlas::atlas_detail::hash_base<data::PositiveScore>
 {};
 #endif
-#endif // FOO_BAR_1ED5C43E1C2F41ACA61C1A359725ED83649F224B
+#endif // FOO_BAR_1F79C8A303290E531F0948AA92F5EDE998A31170
 

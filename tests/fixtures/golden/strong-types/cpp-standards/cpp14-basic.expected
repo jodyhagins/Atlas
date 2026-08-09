@@ -22,6 +22,7 @@ static_assert(__cplusplus >= 201402L,
 #if __has_include(<version>)
 #include <version>
 #endif
+#include <string>
 #include <type_traits>
 #include <utility>
 

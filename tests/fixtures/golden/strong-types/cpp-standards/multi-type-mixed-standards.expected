@@ -1,5 +1,5 @@
-#ifndef TEST_MIXED_STANDARDS_F35C72A9D0F1220EF519431C5106AF971A58F04F
-#define TEST_MIXED_STANDARDS_F35C72A9D0F1220EF519431C5106AF971A58F04F
+#ifndef TEST_MIXED_STANDARDS_CA0611DFF56800D9E52B63E39617D0B54A50C1D4
+#define TEST_MIXED_STANDARDS_CA0611DFF56800D9E52B63E39617D0B54A50C1D4
 
 static_assert(__cplusplus >= 202002L,
     "This file requires C++20 or later. Compile with -std=c++20 or higher.");
@@ -22,6 +22,7 @@ static_assert(__cplusplus >= 202002L,
 #if __has_include(<version>)
 #include <version>
 #endif
+#include <string>
 #include <type_traits>
 #include <utility>
 
@@ -1113,6 +1114,10 @@ struct Type3
         return lhs.value >= rhs.value;
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
@@ -1146,8 +1151,11 @@ struct Type3
         return lhs.value != rhs.value;
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace test
 
-#endif // TEST_MIXED_STANDARDS_F35C72A9D0F1220EF519431C5106AF971A58F04F
+#endif // TEST_MIXED_STANDARDS_CA0611DFF56800D9E52B63E39617D0B54A50C1D4
 

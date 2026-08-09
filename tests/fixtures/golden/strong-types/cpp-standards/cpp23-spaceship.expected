@@ -1,5 +1,5 @@
-#ifndef TEST_CPP23_92B31A935AA60E6563DE91ECBBC7A9828B3045AA
-#define TEST_CPP23_92B31A935AA60E6563DE91ECBBC7A9828B3045AA
+#ifndef TEST_CPP23_7F532D9D49189C22B65AAEEEACDA3CACD2AD2B8D
+#define TEST_CPP23_7F532D9D49189C22B65AAEEEACDA3CACD2AD2B8D
 
 static_assert(__cplusplus >= 202302L,
     "This file requires C++23 or later. Compile with -std=c++23 or higher.");
@@ -22,6 +22,7 @@ static_assert(__cplusplus >= 202302L,
 #if __has_include(<version>)
 #include <version>
 #endif
+#include <string>
 #include <type_traits>
 #include <utility>
 
@@ -877,6 +878,10 @@ struct Timestamp
         return lhs.value >= rhs.value;
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
@@ -910,8 +915,11 @@ struct Timestamp
         return lhs.value != rhs.value;
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace test
 
-#endif // TEST_CPP23_92B31A935AA60E6563DE91ECBBC7A9828B3045AA
+#endif // TEST_CPP23_7F532D9D49189C22B65AAEEEACDA3CACD2AD2B8D
 

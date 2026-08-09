@@ -70,6 +70,19 @@ protected:
      */
     [[nodiscard]]
     bool should_apply_impl(ClassInfo const & info) const override;
+
+    /**
+     * Render the operators inside a -Wfloat-equal suppression
+     *
+     * A type wrapping a floating-point value warns under -Wfloat-equal, and
+     * that includes the defaulted operator==. The user cannot silence a
+     * warning raised inside generated code, so the generator does it.
+     *
+     * @param info Strong type class information
+     * @return Rendered operators wrapped in diagnostic push/pop
+     */
+    [[nodiscard]]
+    std::string render_impl(ClassInfo const & info) const override;
 };
 
 } // namespace wjh::atlas::generation

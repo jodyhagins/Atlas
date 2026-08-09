@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_33CF4DC2B8F5A47366BD6405DC8C4D7E847E5E6F
-#define FOO_BAR_33CF4DC2B8F5A47366BD6405DC8C4D7E847E5E6F
+#ifndef FOO_BAR_716E7F846D76A6A89B2D2D85C2C8FF7D4871495D
+#define FOO_BAR_716E7F846D76A6A89B2D2D85C2C8FF7D4871495D
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -19,6 +19,7 @@
 #if __has_include(<version>)
 #include <version>
 #endif
+#include <string>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -825,6 +826,10 @@ struct AutoIncludeVector
     {
         return static_cast<std::vector<int> &&>(self.value);
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value == @p rhs.value?
@@ -836,8 +841,11 @@ struct AutoIncludeVector
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace test
 
-#endif // FOO_BAR_33CF4DC2B8F5A47366BD6405DC8C4D7E847E5E6F
+#endif // FOO_BAR_716E7F846D76A6A89B2D2D85C2C8FF7D4871495D
 

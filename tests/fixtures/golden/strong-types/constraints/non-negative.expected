@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_A3AC43C3A43D75F28D11101EB4CCEBE2C9F3B763
-#define FOO_BAR_A3AC43C3A43D75F28D11101EB4CCEBE2C9F3B763
+#ifndef FOO_BAR_8CA9C544D9BA788EC549AAD50FFA29CA73CC746C
+#define FOO_BAR_8CA9C544D9BA788EC549AAD50FFA29CA73CC746C
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -2134,6 +2134,10 @@ struct NonNegativeInt
         return lhs.value >= rhs.value;
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
@@ -2166,6 +2170,9 @@ struct NonNegativeInt
     {
         return lhs.value != rhs.value;
     }
+#endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
 #endif
 };
 } // namespace test
@@ -2380,5 +2387,5 @@ struct NonNegativeSaturating
 };
 } // namespace test
 
-#endif // FOO_BAR_A3AC43C3A43D75F28D11101EB4CCEBE2C9F3B763
+#endif // FOO_BAR_8CA9C544D9BA788EC549AAD50FFA29CA73CC746C
 

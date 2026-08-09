@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_47E6ABF54AEA82C7C92F18411F26251BDED00277
-#define FOO_BAR_47E6ABF54AEA82C7C92F18411F26251BDED00277
+#ifndef FOO_BAR_A756F350B9854C375EF385DEB30A812C8533DFAF
+#define FOO_BAR_A756F350B9854C375EF385DEB30A812C8533DFAF
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -1824,6 +1824,10 @@ struct ServerPort
         return lhs.value >= rhs.value;
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
@@ -1857,6 +1861,9 @@ struct ServerPort
         return lhs.value != rhs.value;
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace net
 
@@ -1867,5 +1874,5 @@ struct std::hash<net::ServerPort>
 : atlas::atlas_detail::hash_base<net::ServerPort>
 {};
 #endif
-#endif // FOO_BAR_47E6ABF54AEA82C7C92F18411F26251BDED00277
+#endif // FOO_BAR_A756F350B9854C375EF385DEB30A812C8533DFAF
 

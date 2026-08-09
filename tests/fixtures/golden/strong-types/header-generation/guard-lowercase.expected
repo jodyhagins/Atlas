@@ -1,5 +1,5 @@
-#ifndef my_app_types_325bc4233719161be5be31f38ec648b1a9f3588f
-#define my_app_types_325bc4233719161be5be31f38ec648b1a9f3588f
+#ifndef my_app_types_fd3dcc15bdb5c960152074b1ab5a7315374611c2
+#define my_app_types_fd3dcc15bdb5c960152074b1ab5a7315374611c2
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -19,6 +19,7 @@
 #if __has_include(<version>)
 #include <version>
 #endif
+#include <string>
 #include <type_traits>
 #include <utility>
 
@@ -824,6 +825,10 @@ struct LowercaseGuardType
     {
         return static_cast<int &&>(self.value);
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value == @p rhs.value?
@@ -835,8 +840,11 @@ struct LowercaseGuardType
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace test
 
-#endif // my_app_types_325bc4233719161be5be31f38ec648b1a9f3588f
+#endif // my_app_types_fd3dcc15bdb5c960152074b1ab5a7315374611c2
 

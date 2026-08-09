@@ -2647,4 +2647,241 @@ int main() {
     }
 }
 
+TEST_SUITE("Compilation Tests: Comparison Completeness")
+{
+    TEST_CASE("Interaction <=> supports the full set of comparisons")
+    {
+        // C++20 synthesizes == only from a *defaulted* operator<=>. A
+        // cross-type interaction produces a plain operator<=>, so Atlas has to
+        // generate == itself; != then follows by rewriting.
+        CompilationTester tester;
+
+        auto types = R"([type]
+kind=struct
+namespace=demo
+name=MaxRetries
+description=int; <=>; no-constexpr
+)";
+
+        auto interactions = R"(namespace=demo
+
+no-constexpr
+
+MaxRetries <=> int <-> auto
+)";
+
+        auto test_code = R"(
+#include <cassert>
+
+int main() {
+    demo::MaxRetries retries{3};
+
+    assert(retries == 3);
+    assert(retries != 4);
+    assert(retries < 4);
+    assert(retries <= 3);
+    assert(retries > 2);
+    assert(retries >= 3);
+
+    assert(3 == retries);
+    assert(4 != retries);
+    assert(4 > retries);
+
+    return 0;
+}
+)";
+
+        auto result = tester.compile_and_run_with_interactions(
+            types,
+            interactions,
+            test_code,
+            "c++20");
+
+        INFO(result.output);
+        CHECK(result.success);
+    }
+
+    TEST_CASE("Interaction <=> does not collide with an explicit ==")
+    {
+        // The derived == must yield to one the user asked for, otherwise the
+        // two definitions collide.
+        CompilationTester tester;
+
+        auto types = R"([type]
+kind=struct
+namespace=demo
+name=Timeout
+description=int; <=>; no-constexpr
+)";
+
+        auto interactions = R"(namespace=demo
+
+no-constexpr
+
+Timeout <=> int <-> auto
+Timeout == int <-> bool
+)";
+
+        auto test_code = R"(
+#include <cassert>
+
+int main() {
+    demo::Timeout timeout{30};
+
+    assert(timeout == 30);
+    assert(timeout != 31);
+    assert(30 == timeout);
+    assert(timeout < 31);
+
+    return 0;
+}
+)";
+
+        auto result = tester.compile_and_run_with_interactions(
+            types,
+            interactions,
+            test_code,
+            "c++20");
+
+        INFO(result.output);
+        CHECK(result.success);
+    }
+
+    TEST_CASE("Generated equality is clean under -Wfloat-equal")
+    {
+        // A warning raised inside a generated header is unfixable by the user,
+        // so the generator suppresses -Wfloat-equal around its comparisons.
+        CompilationTester tester;
+
+        auto description = R"([type]
+kind=struct
+namespace=demo
+name=BackoffFactor
+description=double; ==, !=, bool; no-constexpr
+
+[type]
+kind=struct
+namespace=demo
+name=Weight
+description=double; <=>; no-constexpr
+)";
+
+        auto test_code = R"(
+#include <cassert>
+
+int main() {
+    demo::BackoffFactor a{1.5};
+    demo::BackoffFactor b{2.0};
+    assert(a != b);
+    assert(a == demo::BackoffFactor{1.5});
+    // GCC reads the cast to bool as a comparison against zero
+    assert(static_cast<bool>(a));
+
+    demo::Weight w{1.0};
+    demo::Weight x{2.0};
+    assert(w != x);
+    assert(w == demo::Weight{1.0});
+    assert(w < x);
+
+    return 0;
+}
+)";
+
+        auto result = tester.compile_and_run(
+            description,
+            test_code,
+            "c++20",
+            "-Wfloat-equal -Werror");
+
+        INFO(result.output);
+        CHECK(result.success);
+    }
+
+    TEST_CASE("Increment operators are clean under -Wall -Wextra")
+    {
+        // The noexcept specifier on ++/-- writes ++std::declval<T&>(), which
+        // clang flags as a side effect in an unevaluated context. The binary
+        // arithmetic operators already suppressed this; ++/-- did not.
+        CompilationTester tester;
+
+        auto description = R"([type]
+kind=struct
+namespace=demo
+name=Counter
+description=int; ++, --, ==; no-constexpr
+)";
+
+        auto test_code = R"(
+#include <cassert>
+
+int main() {
+    demo::Counter c{0};
+
+    ++c;
+    c++;
+    --c;
+    c--;
+
+    assert(c == demo::Counter{0});
+
+    return 0;
+}
+)";
+
+        auto result = tester.compile_and_run(
+            description,
+            test_code,
+            "c++20",
+            "-Wall -Wextra -Werror");
+
+        INFO(result.output);
+        CHECK(result.success);
+    }
+
+    TEST_CASE("Interaction equality is clean under -Wfloat-equal")
+    {
+        CompilationTester tester;
+
+        auto types = R"([type]
+kind=struct
+namespace=demo
+name=BackoffFactor
+description=double; ==; no-constexpr
+)";
+
+        auto interactions = R"(namespace=demo
+
+no-constexpr
+
+BackoffFactor == double <-> bool
+BackoffFactor != double <-> bool
+)";
+
+        auto test_code = R"(
+#include <cassert>
+
+int main() {
+    demo::BackoffFactor factor{1.5};
+
+    assert(factor == 1.5);
+    assert(factor != 2.0);
+    assert(1.5 == factor);
+    assert(2.0 != factor);
+
+    return 0;
+}
+)";
+
+        auto result = tester.compile_and_run_with_interactions(
+            types,
+            interactions,
+            test_code,
+            "c++20",
+            "-Wfloat-equal -Werror");
+
+        INFO(result.output);
+        CHECK(result.success);
+    }
+}
+
 } // anonymous namespace

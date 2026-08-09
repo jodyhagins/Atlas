@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_750BD8BA6883B8EA2C54640A151252AF58FCE712
-#define FOO_BAR_750BD8BA6883B8EA2C54640A151252AF58FCE712
+#ifndef FOO_BAR_1320097A3682795F2AC015438132267B5BC4AFDB
+#define FOO_BAR_1320097A3682795F2AC015438132267B5BC4AFDB
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -22,6 +22,7 @@
 #include <concepts>
 #include <format>
 #include <functional>
+#include <string>
 #include <type_traits>
 #include <utility>
 
@@ -1120,6 +1121,10 @@ struct RealWorldInt
         lhs -= rhs;
         return lhs;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value < @p rhs.value?
@@ -1142,6 +1147,9 @@ struct RealWorldInt
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace integration
 } // namespace test
@@ -1153,5 +1161,5 @@ struct std::hash<test::integration::RealWorldInt>
 : atlas::atlas_detail::hash_base<test::integration::RealWorldInt>
 {};
 #endif
-#endif // FOO_BAR_750BD8BA6883B8EA2C54640A151252AF58FCE712
+#endif // FOO_BAR_1320097A3682795F2AC015438132267B5BC4AFDB
 

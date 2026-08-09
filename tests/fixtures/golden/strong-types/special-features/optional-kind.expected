@@ -1,5 +1,5 @@
-#ifndef TEST_OPTIONAL_KIND_8B387E96F9EC1C18CF56389B18C88523256B7BD5
-#define TEST_OPTIONAL_KIND_8B387E96F9EC1C18CF56389B18C88523256B7BD5
+#ifndef TEST_OPTIONAL_KIND_E6445E4DFA08371C8FED97721AEF5A703AF828ED
+#define TEST_OPTIONAL_KIND_E6445E4DFA08371C8FED97721AEF5A703AF828ED
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -1287,6 +1287,10 @@ public:
         return lhs.value >= rhs.value;
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
@@ -1319,6 +1323,9 @@ public:
     {
         return lhs.value != rhs.value;
     }
+#endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
 #endif
 };
 } // namespace test
@@ -1378,6 +1385,10 @@ struct DefaultStructComplex
     {
         return static_cast<std::string &&>(self.value);
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -1400,6 +1411,9 @@ struct DefaultStructComplex
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace test
 
@@ -1672,6 +1686,10 @@ public:
     {
         return static_cast<unsigned &&>(self.value);
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value == @p rhs.value?
@@ -1683,8 +1701,11 @@ public:
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace mixed
 
-#endif // TEST_OPTIONAL_KIND_8B387E96F9EC1C18CF56389B18C88523256B7BD5
+#endif // TEST_OPTIONAL_KIND_E6445E4DFA08371C8FED97721AEF5A703AF828ED
 

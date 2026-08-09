@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_639E62BAD0056B5A85D7723E4BD397FE2D240170
-#define FOO_BAR_639E62BAD0056B5A85D7723E4BD397FE2D240170
+#ifndef FOO_BAR_FF4D5414B9683B88B11B4ECA20148FD1870B912F
+#define FOO_BAR_FF4D5414B9683B88B11B4ECA20148FD1870B912F
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -19,6 +19,7 @@
 #if __has_include(<version>)
 #include <version>
 #endif
+#include <string>
 #include <type_traits>
 #include <utility>
 
@@ -874,6 +875,10 @@ struct ComparisonAllType
         return lhs.value >= rhs.value;
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
@@ -906,6 +911,9 @@ struct ComparisonAllType
     {
         return lhs.value != rhs.value;
     }
+#endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
 #endif
 
     /**
@@ -954,5 +962,5 @@ struct ComparisonAllType
 };
 } // namespace test
 
-#endif // FOO_BAR_639E62BAD0056B5A85D7723E4BD397FE2D240170
+#endif // FOO_BAR_FF4D5414B9683B88B11B4ECA20148FD1870B912F
 

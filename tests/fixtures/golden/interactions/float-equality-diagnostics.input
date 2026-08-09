@@ -1,0 +1,12 @@
+guard_prefix=TEST
+guard_separator=_
+upcase_guard=true
+
+# Equality interactions against a floating-point operand must not raise
+# -Wfloat-equal inside the generated header -- the user cannot edit it.
+namespace=test
+constexpr
+value_access=.value
+
+BackoffFactor == double <-> bool
+BackoffFactor != double <-> bool

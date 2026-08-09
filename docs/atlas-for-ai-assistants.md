@@ -182,7 +182,14 @@ Price * Quantity -> Total        # one-directional
 Price * int <-> Price            # commutative (both orderings)
 Total / Price -> Quantity
 Total / Quantity -> Price
+MaxRetries <=> int <-> auto      # all six comparisons
 ```
+
+A `<=>` interaction covers all six comparisons: C++20 rewrites `<`, `<=`, `>`,
+`>=` from it, and Atlas generates `==` (which C++20 rewrites into `!=`) because
+the language only synthesizes `==` from a *defaulted* `operator<=>`. Do not
+write a paired `==` interaction unless you want different equality semantics
+than `<=>` gives -- an explicit one replaces the generated one.
 
 ### CMakeLists.txt
 
