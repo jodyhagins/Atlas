@@ -741,30 +741,61 @@ operator () (InteractionFileDescription const & desc) const
     // Emit the requested directions of an interaction. Equality comparisons
     // are wrapped in a -Wfloat-equal suppression, since a floating-point
     // operand would otherwise warn inside generated code the user cannot edit.
+    //
+    // Every operator gets its own include guard so that independently
+    // generated interaction headers can be included in the same translation
+    // unit without a hand-enforced "declare it in exactly one module"
+    // convention. The guard hashes the namespace together with the complete
+    // definition rather than just the signature: identical definitions
+    // collapse into one, while two headers that declare the same signature
+    // with *different* bodies still collide and get diagnosed instead of
+    // silently resolving to whichever header was included first.
+    std::set<std::string> emitted_guards;
     auto emit = [&](InteractionDescription const & interaction,
                     bool forward,
                     bool reverse) {
         bool guard_float_equal = interaction.op_symbol == "==" ||
             interaction.op_symbol == "!=";
-        if (guard_float_equal) {
-            body << float_equal_warning_push();
-        }
-        if (forward) {
-            body << generate_operator_function(
+
+        auto emit_one = [&](bool reversed) {
+            std::string definition;
+            if (guard_float_equal) {
+                definition += float_equal_warning_push();
+            }
+            definition += generate_operator_function(
                 interaction,
                 desc.constraints,
-                false);
-            body << "\n";
+                reversed);
+            if (guard_float_equal) {
+                definition += float_equal_warning_pop();
+            }
+
+            std::string guard = "ATLAS_INTERACTION_" +
+                get_sha1(interaction.interaction_namespace + "\n" + definition);
+            for (auto & c : guard) {
+                c = static_cast<char>(std::toupper(
+                    static_cast<unsigned char>(c)));
+            }
+
+            // A file can ask for the same definition twice - a symmetric
+            // interaction between two identical operands, for instance. The
+            // guard would already make the repeat inert, so drop it rather
+            // than emit a block the preprocessor is guaranteed to discard.
+            if (not emitted_guards.insert(guard).second) {
+                return;
+            }
+
+            body << "#ifndef " << guard << "\n";
+            body << "#define " << guard << "\n";
+            body << definition;
+            body << "#endif // " << guard << "\n\n";
+        };
+
+        if (forward) {
+            emit_one(false);
         }
         if (reverse) {
-            body << generate_operator_function(
-                interaction,
-                desc.constraints,
-                true);
-            body << "\n";
-        }
-        if (guard_float_equal) {
-            body << float_equal_warning_pop() << "\n";
+            emit_one(true);
         }
     };
 

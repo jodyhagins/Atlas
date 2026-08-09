@@ -1,5 +1,5 @@
-#ifndef TEST_1EBD68041A8DF96D159BF22DEDBB8F8D4F8BB95B
-#define TEST_1EBD68041A8DF96D159BF22DEDBB8F8D4F8BB95B
+#ifndef TEST_AA349C00BAE2F56DF6356E3760BF6C7E5396948E
+#define TEST_AA349C00BAE2F56DF6356E3760BF6C7E5396948E
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -908,6 +908,8 @@ noexcept(noexcept(atlas_detail::compound_assign_impl_divide(
 //////////////////////////////////////////////////////////////////////
 namespace math {
 
+#ifndef ATLAS_INTERACTION_0AA9BA6605AE4FC2716C720B07970E87907C91C9
+#define ATLAS_INTERACTION_0AA9BA6605AE4FC2716C720B07970E87907C91C9
 template <typename U, typename std::enable_if<std::is_floating_point<U>::value, bool>::type = true>
 constexpr U
 operator*(U lhs, U rhs)
@@ -917,7 +919,10 @@ noexcept(
 {
     return U{atlas::undress(lhs) * atlas::undress(rhs)};
 }
+#endif // ATLAS_INTERACTION_0AA9BA6605AE4FC2716C720B07970E87907C91C9
 
+#ifndef ATLAS_INTERACTION_507A8873A30B8CDF7F89CEA807BE2D96A127DA0D
+#define ATLAS_INTERACTION_507A8873A30B8CDF7F89CEA807BE2D96A127DA0D
 template <typename U, typename std::enable_if<std::is_floating_point<U>::value, bool>::type = true>
 constexpr U
 operator/(U lhs, U rhs)
@@ -927,8 +932,9 @@ noexcept(
 {
     return U{atlas::undress(lhs) / atlas::undress(rhs)};
 }
+#endif // ATLAS_INTERACTION_507A8873A30B8CDF7F89CEA807BE2D96A127DA0D
 
 } // namespace math
 
-#endif // TEST_1EBD68041A8DF96D159BF22DEDBB8F8D4F8BB95B
+#endif // TEST_AA349C00BAE2F56DF6356E3760BF6C7E5396948E
 

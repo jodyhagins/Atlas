@@ -23,6 +23,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Interaction headers now compose across modules.** Every generated interaction
+  operator is wrapped in its own include guard, so two modules that each declare
+  `Meters + Meters` can both be included in one translation unit instead of colliding.
+  Previously only the compound-assignment helpers and `atlas_value_for` accessors were
+  guarded, which left the binary operators themselves requiring a hand-enforced
+  "declare it in exactly one module" convention. The guard hashes the complete
+  definition, not just the signature, so two headers that declare the same signature
+  with *different* bodies still collide and get diagnosed rather than silently
+  resolving to whichever header was included first.
+- **A symmetric interaction between identical operand types no longer emits the
+  operator twice.** `Meters + Meters <-> Meters` generated the same
+  `operator+(Meters, Meters)` for each direction, and the resulting header did not
+  compile.
 - **A `<=>` interaction now also generates `operator==`.** C++20 rewrites `<`, `<=`,
   `>`, and `>=` from `operator<=>`, but it synthesizes `==` only from a *defaulted*
   one -- and a cross-type interaction operator cannot be defaulted. `exit_code != 0`

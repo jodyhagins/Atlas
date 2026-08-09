@@ -1,5 +1,5 @@
-#ifndef TEST_869E2DB5319A2F3E4C1DEC7D69A244DF5B181051
-#define TEST_869E2DB5319A2F3E4C1DEC7D69A244DF5B181051
+#ifndef TEST_5896CE235E34023FEB5597A7A0D6768815742EFF
+#define TEST_5896CE235E34023FEB5597A7A0D6768815742EFF
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -780,6 +780,8 @@ cast(U && u)
 //////////////////////////////////////////////////////////////////////
 namespace test {
 
+#ifndef ATLAS_INTERACTION_7D338F8FAA7E02A568695D143DA8007DBFE8B946
+#define ATLAS_INTERACTION_7D338F8FAA7E02A568695D143DA8007DBFE8B946
 inline constexpr auto
 operator<=>(MaxRetries lhs, int rhs)
 noexcept(
@@ -787,7 +789,10 @@ noexcept(
 {
     return lhs.value <=> rhs;
 }
+#endif // ATLAS_INTERACTION_7D338F8FAA7E02A568695D143DA8007DBFE8B946
 
+#ifndef ATLAS_INTERACTION_6C9E1E23F7AB2632BF8E7622A0535C796AD29398
+#define ATLAS_INTERACTION_6C9E1E23F7AB2632BF8E7622A0535C796AD29398
 inline constexpr auto
 operator<=>(int lhs, MaxRetries rhs)
 noexcept(
@@ -795,8 +800,11 @@ noexcept(
 {
     return lhs <=> rhs.value;
 }
+#endif // ATLAS_INTERACTION_6C9E1E23F7AB2632BF8E7622A0535C796AD29398
 
 // Equality derived from the <=> interaction above.
+#ifndef ATLAS_INTERACTION_E85A350B2F6A4DE6B7D0E6807D6A93112BF57558
+#define ATLAS_INTERACTION_E85A350B2F6A4DE6B7D0E6807D6A93112BF57558
 #if defined(__GNUC__) || defined(__clang__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wfloat-equal"
@@ -809,7 +817,17 @@ noexcept(
 {
     return bool{lhs.value == rhs};
 }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
+#endif // ATLAS_INTERACTION_E85A350B2F6A4DE6B7D0E6807D6A93112BF57558
 
+#ifndef ATLAS_INTERACTION_C75F6E36E8A14551C2CB91C9D9042514B4A7C25F
+#define ATLAS_INTERACTION_C75F6E36E8A14551C2CB91C9D9042514B4A7C25F
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 inline constexpr bool
 operator==(int lhs, MaxRetries rhs)
 noexcept(
@@ -818,11 +836,13 @@ noexcept(
 {
     return bool{lhs == rhs.value};
 }
-
 #if defined(__GNUC__) || defined(__clang__)
 #pragma GCC diagnostic pop
 #endif
+#endif // ATLAS_INTERACTION_C75F6E36E8A14551C2CB91C9D9042514B4A7C25F
 
+#ifndef ATLAS_INTERACTION_42BC2FB1D4756E2FE90B4D0B15D5E47979F30233
+#define ATLAS_INTERACTION_42BC2FB1D4756E2FE90B4D0B15D5E47979F30233
 inline constexpr auto
 operator<=>(ExitCode lhs, int rhs)
 noexcept(
@@ -830,8 +850,11 @@ noexcept(
 {
     return lhs.value <=> rhs;
 }
+#endif // ATLAS_INTERACTION_42BC2FB1D4756E2FE90B4D0B15D5E47979F30233
 
 // Equality derived from the <=> interaction above.
+#ifndef ATLAS_INTERACTION_93A200AAC9DCA72C2C8F3F0662897D8351FBF38E
+#define ATLAS_INTERACTION_93A200AAC9DCA72C2C8F3F0662897D8351FBF38E
 #if defined(__GNUC__) || defined(__clang__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wfloat-equal"
@@ -844,11 +867,13 @@ noexcept(
 {
     return bool{lhs.value == rhs};
 }
-
 #if defined(__GNUC__) || defined(__clang__)
 #pragma GCC diagnostic pop
 #endif
+#endif // ATLAS_INTERACTION_93A200AAC9DCA72C2C8F3F0662897D8351FBF38E
 
+#ifndef ATLAS_INTERACTION_CC9CA614A343C547835F1756B5C2F2DF6613878C
+#define ATLAS_INTERACTION_CC9CA614A343C547835F1756B5C2F2DF6613878C
 inline constexpr auto
 operator<=>(Timeout lhs, int rhs)
 noexcept(
@@ -856,7 +881,10 @@ noexcept(
 {
     return lhs.value <=> rhs;
 }
+#endif // ATLAS_INTERACTION_CC9CA614A343C547835F1756B5C2F2DF6613878C
 
+#ifndef ATLAS_INTERACTION_73C24A70815E6C36CA116C86D68930C15DF03F37
+#define ATLAS_INTERACTION_73C24A70815E6C36CA116C86D68930C15DF03F37
 inline constexpr auto
 operator<=>(int lhs, Timeout rhs)
 noexcept(
@@ -864,7 +892,10 @@ noexcept(
 {
     return lhs <=> rhs.value;
 }
+#endif // ATLAS_INTERACTION_73C24A70815E6C36CA116C86D68930C15DF03F37
 
+#ifndef ATLAS_INTERACTION_DE83F95327BA4077BD9F8514E8728CEEF8F41AC1
+#define ATLAS_INTERACTION_DE83F95327BA4077BD9F8514E8728CEEF8F41AC1
 #if defined(__GNUC__) || defined(__clang__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wfloat-equal"
@@ -877,7 +908,17 @@ noexcept(
 {
     return bool{lhs.value == rhs};
 }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
+#endif // ATLAS_INTERACTION_DE83F95327BA4077BD9F8514E8728CEEF8F41AC1
 
+#ifndef ATLAS_INTERACTION_BDCB9DFC790966D4D282BBB4D0CB520822FEBF4C
+#define ATLAS_INTERACTION_BDCB9DFC790966D4D282BBB4D0CB520822FEBF4C
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 inline constexpr bool
 operator==(int lhs, Timeout rhs)
 noexcept(
@@ -886,12 +927,12 @@ noexcept(
 {
     return bool{lhs == rhs.value};
 }
-
 #if defined(__GNUC__) || defined(__clang__)
 #pragma GCC diagnostic pop
 #endif
+#endif // ATLAS_INTERACTION_BDCB9DFC790966D4D282BBB4D0CB520822FEBF4C
 
 } // namespace test
 
-#endif // TEST_869E2DB5319A2F3E4C1DEC7D69A244DF5B181051
+#endif // TEST_5896CE235E34023FEB5597A7A0D6768815742EFF
 

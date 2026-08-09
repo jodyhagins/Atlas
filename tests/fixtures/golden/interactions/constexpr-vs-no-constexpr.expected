@@ -1,5 +1,5 @@
-#ifndef TEST_5B9CAFEDA9971E8CC6B06CF6335291C87CC21F3C
-#define TEST_5B9CAFEDA9971E8CC6B06CF6335291C87CC21F3C
+#ifndef TEST_811D80045F94908EE1EA28D5C34AE66BB6A8BD55
+#define TEST_811D80045F94908EE1EA28D5C34AE66BB6A8BD55
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -874,6 +874,8 @@ noexcept(noexcept(atlas_detail::compound_assign_impl_plus(
 //////////////////////////////////////////////////////////////////////
 namespace test {
 
+#ifndef ATLAS_INTERACTION_C27A4524C962528E7FB66A717498F001736AA36E
+#define ATLAS_INTERACTION_C27A4524C962528E7FB66A717498F001736AA36E
 inline constexpr FastValue
 operator+(FastValue lhs, FastValue rhs)
 noexcept(
@@ -882,7 +884,10 @@ noexcept(
 {
     return FastValue{lhs.value + rhs.value};
 }
+#endif // ATLAS_INTERACTION_C27A4524C962528E7FB66A717498F001736AA36E
 
+#ifndef ATLAS_INTERACTION_3CE1394106DFAAA3F20500EACE6E98640EAE1BCD
+#define ATLAS_INTERACTION_3CE1394106DFAAA3F20500EACE6E98640EAE1BCD
 inline SlowValue
 operator+(SlowValue lhs, SlowValue rhs)
 noexcept(
@@ -891,8 +896,9 @@ noexcept(
 {
     return SlowValue{lhs.value + rhs.value};
 }
+#endif // ATLAS_INTERACTION_3CE1394106DFAAA3F20500EACE6E98640EAE1BCD
 
 } // namespace test
 
-#endif // TEST_5B9CAFEDA9971E8CC6B06CF6335291C87CC21F3C
+#endif // TEST_811D80045F94908EE1EA28D5C34AE66BB6A8BD55
 

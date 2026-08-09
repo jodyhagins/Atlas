@@ -1,5 +1,5 @@
-#ifndef TEST_A8F82831F614E6B624E641F90EB5F93820A9B723
-#define TEST_A8F82831F614E6B624E641F90EB5F93820A9B723
+#ifndef TEST_1EBECF2C4B75BA63C9E20231D87A1C30AE7FDC6A
+#define TEST_1EBECF2C4B75BA63C9E20231D87A1C30AE7FDC6A
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -877,6 +877,8 @@ noexcept(noexcept(atlas_detail::compound_assign_impl_plus(
 //////////////////////////////////////////////////////////////////////
 namespace physics {
 
+#ifndef ATLAS_INTERACTION_BE205289CE651A22FBBEC5B7F91D99E61B8F9BB9
+#define ATLAS_INTERACTION_BE205289CE651A22FBBEC5B7F91D99E61B8F9BB9
 inline constexpr Distance
 operator+(Distance lhs, Distance rhs)
 noexcept(
@@ -885,7 +887,10 @@ noexcept(
 {
     return Distance{lhs.value + rhs.value};
 }
+#endif // ATLAS_INTERACTION_BE205289CE651A22FBBEC5B7F91D99E61B8F9BB9
 
+#ifndef ATLAS_INTERACTION_98217C56144E2453A0F003067E94F42E35050607
+#define ATLAS_INTERACTION_98217C56144E2453A0F003067E94F42E35050607
 inline constexpr Time
 operator+(Time lhs, Time rhs)
 noexcept(
@@ -894,8 +899,9 @@ noexcept(
 {
     return Time{lhs.value + rhs.value};
 }
+#endif // ATLAS_INTERACTION_98217C56144E2453A0F003067E94F42E35050607
 
 } // namespace physics
 
-#endif // TEST_A8F82831F614E6B624E641F90EB5F93820A9B723
+#endif // TEST_1EBECF2C4B75BA63C9E20231D87A1C30AE7FDC6A
 

@@ -1,5 +1,5 @@
-#ifndef TEST_62248115D66C8F95E8AFD20F987FAB96F86C7357
-#define TEST_62248115D66C8F95E8AFD20F987FAB96F86C7357
+#ifndef TEST_805ED42F77F916E52F481AEA88F54D7CBDF43859
+#define TEST_805ED42F77F916E52F481AEA88F54D7CBDF43859
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -862,6 +862,8 @@ noexcept(noexcept(atlas_detail::compound_assign_impl_plus(
 //////////////////////////////////////////////////////////////////////
 namespace mylib {
 
+#ifndef ATLAS_INTERACTION_DDEAD74D15D9C07AA9560E3CDDF1C8E54B3D8BD8
+#define ATLAS_INTERACTION_DDEAD74D15D9C07AA9560E3CDDF1C8E54B3D8BD8
 inline constexpr Amount
 operator+(Amount lhs, external::Offset rhs)
 noexcept(
@@ -870,8 +872,9 @@ noexcept(
 {
     return Amount{atlas::undress(lhs) + rhs.data};
 }
+#endif // ATLAS_INTERACTION_DDEAD74D15D9C07AA9560E3CDDF1C8E54B3D8BD8
 
 } // namespace mylib
 
-#endif // TEST_62248115D66C8F95E8AFD20F987FAB96F86C7357
+#endif // TEST_805ED42F77F916E52F481AEA88F54D7CBDF43859
 

@@ -1,5 +1,5 @@
-#ifndef TEST_E40C4168D102F8C68B975EFE695EAEB854D123BC
-#define TEST_E40C4168D102F8C68B975EFE695EAEB854D123BC
+#ifndef TEST_E2F5C576A1F3FD8F97278F13117E8744BB3C671C
+#define TEST_E2F5C576A1F3FD8F97278F13117E8744BB3C671C
 
 static_assert(__cplusplus >= 201402L,
     "This file requires C++14 or later. Compile with -std=c++14 or higher.");
@@ -849,6 +849,8 @@ noexcept(noexcept(atlas_detail::compound_assign_impl_plus(
 //////////////////////////////////////////////////////////////////////
 namespace test {
 
+#ifndef ATLAS_INTERACTION_41D32A8E94F9E6B3156063CC2C53FA2C82853AD2
+#define ATLAS_INTERACTION_41D32A8E94F9E6B3156063CC2C53FA2C82853AD2
 inline constexpr Counter
 operator+(Counter lhs, Counter rhs)
 noexcept(
@@ -857,8 +859,9 @@ noexcept(
 {
     return Counter{atlas::undress(lhs) + atlas::undress(rhs)};
 }
+#endif // ATLAS_INTERACTION_41D32A8E94F9E6B3156063CC2C53FA2C82853AD2
 
 } // namespace test
 
-#endif // TEST_E40C4168D102F8C68B975EFE695EAEB854D123BC
+#endif // TEST_E2F5C576A1F3FD8F97278F13117E8744BB3C671C
 
