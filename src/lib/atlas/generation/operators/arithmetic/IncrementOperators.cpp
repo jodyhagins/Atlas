@@ -30,7 +30,14 @@ get_template_impl() const noexcept
      */
     friend {{{const_expr}}}{{{class_name}}} &
     operator {{{op}}} ({{{class_name}}} & t)
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
     noexcept(noexcept({{{op}}}std::declval<{{{underlying_type}}}&>()))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         {{{op}}}t.value;
         return t;
@@ -40,9 +47,16 @@ get_template_impl() const noexcept
      */
     friend {{{const_expr}}}{{{class_name}}}
     operator {{{op}}} ({{{class_name}}} & t, int)
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
     noexcept(
         std::is_nothrow_copy_constructible<{{{underlying_type}}}>::value &&
         noexcept({{{op}}}std::declval<{{{underlying_type}}}&>()))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         auto result = t;
         {{{op}}}t.value;

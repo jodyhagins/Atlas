@@ -1,5 +1,5 @@
-#ifndef TEST_CPP20_FILE_C305E8877188C829B74CD70C21926737164BE7C2
-#define TEST_CPP20_FILE_C305E8877188C829B74CD70C21926737164BE7C2
+#ifndef TEST_CPP20_FILE_84728B8B0A07AC2A51E7FD02EEE4995C36656722
+#define TEST_CPP20_FILE_84728B8B0A07AC2A51E7FD02EEE4995C36656722
 
 static_assert(__cplusplus >= 202002L,
     "This file requires C++20 or later. Compile with -std=c++20 or higher.");
@@ -22,6 +22,7 @@ static_assert(__cplusplus >= 202002L,
 #if __has_include(<version>)
 #include <version>
 #endif
+#include <string>
 #include <type_traits>
 #include <utility>
 
@@ -877,6 +878,10 @@ struct UserId
         return lhs.value >= rhs.value;
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
@@ -909,6 +914,9 @@ struct UserId
     {
         return lhs.value != rhs.value;
     }
+#endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
 #endif
 };
 } // namespace test
@@ -968,6 +976,10 @@ struct SessionId
     {
         return static_cast<int &&>(self.value);
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -990,8 +1002,11 @@ struct SessionId
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace test
 
-#endif // TEST_CPP20_FILE_C305E8877188C829B74CD70C21926737164BE7C2
+#endif // TEST_CPP20_FILE_84728B8B0A07AC2A51E7FD02EEE4995C36656722
 

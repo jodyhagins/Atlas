@@ -320,6 +320,48 @@ TEST_SUITE("StrongTypeGenerator")
         }
     }
 
+    TEST_CASE("Preamble Includes")
+    {
+        SUBCASE("<string> is included even for types that wrap no string") {
+            // The preamble's is_string_atlas / StringAtlasC name std::string
+            // unconditionally. libc++ pulls <string> in transitively, so this
+            // only breaks on libstdc++ -- a compiler-independent check is the
+            // reliable guard.
+            auto includes = get_preamble_includes({});
+            CHECK(
+                std::find(includes.begin(), includes.end(), "<string>") !=
+                includes.end());
+
+            auto desc = make_description(
+                "struct",
+                "test",
+                "PlainInt",
+                "strong int");
+            auto code = generate_strong_type(desc);
+
+            CHECK(code.find("#include <string>") != std::string::npos);
+            CHECK(code.find("is_string_atlas") != std::string::npos);
+        }
+
+        SUBCASE("<string> is not included twice when constraints need it") {
+            auto desc = make_description(
+                "struct",
+                "test",
+                "NonEmptyName",
+                "strong std::string; non_empty; no-constexpr");
+            auto code = generate_strong_type(desc);
+
+            std::size_t count = 0;
+            std::string const needle = "#include <string>\n";
+            for (auto pos = code.find(needle); pos != std::string::npos;
+                 pos = code.find(needle, pos + needle.size()))
+            {
+                ++count;
+            }
+            CHECK(count == 1);
+        }
+    }
+
     TEST_CASE("Version Information")
     {
         SUBCASE("version constants are defined") {

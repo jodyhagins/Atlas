@@ -262,6 +262,27 @@ Quantity back = total / unit_price; // Quantity{3}
 Interactions support all arithmetic (`+`, `-`, `*`, `/`, `%`), bitwise (`&`, `|`, `^`, `<<`, `>>`), comparison (`==`, `!=`, `<`, `<=`, `>`, `>=`, `<=>`), and logical (`&&`, `||`) operators.
 Compound assignment (`+=`, `-=`, etc.) is generated automatically when the result type matches the LHS type.
 
+A `<=>` interaction gives you all six comparisons. C++20 rewrites `<`, `<=`, `>`,
+and `>=` from `operator<=>`, but it only synthesizes `==` from a *defaulted*
+`operator<=>` — and a cross-type one cannot be defaulted. Atlas therefore
+generates `operator==` alongside it, from which C++20 rewrites `!=`:
+
+```
+# interactions.atlas
+MaxRetries <=> int <-> auto
+```
+
+```cpp
+MaxRetries retries{3};
+
+retries < 5;    // rewritten from <=>
+retries == 3;   // generated alongside <=>
+retries != 4;   // rewritten from ==
+```
+
+Write an explicit `==` interaction for the same pair when you want different
+semantics; yours replaces the generated one rather than colliding with it.
+
 Additional interaction directives:
 - **`value_access=`**: Controls how values are extracted from types (default: `atlas::undress`)
 - **`lhs_value_access=`** / **`rhs_value_access=`**: Override value access per operand

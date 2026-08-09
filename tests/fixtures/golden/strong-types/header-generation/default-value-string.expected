@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_D23CE7E2B83AE7E407D3ECD697AD74BE41E6D72B
-#define FOO_BAR_D23CE7E2B83AE7E407D3ECD697AD74BE41E6D72B
+#ifndef FOO_BAR_F8D4A4896559E4A9B1A784492AC155CF58E8EF38
+#define FOO_BAR_F8D4A4896559E4A9B1A784492AC155CF58E8EF38
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -825,6 +825,10 @@ struct DefaultValueString
     {
         return static_cast<std::string &&>(self.value);
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value == @p rhs.value?
@@ -836,8 +840,11 @@ struct DefaultValueString
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace test
 
-#endif // FOO_BAR_D23CE7E2B83AE7E407D3ECD697AD74BE41E6D72B
+#endif // FOO_BAR_F8D4A4896559E4A9B1A784492AC155CF58E8EF38
 

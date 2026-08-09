@@ -713,6 +713,61 @@ operator () (InteractionFileDescription const & desc) const
         by_namespace[interaction.interaction_namespace].push_back(interaction);
     }
 
+    // Track which operator== overloads exist, so the ones derived from <=>
+    // interactions never collide with ones the user asked for explicitly.
+    // Keyed on the exact (namespace, lhs, rhs) signature the generator emits.
+    auto equality_key = [](std::string const & ns,
+                           std::string const & lhs,
+                           std::string const & rhs) {
+        return ns + "|" + lhs + "|" + rhs;
+    };
+    std::set<std::string> equality_overloads;
+    for (auto const & interaction : desc.interactions) {
+        if (interaction.op_symbol != "==") {
+            continue;
+        }
+        equality_overloads.insert(equality_key(
+            interaction.interaction_namespace,
+            interaction.lhs_type,
+            interaction.rhs_type));
+        if (interaction.symmetric) {
+            equality_overloads.insert(equality_key(
+                interaction.interaction_namespace,
+                interaction.rhs_type,
+                interaction.lhs_type));
+        }
+    }
+
+    // Emit the requested directions of an interaction. Equality comparisons
+    // are wrapped in a -Wfloat-equal suppression, since a floating-point
+    // operand would otherwise warn inside generated code the user cannot edit.
+    auto emit = [&](InteractionDescription const & interaction,
+                    bool forward,
+                    bool reverse) {
+        bool guard_float_equal = interaction.op_symbol == "==" ||
+            interaction.op_symbol == "!=";
+        if (guard_float_equal) {
+            body << float_equal_warning_push();
+        }
+        if (forward) {
+            body << generate_operator_function(
+                interaction,
+                desc.constraints,
+                false);
+            body << "\n";
+        }
+        if (reverse) {
+            body << generate_operator_function(
+                interaction,
+                desc.constraints,
+                true);
+            body << "\n";
+        }
+        if (guard_float_equal) {
+            body << float_equal_warning_pop() << "\n";
+        }
+    };
+
     // Generate interactions namespace by namespace
     for (auto const & [ns, interactions] : by_namespace) {
         if (not ns.empty()) {
@@ -720,20 +775,36 @@ operator () (InteractionFileDescription const & desc) const
         }
 
         for (auto const & interaction : interactions) {
-            // Generate the primary operator
-            body << generate_operator_function(
-                interaction,
-                desc.constraints,
-                false);
-            body << "\n";
+            // Generate the primary operator, plus the symmetric version if
+            // one was requested
+            emit(interaction, true, interaction.symmetric);
 
-            // Generate symmetric version if requested
-            if (interaction.symmetric) {
-                body << generate_operator_function(
-                    interaction,
-                    desc.constraints,
-                    true);
-                body << "\n";
+            if (interaction.op_symbol != "<=>") {
+                continue;
+            }
+
+            // C++20 only synthesizes == from a *defaulted* operator<=>, so a
+            // cross-type <=> interaction leaves == (and thus !=) undefined.
+            // Derive == from the same operands; != follows by rewriting.
+            auto equality = interaction;
+            equality.op_symbol = "==";
+            equality.result_type = "bool";
+
+            bool emit_forward = equality_overloads
+                                    .insert(equality_key(
+                                        ns,
+                                        equality.lhs_type,
+                                        equality.rhs_type))
+                                    .second;
+            bool emit_reverse = equality.symmetric &&
+                equality_overloads
+                    .insert(
+                        equality_key(ns, equality.rhs_type, equality.lhs_type))
+                    .second;
+
+            if (emit_forward || emit_reverse) {
+                body << "// Equality derived from the <=> interaction above.\n";
+                emit(equality, emit_forward, emit_reverse);
             }
         }
 

@@ -1,5 +1,5 @@
-#ifndef TEST_OPTIONAL_STRONG_7F36894573C2CC0B6EF385B4262C91CD3E8CA7D3
-#define TEST_OPTIONAL_STRONG_7F36894573C2CC0B6EF385B4262C91CD3E8CA7D3
+#ifndef TEST_OPTIONAL_STRONG_5F1D86EC1096AF36C0D5CCD83DCD04083ACA8DF6
+#define TEST_OPTIONAL_STRONG_5F1D86EC1096AF36C0D5CCD83DCD04083ACA8DF6
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -21,6 +21,7 @@
 #endif
 #include <concepts>
 #include <functional>
+#include <string>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -1110,6 +1111,10 @@ struct WithStrong
         return lhs.value >= rhs.value;
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
@@ -1142,6 +1147,9 @@ struct WithStrong
     {
         return lhs.value != rhs.value;
     }
+#endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
 #endif
 };
 } // namespace test
@@ -1371,6 +1379,10 @@ struct WithoutStrong
         return lhs.value >= rhs.value;
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
@@ -1403,6 +1415,9 @@ struct WithoutStrong
     {
         return lhs.value != rhs.value;
     }
+#endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
 #endif
 };
 } // namespace test
@@ -1539,6 +1554,10 @@ struct ComplexWithStrong
     {
         return atlas::atlas_detail::end_(value);
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -1561,6 +1580,9 @@ struct ComplexWithStrong
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace test
 
@@ -1696,6 +1718,10 @@ struct ComplexWithoutStrong
     {
         return atlas::atlas_detail::end_(value);
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -1718,6 +1744,9 @@ struct ComplexWithoutStrong
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace test
 
@@ -1776,6 +1805,10 @@ struct InlineNsWithStrong
     {
         return static_cast<geo::Point &&>(self.value);
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -1798,6 +1831,9 @@ struct InlineNsWithStrong
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace global
 
@@ -1856,6 +1892,10 @@ struct InlineNsWithoutStrong
     {
         return static_cast<geo::Distance &&>(self.value);
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -1878,6 +1918,9 @@ struct InlineNsWithoutStrong
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace global
 
@@ -1942,7 +1985,14 @@ struct AllOpsStrong
      */
     friend constexpr AllOpsStrong &
     operator ++ (AllOpsStrong & t)
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
     noexcept(noexcept(++std::declval<int&>()))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         ++t.value;
         return t;
@@ -1952,9 +2002,16 @@ struct AllOpsStrong
      */
     friend constexpr AllOpsStrong
     operator ++ (AllOpsStrong & t, int)
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
     noexcept(
         std::is_nothrow_copy_constructible<int>::value &&
         noexcept(++std::declval<int&>()))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         auto result = t;
         ++t.value;
@@ -1966,7 +2023,14 @@ struct AllOpsStrong
      */
     friend constexpr AllOpsStrong &
     operator -- (AllOpsStrong & t)
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
     noexcept(noexcept(--std::declval<int&>()))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         --t.value;
         return t;
@@ -1976,9 +2040,16 @@ struct AllOpsStrong
      */
     friend constexpr AllOpsStrong
     operator -- (AllOpsStrong & t, int)
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
     noexcept(
         std::is_nothrow_copy_constructible<int>::value &&
         noexcept(--std::declval<int&>()))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         auto result = t;
         --t.value;
@@ -2134,6 +2205,10 @@ struct AllOpsStrong
         lhs /= rhs;
         return lhs;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -2200,6 +2275,9 @@ struct AllOpsStrong
     {
         return lhs.value >= rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace test
 
@@ -2271,7 +2349,14 @@ struct AllOpsNoStrong
      */
     friend constexpr AllOpsNoStrong &
     operator ++ (AllOpsNoStrong & t)
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
     noexcept(noexcept(++std::declval<int&>()))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         ++t.value;
         return t;
@@ -2281,9 +2366,16 @@ struct AllOpsNoStrong
      */
     friend constexpr AllOpsNoStrong
     operator ++ (AllOpsNoStrong & t, int)
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
     noexcept(
         std::is_nothrow_copy_constructible<int>::value &&
         noexcept(++std::declval<int&>()))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         auto result = t;
         ++t.value;
@@ -2295,7 +2387,14 @@ struct AllOpsNoStrong
      */
     friend constexpr AllOpsNoStrong &
     operator -- (AllOpsNoStrong & t)
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
     noexcept(noexcept(--std::declval<int&>()))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         --t.value;
         return t;
@@ -2305,9 +2404,16 @@ struct AllOpsNoStrong
      */
     friend constexpr AllOpsNoStrong
     operator -- (AllOpsNoStrong & t, int)
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
     noexcept(
         std::is_nothrow_copy_constructible<int>::value &&
         noexcept(--std::declval<int&>()))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         auto result = t;
         --t.value;
@@ -2463,6 +2569,10 @@ struct AllOpsNoStrong
         lhs /= rhs;
         return lhs;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -2529,6 +2639,9 @@ struct AllOpsNoStrong
     {
         return lhs.value >= rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace test
 
@@ -2539,5 +2652,5 @@ struct std::hash<test::AllOpsNoStrong>
 : atlas::atlas_detail::hash_base<test::AllOpsNoStrong>
 {};
 #endif
-#endif // TEST_OPTIONAL_STRONG_7F36894573C2CC0B6EF385B4262C91CD3E8CA7D3
+#endif // TEST_OPTIONAL_STRONG_5F1D86EC1096AF36C0D5CCD83DCD04083ACA8DF6
 

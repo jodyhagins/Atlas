@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_792C935A5703D42D954E38095200F4731302E1B3
-#define FOO_BAR_792C935A5703D42D954E38095200F4731302E1B3
+#ifndef FOO_BAR_027D1FD77E0FC8017D99644F040816B2A909A2F3
+#define FOO_BAR_027D1FD77E0FC8017D99644F040816B2A909A2F3
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -19,6 +19,7 @@
 #if __has_include(<version>)
 #include <version>
 #endif
+#include <string>
 #include <type_traits>
 #include <utility>
 
@@ -824,6 +825,10 @@ struct DefaultValueInt
     {
         return static_cast<int &&>(self.value);
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value == @p rhs.value?
@@ -835,8 +840,11 @@ struct DefaultValueInt
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace test
 
-#endif // FOO_BAR_792C935A5703D42D954E38095200F4731302E1B3
+#endif // FOO_BAR_027D1FD77E0FC8017D99644F040816B2A909A2F3
 

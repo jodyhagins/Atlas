@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_FC9D29277F564385F1FEBF36B86C2612E2E608AC
-#define FOO_BAR_FC9D29277F564385F1FEBF36B86C2612E2E608AC
+#ifndef FOO_BAR_4719965BEA6A8F3B08B19A0569CBEA7E3739720F
+#define FOO_BAR_4719965BEA6A8F3B08B19A0569CBEA7E3739720F
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -950,6 +950,10 @@ struct ComplexTemplateType
         return value[std::forward<ArgT>(arg)];
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value == @p rhs.value?
@@ -961,9 +965,12 @@ struct ComplexTemplateType
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace edge_cases
 } // namespace test
 
-#endif // FOO_BAR_FC9D29277F564385F1FEBF36B86C2612E2E608AC
+#endif // FOO_BAR_4719965BEA6A8F3B08B19A0569CBEA7E3739720F
 

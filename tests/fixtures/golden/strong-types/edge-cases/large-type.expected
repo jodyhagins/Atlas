@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_F1D1065315104ECF556173681935EB98C6B9789D
-#define FOO_BAR_F1D1065315104ECF556173681935EB98C6B9789D
+#ifndef FOO_BAR_3341CC5245296E2FE915409D7B596F1937E27053
+#define FOO_BAR_3341CC5245296E2FE915409D7B596F1937E27053
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -20,6 +20,7 @@
 #include <version>
 #endif
 #include <array>
+#include <string>
 #include <type_traits>
 #include <utility>
 
@@ -826,6 +827,10 @@ struct LargeType
     {
         return static_cast<std::array<int, 1000> &&>(self.value);
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value == @p rhs.value?
@@ -837,9 +842,12 @@ struct LargeType
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace edge_cases
 } // namespace test
 
-#endif // FOO_BAR_F1D1065315104ECF556173681935EB98C6B9789D
+#endif // FOO_BAR_3341CC5245296E2FE915409D7B596F1937E27053
 

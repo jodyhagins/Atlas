@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_6FBD61D416773FDC2606069BB2A8B7977DEF3C5C
-#define FOO_BAR_6FBD61D416773FDC2606069BB2A8B7977DEF3C5C
+#ifndef FOO_BAR_E67E9368BF0907FA86F99FF63A261FA06ACC2732
+#define FOO_BAR_E67E9368BF0907FA86F99FF63A261FA06ACC2732
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -828,6 +828,10 @@ struct Optional_int
     {
         return static_cast<std::optional<int> &&>(self.value);
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Return the result of casting the wrapped object to bool.
@@ -838,6 +842,9 @@ struct Optional_int
     {
         return static_cast<bool>(value);
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
@@ -888,6 +895,10 @@ struct Optional_int
         return lhs.value >= rhs.value;
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
@@ -920,6 +931,9 @@ struct Optional_int
     {
         return lhs.value != rhs.value;
     }
+#endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
 #endif
 };
 } // namespace templates
@@ -981,6 +995,10 @@ struct OptionalDouble
     {
         return static_cast<std::optional<double> &&>(self.value);
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Return the result of casting the wrapped object to bool.
@@ -991,6 +1009,9 @@ struct OptionalDouble
     {
         return static_cast<bool>(value);
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
@@ -1041,6 +1062,10 @@ struct OptionalDouble
         return lhs.value >= rhs.value;
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
@@ -1073,6 +1098,9 @@ struct OptionalDouble
     {
         return lhs.value != rhs.value;
     }
+#endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
 #endif
 };
 } // namespace templates
@@ -1134,6 +1162,10 @@ struct IntStringPair
     {
         return static_cast<std::pair<int, std::string> &&>(self.value);
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value == @p rhs.value?
@@ -1145,6 +1177,9 @@ struct IntStringPair
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace templates
 } // namespace test
@@ -1259,6 +1294,10 @@ struct BoundedInt
         return lhs.value >= rhs.value;
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
@@ -1291,6 +1330,9 @@ struct BoundedInt
     {
         return lhs.value != rhs.value;
     }
+#endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
 #endif
 };
 
@@ -1467,6 +1509,10 @@ struct IntContainer
         return std::move(value).size(std::forward<Args>(args)...);
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value == @p rhs.value?
@@ -1478,6 +1524,9 @@ struct IntContainer
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace templates
 } // namespace test
@@ -1538,6 +1587,10 @@ struct DefaultInt
     {
         return static_cast<int &&>(self.value);
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value == @p rhs.value?
@@ -1549,6 +1602,9 @@ struct DefaultInt
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace templates
 } // namespace test
@@ -1609,6 +1665,10 @@ struct NamespacedInt
     {
         return static_cast<int &&>(self.value);
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value == @p rhs.value?
@@ -1620,6 +1680,9 @@ struct NamespacedInt
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace ns
 } // namespace custom
@@ -1681,6 +1744,10 @@ public:
     {
         return static_cast<int &&>(self.value);
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value == @p rhs.value?
@@ -1692,6 +1759,9 @@ public:
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace templates
 } // namespace test
@@ -1872,6 +1942,10 @@ struct ArithmeticLong
         lhs /= rhs;
         return lhs;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value == @p rhs.value?
@@ -1883,6 +1957,9 @@ struct ArithmeticLong
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace templates
 } // namespace test
@@ -1947,6 +2024,10 @@ struct EnhancedInt
     {
         return static_cast<int &&>(self.value);
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value == @p rhs.value?
@@ -1958,6 +2039,9 @@ struct EnhancedInt
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 
 #if defined(__clang__)
@@ -2029,6 +2113,10 @@ struct VectorWrapper
     {
         return static_cast<std::vector<int> &&>(self.value);
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value == @p rhs.value?
@@ -2040,9 +2128,12 @@ struct VectorWrapper
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace templates
 } // namespace test
 
-#endif // FOO_BAR_6FBD61D416773FDC2606069BB2A8B7977DEF3C5C
+#endif // FOO_BAR_E67E9368BF0907FA86F99FF63A261FA06ACC2732
 

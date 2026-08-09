@@ -226,11 +226,13 @@ get_preamble_includes(PreambleOptions const & options)
     // Base includes always needed by preamble
     includes.push_back("<type_traits>");
     includes.push_back("<utility>");
+    // is_string_atlas / StringAtlasC name std::string unconditionally.
+    // libc++ happens to pull <string> in transitively; libstdc++ does not.
+    includes.push_back("<string>");
 
     if (options.include_constraints) {
         includes.push_back("<sstream>");
         includes.push_back("<stdexcept>");
-        includes.push_back("<string>");
     }
 
     if (options.include_nilable_support) {
@@ -3604,6 +3606,24 @@ generate_cpp_standard_assertion(int standard)
         << " or later. Compile with -std=c++" << standard
         << " or higher.\");\n\n";
     return strm.str();
+}
+
+std::string
+float_equal_warning_push()
+{
+    // Clang understands the GCC spelling, so one block covers both.
+    return "#if defined(__GNUC__) || defined(__clang__)\n"
+           "#pragma GCC diagnostic push\n"
+           "#pragma GCC diagnostic ignored \"-Wfloat-equal\"\n"
+           "#endif\n";
+}
+
+std::string
+float_equal_warning_pop()
+{
+    return "#if defined(__GNUC__) || defined(__clang__)\n"
+           "#pragma GCC diagnostic pop\n"
+           "#endif\n";
 }
 
 } // namespace wjh::atlas

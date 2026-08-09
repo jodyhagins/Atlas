@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_405A76BA0C8EDEE44EC5C42B2E0FDC4C5E9F1F1B
-#define FOO_BAR_405A76BA0C8EDEE44EC5C42B2E0FDC4C5E9F1F1B
+#ifndef FOO_BAR_429B6E23E8182F51365CAE89C3F0451014C366BA
+#define FOO_BAR_429B6E23E8182F51365CAE89C3F0451014C366BA
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -21,6 +21,7 @@
 #endif
 #include <concepts>
 #include <functional>
+#include <string>
 #include <type_traits>
 #include <utility>
 
@@ -970,6 +971,10 @@ struct ProfileDeduplicationType
         lhs += rhs;
         return lhs;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value == @p rhs.value?
@@ -981,6 +986,9 @@ struct ProfileDeduplicationType
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace profiles
 } // namespace test
@@ -992,5 +1000,5 @@ struct std::hash<test::profiles::ProfileDeduplicationType>
 : atlas::atlas_detail::hash_base<test::profiles::ProfileDeduplicationType>
 {};
 #endif
-#endif // FOO_BAR_405A76BA0C8EDEE44EC5C42B2E0FDC4C5E9F1F1B
+#endif // FOO_BAR_429B6E23E8182F51365CAE89C3F0451014C366BA
 

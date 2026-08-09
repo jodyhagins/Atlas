@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_B1825C8099172983499A68C205BC7FF1D65CA1AB
-#define FOO_BAR_B1825C8099172983499A68C205BC7FF1D65CA1AB
+#ifndef FOO_BAR_FD7742325AE36F5C8113079D4D2BFE37AE350E30
+#define FOO_BAR_FD7742325AE36F5C8113079D4D2BFE37AE350E30
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -20,6 +20,7 @@
 #include <version>
 #endif
 #include <memory>
+#include <string>
 #include <type_traits>
 #include <utility>
 
@@ -916,6 +917,10 @@ struct MoveOnlyUniquePtr
             value,
             atlas::atlas_detail::PriorityTag<10>{});
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value == @p rhs.value?
@@ -927,9 +932,12 @@ struct MoveOnlyUniquePtr
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace edge_cases
 } // namespace test
 
-#endif // FOO_BAR_B1825C8099172983499A68C205BC7FF1D65CA1AB
+#endif // FOO_BAR_FD7742325AE36F5C8113079D4D2BFE37AE350E30
 

@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_781875E3D4857C9541999F4AFA2BD4B86CE6FEE4
-#define FOO_BAR_781875E3D4857C9541999F4AFA2BD4B86CE6FEE4
+#ifndef FOO_BAR_5A835FC237861EDAF49CD656884A64176ACC5C99
+#define FOO_BAR_5A835FC237861EDAF49CD656884A64176ACC5C99
 
 static_assert(__cplusplus >= 202002L,
     "This file requires C++20 or later. Compile with -std=c++20 or higher.");
@@ -1668,6 +1668,10 @@ struct HalfOpenPercentage
         return lhs.value >= rhs.value;
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
@@ -1700,6 +1704,9 @@ struct HalfOpenPercentage
     {
         return lhs.value != rhs.value;
     }
+#endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
 #endif
 };
 } // namespace test
@@ -2090,6 +2097,10 @@ struct TinyRange
     {
         return static_cast<int &&>(self.value);
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value == @p rhs.value?
@@ -2101,6 +2112,9 @@ struct TinyRange
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace test
 
@@ -2284,6 +2298,10 @@ struct NegativeRange
         return lhs.value >= rhs.value;
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
@@ -2316,6 +2334,9 @@ struct NegativeRange
     {
         return lhs.value != rhs.value;
     }
+#endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
 #endif
 };
 } // namespace test
@@ -2446,6 +2467,10 @@ struct BoundedRangeString
         return lhs.value >= rhs.value;
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
@@ -2479,8 +2504,11 @@ struct BoundedRangeString
         return lhs.value != rhs.value;
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace test
 
-#endif // FOO_BAR_781875E3D4857C9541999F4AFA2BD4B86CE6FEE4
+#endif // FOO_BAR_5A835FC237861EDAF49CD656884A64176ACC5C99
 

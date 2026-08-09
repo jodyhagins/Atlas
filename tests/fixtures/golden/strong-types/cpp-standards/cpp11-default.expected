@@ -1,5 +1,5 @@
-#ifndef TEST_CPP11_DEFAULT_8B0333DFF76036B3E46C5EB62D0A217CED466063
-#define TEST_CPP11_DEFAULT_8B0333DFF76036B3E46C5EB62D0A217CED466063
+#ifndef TEST_CPP11_DEFAULT_3A6878E37C2BC499B3B936C861ADED0E823234AF
+#define TEST_CPP11_DEFAULT_3A6878E37C2BC499B3B936C861ADED0E823234AF
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -19,6 +19,7 @@
 #if __has_include(<version>)
 #include <version>
 #endif
+#include <string>
 #include <type_traits>
 #include <utility>
 
@@ -830,7 +831,14 @@ struct Counter
      */
     friend constexpr Counter &
     operator ++ (Counter & t)
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
     noexcept(noexcept(++std::declval<int&>()))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         ++t.value;
         return t;
@@ -840,9 +848,16 @@ struct Counter
      */
     friend constexpr Counter
     operator ++ (Counter & t, int)
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
     noexcept(
         std::is_nothrow_copy_constructible<int>::value &&
         noexcept(++std::declval<int&>()))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         auto result = t;
         ++t.value;
@@ -854,7 +869,14 @@ struct Counter
      */
     friend constexpr Counter &
     operator -- (Counter & t)
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
     noexcept(noexcept(--std::declval<int&>()))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         --t.value;
         return t;
@@ -864,9 +886,16 @@ struct Counter
      */
     friend constexpr Counter
     operator -- (Counter & t, int)
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
     noexcept(
         std::is_nothrow_copy_constructible<int>::value &&
         noexcept(--std::declval<int&>()))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         auto result = t;
         --t.value;
@@ -935,5 +964,5 @@ struct Counter
 };
 } // namespace test
 
-#endif // TEST_CPP11_DEFAULT_8B0333DFF76036B3E46C5EB62D0A217CED466063
+#endif // TEST_CPP11_DEFAULT_3A6878E37C2BC499B3B936C861ADED0E823234AF
 

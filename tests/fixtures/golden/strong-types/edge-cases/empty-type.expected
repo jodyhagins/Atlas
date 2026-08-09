@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_0A8440B7C170D9E6D79A7A2E2D5A6B34360624BD
-#define FOO_BAR_0A8440B7C170D9E6D79A7A2E2D5A6B34360624BD
+#ifndef FOO_BAR_56DCEC6ACF0AFAA2D9AF75807F74088EAE89A01B
+#define FOO_BAR_56DCEC6ACF0AFAA2D9AF75807F74088EAE89A01B
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -19,6 +19,7 @@
 #if __has_include(<version>)
 #include <version>
 #endif
+#include <string>
 #include <type_traits>
 #include <utility>
 
@@ -825,6 +826,10 @@ struct EmptyType
     {
         return static_cast<struct Empty {} &&>(self.value);
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value == @p rhs.value?
@@ -836,9 +841,12 @@ struct EmptyType
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace edge_cases
 } // namespace test
 
-#endif // FOO_BAR_0A8440B7C170D9E6D79A7A2E2D5A6B34360624BD
+#endif // FOO_BAR_56DCEC6ACF0AFAA2D9AF75807F74088EAE89A01B
 

@@ -8,9 +8,11 @@
 
 #include <boost/mustache.hpp>
 
+#include "atlas/AtlasUtilities.hpp"
 #include "atlas/generation/core/ClassInfo.hpp"
 #include "atlas/generation/core/TemplateRegistry.hpp"
 
+#include <algorithm>
 #include <sstream>
 
 namespace wjh::atlas::generation {
@@ -72,8 +74,20 @@ render_impl(ClassInfo const & info) const
         return "";
     }
 
+    // Comparing floating-point values with ==/!= is exactly what the user
+    // asked for, but the warning fires inside generated code they cannot edit.
+    // One suppression around the whole block keeps the output readable; it
+    // covers the ordering operators too, which never raise the warning.
+    bool guard_float_equal = std::any_of(
+        info.relational_operators.begin(),
+        info.relational_operators.end(),
+        [](auto const & op) { return op.op == "==" || op.op == "!="; });
+
     // Iterate over all relational operators and render each one
     std::ostringstream accumulated;
+    if (guard_float_equal) {
+        accumulated << float_equal_warning_push();
+    }
     for (auto const & op : info.relational_operators) {
         // Prepare variables for this specific operator
         boost::json::object variables = prepare_variables_for_operator(
@@ -90,6 +104,9 @@ render_impl(ClassInfo const & info) const
 
         // Accumulate into result
         accumulated << oss.str();
+    }
+    if (guard_float_equal) {
+        accumulated << float_equal_warning_pop();
     }
 
     return accumulated.str();

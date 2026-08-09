@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_FEFC7D4F62CF16EF5FCD17A67FEBDCD02FE628DC
-#define FOO_BAR_FEFC7D4F62CF16EF5FCD17A67FEBDCD02FE628DC
+#ifndef FOO_BAR_C2DD8B504AD530B77962C780FAE783D405EE5B6E
+#define FOO_BAR_C2DD8B504AD530B77962C780FAE783D405EE5B6E
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -22,6 +22,7 @@
 #include <iostream>
 #include <istream>
 #include <ostream>
+#include <string>
 #include <type_traits>
 #include <utility>
 
@@ -977,6 +978,10 @@ struct StreamableInt
     {
         return static_cast<int &&>(self.value);
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value == @p rhs.value?
@@ -988,9 +993,12 @@ struct StreamableInt
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace integration
 } // namespace test
 
-#endif // FOO_BAR_FEFC7D4F62CF16EF5FCD17A67FEBDCD02FE628DC
+#endif // FOO_BAR_C2DD8B504AD530B77962C780FAE783D405EE5B6E
 

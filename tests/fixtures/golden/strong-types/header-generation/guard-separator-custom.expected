@@ -1,5 +1,5 @@
-#ifndef MY_APP__79BD0E308BC558F45268D587F740A5A3D758D607
-#define MY_APP__79BD0E308BC558F45268D587F740A5A3D758D607
+#ifndef MY_APP__E4AE0FBA44F80B43B8F24AFBFF6F1B2B5CEF54C1
+#define MY_APP__E4AE0FBA44F80B43B8F24AFBFF6F1B2B5CEF54C1
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -19,6 +19,7 @@
 #if __has_include(<version>)
 #include <version>
 #endif
+#include <string>
 #include <type_traits>
 #include <utility>
 
@@ -824,6 +825,10 @@ struct GuardSeparatorType
     {
         return static_cast<int &&>(self.value);
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value == @p rhs.value?
@@ -835,8 +840,11 @@ struct GuardSeparatorType
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace test
 
-#endif // MY_APP__79BD0E308BC558F45268D587F740A5A3D758D607
+#endif // MY_APP__E4AE0FBA44F80B43B8F24AFBFF6F1B2B5CEF54C1
 

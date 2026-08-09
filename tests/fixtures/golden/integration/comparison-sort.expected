@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_94F39923866366987C17A9772B867664F805E83B
-#define FOO_BAR_94F39923866366987C17A9772B867664F805E83B
+#ifndef FOO_BAR_2957C17401EE207E035F18B5F8FB531C0B4E6DB6
+#define FOO_BAR_2957C17401EE207E035F18B5F8FB531C0B4E6DB6
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -19,6 +19,7 @@
 #if __has_include(<version>)
 #include <version>
 #endif
+#include <string>
 #include <type_traits>
 #include <utility>
 
@@ -825,6 +826,10 @@ struct SortableInt
     {
         return static_cast<int &&>(self.value);
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value < @p rhs.value?
@@ -847,9 +852,12 @@ struct SortableInt
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace integration
 } // namespace test
 
-#endif // FOO_BAR_94F39923866366987C17A9772B867664F805E83B
+#endif // FOO_BAR_2957C17401EE207E035F18B5F8FB531C0B4E6DB6
 

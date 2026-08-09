@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_B8089BEE1A00928FB5070129F5774F5AAF0A2F75
-#define FOO_BAR_B8089BEE1A00928FB5070129F5774F5AAF0A2F75
+#ifndef FOO_BAR_2919CE5D5A7AE2C97922C3F4E55EFEB36D9998F4
+#define FOO_BAR_2919CE5D5A7AE2C97922C3F4E55EFEB36D9998F4
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -19,6 +19,7 @@
 #if __has_include(<version>)
 #include <version>
 #endif
+#include <string>
 #include <type_traits>
 #include <utility>
 
@@ -945,6 +946,10 @@ struct MultipleProfileType
         lhs /= rhs;
         return lhs;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -1011,9 +1016,12 @@ struct MultipleProfileType
     {
         return lhs.value >= rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace profiles
 } // namespace test
 
-#endif // FOO_BAR_B8089BEE1A00928FB5070129F5774F5AAF0A2F75
+#endif // FOO_BAR_2919CE5D5A7AE2C97922C3F4E55EFEB36D9998F4
 

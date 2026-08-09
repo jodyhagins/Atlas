@@ -1,5 +1,5 @@
-#ifndef EXAMPLE_10BC7452F43C535E22A9CEDF2C5A5C96383476A8
-#define EXAMPLE_10BC7452F43C535E22A9CEDF2C5A5C96383476A8
+#ifndef EXAMPLE_877A18E9D4B5C01397DF5763EC0EA61CB4F5FD08
+#define EXAMPLE_877A18E9D4B5C01397DF5763EC0EA61CB4F5FD08
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -2599,6 +2599,10 @@ struct Price
         lhs /= rhs;
         return lhs;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -2665,6 +2669,9 @@ struct Price
     {
         return lhs.value >= rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace profiles
 } // namespace demo
@@ -2852,6 +2859,10 @@ struct Quantity
         lhs /= rhs;
         return lhs;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -2874,6 +2885,9 @@ struct Quantity
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace profiles
 } // namespace demo
@@ -2941,6 +2955,10 @@ struct Identifier
     {
         return static_cast<std::string &&>(self.value);
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -2963,6 +2981,9 @@ struct Identifier
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace profiles
 } // namespace demo
@@ -3180,6 +3201,10 @@ struct Money
         lhs <<= rhs;
         return lhs;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -3246,6 +3271,9 @@ struct Money
     {
         return lhs.value >= rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace core
 } // namespace finance
@@ -3364,6 +3392,10 @@ public:
         return lhs.value >= rhs.value;
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
@@ -3396,6 +3428,9 @@ public:
     {
         return lhs.value != rhs.value;
     }
+#endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
 #endif
 };
 } // namespace v1
@@ -3649,6 +3684,10 @@ struct Meters
         return lhs.value >= rhs.value;
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
@@ -3681,6 +3720,9 @@ struct Meters
     {
         return lhs.value != rhs.value;
     }
+#endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
 #endif
 };
 } // namespace units
@@ -3934,6 +3976,10 @@ struct Seconds
         return lhs.value >= rhs.value;
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
@@ -3966,6 +4012,9 @@ struct Seconds
     {
         return lhs.value != rhs.value;
     }
+#endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
 #endif
 };
 } // namespace units
@@ -4219,6 +4268,10 @@ struct MetersPerSecond
         return lhs.value >= rhs.value;
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
@@ -4251,6 +4304,9 @@ struct MetersPerSecond
     {
         return lhs.value != rhs.value;
     }
+#endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
 #endif
 };
 } // namespace units
@@ -4324,7 +4380,14 @@ struct ByteCount
      */
     friend constexpr ByteCount &
     operator ++ (ByteCount & t)
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
     noexcept(noexcept(++std::declval<size_t&>()))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         ++t.value;
         return t;
@@ -4334,9 +4397,16 @@ struct ByteCount
      */
     friend constexpr ByteCount
     operator ++ (ByteCount & t, int)
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
     noexcept(
         std::is_nothrow_copy_constructible<size_t>::value &&
         noexcept(++std::declval<size_t&>()))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         auto result = t;
         ++t.value;
@@ -4348,7 +4418,14 @@ struct ByteCount
      */
     friend constexpr ByteCount &
     operator -- (ByteCount & t)
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
     noexcept(noexcept(--std::declval<size_t&>()))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         --t.value;
         return t;
@@ -4358,9 +4435,16 @@ struct ByteCount
      */
     friend constexpr ByteCount
     operator -- (ByteCount & t, int)
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
     noexcept(
         std::is_nothrow_copy_constructible<size_t>::value &&
         noexcept(--std::declval<size_t&>()))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         auto result = t;
         --t.value;
@@ -4546,6 +4630,10 @@ struct ByteCount
         lhs <<= rhs;
         return lhs;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -4612,6 +4700,9 @@ struct ByteCount
     {
         return lhs.value >= rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace data
 
@@ -4953,6 +5044,10 @@ struct RedChannel
         return lhs.value >= rhs.value;
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
@@ -4985,6 +5080,9 @@ struct RedChannel
     {
         return lhs.value != rhs.value;
     }
+#endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
 #endif
 };
 } // namespace color
@@ -5083,6 +5181,10 @@ public:
         lhs <<= rhs;
         return lhs;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -5105,6 +5207,9 @@ public:
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace security
 
@@ -5215,6 +5320,10 @@ struct Latitude
         lhs <<= rhs;
         return lhs;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -5281,6 +5390,9 @@ struct Latitude
     {
         return lhs.value >= rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace geo
 
@@ -5391,6 +5503,10 @@ struct Longitude
         lhs <<= rhs;
         return lhs;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -5457,6 +5573,9 @@ struct Longitude
     {
         return lhs.value >= rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace geo
 
@@ -5552,6 +5671,10 @@ struct ThreadId
         lhs <<= rhs;
         return lhs;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -5574,6 +5697,9 @@ struct ThreadId
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace concurrency
 
@@ -5780,6 +5906,10 @@ struct Numerator
         return lhs.value >= rhs.value;
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
@@ -5812,6 +5942,9 @@ struct Numerator
     {
         return lhs.value != rhs.value;
     }
+#endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
 #endif
 };
 } // namespace rational
@@ -5990,6 +6123,10 @@ struct Denominator
         return lhs.value >= rhs.value;
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
@@ -6022,6 +6159,9 @@ struct Denominator
     {
         return lhs.value != rhs.value;
     }
+#endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
 #endif
 };
 } // namespace rational
@@ -6255,6 +6395,10 @@ struct Octet
         lhs |= rhs;
         return lhs;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -6277,6 +6421,9 @@ struct Octet
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace ipv4
 } // namespace net
@@ -6438,6 +6585,10 @@ public:
         lhs <<= rhs;
         return lhs;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -6471,6 +6622,9 @@ public:
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace config
 } // namespace app
@@ -6581,6 +6735,10 @@ struct IterableString
     {
         return atlas::atlas_detail::end_(value);
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -6603,6 +6761,9 @@ struct IterableString
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace containers
 
@@ -6745,6 +6906,10 @@ struct IntVector
     {
         return atlas::atlas_detail::end_(value);
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value == @p rhs.value?
@@ -6756,6 +6921,9 @@ struct IntVector
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace containers
 
@@ -6899,6 +7067,10 @@ public:
     {
         return atlas::atlas_detail::end_(value);
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -6921,6 +7093,9 @@ public:
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace containers
 
@@ -6986,6 +7161,10 @@ struct FormattedString
     {
         return static_cast<std::string &&>(self.value);
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -7008,6 +7187,9 @@ struct FormattedString
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace formatting
 
@@ -7073,6 +7255,10 @@ struct FormattedInt
     {
         return static_cast<int &&>(self.value);
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value == @p rhs.value?
@@ -7084,6 +7270,9 @@ struct FormattedInt
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace formatting
 
@@ -7186,6 +7375,10 @@ struct AssignableString
     {
         return static_cast<std::string &&>(self.value);
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -7208,6 +7401,9 @@ struct AssignableString
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace text
 
@@ -7310,6 +7506,10 @@ struct AssignablePort
     {
         return static_cast<int &&>(self.value);
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -7332,6 +7532,9 @@ struct AssignablePort
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace config
 
@@ -7407,6 +7610,10 @@ struct CastableString
     {
         return static_cast<std::string_view>(value);
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -7429,6 +7636,9 @@ struct CastableString
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace text
 
@@ -7515,6 +7725,10 @@ public:
     {
         return static_cast<std::string_view>(value);
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value == @p rhs.value?
@@ -7526,6 +7740,9 @@ public:
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace text
 
@@ -7601,6 +7818,10 @@ struct EnableFlag
     {
         return static_cast<bool>(value);
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value == @p rhs.value?
@@ -7612,6 +7833,9 @@ struct EnableFlag
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace flags
 
@@ -7788,6 +8012,10 @@ struct Temperature
         return lhs.value >= rhs.value;
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
@@ -7820,6 +8048,9 @@ struct Temperature
     {
         return lhs.value != rhs.value;
     }
+#endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
 #endif
 };
 } // namespace optional_strong
@@ -7886,6 +8117,10 @@ struct GlobalEventId
     {
         return static_cast<unsigned long &&>(self.value);
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -7908,6 +8143,9 @@ struct GlobalEventId
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 
 
@@ -8033,6 +8271,10 @@ struct HttpStatusCode
         return lhs.value >= rhs.value;
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
@@ -8065,6 +8307,9 @@ struct HttpStatusCode
     {
         return lhs.value != rhs.value;
     }
+#endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
 #endif
 };
 
@@ -8155,6 +8400,10 @@ struct Priority
     {
         return static_cast<int &&>(self.value);
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -8221,6 +8470,9 @@ struct Priority
     {
         return lhs.value >= rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 
 #if defined(__clang__)
@@ -8307,7 +8559,14 @@ struct RequestCount
      */
     friend constexpr RequestCount &
     operator ++ (RequestCount & t)
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
     noexcept(noexcept(++std::declval<unsigned int&>()))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         ++t.value;
         return t;
@@ -8317,9 +8576,16 @@ struct RequestCount
      */
     friend constexpr RequestCount
     operator ++ (RequestCount & t, int)
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
     noexcept(
         std::is_nothrow_copy_constructible<unsigned int>::value &&
         noexcept(++std::declval<unsigned int&>()))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         auto result = t;
         ++t.value;
@@ -8331,7 +8597,14 @@ struct RequestCount
      */
     friend constexpr RequestCount &
     operator -- (RequestCount & t)
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
     noexcept(noexcept(--std::declval<unsigned int&>()))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         --t.value;
         return t;
@@ -8341,9 +8614,16 @@ struct RequestCount
      */
     friend constexpr RequestCount
     operator -- (RequestCount & t, int)
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
     noexcept(
         std::is_nothrow_copy_constructible<unsigned int>::value &&
         noexcept(--std::declval<unsigned int&>()))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         auto result = t;
         --t.value;
@@ -8399,6 +8679,10 @@ struct RequestCount
         return lhs.value >= rhs.value;
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
@@ -8431,6 +8715,9 @@ struct RequestCount
     {
         return lhs.value != rhs.value;
     }
+#endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
 #endif
 };
 } // namespace inline_syntax
@@ -8549,6 +8836,10 @@ struct SessionTimeout
         return lhs.value >= rhs.value;
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
@@ -8581,6 +8872,9 @@ struct SessionTimeout
     {
         return lhs.value != rhs.value;
     }
+#endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
 #endif
 };
 } // namespace inline_syntax
@@ -8805,6 +9099,10 @@ struct SafeString
         return std::move(value).size(std::forward<Args>(args)...);
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -8827,6 +9125,9 @@ struct SafeString
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace forwarding
 } // namespace demo
@@ -9116,6 +9417,10 @@ struct DistanceValue
         return lhs.value >= rhs.value;
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
@@ -9148,6 +9453,9 @@ struct DistanceValue
     {
         return lhs.value != rhs.value;
     }
+#endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
 #endif
 };
 } // namespace forwarding
@@ -9300,6 +9608,10 @@ struct ImmutableConfig
 
 
 
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value == @p rhs.value?
@@ -9311,6 +9623,9 @@ struct ImmutableConfig
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace forwarding
 } // namespace demo
@@ -9630,6 +9945,10 @@ struct TaskQueue
         return std::move(value).size(std::forward<Args>(args)...);
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value == @p rhs.value?
@@ -9641,6 +9960,9 @@ struct TaskQueue
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace forwarding
 } // namespace demo
@@ -9708,6 +10030,10 @@ struct ResourceHandle
     {
         return static_cast<std::unique_ptr<int> &&>(self.value);
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Return the result of casting the wrapped object to bool.
@@ -9718,6 +10044,9 @@ struct ResourceHandle
     {
         return static_cast<bool>(value);
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 
     /**
      * Dereference operator - forwards to wrapped type's operator* if available,
@@ -10157,6 +10486,10 @@ struct ManagedString
         return std::move(value).size(std::forward<Args>(args)...);
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -10179,6 +10512,9 @@ struct ManagedString
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace forwarding
 } // namespace demo
@@ -10412,6 +10748,10 @@ struct Price
         return lhs.value >= rhs.value;
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
@@ -10444,6 +10784,9 @@ struct Price
     {
         return lhs.value != rhs.value;
     }
+#endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
 #endif
 };
 } // namespace pricing
@@ -10624,6 +10967,10 @@ struct Distance
         return lhs.value >= rhs.value;
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
@@ -10656,6 +11003,9 @@ struct Distance
     {
         return lhs.value != rhs.value;
     }
+#endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
 #endif
 };
 } // namespace measurements
@@ -10786,6 +11136,10 @@ struct Divisor
         lhs /= rhs;
         return lhs;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -10808,6 +11162,9 @@ struct Divisor
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace rational
 } // namespace math
@@ -11000,6 +11357,10 @@ struct Volume
         return lhs.value >= rhs.value;
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
@@ -11032,6 +11393,9 @@ struct Volume
     {
         return lhs.value != rhs.value;
     }
+#endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
 #endif
 };
 } // namespace controls
@@ -11171,6 +11535,10 @@ struct ServerPort
         return lhs.value >= rhs.value;
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
@@ -11203,6 +11571,9 @@ struct ServerPort
     {
         return lhs.value != rhs.value;
     }
+#endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
 #endif
 };
 } // namespace config
@@ -11396,6 +11767,10 @@ struct Percentage
         return lhs.value >= rhs.value;
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
@@ -11428,6 +11803,9 @@ struct Percentage
     {
         return lhs.value != rhs.value;
     }
+#endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
 #endif
 };
 } // namespace stats
@@ -11531,6 +11909,10 @@ struct Username
         lhs <<= rhs;
         return lhs;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -11564,6 +11946,9 @@ struct Username
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace credentials
 } // namespace auth
@@ -11716,6 +12101,10 @@ struct NonEmptyList
     {
         return atlas::atlas_detail::end_(value);
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value == @p rhs.value?
@@ -11727,6 +12116,9 @@ struct NonEmptyList
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace collections
 } // namespace data
@@ -11802,6 +12194,10 @@ struct ResourceHandle
     {
         return static_cast<void* &&>(self.value);
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -11824,6 +12220,9 @@ struct ResourceHandle
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace resources
 } // namespace sys
@@ -12472,6 +12871,10 @@ struct CelsiusTemp
         return lhs.value >= rhs.value;
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
@@ -12504,6 +12907,9 @@ struct CelsiusTemp
     {
         return lhs.value != rhs.value;
     }
+#endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
 #endif
 };
 } // namespace sensors
@@ -12607,6 +13013,10 @@ struct Age
         lhs <<= rhs;
         return lhs;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -12640,6 +13050,9 @@ struct Age
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace data
 } // namespace demographics
@@ -12832,6 +13245,10 @@ struct ColorChannel
         return lhs.value >= rhs.value;
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
@@ -12864,6 +13281,9 @@ struct ColorChannel
     {
         return lhs.value != rhs.value;
     }
+#endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
 #endif
 };
 } // namespace rendering
@@ -12980,6 +13400,10 @@ struct BatteryLevel
         lhs -= rhs;
         return lhs;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value < @p rhs.value?
@@ -13035,6 +13459,9 @@ struct BatteryLevel
     {
         return lhs.value >= rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace power
 } // namespace mobile
@@ -13160,6 +13587,10 @@ struct TimeoutSeconds
         return lhs.value >= rhs.value;
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
@@ -13192,6 +13623,9 @@ struct TimeoutSeconds
     {
         return lhs.value != rhs.value;
     }
+#endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
 #endif
 };
 } // namespace config
@@ -13269,6 +13703,10 @@ public:
     {
         return static_cast<std::string &&>(self.value);
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -13291,6 +13729,9 @@ public:
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace security
 } // namespace api
@@ -13429,6 +13870,10 @@ struct ThreadPriority
         return lhs.value >= rhs.value;
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
@@ -13461,6 +13906,9 @@ struct ThreadPriority
     {
         return lhs.value != rhs.value;
     }
+#endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
 #endif
 };
 } // namespace scheduling
@@ -13543,7 +13991,14 @@ struct RetryCount
      */
     friend constexpr RetryCount &
     operator ++ (RetryCount & t)
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
     noexcept(noexcept(++std::declval<unsigned int&>()))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         ++t.value;
         return t;
@@ -13553,9 +14008,16 @@ struct RetryCount
      */
     friend constexpr RetryCount
     operator ++ (RetryCount & t, int)
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
     noexcept(
         std::is_nothrow_copy_constructible<unsigned int>::value &&
         noexcept(++std::declval<unsigned int&>()))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         auto result = t;
         ++t.value;
@@ -13567,7 +14029,14 @@ struct RetryCount
      */
     friend constexpr RetryCount &
     operator -- (RetryCount & t)
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
     noexcept(noexcept(--std::declval<unsigned int&>()))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         --t.value;
         return t;
@@ -13577,14 +14046,25 @@ struct RetryCount
      */
     friend constexpr RetryCount
     operator -- (RetryCount & t, int)
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
     noexcept(
         std::is_nothrow_copy_constructible<unsigned int>::value &&
         noexcept(--std::declval<unsigned int&>()))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         auto result = t;
         --t.value;
         return result;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value == @p rhs.value?
@@ -13596,6 +14076,9 @@ struct RetryCount
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace resilience
 } // namespace net
@@ -13734,6 +14217,10 @@ struct Latitude
         return lhs.value >= rhs.value;
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
@@ -13766,6 +14253,9 @@ struct Latitude
     {
         return lhs.value != rhs.value;
     }
+#endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
 #endif
 };
 } // namespace coordinates
@@ -13905,6 +14395,10 @@ struct Longitude
         return lhs.value >= rhs.value;
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
@@ -13937,6 +14431,9 @@ struct Longitude
     {
         return lhs.value != rhs.value;
     }
+#endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
 #endif
 };
 } // namespace coordinates
@@ -14076,6 +14573,10 @@ struct QoSLevel
         return lhs.value >= rhs.value;
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
@@ -14108,6 +14609,9 @@ struct QoSLevel
     {
         return lhs.value != rhs.value;
     }
+#endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
 #endif
 };
 } // namespace qos
@@ -14203,7 +14707,14 @@ struct ZoomLevel
      */
     friend constexpr ZoomLevel &
     operator ++ (ZoomLevel & t)
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
     noexcept(noexcept(++std::declval<uint8_t&>()))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         ++t.value;
         return t;
@@ -14213,9 +14724,16 @@ struct ZoomLevel
      */
     friend constexpr ZoomLevel
     operator ++ (ZoomLevel & t, int)
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
     noexcept(
         std::is_nothrow_copy_constructible<uint8_t>::value &&
         noexcept(++std::declval<uint8_t&>()))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         auto result = t;
         ++t.value;
@@ -14227,7 +14745,14 @@ struct ZoomLevel
      */
     friend constexpr ZoomLevel &
     operator -- (ZoomLevel & t)
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
     noexcept(noexcept(--std::declval<uint8_t&>()))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         --t.value;
         return t;
@@ -14237,9 +14762,16 @@ struct ZoomLevel
      */
     friend constexpr ZoomLevel
     operator -- (ZoomLevel & t, int)
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunevaluated-expression"
+#endif
     noexcept(
         std::is_nothrow_copy_constructible<uint8_t>::value &&
         noexcept(--std::declval<uint8_t&>()))
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     {
         auto result = t;
         --t.value;
@@ -14295,6 +14827,10 @@ struct ZoomLevel
         return lhs.value >= rhs.value;
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
@@ -14327,6 +14863,9 @@ struct ZoomLevel
     {
         return lhs.value != rhs.value;
     }
+#endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
 #endif
 };
 } // namespace display
@@ -14457,6 +14996,10 @@ struct SafeDivisor
         lhs /= rhs;
         return lhs;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -14479,6 +15022,9 @@ struct SafeDivisor
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace calculations
 } // namespace math
@@ -14712,6 +15258,10 @@ struct Speed
         return lhs.value >= rhs.value;
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
@@ -14744,6 +15294,9 @@ struct Speed
     {
         return lhs.value != rhs.value;
     }
+#endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
 #endif
 };
 } // namespace kinematics
@@ -14874,6 +15427,10 @@ struct Filename
         lhs <<= rhs;
         return lhs;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -14896,6 +15453,9 @@ struct Filename
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace paths
 } // namespace fs
@@ -15034,6 +15594,10 @@ struct StatusCode
         return lhs.value >= rhs.value;
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
@@ -15066,6 +15630,9 @@ struct StatusCode
     {
         return lhs.value != rhs.value;
     }
+#endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
 #endif
 };
 } // namespace protocol
@@ -15142,6 +15709,10 @@ struct IsAdmin
     {
         return static_cast<bool &&>(self.value);
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Return the result of casting the wrapped object to bool.
@@ -15152,6 +15723,13 @@ struct IsAdmin
     {
         return static_cast<bool>(value);
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value == @p rhs.value?
@@ -15163,6 +15741,9 @@ struct IsAdmin
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 
 #if defined(__clang__)
@@ -15251,6 +15832,10 @@ struct IsActive
     {
         return static_cast<bool &&>(self.value);
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Return the result of casting the wrapped object to bool.
@@ -15261,6 +15846,13 @@ struct IsActive
     {
         return static_cast<bool>(value);
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value == @p rhs.value?
@@ -15272,6 +15864,9 @@ struct IsActive
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 
 #if defined(__clang__)
@@ -15362,6 +15957,10 @@ struct IsVerified
     {
         return static_cast<bool &&>(self.value);
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Return the result of casting the wrapped object to bool.
@@ -15372,6 +15971,13 @@ struct IsVerified
     {
         return static_cast<bool>(value);
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value == @p rhs.value?
@@ -15383,6 +15989,9 @@ struct IsVerified
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 
 #if defined(__clang__)
@@ -15408,4 +16017,4 @@ struct std::hash<demo::flags::IsVerified>
 : atlas::atlas_detail::hash_base<demo::flags::IsVerified>
 {};
 #endif
-#endif // EXAMPLE_10BC7452F43C535E22A9CEDF2C5A5C96383476A8
+#endif // EXAMPLE_877A18E9D4B5C01397DF5763EC0EA61CB4F5FD08

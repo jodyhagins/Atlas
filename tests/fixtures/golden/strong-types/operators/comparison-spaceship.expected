@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_2A1A5D69C225761186977417B16367BB9A1310FD
-#define FOO_BAR_2A1A5D69C225761186977417B16367BB9A1310FD
+#ifndef FOO_BAR_B5A69DD874891F04E681DD3FF43B741F2102CCD1
+#define FOO_BAR_B5A69DD874891F04E681DD3FF43B741F2102CCD1
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -19,6 +19,7 @@
 #if __has_include(<version>)
 #include <version>
 #endif
+#include <string>
 #include <type_traits>
 #include <utility>
 
@@ -874,6 +875,10 @@ struct SpaceshipType
         return lhs.value >= rhs.value;
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
@@ -907,8 +912,11 @@ struct SpaceshipType
         return lhs.value != rhs.value;
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace test
 
-#endif // FOO_BAR_2A1A5D69C225761186977417B16367BB9A1310FD
+#endif // FOO_BAR_B5A69DD874891F04E681DD3FF43B741F2102CCD1
 

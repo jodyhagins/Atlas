@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_5E993C2A8C29AA9D2B4A7C2A902BFCC98948740A
-#define FOO_BAR_5E993C2A8C29AA9D2B4A7C2A902BFCC98948740A
+#ifndef FOO_BAR_7C9C87963B66D4BFB4DA3ACED05C3B8A0BCF1856
+#define FOO_BAR_7C9C87963B66D4BFB4DA3ACED05C3B8A0BCF1856
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -1191,6 +1191,10 @@ struct BasicString
         return std::move(value).size(std::forward<Args>(args)...);
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -1213,6 +1217,9 @@ struct BasicString
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace test
 
@@ -1375,6 +1382,10 @@ struct AliasedString
         return std::move(value).size(std::forward<Args>(args)...);
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -1397,6 +1408,9 @@ struct AliasedString
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace test
 
@@ -1611,6 +1625,10 @@ struct BothNameAndAlias
         return std::move(value).size(std::forward<Args>(args)...);
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -1633,6 +1651,9 @@ struct BothNameAndAlias
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace test
 
@@ -1733,6 +1754,10 @@ struct ConstOnly
 
 
 
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -1755,6 +1780,9 @@ struct ConstOnly
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace test
 
@@ -1969,6 +1997,10 @@ struct MultipleLines
         return std::move(value).size(std::forward<Args>(args)...);
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -1991,6 +2023,9 @@ struct MultipleLines
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace test
 
@@ -2301,6 +2336,10 @@ struct IntVector
         return std::move(value).size(std::forward<Args>(args)...);
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value == @p rhs.value?
@@ -2312,6 +2351,9 @@ struct IntVector
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace test
 
@@ -2370,6 +2412,10 @@ struct ResourceHandle
     {
         return static_cast<std::unique_ptr<int> &&>(self.value);
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Return the result of casting the wrapped object to bool.
@@ -2380,6 +2426,9 @@ struct ResourceHandle
     {
         return static_cast<bool>(value);
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 
     /**
      * Dereference operator - forwards to wrapped type's operator* if available,
@@ -2696,6 +2745,10 @@ struct AdvancedString
         return std::move(value).size(std::forward<Args>(args)...);
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -2718,6 +2771,9 @@ struct AdvancedString
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace test
 
@@ -2833,6 +2889,10 @@ struct Username
         return Username(std::move(value).substr(std::forward<Args>(args)...));
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -2855,6 +2915,9 @@ struct Username
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace test
 
@@ -2963,6 +3026,10 @@ struct EmailAddress
         return EmailAddress(std::move(value).substr(std::forward<Args>(args)...));
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -2985,6 +3052,9 @@ struct EmailAddress
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace test
 
@@ -3145,6 +3215,10 @@ struct SafeString
         return SafeString(std::move(value).substr(std::forward<Args>(args)...));
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -3167,6 +3241,9 @@ struct SafeString
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace test
 
@@ -3379,6 +3456,10 @@ struct Name
         return Name(std::move(value).substr(std::forward<Args>(args)...));
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -3401,6 +3482,9 @@ struct Name
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace test
 
@@ -3613,6 +3697,10 @@ struct Label
         return Label(std::move(value).substr(std::forward<Args>(args)...));
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -3635,6 +3723,9 @@ struct Label
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace test
 
@@ -3743,6 +3834,10 @@ struct UserId
         return UserId(std::move(value).substr(std::forward<Args>(args)...));
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -3765,6 +3860,9 @@ struct UserId
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace test
 
@@ -3977,6 +4075,10 @@ struct Token
         return std::move(value).size(std::forward<Args>(args)...);
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -3999,6 +4101,9 @@ struct Token
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace test
 
@@ -4159,6 +4264,10 @@ struct Path
         return Path(std::move(value).substr(std::forward<Args>(args)...));
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -4181,6 +4290,9 @@ struct Path
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace test
 
@@ -4393,6 +4505,10 @@ struct Identifier
         return Identifier(std::move(value).substr(std::forward<Args>(args)...));
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -4415,6 +4531,9 @@ struct Identifier
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace test
 
@@ -4496,6 +4615,10 @@ struct ReadOnlyText
 
 
 
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -4518,8 +4641,11 @@ struct ReadOnlyText
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace test
 
-#endif // FOO_BAR_5E993C2A8C29AA9D2B4A7C2A902BFCC98948740A
+#endif // FOO_BAR_7C9C87963B66D4BFB4DA3ACED05C3B8A0BCF1856
 

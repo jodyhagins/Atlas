@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_E5EEE987711A5302F4E045B937DAA77092607423
-#define FOO_BAR_E5EEE987711A5302F4E045B937DAA77092607423
+#ifndef FOO_BAR_2F9422D64BFCEBAB29CF71753869271A2912486E
+#define FOO_BAR_2F9422D64BFCEBAB29CF71753869271A2912486E
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -19,6 +19,7 @@
 #if __has_include(<version>)
 #include <version>
 #endif
+#include <string>
 #include <type_traits>
 #include <utility>
 
@@ -875,6 +876,10 @@ struct OrderedSetInt
         return lhs.value >= rhs.value;
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
@@ -908,9 +913,12 @@ struct OrderedSetInt
         return lhs.value != rhs.value;
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace integration
 } // namespace test
 
-#endif // FOO_BAR_E5EEE987711A5302F4E045B937DAA77092607423
+#endif // FOO_BAR_2F9422D64BFCEBAB29CF71753869271A2912486E
 

@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_F3D0F0B8EB9F2A9DEA3A07AE08706D2354B0E51B
-#define FOO_BAR_F3D0F0B8EB9F2A9DEA3A07AE08706D2354B0E51B
+#ifndef FOO_BAR_EB2D54D24CBCF74E143E33120A0D82A89FE43B69
+#define FOO_BAR_EB2D54D24CBCF74E143E33120A0D82A89FE43B69
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -825,6 +825,10 @@ struct AutoIncludeString
     {
         return static_cast<std::string &&>(self.value);
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value == @p rhs.value?
@@ -836,8 +840,11 @@ struct AutoIncludeString
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace test
 
-#endif // FOO_BAR_F3D0F0B8EB9F2A9DEA3A07AE08706D2354B0E51B
+#endif // FOO_BAR_EB2D54D24CBCF74E143E33120A0D82A89FE43B69
 

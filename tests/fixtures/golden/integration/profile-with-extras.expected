@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_AF76102A705470920E7192A7D31AF0FEC497AE2D
-#define FOO_BAR_AF76102A705470920E7192A7D31AF0FEC497AE2D
+#ifndef FOO_BAR_CADFD73D50835F1D15C9189C658CE9BF8EF4B245
+#define FOO_BAR_CADFD73D50835F1D15C9189C658CE9BF8EF4B245
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -22,6 +22,7 @@
 #include <concepts>
 #include <format>
 #include <functional>
+#include <string>
 #include <type_traits>
 #include <utility>
 
@@ -1030,6 +1031,10 @@ struct ProfileWithExtrasType
     {
         return static_cast<int &&>(self.value);
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -1052,6 +1057,9 @@ struct ProfileWithExtrasType
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace profiles
 } // namespace test
@@ -1063,5 +1071,5 @@ struct std::hash<test::profiles::ProfileWithExtrasType>
 : atlas::atlas_detail::hash_base<test::profiles::ProfileWithExtrasType>
 {};
 #endif
-#endif // FOO_BAR_AF76102A705470920E7192A7D31AF0FEC497AE2D
+#endif // FOO_BAR_CADFD73D50835F1D15C9189C658CE9BF8EF4B245
 

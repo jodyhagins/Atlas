@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_5179DC6237ED37EB6915E7A12800D40D005513C4
-#define FOO_BAR_5179DC6237ED37EB6915E7A12800D40D005513C4
+#ifndef FOO_BAR_E1CC3E394387CFEA7D0751B46BCEAF18F5416649
+#define FOO_BAR_E1CC3E394387CFEA7D0751B46BCEAF18F5416649
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -19,6 +19,7 @@
 #if __has_include(<version>)
 #include <version>
 #endif
+#include <string>
 #include <type_traits>
 #include <utility>
 
@@ -856,6 +857,10 @@ struct TypeOne
         lhs += rhs;
         return lhs;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value == @p rhs.value?
@@ -867,10 +872,13 @@ struct TypeOne
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace odr
 } // namespace integration
 } // namespace test
 
-#endif // FOO_BAR_5179DC6237ED37EB6915E7A12800D40D005513C4
+#endif // FOO_BAR_E1CC3E394387CFEA7D0751B46BCEAF18F5416649
 

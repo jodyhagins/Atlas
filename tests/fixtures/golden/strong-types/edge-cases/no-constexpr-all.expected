@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_130AD1255D244FB6A520813B81E8D9E24F895C4E
-#define FOO_BAR_130AD1255D244FB6A520813B81E8D9E24F895C4E
+#ifndef FOO_BAR_133B0CE5FE27BFE1107C57A3F82D4BC1986B467D
+#define FOO_BAR_133B0CE5FE27BFE1107C57A3F82D4BC1986B467D
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -21,6 +21,7 @@
 #endif
 #include <concepts>
 #include <functional>
+#include <string>
 #include <type_traits>
 #include <utility>
 
@@ -1000,6 +1001,10 @@ struct NoConstexprAll
         lhs -= rhs;
         return lhs;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value == @p rhs.value?
@@ -1011,6 +1016,9 @@ struct NoConstexprAll
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace edge_cases
 } // namespace test
@@ -1022,5 +1030,5 @@ struct std::hash<test::edge_cases::NoConstexprAll>
 : atlas::atlas_detail::hash_base<test::edge_cases::NoConstexprAll>
 {};
 #endif
-#endif // FOO_BAR_130AD1255D244FB6A520813B81E8D9E24F895C4E
+#endif // FOO_BAR_133B0CE5FE27BFE1107C57A3F82D4BC1986B467D
 

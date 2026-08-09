@@ -143,6 +143,23 @@ int parse_cpp_standard(std::string_view val);
 std::string generate_cpp_standard_assertion(int standard);
 
 /**
+ * @brief Open a region in which -Wfloat-equal is suppressed
+ *
+ * Generated equality comparisons operate on whatever type the user wrapped,
+ * which may be a floating-point type. The user asked for `==` on that type and
+ * cannot edit the generated code to silence the warning, so the generator
+ * suppresses it around the comparisons it emits.
+ *
+ * Must be paired with float_equal_warning_pop().
+ */
+std::string float_equal_warning_push();
+
+/**
+ * @brief Close a region opened by float_equal_warning_push()
+ */
+std::string float_equal_warning_pop();
+
+/**
  * @brief Check if a file descriptor supports ANSI color codes
  *
  * @param fd File descriptor to check (e.g., fileno(stderr))

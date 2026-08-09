@@ -1,5 +1,5 @@
-#ifndef FOO_BAR_C4FC4B723B052D2BC3471B679DB9C7B0AFBA6EA1
-#define FOO_BAR_C4FC4B723B052D2BC3471B679DB9C7B0AFBA6EA1
+#ifndef FOO_BAR_BBB0873536CA6C2A03D981F708BF82A494A311B2
+#define FOO_BAR_BBB0873536CA6C2A03D981F708BF82A494A311B2
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -21,6 +21,7 @@
 #endif
 #include <concepts>
 #include <format>
+#include <string>
 #include <type_traits>
 #include <utility>
 
@@ -965,6 +966,10 @@ struct FormatterCombinedType
         return lhs.value >= rhs.value;
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
@@ -998,8 +1003,11 @@ struct FormatterCombinedType
         return lhs.value != rhs.value;
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace test
 
-#endif // FOO_BAR_C4FC4B723B052D2BC3471B679DB9C7B0AFBA6EA1
+#endif // FOO_BAR_BBB0873536CA6C2A03D981F708BF82A494A311B2
 

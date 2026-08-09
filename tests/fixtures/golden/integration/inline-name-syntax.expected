@@ -1,5 +1,5 @@
-#ifndef TEST_42A40DBA263DB194C074A35DB5CB044948F97F67
-#define TEST_42A40DBA263DB194C074A35DB5CB044948F97F67
+#ifndef TEST_6D94997749C6C7EFE81884A4C7609FCA133F77A0
+#define TEST_6D94997749C6C7EFE81884A4C7609FCA133F77A0
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -19,6 +19,7 @@
 #if __has_include(<version>)
 #include <version>
 #endif
+#include <string>
 #include <type_traits>
 #include <utility>
 
@@ -885,6 +886,10 @@ struct Price
         lhs -= rhs;
         return lhs;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value == @p rhs.value?
@@ -896,6 +901,9 @@ struct Price
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace ns
 } // namespace global
@@ -1276,6 +1284,10 @@ public:
         return lhs.value >= rhs.value;
     }
 #endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
 #if defined(__cpp_impl_three_way_comparison) && \
     __cpp_impl_three_way_comparison >= 201907L
@@ -1308,6 +1320,9 @@ public:
     {
         return lhs.value != rhs.value;
     }
+#endif
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
 #endif
 };
 } // namespace finance
@@ -1370,6 +1385,10 @@ struct Type
     {
         return static_cast<unsigned long &&>(self.value);
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
 
     /**
      * Is @p lhs.value != @p rhs.value?
@@ -1392,6 +1411,9 @@ struct Type
     {
         return lhs.value == rhs.value;
     }
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 };
 } // namespace d
 } // namespace c
@@ -1478,5 +1500,5 @@ struct OldStyle
 };
 } // namespace legacy
 
-#endif // TEST_42A40DBA263DB194C074A35DB5CB044948F97F67
+#endif // TEST_6D94997749C6C7EFE81884A4C7609FCA133F77A0
 
