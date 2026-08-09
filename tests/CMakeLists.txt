@@ -286,6 +286,18 @@ target_include_directories(unwrap_ut PRIVATE
 )
 add_test(NAME UnwrapTests COMMAND unwrap_ut)
 
+# atlas type trait / concept tests - reuses undress test types
+add_executable(traits_ut
+    traits_ut.cpp
+    ${TO_UNDERLYING_OUTPUT}
+)
+target_link_libraries(traits_ut PRIVATE doctest::doctest)
+target_include_directories(traits_ut PRIVATE
+    ${CMAKE_CURRENT_BINARY_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/lib/atlas
+)
+add_test(NAME TraitsTests COMMAND traits_ut)
+
 # Nested type size tests - verifies EBO works with templated strong_type_tag
 # See PRD-templated-strong-type-tag.md for motivation
 set(NESTED_SIZE_INPUT "${CMAKE_CURRENT_SOURCE_DIR}/nested_type_size_test_types.atlas")

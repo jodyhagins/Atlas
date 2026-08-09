@@ -48,3 +48,24 @@ kind=struct
 namespace=test
 name=NestedWrappedColor
 description=test::WrappedColor
+
+# Floating point wrapper (arithmetic trait tests)
+[type]
+kind=struct
+namespace=test
+name=Ratio
+description=double
+
+# Bool wrapper - arithmetic in the std sense, but excluded by ArithmeticAtlasC
+[type]
+kind=struct
+namespace=test
+name=BoolFlag
+description=bool
+
+# Nested string wrapper - root type is still std::string
+[type]
+kind=struct
+namespace=test
+name=NestedString
+description=test::MovableString; no-constexpr

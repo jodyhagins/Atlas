@@ -23,6 +23,10 @@ This guide explains **how to work with values** inside strong types: how to avoi
   - [`atlas::unwrap` (One Layer)](#atlasunwrap-one-layer)
   - [`atlas::undress` (All Layers)](#atlasundress-all-layers)
   - [`atlas::cast<T>` (Targeted Drilling)](#atlascastt-targeted-drilling)
+- [Traits and Concepts](#traits-and-concepts)
+  - [Is it an atlas type?](#is-it-an-atlas-type)
+  - [What does it wrap?](#what-does-it-wrap)
+  - [What kind of thing does it wrap?](#what-kind-of-thing-does-it-wrap)
 - [Return Type Reference](#return-type-reference)
 - [Best Practices](#best-practices)
 
@@ -405,6 +409,69 @@ int * addr = &atlas::undress(n);
 int && rref = atlas::cast<int &&>(std::move(n));
 assert(&rref == addr);   // same storage, not a temporary
 ```
+
+---
+
+## Traits and Concepts
+
+Generic code frequently needs to ask questions *about* a type rather than reach into a value.
+Atlas ships these in namespace `atlas` -- there is no need to write your own `atlas_value_type` detection.
+
+### Is it an atlas type?
+
+```cpp
+atlas::is_atlas_type<SimpleInt>::value;   // true
+atlas::is_atlas_type<SimpleInt const &>::value;   // true -- cv and refs ignored
+atlas::is_atlas_type<int>::value;         // false
+atlas::is_atlas_type<Color>::value;       // false -- an enum is not an atlas type
+
+template <atlas::AtlasTypeC T>
+void log(T const & t) { ... }             // C++20 concept form
+```
+
+`atlas::holds_enum<T>` / `atlas::HoldsEnumC` answer the related question of whether `T` is,
+or eventually wraps, an enum.
+
+### What does it wrap?
+
+`unwrap_t` and `undress_t` are the type-level counterparts of `unwrap` and `undress`.
+Both ignore cv-qualification and references on the source type.
+
+```cpp
+atlas::unwrap_t<NestedInt>;        // SimpleInt -- one layer
+atlas::undress_t<NestedInt>;       // int       -- all layers
+
+atlas::undress_t<int>;             // int -- identity for non-atlas types
+atlas::undress_t<WrappedColor>;    // int -- drills the enum to its underlying type
+```
+
+`unwrap_t` mirrors `unwrap`'s SFINAE behavior: it is a **substitution failure**, not a hard error,
+when `T` is neither an atlas type nor an enum. `undress_t` is always well-formed.
+
+### What kind of thing does it wrap?
+
+These constrain on the **root** type, so they see through arbitrary nesting:
+
+```cpp
+atlas::AtlasOfC<T, U>          // T is an atlas type and undress_t<T> is exactly U
+atlas::StringAtlasC<T>         // AtlasOfC<T, std::string>
+atlas::ArithmeticAtlasC<T>     // root is arithmetic, excluding bool
+```
+
+Each is spelled as a conjunction including `AtlasTypeC`, so it **subsumes** it.
+An overload constrained on `StringAtlasC` beats one constrained on `AtlasTypeC` instead of being ambiguous with it:
+
+```cpp
+template <atlas::AtlasTypeC T>    void emit(T const &);   // general
+template <atlas::StringAtlasC T>  void emit(T const &);   // wins for string-rooted types
+```
+
+For pre-C++20 code, the equivalent traits are available unconditionally:
+`atlas::is_atlas_of<T, U>`, `atlas::is_string_atlas<T>`, `atlas::is_arithmetic_atlas<T>`.
+
+Note that `bool` is deliberately excluded from `ArithmeticAtlasC` even though `std::is_arithmetic_v<bool>` is `true`.
+An enum-rooted type *is* arithmetic, because `undress_t` drills enums to their underlying type;
+use `HoldsEnumC` if you need to exclude those.
 
 ---
 
