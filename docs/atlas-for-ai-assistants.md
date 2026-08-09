@@ -255,6 +255,27 @@ Return types: lvalue source gives a reference, rvalue source gives by value (pre
 
 ---
 
+## Traits and Concepts
+
+Constraining generic code is **not** an escape hatch -- these are the intended way to write
+templates over atlas types. Never hand-roll `atlas_value_type` detection; Atlas ships it.
+
+| Name | Answers |
+|------|---------|
+| `atlas::is_atlas_type<T>` / `atlas::AtlasTypeC` | Is `T` an atlas type? |
+| `atlas::holds_enum<T>` / `atlas::HoldsEnumC` | Is `T` an enum, or does it wrap one? |
+| `atlas::unwrap_t<T>` | The type one layer down (SFINAE-friendly) |
+| `atlas::undress_t<T>` | The root type; identity for non-atlas, non-enum types |
+| `atlas::is_atlas_of<T, U>` / `atlas::AtlasOfC<T, U>` | Is `T` an atlas type rooted at exactly `U`? |
+| `atlas::is_string_atlas<T>` / `atlas::StringAtlasC` | Is the root `std::string`? |
+| `atlas::is_arithmetic_atlas<T>` / `atlas::ArithmeticAtlasC` | Is the root arithmetic (excluding `bool`)? |
+
+All of them ignore cv-qualification and references on `T`. The `*C` concepts require C++20;
+the traits work in every supported standard. The category concepts subsume `AtlasTypeC`, so
+a `StringAtlasC` overload beats an `AtlasTypeC` overload rather than being ambiguous with it.
+
+---
+
 ## Common Mistakes
 
 ### 1. Raw primitives in interfaces

@@ -9,6 +9,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **`atlas::unwrap_t<T>` and `atlas::undress_t<T>`** - type-level counterparts to the
+  `atlas::unwrap` and `atlas::undress` function objects. `unwrap_t` names the type one
+  layer down and is SFINAE-friendly for types with no layer to remove; `undress_t` names
+  the root type and is the identity for non-atlas, non-enum types.
+- **`atlas::AtlasOfC<T, U>`, `atlas::StringAtlasC<T>`, `atlas::ArithmeticAtlasC<T>`** -
+  concepts that constrain on the root type, plus `atlas::is_atlas_of`,
+  `atlas::is_string_atlas`, and `atlas::is_arithmetic_atlas` traits for pre-C++20
+  standards. `ArithmeticAtlasC` excludes `bool`. The category concepts are spelled as
+  conjunctions including `AtlasTypeC` so that they subsume it during overload resolution.
+
+### Documentation
+
+- Documented the previously undocumented `atlas::is_atlas_type` trait and
+  `atlas::AtlasTypeC` concept, which have always shipped in generated headers. Projects
+  were reinventing `atlas_value_type` detection because these were not discoverable.
+
 ## [1.0.0] - 2025-01-02
 
 First formal release of Atlas Strong Type Generator.
