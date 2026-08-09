@@ -1,5 +1,5 @@
-#ifndef TEST_2474A2590B2224357DE49BDB842C06FF487D60E7
-#define TEST_2474A2590B2224357DE49BDB842C06FF487D60E7
+#ifndef TEST_FA9BACC01EB30CFA8A0666165A25D4636913D836
+#define TEST_FA9BACC01EB30CFA8A0666165A25D4636913D836
 
 static_assert(__cplusplus >= 201703L,
     "This file requires C++17 or later. Compile with -std=c++17 or higher.");
@@ -849,6 +849,8 @@ noexcept(noexcept(atlas_detail::compound_assign_impl_times(
 //////////////////////////////////////////////////////////////////////
 namespace test {
 
+#ifndef ATLAS_INTERACTION_A8C0A9A46DA0F26709EF850D6FC3783F1484FB08
+#define ATLAS_INTERACTION_A8C0A9A46DA0F26709EF850D6FC3783F1484FB08
 inline constexpr Velocity
 operator*(Distance lhs, Time rhs)
 noexcept(
@@ -857,8 +859,9 @@ noexcept(
 {
     return Velocity{atlas::undress(lhs) * atlas::undress(rhs)};
 }
+#endif // ATLAS_INTERACTION_A8C0A9A46DA0F26709EF850D6FC3783F1484FB08
 
 } // namespace test
 
-#endif // TEST_2474A2590B2224357DE49BDB842C06FF487D60E7
+#endif // TEST_FA9BACC01EB30CFA8A0666165A25D4636913D836
 

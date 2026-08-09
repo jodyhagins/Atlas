@@ -1,5 +1,5 @@
-#ifndef TEST_82D74BDB195F531B1DEBCA7B2C9FE2EB250CBDEC
-#define TEST_82D74BDB195F531B1DEBCA7B2C9FE2EB250CBDEC
+#ifndef TEST_89F3234750103732442D9E65A55F4884A033BF8A
+#define TEST_89F3234750103732442D9E65A55F4884A033BF8A
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -908,6 +908,8 @@ noexcept(noexcept(atlas_detail::compound_assign_impl_minus(
 //////////////////////////////////////////////////////////////////////
 namespace math {
 
+#ifndef ATLAS_INTERACTION_0DDBBC37706B54E571532FE747BB34468D8AC2EA
+#define ATLAS_INTERACTION_0DDBBC37706B54E571532FE747BB34468D8AC2EA
 template <std::integral T>
 constexpr T
 operator+(T lhs, T rhs)
@@ -917,7 +919,10 @@ noexcept(
 {
     return T{atlas::undress(lhs) + atlas::undress(rhs)};
 }
+#endif // ATLAS_INTERACTION_0DDBBC37706B54E571532FE747BB34468D8AC2EA
 
+#ifndef ATLAS_INTERACTION_969706DCEB6B66A1F4F2F445FB7D3F5D24E6D57C
+#define ATLAS_INTERACTION_969706DCEB6B66A1F4F2F445FB7D3F5D24E6D57C
 template <std::integral T>
 constexpr T
 operator-(T lhs, T rhs)
@@ -927,8 +932,9 @@ noexcept(
 {
     return T{atlas::undress(lhs) - atlas::undress(rhs)};
 }
+#endif // ATLAS_INTERACTION_969706DCEB6B66A1F4F2F445FB7D3F5D24E6D57C
 
 } // namespace math
 
-#endif // TEST_82D74BDB195F531B1DEBCA7B2C9FE2EB250CBDEC
+#endif // TEST_89F3234750103732442D9E65A55F4884A033BF8A
 

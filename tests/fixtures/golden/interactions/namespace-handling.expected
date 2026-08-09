@@ -1,5 +1,5 @@
-#ifndef TEST_893524A47F2CB711B861EAA65BB02EB122CFB94E
-#define TEST_893524A47F2CB711B861EAA65BB02EB122CFB94E
+#ifndef TEST_3C45FCA56D7DCB55D4E540E057904BF05038F874
+#define TEST_3C45FCA56D7DCB55D4E540E057904BF05038F874
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -860,6 +860,8 @@ noexcept(noexcept(atlas_detail::compound_assign_impl_times(
 /// These are the droids you are looking for!
 ///
 //////////////////////////////////////////////////////////////////////
+#ifndef ATLAS_INTERACTION_87521AB987D46B4F34B67FC74A3D8CAC255A39D5
+#define ATLAS_INTERACTION_87521AB987D46B4F34B67FC74A3D8CAC255A39D5
 inline constexpr finance::core::Money
 operator*(physics::units::Meters lhs, finance::core::Money rhs)
 noexcept(
@@ -868,6 +870,7 @@ noexcept(
 {
     return finance::core::Money{lhs.value * rhs.value};
 }
+#endif // ATLAS_INTERACTION_87521AB987D46B4F34B67FC74A3D8CAC255A39D5
 
-#endif // TEST_893524A47F2CB711B861EAA65BB02EB122CFB94E
+#endif // TEST_3C45FCA56D7DCB55D4E540E057904BF05038F874
 

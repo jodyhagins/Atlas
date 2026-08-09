@@ -1,5 +1,5 @@
-#ifndef TEST_587BE1C22BFDC2DAD6C27E6AF8ED84FBA4BD7570
-#define TEST_587BE1C22BFDC2DAD6C27E6AF8ED84FBA4BD7570
+#ifndef TEST_2C053C5D1747D31FF6A4BCAC21D789CABC6E993C
+#define TEST_2C053C5D1747D31FF6A4BCAC21D789CABC6E993C
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -862,6 +862,8 @@ noexcept(noexcept(atlas_detail::compound_assign_impl_plus(
 //////////////////////////////////////////////////////////////////////
 namespace test {
 
+#ifndef ATLAS_INTERACTION_E6E6B32BF004650AE219FC55F4C9C7A6F093ACA4
+#define ATLAS_INTERACTION_E6E6B32BF004650AE219FC55F4C9C7A6F093ACA4
 inline constexpr Price
 operator+(Price lhs, Discount rhs)
 noexcept(
@@ -870,8 +872,9 @@ noexcept(
 {
     return Price{lhs.value + rhs.value};
 }
+#endif // ATLAS_INTERACTION_E6E6B32BF004650AE219FC55F4C9C7A6F093ACA4
 
 } // namespace test
 
-#endif // TEST_587BE1C22BFDC2DAD6C27E6AF8ED84FBA4BD7570
+#endif // TEST_2C053C5D1747D31FF6A4BCAC21D789CABC6E993C
 

@@ -1,5 +1,5 @@
-#ifndef TEST_A630CC346D4378E6AC77A0F41814022E9F18CDC9
-#define TEST_A630CC346D4378E6AC77A0F41814022E9F18CDC9
+#ifndef TEST_419EBFC75896B5E91E0CB44021AC3A49B122B7B0
+#define TEST_419EBFC75896B5E91E0CB44021AC3A49B122B7B0
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -1060,6 +1060,8 @@ noexcept(noexcept(atlas_detail::compound_assign_impl_divide(
 //////////////////////////////////////////////////////////////////////
 namespace physics::units {
 
+#ifndef ATLAS_INTERACTION_B315F809C3CD687A79BAA3975F96400D3F44D28C
+#define ATLAS_INTERACTION_B315F809C3CD687A79BAA3975F96400D3F44D28C
 inline constexpr Meters
 operator+(Meters lhs, Meters rhs)
 noexcept(
@@ -1068,7 +1070,10 @@ noexcept(
 {
     return Meters{lhs.value + rhs.value};
 }
+#endif // ATLAS_INTERACTION_B315F809C3CD687A79BAA3975F96400D3F44D28C
 
+#ifndef ATLAS_INTERACTION_732911B7A9E4CB93EDC1523E15CBB307C2038A56
+#define ATLAS_INTERACTION_732911B7A9E4CB93EDC1523E15CBB307C2038A56
 inline constexpr Meters
 operator-(Meters lhs, Meters rhs)
 noexcept(
@@ -1077,7 +1082,10 @@ noexcept(
 {
     return Meters{lhs.value - rhs.value};
 }
+#endif // ATLAS_INTERACTION_732911B7A9E4CB93EDC1523E15CBB307C2038A56
 
+#ifndef ATLAS_INTERACTION_568F6D4C220AA3798DFFD57D84C5C65F8C3756A4
+#define ATLAS_INTERACTION_568F6D4C220AA3798DFFD57D84C5C65F8C3756A4
 inline constexpr Meters
 operator*(Meters lhs, double rhs)
 noexcept(
@@ -1086,7 +1094,10 @@ noexcept(
 {
     return Meters{lhs.value * rhs};
 }
+#endif // ATLAS_INTERACTION_568F6D4C220AA3798DFFD57D84C5C65F8C3756A4
 
+#ifndef ATLAS_INTERACTION_D55489975061CA86E5651FC1F2DFF6299B6EEFEB
+#define ATLAS_INTERACTION_D55489975061CA86E5651FC1F2DFF6299B6EEFEB
 inline constexpr Meters
 operator/(Meters lhs, double rhs)
 noexcept(
@@ -1095,7 +1106,10 @@ noexcept(
 {
     return Meters{lhs.value / rhs};
 }
+#endif // ATLAS_INTERACTION_D55489975061CA86E5651FC1F2DFF6299B6EEFEB
 
+#ifndef ATLAS_INTERACTION_4A35455DB0333AA469F5B45A14445E37A0D523BC
+#define ATLAS_INTERACTION_4A35455DB0333AA469F5B45A14445E37A0D523BC
 inline constexpr double
 operator/(Meters lhs, Meters rhs)
 noexcept(
@@ -1104,7 +1118,10 @@ noexcept(
 {
     return double{lhs.value / rhs.value};
 }
+#endif // ATLAS_INTERACTION_4A35455DB0333AA469F5B45A14445E37A0D523BC
 
+#ifndef ATLAS_INTERACTION_A27157669E078F7EE3DC6B0045EDD4C471F31ED6
+#define ATLAS_INTERACTION_A27157669E078F7EE3DC6B0045EDD4C471F31ED6
 inline constexpr Seconds
 operator+(Seconds lhs, Seconds rhs)
 noexcept(
@@ -1113,7 +1130,10 @@ noexcept(
 {
     return Seconds{lhs.value + rhs.value};
 }
+#endif // ATLAS_INTERACTION_A27157669E078F7EE3DC6B0045EDD4C471F31ED6
 
+#ifndef ATLAS_INTERACTION_3E66ACCCB16C9B014D8222ABBCE41CA8EB01BC46
+#define ATLAS_INTERACTION_3E66ACCCB16C9B014D8222ABBCE41CA8EB01BC46
 inline constexpr Seconds
 operator-(Seconds lhs, Seconds rhs)
 noexcept(
@@ -1122,7 +1142,10 @@ noexcept(
 {
     return Seconds{lhs.value - rhs.value};
 }
+#endif // ATLAS_INTERACTION_3E66ACCCB16C9B014D8222ABBCE41CA8EB01BC46
 
+#ifndef ATLAS_INTERACTION_12FC89AEAAB621DAA7CB6CDB59A62A9B027D267C
+#define ATLAS_INTERACTION_12FC89AEAAB621DAA7CB6CDB59A62A9B027D267C
 inline constexpr MetersPerSecond
 operator/(Meters lhs, Seconds rhs)
 noexcept(
@@ -1131,8 +1154,9 @@ noexcept(
 {
     return MetersPerSecond{lhs.value / rhs.value};
 }
+#endif // ATLAS_INTERACTION_12FC89AEAAB621DAA7CB6CDB59A62A9B027D267C
 
 } // namespace physics::units
 
-#endif // TEST_A630CC346D4378E6AC77A0F41814022E9F18CDC9
+#endif // TEST_419EBFC75896B5E91E0CB44021AC3A49B122B7B0
 

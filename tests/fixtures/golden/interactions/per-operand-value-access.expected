@@ -1,5 +1,5 @@
-#ifndef TEST_C62608E8611144DDFB86D00A6D55F9531D662D1C
-#define TEST_C62608E8611144DDFB86D00A6D55F9531D662D1C
+#ifndef TEST_ED1A94398C85E50EBC1B7A2030B205E14E4FFD32
+#define TEST_ED1A94398C85E50EBC1B7A2030B205E14E4FFD32
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -862,6 +862,8 @@ noexcept(noexcept(atlas_detail::compound_assign_impl_plus(
 //////////////////////////////////////////////////////////////////////
 namespace mylib {
 
+#ifndef ATLAS_INTERACTION_E3BB3B2389F69D6F68AB04FC015B2B4CD9ADE3B6
+#define ATLAS_INTERACTION_E3BB3B2389F69D6F68AB04FC015B2B4CD9ADE3B6
 inline constexpr AtlasValue
 operator+(AtlasValue lhs, external::LibValue rhs)
 noexcept(
@@ -870,8 +872,9 @@ noexcept(
 {
     return AtlasValue{atlas::undress(lhs) + rhs.getValue()};
 }
+#endif // ATLAS_INTERACTION_E3BB3B2389F69D6F68AB04FC015B2B4CD9ADE3B6
 
 } // namespace mylib
 
-#endif // TEST_C62608E8611144DDFB86D00A6D55F9531D662D1C
+#endif // TEST_ED1A94398C85E50EBC1B7A2030B205E14E4FFD32
 

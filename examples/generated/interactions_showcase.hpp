@@ -1,5 +1,5 @@
-#ifndef EXAMPLE_INTERACTIONS_4F0E4147DF6C174F1FCF9904DD23FCDEF0695C87
-#define EXAMPLE_INTERACTIONS_4F0E4147DF6C174F1FCF9904DD23FCDEF0695C87
+#ifndef EXAMPLE_INTERACTIONS_D9DF35340FDFFEEE98B29F5E814431A1E2AE22DF
+#define EXAMPLE_INTERACTIONS_D9DF35340FDFFEEE98B29F5E814431A1E2AE22DF
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -1562,6 +1562,8 @@ noexcept(noexcept(atlas_detail::compound_assign_impl_bitor(
 /// These are the droids you are looking for!
 ///
 //////////////////////////////////////////////////////////////////////
+#ifndef ATLAS_INTERACTION_87521AB987D46B4F34B67FC74A3D8CAC255A39D5
+#define ATLAS_INTERACTION_87521AB987D46B4F34B67FC74A3D8CAC255A39D5
 inline constexpr finance::core::Money
 operator*(physics::units::Meters lhs, finance::core::Money rhs)
 noexcept(
@@ -1570,9 +1572,12 @@ noexcept(
 {
     return finance::core::Money{lhs.value * rhs.value};
 }
+#endif // ATLAS_INTERACTION_87521AB987D46B4F34B67FC74A3D8CAC255A39D5
 
 namespace app::config {
 
+#ifndef ATLAS_INTERACTION_5EBA3FB8605A2FAE5ABC001171FFF7C5CB345FD7
+#define ATLAS_INTERACTION_5EBA3FB8605A2FAE5ABC001171FFF7C5CB345FD7
 inline constexpr ConfigKey
 operator+(ConfigKey lhs, std::string rhs)
 noexcept(
@@ -1581,7 +1586,10 @@ noexcept(
 {
     return ConfigKey{lhs.value + rhs};
 }
+#endif // ATLAS_INTERACTION_5EBA3FB8605A2FAE5ABC001171FFF7C5CB345FD7
 
+#ifndef ATLAS_INTERACTION_A6692500CC9CA6AB010BA24C5E7AA3006DA17627
+#define ATLAS_INTERACTION_A6692500CC9CA6AB010BA24C5E7AA3006DA17627
 inline constexpr ConfigKey
 operator+(std::string lhs, ConfigKey rhs)
 noexcept(
@@ -1590,11 +1598,14 @@ noexcept(
 {
     return ConfigKey{lhs + atlas::undress(rhs)};
 }
+#endif // ATLAS_INTERACTION_A6692500CC9CA6AB010BA24C5E7AA3006DA17627
 
 } // namespace app::config
 
 namespace concurrency {
 
+#ifndef ATLAS_INTERACTION_F62E1FA6989D196669A0ED5F2A01171850CAF816
+#define ATLAS_INTERACTION_F62E1FA6989D196669A0ED5F2A01171850CAF816
 inline ThreadId
 operator+(ThreadId lhs, ThreadId rhs)
 noexcept(
@@ -1603,11 +1614,14 @@ noexcept(
 {
     return ThreadId{lhs.value + rhs.value};
 }
+#endif // ATLAS_INTERACTION_F62E1FA6989D196669A0ED5F2A01171850CAF816
 
 } // namespace concurrency
 
 namespace data {
 
+#ifndef ATLAS_INTERACTION_03EA509399E80E4BEC38F65BEDFA01B1664C0FD1
+#define ATLAS_INTERACTION_03EA509399E80E4BEC38F65BEDFA01B1664C0FD1
 inline constexpr ByteCount
 operator+(ByteCount lhs, ByteCount rhs)
 noexcept(
@@ -1616,7 +1630,10 @@ noexcept(
 {
     return ByteCount{lhs.value + rhs.value};
 }
+#endif // ATLAS_INTERACTION_03EA509399E80E4BEC38F65BEDFA01B1664C0FD1
 
+#ifndef ATLAS_INTERACTION_7E414723A9F4FD4507CE4E86AB46E803233C1888
+#define ATLAS_INTERACTION_7E414723A9F4FD4507CE4E86AB46E803233C1888
 inline constexpr ByteCount
 operator-(ByteCount lhs, ByteCount rhs)
 noexcept(
@@ -1625,7 +1642,10 @@ noexcept(
 {
     return ByteCount{lhs.value - rhs.value};
 }
+#endif // ATLAS_INTERACTION_7E414723A9F4FD4507CE4E86AB46E803233C1888
 
+#ifndef ATLAS_INTERACTION_B14F94E4FE58291B3EC6010369171CAD65907AF0
+#define ATLAS_INTERACTION_B14F94E4FE58291B3EC6010369171CAD65907AF0
 inline constexpr ByteCount
 operator*(ByteCount lhs, size_t rhs)
 noexcept(
@@ -1634,7 +1654,10 @@ noexcept(
 {
     return ByteCount{lhs.value * rhs};
 }
+#endif // ATLAS_INTERACTION_B14F94E4FE58291B3EC6010369171CAD65907AF0
 
+#ifndef ATLAS_INTERACTION_16135602E43799A39B1DF4F98130386F04A6D9B2
+#define ATLAS_INTERACTION_16135602E43799A39B1DF4F98130386F04A6D9B2
 inline constexpr ByteCount
 operator/(ByteCount lhs, size_t rhs)
 noexcept(
@@ -1643,7 +1666,10 @@ noexcept(
 {
     return ByteCount{lhs.value / rhs};
 }
+#endif // ATLAS_INTERACTION_16135602E43799A39B1DF4F98130386F04A6D9B2
 
+#ifndef ATLAS_INTERACTION_54BA041723FA31616DC92D9E333873ECF2A1E6C3
+#define ATLAS_INTERACTION_54BA041723FA31616DC92D9E333873ECF2A1E6C3
 inline constexpr ByteCount
 operator%(ByteCount lhs, ByteCount rhs)
 noexcept(
@@ -1652,11 +1678,14 @@ noexcept(
 {
     return ByteCount{lhs.value % rhs.value};
 }
+#endif // ATLAS_INTERACTION_54BA041723FA31616DC92D9E333873ECF2A1E6C3
 
 } // namespace data
 
 namespace finance::core {
 
+#ifndef ATLAS_INTERACTION_C363C719B8EF11B964EE952DE9E2601226BE520C
+#define ATLAS_INTERACTION_C363C719B8EF11B964EE952DE9E2601226BE520C
 inline constexpr Money
 operator+(Money lhs, Money rhs)
 noexcept(
@@ -1665,7 +1694,10 @@ noexcept(
 {
     return Money{lhs.value + rhs.value};
 }
+#endif // ATLAS_INTERACTION_C363C719B8EF11B964EE952DE9E2601226BE520C
 
+#ifndef ATLAS_INTERACTION_F50078873B3E04D5ED38D9557C146D5839011804
+#define ATLAS_INTERACTION_F50078873B3E04D5ED38D9557C146D5839011804
 inline constexpr Money
 operator-(Money lhs, Money rhs)
 noexcept(
@@ -1674,7 +1706,10 @@ noexcept(
 {
     return Money{lhs.value - rhs.value};
 }
+#endif // ATLAS_INTERACTION_F50078873B3E04D5ED38D9557C146D5839011804
 
+#ifndef ATLAS_INTERACTION_8244CA3B235FAD74F45ACF313E5F47E2D93EC283
+#define ATLAS_INTERACTION_8244CA3B235FAD74F45ACF313E5F47E2D93EC283
 inline constexpr Money
 operator*(Money lhs, double rhs)
 noexcept(
@@ -1683,7 +1718,10 @@ noexcept(
 {
     return Money{lhs.value * rhs};
 }
+#endif // ATLAS_INTERACTION_8244CA3B235FAD74F45ACF313E5F47E2D93EC283
 
+#ifndef ATLAS_INTERACTION_61AE58F4A652D28D91736D2F9601C1B5A0FCF2D1
+#define ATLAS_INTERACTION_61AE58F4A652D28D91736D2F9601C1B5A0FCF2D1
 inline constexpr Money
 operator/(Money lhs, double rhs)
 noexcept(
@@ -1692,7 +1730,10 @@ noexcept(
 {
     return Money{lhs.value / rhs};
 }
+#endif // ATLAS_INTERACTION_61AE58F4A652D28D91736D2F9601C1B5A0FCF2D1
 
+#ifndef ATLAS_INTERACTION_D2EAFA613B58F04EE6E573B705920871CC955BA1
+#define ATLAS_INTERACTION_D2EAFA613B58F04EE6E573B705920871CC955BA1
 inline constexpr double
 operator/(Money lhs, Money rhs)
 noexcept(
@@ -1701,11 +1742,14 @@ noexcept(
 {
     return double{lhs.value / rhs.value};
 }
+#endif // ATLAS_INTERACTION_D2EAFA613B58F04EE6E573B705920871CC955BA1
 
 } // namespace finance::core
 
 namespace geo {
 
+#ifndef ATLAS_INTERACTION_0D0C9E3A87F5EA6FC02ACDA3E9A23DC280AE9D7B
+#define ATLAS_INTERACTION_0D0C9E3A87F5EA6FC02ACDA3E9A23DC280AE9D7B
 inline constexpr Latitude
 operator+(Latitude lhs, double rhs)
 noexcept(
@@ -1714,7 +1758,10 @@ noexcept(
 {
     return Latitude{lhs.value + rhs};
 }
+#endif // ATLAS_INTERACTION_0D0C9E3A87F5EA6FC02ACDA3E9A23DC280AE9D7B
 
+#ifndef ATLAS_INTERACTION_BB1BDF5BF6D9FF3FFCC5D012CAE156BEA174AD1B
+#define ATLAS_INTERACTION_BB1BDF5BF6D9FF3FFCC5D012CAE156BEA174AD1B
 inline constexpr Longitude
 operator+(Longitude lhs, double rhs)
 noexcept(
@@ -1723,7 +1770,10 @@ noexcept(
 {
     return Longitude{lhs.value + rhs};
 }
+#endif // ATLAS_INTERACTION_BB1BDF5BF6D9FF3FFCC5D012CAE156BEA174AD1B
 
+#ifndef ATLAS_INTERACTION_0D3F1517DD4CB7E743AA78E05AA5B70A3E3993DE
+#define ATLAS_INTERACTION_0D3F1517DD4CB7E743AA78E05AA5B70A3E3993DE
 inline constexpr double
 operator-(Latitude lhs, Latitude rhs)
 noexcept(
@@ -1732,7 +1782,10 @@ noexcept(
 {
     return double{lhs.value - rhs.value};
 }
+#endif // ATLAS_INTERACTION_0D3F1517DD4CB7E743AA78E05AA5B70A3E3993DE
 
+#ifndef ATLAS_INTERACTION_8A0D5332E163C024991F0735594ACCFB7897DBEF
+#define ATLAS_INTERACTION_8A0D5332E163C024991F0735594ACCFB7897DBEF
 inline constexpr double
 operator-(Longitude lhs, Longitude rhs)
 noexcept(
@@ -1741,11 +1794,14 @@ noexcept(
 {
     return double{lhs.value - rhs.value};
 }
+#endif // ATLAS_INTERACTION_8A0D5332E163C024991F0735594ACCFB7897DBEF
 
 } // namespace geo
 
 namespace graphics::color {
 
+#ifndef ATLAS_INTERACTION_BF8930731761067C1760A015750308B9AE3742FA
+#define ATLAS_INTERACTION_BF8930731761067C1760A015750308B9AE3742FA
 inline constexpr RedChannel
 operator+(RedChannel lhs, RedChannel rhs)
 noexcept(
@@ -1754,7 +1810,10 @@ noexcept(
 {
     return RedChannel{lhs.value + rhs.value};
 }
+#endif // ATLAS_INTERACTION_BF8930731761067C1760A015750308B9AE3742FA
 
+#ifndef ATLAS_INTERACTION_3056221674E1D797C45A9259A0EEEB2E4BE050AC
+#define ATLAS_INTERACTION_3056221674E1D797C45A9259A0EEEB2E4BE050AC
 inline constexpr RedChannel
 operator|(RedChannel lhs, RedChannel rhs)
 noexcept(
@@ -1763,7 +1822,10 @@ noexcept(
 {
     return RedChannel{lhs.value | rhs.value};
 }
+#endif // ATLAS_INTERACTION_3056221674E1D797C45A9259A0EEEB2E4BE050AC
 
+#ifndef ATLAS_INTERACTION_198A7C05D71A29A3D07A61EDB127CE9DF555A181
+#define ATLAS_INTERACTION_198A7C05D71A29A3D07A61EDB127CE9DF555A181
 inline constexpr RedChannel
 operator&(RedChannel lhs, RedChannel rhs)
 noexcept(
@@ -1772,7 +1834,10 @@ noexcept(
 {
     return RedChannel{lhs.value & rhs.value};
 }
+#endif // ATLAS_INTERACTION_198A7C05D71A29A3D07A61EDB127CE9DF555A181
 
+#ifndef ATLAS_INTERACTION_A6D81312029DE8B6F21FB8D54BB605F742337B27
+#define ATLAS_INTERACTION_A6D81312029DE8B6F21FB8D54BB605F742337B27
 inline constexpr RedChannel
 operator^(RedChannel lhs, RedChannel rhs)
 noexcept(
@@ -1781,11 +1846,14 @@ noexcept(
 {
     return RedChannel{lhs.value ^ rhs.value};
 }
+#endif // ATLAS_INTERACTION_A6D81312029DE8B6F21FB8D54BB605F742337B27
 
 } // namespace graphics::color
 
 namespace math {
 
+#ifndef ATLAS_INTERACTION_B2BC4A0675FBFFE9E4668B07270C3A7EFB2FDCF4
+#define ATLAS_INTERACTION_B2BC4A0675FBFFE9E4668B07270C3A7EFB2FDCF4
 template <std::integral T>
 constexpr T
 operator+(T lhs, T rhs)
@@ -1795,7 +1863,10 @@ noexcept(
 {
     return T{lhs.value + atlas::undress(rhs)};
 }
+#endif // ATLAS_INTERACTION_B2BC4A0675FBFFE9E4668B07270C3A7EFB2FDCF4
 
+#ifndef ATLAS_INTERACTION_EB29599BD807FE629BADA863D99EB5B2D30CF955
+#define ATLAS_INTERACTION_EB29599BD807FE629BADA863D99EB5B2D30CF955
 template <typename U, typename std::enable_if<std::is_floating_point<U>::value, bool>::type = true>
 constexpr U
 operator*(U lhs, U rhs)
@@ -1805,7 +1876,10 @@ noexcept(
 {
     return U{lhs.value * atlas::undress(rhs)};
 }
+#endif // ATLAS_INTERACTION_EB29599BD807FE629BADA863D99EB5B2D30CF955
 
+#ifndef ATLAS_INTERACTION_25F4BD4C5C5D9E4BCD9710FA0803CA5CB7921C87
+#define ATLAS_INTERACTION_25F4BD4C5C5D9E4BCD9710FA0803CA5CB7921C87
 #if __cpp_concepts >= 201907L
 template <std::integral V>
 #else
@@ -1819,11 +1893,14 @@ noexcept(
 {
     return V{lhs.value - atlas::undress(rhs)};
 }
+#endif // ATLAS_INTERACTION_25F4BD4C5C5D9E4BCD9710FA0803CA5CB7921C87
 
 } // namespace math
 
 namespace math::rational {
 
+#ifndef ATLAS_INTERACTION_3F53C36AB8EA49E3B4488EC027A91129CA49D934
+#define ATLAS_INTERACTION_3F53C36AB8EA49E3B4488EC027A91129CA49D934
 inline constexpr Numerator
 operator+(Numerator lhs, Numerator rhs)
 noexcept(
@@ -1832,7 +1909,10 @@ noexcept(
 {
     return Numerator{lhs.value + rhs.value};
 }
+#endif // ATLAS_INTERACTION_3F53C36AB8EA49E3B4488EC027A91129CA49D934
 
+#ifndef ATLAS_INTERACTION_3E83723BA0CF2A3EB1FC94343D06E8C742CEABB9
+#define ATLAS_INTERACTION_3E83723BA0CF2A3EB1FC94343D06E8C742CEABB9
 inline constexpr Numerator
 operator-(Numerator lhs, Numerator rhs)
 noexcept(
@@ -1841,7 +1921,10 @@ noexcept(
 {
     return Numerator{lhs.value - rhs.value};
 }
+#endif // ATLAS_INTERACTION_3E83723BA0CF2A3EB1FC94343D06E8C742CEABB9
 
+#ifndef ATLAS_INTERACTION_090E331973825F2195D1CACE2CB805D090AF7184
+#define ATLAS_INTERACTION_090E331973825F2195D1CACE2CB805D090AF7184
 inline constexpr Numerator
 operator*(Numerator lhs, Numerator rhs)
 noexcept(
@@ -1850,7 +1933,10 @@ noexcept(
 {
     return Numerator{lhs.value * rhs.value};
 }
+#endif // ATLAS_INTERACTION_090E331973825F2195D1CACE2CB805D090AF7184
 
+#ifndef ATLAS_INTERACTION_AC9467014CAC3109E165980D354001FB614C8518
+#define ATLAS_INTERACTION_AC9467014CAC3109E165980D354001FB614C8518
 inline constexpr Numerator
 operator*(Numerator lhs, Denominator rhs)
 noexcept(
@@ -1859,7 +1945,10 @@ noexcept(
 {
     return Numerator{lhs.value * rhs.value};
 }
+#endif // ATLAS_INTERACTION_AC9467014CAC3109E165980D354001FB614C8518
 
+#ifndef ATLAS_INTERACTION_88183A03117941FA81B686AA0EBF9C999B190434
+#define ATLAS_INTERACTION_88183A03117941FA81B686AA0EBF9C999B190434
 inline constexpr Denominator
 operator*(Denominator lhs, Denominator rhs)
 noexcept(
@@ -1868,11 +1957,14 @@ noexcept(
 {
     return Denominator{lhs.value * rhs.value};
 }
+#endif // ATLAS_INTERACTION_88183A03117941FA81B686AA0EBF9C999B190434
 
 } // namespace math::rational
 
 namespace net::ipv4 {
 
+#ifndef ATLAS_INTERACTION_25F51038710EC98BAA59D311B66DC4835A9AF060
+#define ATLAS_INTERACTION_25F51038710EC98BAA59D311B66DC4835A9AF060
 inline constexpr Octet
 operator&(Octet lhs, Octet rhs)
 noexcept(
@@ -1881,7 +1973,10 @@ noexcept(
 {
     return Octet{lhs.value & rhs.value};
 }
+#endif // ATLAS_INTERACTION_25F51038710EC98BAA59D311B66DC4835A9AF060
 
+#ifndef ATLAS_INTERACTION_011A7CBA7B0D41BC3C16CD6925A6CD1CE9F9856D
+#define ATLAS_INTERACTION_011A7CBA7B0D41BC3C16CD6925A6CD1CE9F9856D
 inline constexpr Octet
 operator|(Octet lhs, Octet rhs)
 noexcept(
@@ -1890,7 +1985,10 @@ noexcept(
 {
     return Octet{lhs.value | rhs.value};
 }
+#endif // ATLAS_INTERACTION_011A7CBA7B0D41BC3C16CD6925A6CD1CE9F9856D
 
+#ifndef ATLAS_INTERACTION_8B1AAE5EF666A93D51148A07BC382FA3C8294906
+#define ATLAS_INTERACTION_8B1AAE5EF666A93D51148A07BC382FA3C8294906
 inline constexpr Octet
 operator^(Octet lhs, Octet rhs)
 noexcept(
@@ -1899,7 +1997,10 @@ noexcept(
 {
     return Octet{lhs.value ^ rhs.value};
 }
+#endif // ATLAS_INTERACTION_8B1AAE5EF666A93D51148A07BC382FA3C8294906
 
+#ifndef ATLAS_INTERACTION_595394E4DFB3D75D9C6DBE70FAE4BC2A8CCBFA1A
+#define ATLAS_INTERACTION_595394E4DFB3D75D9C6DBE70FAE4BC2A8CCBFA1A
 inline constexpr Octet
 operator<<(Octet lhs, int rhs)
 noexcept(
@@ -1908,7 +2009,10 @@ noexcept(
 {
     return Octet{lhs.value << rhs};
 }
+#endif // ATLAS_INTERACTION_595394E4DFB3D75D9C6DBE70FAE4BC2A8CCBFA1A
 
+#ifndef ATLAS_INTERACTION_448EE4447F4AB8C20FA069056A509A174CBCAFE2
+#define ATLAS_INTERACTION_448EE4447F4AB8C20FA069056A509A174CBCAFE2
 inline constexpr Octet
 operator>>(Octet lhs, int rhs)
 noexcept(
@@ -1917,11 +2021,14 @@ noexcept(
 {
     return Octet{lhs.value >> rhs};
 }
+#endif // ATLAS_INTERACTION_448EE4447F4AB8C20FA069056A509A174CBCAFE2
 
 } // namespace net::ipv4
 
 namespace physics::units {
 
+#ifndef ATLAS_INTERACTION_B315F809C3CD687A79BAA3975F96400D3F44D28C
+#define ATLAS_INTERACTION_B315F809C3CD687A79BAA3975F96400D3F44D28C
 inline constexpr Meters
 operator+(Meters lhs, Meters rhs)
 noexcept(
@@ -1930,7 +2037,10 @@ noexcept(
 {
     return Meters{lhs.value + rhs.value};
 }
+#endif // ATLAS_INTERACTION_B315F809C3CD687A79BAA3975F96400D3F44D28C
 
+#ifndef ATLAS_INTERACTION_732911B7A9E4CB93EDC1523E15CBB307C2038A56
+#define ATLAS_INTERACTION_732911B7A9E4CB93EDC1523E15CBB307C2038A56
 inline constexpr Meters
 operator-(Meters lhs, Meters rhs)
 noexcept(
@@ -1939,7 +2049,10 @@ noexcept(
 {
     return Meters{lhs.value - rhs.value};
 }
+#endif // ATLAS_INTERACTION_732911B7A9E4CB93EDC1523E15CBB307C2038A56
 
+#ifndef ATLAS_INTERACTION_568F6D4C220AA3798DFFD57D84C5C65F8C3756A4
+#define ATLAS_INTERACTION_568F6D4C220AA3798DFFD57D84C5C65F8C3756A4
 inline constexpr Meters
 operator*(Meters lhs, double rhs)
 noexcept(
@@ -1948,7 +2061,10 @@ noexcept(
 {
     return Meters{lhs.value * rhs};
 }
+#endif // ATLAS_INTERACTION_568F6D4C220AA3798DFFD57D84C5C65F8C3756A4
 
+#ifndef ATLAS_INTERACTION_917AE05FA0BF83B23DD2EFD8695610064C06B1B9
+#define ATLAS_INTERACTION_917AE05FA0BF83B23DD2EFD8695610064C06B1B9
 inline constexpr Meters
 operator*(double lhs, Meters rhs)
 noexcept(
@@ -1957,7 +2073,10 @@ noexcept(
 {
     return Meters{lhs * rhs.value};
 }
+#endif // ATLAS_INTERACTION_917AE05FA0BF83B23DD2EFD8695610064C06B1B9
 
+#ifndef ATLAS_INTERACTION_D55489975061CA86E5651FC1F2DFF6299B6EEFEB
+#define ATLAS_INTERACTION_D55489975061CA86E5651FC1F2DFF6299B6EEFEB
 inline constexpr Meters
 operator/(Meters lhs, double rhs)
 noexcept(
@@ -1966,7 +2085,10 @@ noexcept(
 {
     return Meters{lhs.value / rhs};
 }
+#endif // ATLAS_INTERACTION_D55489975061CA86E5651FC1F2DFF6299B6EEFEB
 
+#ifndef ATLAS_INTERACTION_4A35455DB0333AA469F5B45A14445E37A0D523BC
+#define ATLAS_INTERACTION_4A35455DB0333AA469F5B45A14445E37A0D523BC
 inline constexpr double
 operator/(Meters lhs, Meters rhs)
 noexcept(
@@ -1975,7 +2097,10 @@ noexcept(
 {
     return double{lhs.value / rhs.value};
 }
+#endif // ATLAS_INTERACTION_4A35455DB0333AA469F5B45A14445E37A0D523BC
 
+#ifndef ATLAS_INTERACTION_A27157669E078F7EE3DC6B0045EDD4C471F31ED6
+#define ATLAS_INTERACTION_A27157669E078F7EE3DC6B0045EDD4C471F31ED6
 inline constexpr Seconds
 operator+(Seconds lhs, Seconds rhs)
 noexcept(
@@ -1984,7 +2109,10 @@ noexcept(
 {
     return Seconds{lhs.value + rhs.value};
 }
+#endif // ATLAS_INTERACTION_A27157669E078F7EE3DC6B0045EDD4C471F31ED6
 
+#ifndef ATLAS_INTERACTION_3E66ACCCB16C9B014D8222ABBCE41CA8EB01BC46
+#define ATLAS_INTERACTION_3E66ACCCB16C9B014D8222ABBCE41CA8EB01BC46
 inline constexpr Seconds
 operator-(Seconds lhs, Seconds rhs)
 noexcept(
@@ -1993,7 +2121,10 @@ noexcept(
 {
     return Seconds{lhs.value - rhs.value};
 }
+#endif // ATLAS_INTERACTION_3E66ACCCB16C9B014D8222ABBCE41CA8EB01BC46
 
+#ifndef ATLAS_INTERACTION_D957187D6A9DAD0FD5256BBDE16E0D0242160FC7
+#define ATLAS_INTERACTION_D957187D6A9DAD0FD5256BBDE16E0D0242160FC7
 inline constexpr Seconds
 operator*(Seconds lhs, double rhs)
 noexcept(
@@ -2002,7 +2133,10 @@ noexcept(
 {
     return Seconds{lhs.value * rhs};
 }
+#endif // ATLAS_INTERACTION_D957187D6A9DAD0FD5256BBDE16E0D0242160FC7
 
+#ifndef ATLAS_INTERACTION_7F2B6B3DFC3236C99F6F360A8C7FE9D3CE8783D4
+#define ATLAS_INTERACTION_7F2B6B3DFC3236C99F6F360A8C7FE9D3CE8783D4
 inline constexpr Seconds
 operator*(double lhs, Seconds rhs)
 noexcept(
@@ -2011,7 +2145,10 @@ noexcept(
 {
     return Seconds{lhs * rhs.value};
 }
+#endif // ATLAS_INTERACTION_7F2B6B3DFC3236C99F6F360A8C7FE9D3CE8783D4
 
+#ifndef ATLAS_INTERACTION_C7BEC65F1EF2BCE43FD12A171F610A25635607AF
+#define ATLAS_INTERACTION_C7BEC65F1EF2BCE43FD12A171F610A25635607AF
 inline constexpr Seconds
 operator/(Seconds lhs, double rhs)
 noexcept(
@@ -2020,7 +2157,10 @@ noexcept(
 {
     return Seconds{lhs.value / rhs};
 }
+#endif // ATLAS_INTERACTION_C7BEC65F1EF2BCE43FD12A171F610A25635607AF
 
+#ifndef ATLAS_INTERACTION_81A91E09B028C5127EA1BAE6CD5D561B2FBAE7D4
+#define ATLAS_INTERACTION_81A91E09B028C5127EA1BAE6CD5D561B2FBAE7D4
 inline constexpr double
 operator/(Seconds lhs, Seconds rhs)
 noexcept(
@@ -2029,7 +2169,10 @@ noexcept(
 {
     return double{lhs.value / rhs.value};
 }
+#endif // ATLAS_INTERACTION_81A91E09B028C5127EA1BAE6CD5D561B2FBAE7D4
 
+#ifndef ATLAS_INTERACTION_12FC89AEAAB621DAA7CB6CDB59A62A9B027D267C
+#define ATLAS_INTERACTION_12FC89AEAAB621DAA7CB6CDB59A62A9B027D267C
 inline constexpr MetersPerSecond
 operator/(Meters lhs, Seconds rhs)
 noexcept(
@@ -2038,7 +2181,10 @@ noexcept(
 {
     return MetersPerSecond{lhs.value / rhs.value};
 }
+#endif // ATLAS_INTERACTION_12FC89AEAAB621DAA7CB6CDB59A62A9B027D267C
 
+#ifndef ATLAS_INTERACTION_E18D06979ED8174A3E5B670DFCAFB4F6DF69E046
+#define ATLAS_INTERACTION_E18D06979ED8174A3E5B670DFCAFB4F6DF69E046
 inline constexpr Meters
 operator*(MetersPerSecond lhs, Seconds rhs)
 noexcept(
@@ -2047,7 +2193,10 @@ noexcept(
 {
     return Meters{lhs.value * rhs.value};
 }
+#endif // ATLAS_INTERACTION_E18D06979ED8174A3E5B670DFCAFB4F6DF69E046
 
+#ifndef ATLAS_INTERACTION_CFAD31CC967A815B557A8D6C29342BE22079FA51
+#define ATLAS_INTERACTION_CFAD31CC967A815B557A8D6C29342BE22079FA51
 inline constexpr Seconds
 operator/(Meters lhs, MetersPerSecond rhs)
 noexcept(
@@ -2056,11 +2205,14 @@ noexcept(
 {
     return Seconds{lhs.value / rhs.value};
 }
+#endif // ATLAS_INTERACTION_CFAD31CC967A815B557A8D6C29342BE22079FA51
 
 } // namespace physics::units
 
 namespace security {
 
+#ifndef ATLAS_INTERACTION_19A21705B93E64574811A211BB61B3F51637F24D
+#define ATLAS_INTERACTION_19A21705B93E64574811A211BB61B3F51637F24D
 inline constexpr EncryptedData
 operator+(EncryptedData lhs, EncryptedData rhs)
 noexcept(
@@ -2069,7 +2221,8 @@ noexcept(
 {
     return EncryptedData{lhs.value + rhs.value};
 }
+#endif // ATLAS_INTERACTION_19A21705B93E64574811A211BB61B3F51637F24D
 
 } // namespace security
 
-#endif // EXAMPLE_INTERACTIONS_4F0E4147DF6C174F1FCF9904DD23FCDEF0695C87
+#endif // EXAMPLE_INTERACTIONS_D9DF35340FDFFEEE98B29F5E814431A1E2AE22DF

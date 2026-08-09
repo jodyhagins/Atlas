@@ -2645,6 +2645,175 @@ int main() {
         std::error_code ec;
         fs::remove_all(temp_dir, ec);
     }
+
+    TEST_CASE("Interaction: duplicate operators across headers compile together")
+    {
+        // Two modules that both need Meters + Meters should each be able to
+        // declare it, rather than relying on a hand-enforced "declare it in
+        // exactly one module" convention. The per-operator include guards
+        // make the second declaration inert.
+        auto temp_dir = fs::temp_directory_path() /
+            ("atlas_interaction_dup_ops_" + std::to_string(::getpid()));
+        fs::create_directories(temp_dir);
+
+        auto types_desc = R"([type]
+kind=struct
+namespace=test
+name=Meters
+description=strong double; ==; no-constexpr
+)";
+
+        auto types_input = temp_dir / "types.txt";
+        auto types_header = temp_dir / "types.hpp";
+        std::ofstream(types_input) << types_desc;
+        REQUIRE(generate_header(types_input, types_header) == EXIT_SUCCESS);
+
+        // The two headers overlap without being identical - identical output
+        // would already collapse under the whole-file content-hash guard, so
+        // that would not exercise anything. The shared declarations cover the
+        // comparison forms that carry a -Wfloat-equal suppression and the
+        // spaceship form that derives an extra operator==.
+        auto shared = R"(
+Meters + Meters -> Meters
+Meters * double <-> Meters
+Meters == double <-> bool
+Meters <=> double -> auto
+)";
+        auto interactions_a = std::string(R"(include "types.hpp"
+
+namespace=test
+no-constexpr
+)") + shared + "Meters - Meters -> Meters\n";
+        auto interactions_b = std::string(R"(include "types.hpp"
+
+namespace=test
+no-constexpr
+)") + shared + "Meters / double -> Meters\n";
+
+        auto ia_input = temp_dir / "ia.txt";
+        auto ib_input = temp_dir / "ib.txt";
+        auto ia_header = temp_dir / "ia.hpp";
+        auto ib_header = temp_dir / "ib.hpp";
+
+        std::ofstream(ia_input) << interactions_a;
+        std::ofstream(ib_input) << interactions_b;
+
+        REQUIRE(generate_interactions(ia_input, ia_header) == EXIT_SUCCESS);
+        REQUIRE(generate_interactions(ib_input, ib_header) == EXIT_SUCCESS);
+
+        auto test_path = temp_dir / "test.cpp";
+        std::ofstream(test_path) << R"(
+#include "ia.hpp"
+#include "ib.hpp"
+
+#include <cassert>
+#include <cmath>
+
+int main() {
+    test::Meters m1{10.0};
+    test::Meters m2{3.0};
+
+    assert(std::abs(atlas::undress(m1 + m2) - 13.0) < 1e-9);
+    assert(std::abs(atlas::undress(m1 - m2) - 7.0) < 1e-9);
+    assert(std::abs(atlas::undress(m1 / 2.0) - 5.0) < 1e-9);
+    assert(std::abs(atlas::undress(m1 * 2.0) - 20.0) < 1e-9);
+    assert(std::abs(atlas::undress(2.0 * m2) - 6.0) < 1e-9);
+    assert(m1 == 10.0);
+    assert(3.0 == m2);
+    assert(m1 > 3.0);
+    assert(3.0 < m1);
+
+    return 0;
+}
+)";
+
+        auto exe_path = temp_dir / "test";
+        std::ostringstream cmd;
+        cmd << "cd " << temp_dir << " && "
+            << wjh::atlas::test::find_working_compiler()
+            << " -std=c++20 -I. -o test test.cpp 2>&1";
+
+        auto result = exec_command(cmd.str());
+        INFO("Compilation output: " << result.output);
+        CHECK(result.exit_code == 0);
+
+        if (result.exit_code == 0) {
+            auto run = exec_command(exe_path.string());
+            CHECK(run.exit_code == 0);
+        }
+
+        std::error_code ec;
+        fs::remove_all(temp_dir, ec);
+    }
+
+    TEST_CASE("Interaction: a symmetric interaction on identical operands")
+    {
+        // A symmetric interaction whose operands are the same type asks for
+        // the same operator twice; the generator must emit it only once.
+        auto temp_dir = fs::temp_directory_path() /
+            ("atlas_interaction_self_sym_" + std::to_string(::getpid()));
+        fs::create_directories(temp_dir);
+
+        auto types_desc = R"([type]
+kind=struct
+namespace=test
+name=Meters
+description=strong double; ==; no-constexpr
+)";
+
+        auto types_input = temp_dir / "types.txt";
+        auto types_header = temp_dir / "types.hpp";
+        std::ofstream(types_input) << types_desc;
+        REQUIRE(generate_header(types_input, types_header) == EXIT_SUCCESS);
+
+        auto interactions = R"(include "types.hpp"
+
+namespace=test
+no-constexpr
+
+Meters + Meters <-> Meters
+)";
+
+        auto i_input = temp_dir / "i.txt";
+        auto i_header = temp_dir / "i.hpp";
+        std::ofstream(i_input) << interactions;
+        REQUIRE(generate_interactions(i_input, i_header) == EXIT_SUCCESS);
+
+        auto test_path = temp_dir / "test.cpp";
+        std::ofstream(test_path) << R"(
+#include "i.hpp"
+
+#include <cassert>
+#include <cmath>
+
+int main() {
+    test::Meters m1{10.0};
+    test::Meters m2{3.0};
+
+    assert(std::abs(atlas::undress(m1 + m2) - 13.0) < 1e-9);
+
+    return 0;
+}
+)";
+
+        auto exe_path = temp_dir / "test";
+        std::ostringstream cmd;
+        cmd << "cd " << temp_dir << " && "
+            << wjh::atlas::test::find_working_compiler()
+            << " -std=c++20 -I. -o test test.cpp 2>&1";
+
+        auto result = exec_command(cmd.str());
+        INFO("Compilation output: " << result.output);
+        CHECK(result.exit_code == 0);
+
+        if (result.exit_code == 0) {
+            auto run = exec_command(exe_path.string());
+            CHECK(run.exit_code == 0);
+        }
+
+        std::error_code ec;
+        fs::remove_all(temp_dir, ec);
+    }
 }
 
 TEST_SUITE("Compilation Tests: Comparison Completeness")

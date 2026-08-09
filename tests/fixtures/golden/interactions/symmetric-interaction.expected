@@ -1,5 +1,5 @@
-#ifndef TEST_7DA8D1CB7F0A605ECB5ED397D6F0B593EF3824C3
-#define TEST_7DA8D1CB7F0A605ECB5ED397D6F0B593EF3824C3
+#ifndef TEST_FA2E4E0D22D3906210A5328887C9CADB4DBDC9C0
+#define TEST_FA2E4E0D22D3906210A5328887C9CADB4DBDC9C0
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -862,6 +862,8 @@ noexcept(noexcept(atlas_detail::compound_assign_impl_plus(
 //////////////////////////////////////////////////////////////////////
 namespace physics {
 
+#ifndef ATLAS_INTERACTION_CB282154B96924485DE6A2A7852C361D60034076
+#define ATLAS_INTERACTION_CB282154B96924485DE6A2A7852C361D60034076
 inline constexpr Meters
 operator+(Meters lhs, Meters rhs)
 noexcept(
@@ -870,17 +872,9 @@ noexcept(
 {
     return Meters{lhs.value + rhs.value};
 }
-
-inline constexpr Meters
-operator+(Meters lhs, Meters rhs)
-noexcept(
-    noexcept(lhs.value + rhs.value) &&
-    std::is_nothrow_constructible<Meters, decltype(lhs.value + rhs.value)>::value)
-{
-    return Meters{lhs.value + rhs.value};
-}
+#endif // ATLAS_INTERACTION_CB282154B96924485DE6A2A7852C361D60034076
 
 } // namespace physics
 
-#endif // TEST_7DA8D1CB7F0A605ECB5ED397D6F0B593EF3824C3
+#endif // TEST_FA2E4E0D22D3906210A5328887C9CADB4DBDC9C0
 

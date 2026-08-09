@@ -1,5 +1,5 @@
-#ifndef TEST_81E12C2282BAB6BDDE545A88105594F1231CC852
-#define TEST_81E12C2282BAB6BDDE545A88105594F1231CC852
+#ifndef TEST_1EE64C0F754EC30E726FC4C3092A26A9116AA7B3
+#define TEST_1EE64C0F754EC30E726FC4C3092A26A9116AA7B3
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -862,6 +862,8 @@ noexcept(noexcept(atlas_detail::compound_assign_impl_plus(
 //////////////////////////////////////////////////////////////////////
 namespace mylib {
 
+#ifndef ATLAS_INTERACTION_5149DFE85C72EFA4BD558C94FD6A69E393E2F71F
+#define ATLAS_INTERACTION_5149DFE85C72EFA4BD558C94FD6A69E393E2F71F
 inline constexpr Counter
 operator+(Counter lhs, external::Delta rhs)
 noexcept(
@@ -870,8 +872,9 @@ noexcept(
 {
     return Counter{atlas::undress(lhs) + rhs.getValue()};
 }
+#endif // ATLAS_INTERACTION_5149DFE85C72EFA4BD558C94FD6A69E393E2F71F
 
 } // namespace mylib
 
-#endif // TEST_81E12C2282BAB6BDDE545A88105594F1231CC852
+#endif // TEST_1EE64C0F754EC30E726FC4C3092A26A9116AA7B3
 

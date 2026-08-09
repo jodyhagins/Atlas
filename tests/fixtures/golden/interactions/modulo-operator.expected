@@ -1,5 +1,5 @@
-#ifndef TEST_8B51CEFB4BFB0E9E4F7335B31FAF9B74FCDCE769
-#define TEST_8B51CEFB4BFB0E9E4F7335B31FAF9B74FCDCE769
+#ifndef TEST_51E9A63A8642202159027B8B2F7CEECEDE376B21
+#define TEST_51E9A63A8642202159027B8B2F7CEECEDE376B21
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -862,6 +862,8 @@ noexcept(noexcept(atlas_detail::compound_assign_impl_modulo(
 //////////////////////////////////////////////////////////////////////
 namespace data {
 
+#ifndef ATLAS_INTERACTION_54BA041723FA31616DC92D9E333873ECF2A1E6C3
+#define ATLAS_INTERACTION_54BA041723FA31616DC92D9E333873ECF2A1E6C3
 inline constexpr ByteCount
 operator%(ByteCount lhs, ByteCount rhs)
 noexcept(
@@ -870,7 +872,10 @@ noexcept(
 {
     return ByteCount{lhs.value % rhs.value};
 }
+#endif // ATLAS_INTERACTION_54BA041723FA31616DC92D9E333873ECF2A1E6C3
 
+#ifndef ATLAS_INTERACTION_90D0DD1B9A8FA14C5AA5AABBE2CE40493AE0D9A4
+#define ATLAS_INTERACTION_90D0DD1B9A8FA14C5AA5AABBE2CE40493AE0D9A4
 inline constexpr ByteCount
 operator%(ByteCount lhs, size_t rhs)
 noexcept(
@@ -879,8 +884,9 @@ noexcept(
 {
     return ByteCount{lhs.value % rhs};
 }
+#endif // ATLAS_INTERACTION_90D0DD1B9A8FA14C5AA5AABBE2CE40493AE0D9A4
 
 } // namespace data
 
-#endif // TEST_8B51CEFB4BFB0E9E4F7335B31FAF9B74FCDCE769
+#endif // TEST_51E9A63A8642202159027B8B2F7CEECEDE376B21
 

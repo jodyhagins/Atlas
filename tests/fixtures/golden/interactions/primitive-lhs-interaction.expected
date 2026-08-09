@@ -1,5 +1,5 @@
-#ifndef TEST_D14672E37BA62CD0C5C672CC34D4107EFAD801FA
-#define TEST_D14672E37BA62CD0C5C672CC34D4107EFAD801FA
+#ifndef TEST_C3F9EB722B96464308671709C44DEDA0762904A3
+#define TEST_C3F9EB722B96464308671709C44DEDA0762904A3
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -924,6 +924,8 @@ noexcept(noexcept(atlas_detail::compound_assign_impl_divide(
 //////////////////////////////////////////////////////////////////////
 namespace physics::units {
 
+#ifndef ATLAS_INTERACTION_917AE05FA0BF83B23DD2EFD8695610064C06B1B9
+#define ATLAS_INTERACTION_917AE05FA0BF83B23DD2EFD8695610064C06B1B9
 inline constexpr Meters
 operator*(double lhs, Meters rhs)
 noexcept(
@@ -932,7 +934,10 @@ noexcept(
 {
     return Meters{lhs * rhs.value};
 }
+#endif // ATLAS_INTERACTION_917AE05FA0BF83B23DD2EFD8695610064C06B1B9
 
+#ifndef ATLAS_INTERACTION_F2E0809E5829A3B2EF8A3775E69550EB769F189E
+#define ATLAS_INTERACTION_F2E0809E5829A3B2EF8A3775E69550EB769F189E
 inline constexpr Meters
 operator/(double lhs, Meters rhs)
 noexcept(
@@ -941,8 +946,9 @@ noexcept(
 {
     return Meters{lhs / rhs.value};
 }
+#endif // ATLAS_INTERACTION_F2E0809E5829A3B2EF8A3775E69550EB769F189E
 
 } // namespace physics::units
 
-#endif // TEST_D14672E37BA62CD0C5C672CC34D4107EFAD801FA
+#endif // TEST_C3F9EB722B96464308671709C44DEDA0762904A3
 

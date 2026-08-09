@@ -1,5 +1,5 @@
-#ifndef TEST_EC24A0D038FC766D7A18A5EEC064DF71A2241BD2
-#define TEST_EC24A0D038FC766D7A18A5EEC064DF71A2241BD2
+#ifndef TEST_88654A952610893FF4C9A97C7EADD5839C303086
+#define TEST_88654A952610893FF4C9A97C7EADD5839C303086
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -924,6 +924,8 @@ noexcept(noexcept(atlas_detail::compound_assign_impl_rshift(
 //////////////////////////////////////////////////////////////////////
 namespace net::ipv4 {
 
+#ifndef ATLAS_INTERACTION_595394E4DFB3D75D9C6DBE70FAE4BC2A8CCBFA1A
+#define ATLAS_INTERACTION_595394E4DFB3D75D9C6DBE70FAE4BC2A8CCBFA1A
 inline constexpr Octet
 operator<<(Octet lhs, int rhs)
 noexcept(
@@ -932,7 +934,10 @@ noexcept(
 {
     return Octet{lhs.value << rhs};
 }
+#endif // ATLAS_INTERACTION_595394E4DFB3D75D9C6DBE70FAE4BC2A8CCBFA1A
 
+#ifndef ATLAS_INTERACTION_448EE4447F4AB8C20FA069056A509A174CBCAFE2
+#define ATLAS_INTERACTION_448EE4447F4AB8C20FA069056A509A174CBCAFE2
 inline constexpr Octet
 operator>>(Octet lhs, int rhs)
 noexcept(
@@ -941,7 +946,10 @@ noexcept(
 {
     return Octet{lhs.value >> rhs};
 }
+#endif // ATLAS_INTERACTION_448EE4447F4AB8C20FA069056A509A174CBCAFE2
 
+#ifndef ATLAS_INTERACTION_BB6F39B13B550DCFA0A7FE8D7694B501A11DC7E1
+#define ATLAS_INTERACTION_BB6F39B13B550DCFA0A7FE8D7694B501A11DC7E1
 inline constexpr int
 operator<<(int lhs, Octet rhs)
 noexcept(
@@ -950,8 +958,9 @@ noexcept(
 {
     return int{lhs << rhs.value};
 }
+#endif // ATLAS_INTERACTION_BB6F39B13B550DCFA0A7FE8D7694B501A11DC7E1
 
 } // namespace net::ipv4
 
-#endif // TEST_EC24A0D038FC766D7A18A5EEC064DF71A2241BD2
+#endif // TEST_88654A952610893FF4C9A97C7EADD5839C303086
 

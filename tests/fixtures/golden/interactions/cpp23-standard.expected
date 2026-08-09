@@ -1,5 +1,5 @@
-#ifndef TEST_F213FAE968BA9AE14EC2D034A81DFB33AB1A6BA2
-#define TEST_F213FAE968BA9AE14EC2D034A81DFB33AB1A6BA2
+#ifndef TEST_2BF391B13C2BF357EC911115255991C8C68784C9
+#define TEST_2BF391B13C2BF357EC911115255991C8C68784C9
 
 static_assert(__cplusplus >= 202302L,
     "This file requires C++23 or later. Compile with -std=c++23 or higher.");
@@ -849,6 +849,8 @@ noexcept(noexcept(atlas_detail::compound_assign_impl_divide(
 //////////////////////////////////////////////////////////////////////
 namespace test {
 
+#ifndef ATLAS_INTERACTION_6978FF2011DD81748D8A62F4A94F68C875B2763D
+#define ATLAS_INTERACTION_6978FF2011DD81748D8A62F4A94F68C875B2763D
 inline constexpr Power
 operator/(Energy lhs, Time rhs)
 noexcept(
@@ -857,8 +859,9 @@ noexcept(
 {
     return Power{atlas::undress(lhs) / atlas::undress(rhs)};
 }
+#endif // ATLAS_INTERACTION_6978FF2011DD81748D8A62F4A94F68C875B2763D
 
 } // namespace test
 
-#endif // TEST_F213FAE968BA9AE14EC2D034A81DFB33AB1A6BA2
+#endif // TEST_2BF391B13C2BF357EC911115255991C8C68784C9
 

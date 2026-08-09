@@ -1,5 +1,5 @@
-#ifndef TEST_99BE25986D3E9307E3E87ED499D595584A9F0BD5
-#define TEST_99BE25986D3E9307E3E87ED499D595584A9F0BD5
+#ifndef TEST_4E294E7E7D42CCCBB69956669613ED87EC6A00FC
+#define TEST_4E294E7E7D42CCCBB69956669613ED87EC6A00FC
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -908,6 +908,8 @@ noexcept(noexcept(atlas_detail::compound_assign_impl_minus(
 //////////////////////////////////////////////////////////////////////
 namespace math {
 
+#ifndef ATLAS_INTERACTION_2A5991287A5FE4BFA074580600AAA43C9AEC666D
+#define ATLAS_INTERACTION_2A5991287A5FE4BFA074580600AAA43C9AEC666D
 #if __cpp_concepts >= 201907L
 template <std::integral V>
 #else
@@ -921,7 +923,10 @@ noexcept(
 {
     return V{atlas::undress(lhs) - atlas::undress(rhs)};
 }
+#endif // ATLAS_INTERACTION_2A5991287A5FE4BFA074580600AAA43C9AEC666D
 
+#ifndef ATLAS_INTERACTION_A3F26E13B3D93B230BAA2A311568923310FF866F
+#define ATLAS_INTERACTION_A3F26E13B3D93B230BAA2A311568923310FF866F
 #if __cpp_concepts >= 201907L
 template <std::integral V>
 #else
@@ -935,8 +940,9 @@ noexcept(
 {
     return V{atlas::undress(lhs) + atlas::undress(rhs)};
 }
+#endif // ATLAS_INTERACTION_A3F26E13B3D93B230BAA2A311568923310FF866F
 
 } // namespace math
 
-#endif // TEST_99BE25986D3E9307E3E87ED499D595584A9F0BD5
+#endif // TEST_4E294E7E7D42CCCBB69956669613ED87EC6A00FC
 

@@ -1,5 +1,5 @@
-#ifndef TEST_46F95BCF6EEF9F31E04F8D63D379023DF3280BA3
-#define TEST_46F95BCF6EEF9F31E04F8D63D379023DF3280BA3
+#ifndef TEST_66989B0F07D4AA91C8FA4BF2B5A517AF704FDABA
+#define TEST_66989B0F07D4AA91C8FA4BF2B5A517AF704FDABA
 
 // ======================================================================
 // NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE  NOTICE
@@ -986,6 +986,8 @@ noexcept(noexcept(atlas_detail::compound_assign_impl_bitor(
 //////////////////////////////////////////////////////////////////////
 namespace graphics::color {
 
+#ifndef ATLAS_INTERACTION_198A7C05D71A29A3D07A61EDB127CE9DF555A181
+#define ATLAS_INTERACTION_198A7C05D71A29A3D07A61EDB127CE9DF555A181
 inline constexpr RedChannel
 operator&(RedChannel lhs, RedChannel rhs)
 noexcept(
@@ -994,7 +996,10 @@ noexcept(
 {
     return RedChannel{lhs.value & rhs.value};
 }
+#endif // ATLAS_INTERACTION_198A7C05D71A29A3D07A61EDB127CE9DF555A181
 
+#ifndef ATLAS_INTERACTION_3056221674E1D797C45A9259A0EEEB2E4BE050AC
+#define ATLAS_INTERACTION_3056221674E1D797C45A9259A0EEEB2E4BE050AC
 inline constexpr RedChannel
 operator|(RedChannel lhs, RedChannel rhs)
 noexcept(
@@ -1003,7 +1008,10 @@ noexcept(
 {
     return RedChannel{lhs.value | rhs.value};
 }
+#endif // ATLAS_INTERACTION_3056221674E1D797C45A9259A0EEEB2E4BE050AC
 
+#ifndef ATLAS_INTERACTION_A6D81312029DE8B6F21FB8D54BB605F742337B27
+#define ATLAS_INTERACTION_A6D81312029DE8B6F21FB8D54BB605F742337B27
 inline constexpr RedChannel
 operator^(RedChannel lhs, RedChannel rhs)
 noexcept(
@@ -1012,8 +1020,9 @@ noexcept(
 {
     return RedChannel{lhs.value ^ rhs.value};
 }
+#endif // ATLAS_INTERACTION_A6D81312029DE8B6F21FB8D54BB605F742337B27
 
 } // namespace graphics::color
 
-#endif // TEST_46F95BCF6EEF9F31E04F8D63D379023DF3280BA3
+#endif // TEST_66989B0F07D4AA91C8FA4BF2B5A517AF704FDABA
 
