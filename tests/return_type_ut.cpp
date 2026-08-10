@@ -8,9 +8,9 @@
 //
 // Verifies that atlas_value_for, atlas::unwrap, atlas::undress, and
 // atlas::cast<T> return the expected types for all value categories.
-// This test specifically validates the ref_tag mechanism that allows
-// atlas::cast<T&&> to return references to live storage rather than
-// dangling references to temporaries.
+// Reference targets are only reachable from lvalue sources; from rvalues
+// they would dangle, so those casts are verified to be rejected and value
+// targets are verified to move instead.
 // ----------------------------------------------------------------------
 
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
@@ -270,36 +270,12 @@ TEST_SUITE("Return Types - atlas::cast reference targets")
             int &>::value);
     }
 
-    TEST_CASE("cast<int&&> from SimpleInt rvalue")
-    {
-        test::SimpleInt x{42};
-        CHECK(std::is_same<
-            decltype(atlas::cast<int &&>(std::move(x))),
-            int &&>::value);
-    }
-
     TEST_CASE("cast<int&> from NestedInt mutable lvalue")
     {
         test::NestedInt x{test::SimpleInt{42}};
         CHECK(std::is_same<
             decltype(atlas::cast<int &>(x)),
             int &>::value);
-    }
-
-    TEST_CASE("cast<int&&> from NestedInt rvalue")
-    {
-        test::NestedInt x{test::SimpleInt{42}};
-        CHECK(std::is_same<
-            decltype(atlas::cast<int &&>(std::move(x))),
-            int &&>::value);
-    }
-
-    TEST_CASE("cast<int&&> from TripleNestedInt rvalue")
-    {
-        test::TripleNestedInt x{test::NestedInt{test::SimpleInt{42}}};
-        CHECK(std::is_same<
-            decltype(atlas::cast<int &&>(std::move(x))),
-            int &&>::value);
     }
 
     TEST_CASE("cast<SimpleInt&> from NestedInt mutable lvalue")
@@ -309,51 +285,64 @@ TEST_SUITE("Return Types - atlas::cast reference targets")
             decltype(atlas::cast<test::SimpleInt &>(x)),
             test::SimpleInt &>::value);
     }
-
-    TEST_CASE("cast<SimpleInt&&> from NestedInt rvalue")
-    {
-        test::NestedInt x{test::SimpleInt{42}};
-        CHECK(std::is_same<
-            decltype(atlas::cast<test::SimpleInt &&>(std::move(x))),
-            test::SimpleInt &&>::value);
-    }
 }
 
 // ======================================================================
-// TEST SUITE: NO-DANGLING VERIFICATION
+// TEST SUITE: REFERENCE TARGETS REJECT RVALUE SOURCES
+//
+// cast<T const &> / cast<T &&> from an rvalue would return a reference
+// into a value that dies at the end of the full expression, so those
+// casts are ill-formed. Moving out of an expiring object is done with a
+// value target, which drills by moving layer by layer.
 // ======================================================================
 
-TEST_SUITE("Return Types - no-dangling verification")
+namespace {
+
+template <typename TargetT, typename SourceT, typename = void>
+struct cast_is_valid : std::false_type
+{};
+
+template <typename TargetT, typename SourceT>
+struct cast_is_valid<
+    TargetT,
+    SourceT,
+    std::void_t<decltype(atlas::cast<TargetT>(std::declval<SourceT>()))>>
+: std::true_type
+{};
+
+} // namespace
+
+TEST_SUITE("Return Types - reference targets reject rvalue sources")
 {
-    TEST_CASE("reference cast points to live member storage (SimpleInt)")
+    TEST_CASE("cast<int&&> from rvalue is rejected, from any depth")
     {
-        test::SimpleInt x{42};
-        int * addr = &atlas::undress(x);
-        int && ref = atlas::cast<int &&>(std::move(x));
-        CHECK(&ref == addr);
+        CHECK_FALSE(cast_is_valid<int &&, test::SimpleInt &&>::value);
+        CHECK_FALSE(cast_is_valid<int &&, test::NestedInt &&>::value);
+        CHECK_FALSE(cast_is_valid<int &&, test::TripleNestedInt &&>::value);
+        CHECK_FALSE(
+            cast_is_valid<test::SimpleInt &&, test::NestedInt &&>::value);
     }
 
-    TEST_CASE("reference cast points to live member storage (NestedInt)")
+    TEST_CASE("cast<int const&> from rvalue is rejected")
     {
-        test::NestedInt x{test::SimpleInt{42}};
-        int * addr = &atlas::undress(x);
-        int && ref = atlas::cast<int &&>(std::move(x));
-        CHECK(&ref == addr);
+        CHECK_FALSE(cast_is_valid<int const &, test::SimpleInt &&>::value);
+        CHECK_FALSE(cast_is_valid<int const &, test::NestedInt &&>::value);
     }
 
-    TEST_CASE("reference cast points to live member storage (TripleNestedInt)")
+    TEST_CASE("reference targets from lvalues remain valid")
+    {
+        CHECK(cast_is_valid<int const &, test::SimpleInt &>::value);
+        CHECK(cast_is_valid<int &, test::SimpleInt &>::value);
+        CHECK(cast_is_valid<int const &, test::SimpleInt const &>::value);
+        CHECK(cast_is_valid<int &&, test::SimpleInt &>::value);
+    }
+
+    TEST_CASE("value target from rvalue moves layer by layer")
     {
         test::TripleNestedInt x{test::NestedInt{test::SimpleInt{42}}};
-        int * addr = &atlas::undress(x);
-        int && ref = atlas::cast<int &&>(std::move(x));
-        CHECK(&ref == addr);
-    }
-
-    TEST_CASE("intermediate level reference cast (NestedInt to SimpleInt&&)")
-    {
-        test::NestedInt x{test::SimpleInt{42}};
-        test::SimpleInt * addr = &atlas::cast<test::SimpleInt &>(x);
-        test::SimpleInt && ref = atlas::cast<test::SimpleInt &&>(std::move(x));
-        CHECK(&ref == addr);
+        CHECK(std::is_same<
+            decltype(atlas::cast<int>(std::move(x))),
+            int>::value);
+        CHECK(atlas::cast<int>(std::move(x)) == 42);
     }
 }

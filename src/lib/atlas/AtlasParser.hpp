@@ -59,6 +59,14 @@ struct FileParseResult
     bool auto_from_atlas_cast = false;
     std::vector<StrongTypeDescription> types;
 
+    /**
+     * Third-party borrowing (view-like) types declared with the file-level
+     * borrowed_types= directive. Each name gets an atlas::borrowed_type
+     * specialization emitted into the generated header, individually
+     * include-guarded so duplicate declarations across headers are benign.
+     */
+    std::vector<std::string> borrowed_types;
+
     // Auto-generation options
     bool auto_hash = false;
     bool auto_ostream = false;

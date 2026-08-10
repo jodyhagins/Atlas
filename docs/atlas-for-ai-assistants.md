@@ -92,9 +92,9 @@ description=int; ==, <=>
 
 | Feature | Effect |
 |---------|--------|
-| `from_atlas_cast` | Constructor from other atlas types with compatible underlying type |
-| `cast<Type>` | Explicit `operator Type()` |
-| `implicit_cast<Type>` | Implicit `operator Type()` (rarely appropriate) |
+| `from_atlas_cast<A, B, ...>` | Constructor from the listed atlas types (or types drilling to one). Bare `from_atlas_cast` is a generation-time error. |
+| `cast<Type>` | Explicit `operator Type()`, `const &`-qualified. If `Type` borrows the underlying's storage (e.g. `std::string_view` from `std::string`), converting a temporary is a compile error; bind a named variable first. |
+| `implicit_cast<Type>` | Implicit `operator Type()` (rarely appropriate); same rvalue borrow guard |
 
 ### Constraints
 
@@ -127,7 +127,8 @@ Set at the top of a `.atlas` file (before any `[type]` sections) or via CLI flag
 | `auto_ostream=true` | `operator<<` for all types |
 | `auto_istream=true` | `operator>>` for all types |
 | `auto_format=true` | `std::formatter<T>` for all types (C++20) |
-| `auto_from_atlas_cast=true` | Cross-type construction for all types |
+| `auto_from_atlas_cast=true` | Cross-type construction among the types declared in this file (same-file only; unions with explicit `from_atlas_cast<...>` lists) |
+| `borrowed_types=A, B` | Declare third-party view-like types as borrowing for the rvalue lifetime guards (emits guarded `atlas::borrowed_type` specializations) |
 
 ### Member Function Forwarding
 
@@ -259,6 +260,16 @@ Use these **only** at serialization, FFI, or legacy interop boundaries.
 | `atlas::cast<T>(x)` | Drill to a specific type | When you need a specific intermediate layer |
 
 Return types: lvalue source gives a reference, rvalue source gives by value (prevents dangling).
+
+Lifetime rules on `atlas::cast` (compile errors, not runtime hazards):
+- Reference targets (`cast<T &>`, `cast<T const &>`, `cast<T &&>`) require an lvalue source.
+- Borrowing targets from owning temporaries are rejected: `atlas::cast<std::string_view>(make_id())` does not compile. Bind a named variable (`auto id = make_id();`) and borrow from that.
+- Owning targets from temporaries move: `atlas::cast<std::string>(make_id())` is fine.
+
+| Trait | Answers |
+|-------|---------|
+| `atlas::is_borrowed<T>` | Does `T` borrow storage it does not own? (seeded for `string_view`/`span`, honors `enable_borrowed_range`, extensible via `atlas::borrowed_type`) |
+| `atlas::borrow_policy<Target, Underlying>` | Would converting to `Target` borrow storage `Underlying` owns? (the predicate the guards check; per-pair specializable) |
 
 ---
 

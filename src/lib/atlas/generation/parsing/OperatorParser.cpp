@@ -69,4 +69,47 @@ parse_cast_syntax(std::string_view token, bool & is_implicit)
     return std::string(strip(token.substr(start, end - start)));
 }
 
+bool
+OperatorParser::
+parse_from_atlas_cast_syntax(
+    std::string_view token,
+    std::vector<std::string> & types)
+{
+    constexpr std::string_view prefix = "from_atlas_cast<";
+    if (not token.starts_with(prefix)) {
+        return false;
+    }
+
+    auto end = token.find_last_of('>');
+    if (end == std::string_view::npos || end <= prefix.length()) {
+        throw std::invalid_argument(
+            "Invalid from_atlas_cast<> syntax: " + std::string(token));
+    }
+
+    auto list = token.substr(prefix.length(), end - prefix.length());
+
+    // Split on commas at angle-bracket depth zero, so names like
+    // some::Wrapper<int, 4> survive intact.
+    std::size_t depth = 0;
+    std::size_t begin = 0;
+    for (std::size_t n = 0; n <= list.size(); ++n) {
+        if (n == list.size() || (list[n] == ',' && depth == 0)) {
+            auto name = strip(list.substr(begin, n - begin));
+            if (name.empty()) {
+                throw std::invalid_argument(
+                    "Empty type name in from_atlas_cast<> list: " +
+                    std::string(token));
+            }
+            types.emplace_back(name);
+            begin = n + 1;
+        } else if (list[n] == '<') {
+            ++depth;
+        } else if (list[n] == '>' && depth > 0) {
+            --depth;
+        }
+    }
+
+    return true;
+}
+
 } // namespace wjh::atlas::generation

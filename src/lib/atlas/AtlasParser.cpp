@@ -612,6 +612,27 @@ parse_file_level_config(
     } else if (key == "auto_from_atlas_cast") {
         result.auto_from_atlas_cast =
             parser_utils::parse_bool(value, "auto_from_atlas_cast");
+    } else if (key == "borrowed_types") {
+        // Comma-separated type names; commas inside template argument lists
+        // are not separators. Multiple borrowed_types= lines accumulate.
+        std::size_t depth = 0;
+        std::size_t begin = 0;
+        for (std::size_t n = 0; n <= value.size(); ++n) {
+            if (n == value.size() || (value[n] == ',' && depth == 0)) {
+                auto name = trim(value.substr(begin, n - begin));
+                if (name.empty()) {
+                    throw AtlasParserError(
+                        "Empty type name in borrowed_types= at line " +
+                        std::to_string(line_number) + " in " + filename);
+                }
+                result.borrowed_types.push_back(std::move(name));
+                begin = n + 1;
+            } else if (value[n] == '<') {
+                ++depth;
+            } else if (value[n] == '>' && depth > 0) {
+                --depth;
+            }
+        }
     } else if (key == "profile") {
         // Parse profile=NAME; features...
         // value contains everything after the = sign (e.g.,
@@ -763,6 +784,24 @@ build_type_description(
         profile_system,
         line_number,
         filename);
+
+    // Bare from_atlas_cast cannot express which types are related, so it is
+    // rejected here, where the error can still name the file and line.
+    // (ClassInfo::parse repeats the check for descriptions that do not come
+    // from a file.)
+    if (parse_specification(expanded_description)
+            .operators.count("from_atlas_cast") != 0)
+    {
+        throw AtlasParserError(
+            "Type '" + effective_name + "' near line " +
+            std::to_string(line_number) + " in " + filename +
+            " uses bare 'from_atlas_cast', which is no longer supported "
+            "because it accepts every type sharing the underlying "
+            "representation. Name the permitted source types with "
+            "'from_atlas_cast<A, B, ...>', or set the file-level directive "
+            "'auto_from_atlas_cast=true' to allow cross-construction among "
+            "the types declared in the same file.");
+    }
 
     // Merge all constants from multiple constants= lines
     auto constants = parser_utils::merge_constants(
@@ -1487,6 +1526,29 @@ parse_type_definitions(
     if (result.types.empty()) {
         throw AtlasParserError(
             "No type definitions found in input file: " + filename);
+    }
+
+    // auto_from_atlas_cast enables cross-construction only among the types
+    // declared in this file: seed each type's allowlist with its same-file
+    // siblings. Explicit from_atlas_cast<...> tokens union in later, when
+    // the description tokens are parsed.
+    if (result.auto_from_atlas_cast) {
+        std::vector<std::string> qualified;
+        qualified.reserve(result.types.size());
+        for (auto const & type : result.types) {
+            qualified.push_back(
+                type.type_namespace.empty()
+                    ? type.type_name
+                    : type.type_namespace + "::" + type.type_name);
+        }
+        for (std::size_t n = 0; n < result.types.size(); ++n) {
+            for (std::size_t m = 0; m < result.types.size(); ++m) {
+                if (m != n) {
+                    result.types[n].from_atlas_cast_types.push_back(
+                        qualified[m]);
+                }
+            }
+        }
     }
 
     // Override with guard_prefix if provided

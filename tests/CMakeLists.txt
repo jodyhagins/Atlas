@@ -106,6 +106,12 @@ include(${doctest_SOURCE_DIR}/scripts/cmake/doctest.cmake)
 doctest_discover_tests(compilation_ut TEST_PREFIX "Compilation : "
     PROPERTIES COST 99)
 
+# Borrow-safety tests - rvalue borrow guards, classification traits,
+# borrowed_types= directive, and the guard matrix across C++ standards
+add_atlas_test(TARGET borrow_safety_ut)
+doctest_discover_tests(borrow_safety_ut TEST_PREFIX "BorrowSafety : "
+    PROPERTIES COST 99)
+
 # Atlas tool tests - tests the actual executable
 add_executable(atlas_tool_ut atlas_tool_ut.cpp)
 

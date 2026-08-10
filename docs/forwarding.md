@@ -333,6 +333,43 @@ The forwarding wrappers preserve:
 4. **Consider const-only** - Prevent accidental modification when appropriate
 5. **Test the API** - Verify forwarded memfns work as expected
 
+## Lifetime: Accessors Are As Safe As The Underlying Type — No Safer
+
+Forwarded accessors (and `iterable`'s `begin()`/`end()`) deliberately keep
+the underlying type's value-category behavior. They are *not* ref-qualified
+to reject temporaries, because that would make the wrapper stricter than the
+type it wraps and reject safe idioms:
+
+```cpp
+std::printf("%s\n", make_id().c_str());   // fine: pointer used within the
+                                          // full expression, same as
+                                          // std::string
+for (auto x : make_v()) { ... }           // fine: the temporary is
+                                          // lifetime-extended by range-for
+```
+
+The residual hazard is exactly the one the underlying type has: **storing**
+a pointer, reference, or iterator obtained from a temporary past the end of
+the full expression dangles:
+
+```cpp
+char const * p = make_id().c_str();       // dangles after this line --
+                                          // exactly as it would with a raw
+                                          // std::string temporary
+auto it = make_v().begin();               // same hazard
+```
+
+This is intentional and contrasts with Atlas-generated *conversions*, which
+do guard against rvalue borrows (see
+[Rvalue Borrow Guards](description-language.md#rvalue-borrow-guards-lifetime-safety)).
+The rule: Atlas guards what it invents; it stays faithful where you
+explicitly ask for the underlying type's own member.
+
+One related limit worth knowing: `std::span<T const>{temporary}` (and
+`std::vector`'s range constructor) bind through the *target's* constructors,
+which Atlas cannot intercept from the source side. A guard can only reject
+conversions the source type provides.
+
 ## Common Pitfalls
 
 ### Forwarding Too Much

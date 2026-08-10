@@ -657,7 +657,22 @@ process_feature_flags(ClassInfo & info, std::string_view sv)
     }
 
     if (sv == "from_atlas_cast") {
-        info.desc.generate_from_atlas_cast = true;
+        // Bare form cannot express which types are related -- that is the
+        // whole defect it enabled -- so it is a generation-time error.
+        throw std::invalid_argument(
+            "'" + info.class_name +
+            "': bare 'from_atlas_cast' is no longer supported because it "
+            "accepts every type sharing the underlying representation. "
+            "Name the permitted source types with 'from_atlas_cast<A, B>', "
+            "or set the file-level directive 'auto_from_atlas_cast=true' to "
+            "allow cross-construction among the types declared in the same "
+            "file.");
+    }
+
+    if (OperatorParser::parse_from_atlas_cast_syntax(
+            sv,
+            info.desc.from_atlas_cast_types))
+    {
         return true;
     }
 
@@ -1132,7 +1147,13 @@ enable_optional_features(ClassInfo & info)
         info.template_assignment_operator = true;
     }
 
-    if (info.desc.generate_from_atlas_cast) {
+    // The from_atlas_cast constructor requires a non-empty allowlist: the
+    // names come from a from_atlas_cast<A, B> token, from the parser seeding
+    // same-file siblings under auto_from_atlas_cast=true, or both (union).
+    auto & allow = info.desc.from_atlas_cast_types;
+    std::sort(allow.begin(), allow.end());
+    allow.erase(std::unique(allow.begin(), allow.end()), allow.end());
+    if (not allow.empty()) {
         info.from_atlas_cast_constructor = true;
     }
 }

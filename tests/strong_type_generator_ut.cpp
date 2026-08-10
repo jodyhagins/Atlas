@@ -265,6 +265,113 @@ TEST_SUITE("StrongTypeGenerator")
             CHECK(code.find("namespace ns2") != std::string::npos);
             CHECK(code.find("namespace ns3") != std::string::npos);
         }
+
+        SUBCASE("borrowed_types emit individually guarded specializations") {
+            std::vector<StrongTypeDescription> descriptions = {
+                make_description("struct", "test", "Name", "strong int")};
+
+            auto code = generate_strong_types_file(
+                descriptions,
+                "",
+                "_",
+                true,
+                {},
+                {"ext::StringRef", "other::View"});
+
+            CHECK(
+                code.find("struct borrowed_type<ext::StringRef> : "
+                          "std::true_type {};") != std::string::npos);
+            CHECK(
+                code.find("struct borrowed_type<other::View> : "
+                          "std::true_type {};") != std::string::npos);
+            // Each specialization carries its own include guard so two
+            // headers declaring the same type can coexist in one TU
+            CHECK(
+                code.find("#ifndef ATLAS_BORROWED_TYPE_") !=
+                std::string::npos);
+        }
+
+        SUBCASE("borrowed_types guards ignore incidental spelling") {
+            std::vector<StrongTypeDescription> descriptions = {
+                make_description("struct", "test", "Name", "strong int")};
+
+            // The guard macro emitted for a single declared borrowing type
+            auto guard_for = [&](std::string const & spelling) {
+                auto code = generate_strong_types_file(
+                    descriptions,
+                    "",
+                    "_",
+                    true,
+                    {},
+                    {spelling});
+                auto begin = code.find("ATLAS_BORROWED_TYPE_");
+                REQUIRE(begin != std::string::npos);
+                auto end = code.find_first_not_of(
+                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                    "abcdefghijklmnopqrstuvwxyz"
+                    "0123456789_",
+                    begin);
+                return code.substr(begin, end - begin);
+            };
+
+            // Two headers naming one type must agree on the guard, so a
+            // leading global qualifier and stray whitespace cannot change it
+            auto const plain = guard_for("ext::StringRef");
+            CHECK(guard_for("::ext::StringRef") == plain);
+            CHECK(guard_for("ext :: StringRef") == plain);
+            CHECK(guard_for("  ext::StringRef  ") == plain);
+
+            // ...nor may whitespace inside a template argument list
+            auto const templated = guard_for("ext::Ref<int, 2>");
+            CHECK(guard_for("ext::Ref<int,2>") == templated);
+            CHECK(guard_for("ext::Ref< int ,2 >") == templated);
+
+            // Types that really do differ still get their own guard
+            CHECK(guard_for("other::View") != plain);
+            CHECK(templated != plain);
+
+            // One type spelled two ways in one file is one specialization
+            auto code = generate_strong_types_file(
+                descriptions,
+                "",
+                "_",
+                true,
+                {},
+                {"ext::StringRef", "::ext::StringRef"});
+            std::string const specialization = "ext::StringRef>";
+            std::size_t specialization_count = 0;
+            for (auto pos = code.find(specialization);
+                 pos != std::string::npos;
+                 pos = code.find(specialization, pos + 1))
+            {
+                ++specialization_count;
+            }
+            CHECK(specialization_count == 1);
+        }
+
+        SUBCASE("from_atlas_cast allowlists emit forward declarations") {
+            std::vector<StrongTypeDescription> descriptions = {
+                make_description(
+                    "struct",
+                    "test",
+                    "First",
+                    "strong int; from_atlas_cast<test::Second>"),
+                make_description("struct", "test", "Second", "strong int")};
+
+            auto code = generate_strong_types_file(descriptions);
+
+            // First's constraint names Second before Second is defined, so
+            // the file forward-declares the siblings up front
+            CHECK(
+                code.find("namespace test { struct First; }") !=
+                std::string::npos);
+            CHECK(
+                code.find("namespace test { struct Second; }") !=
+                std::string::npos);
+            CHECK(
+                code.find("is_atlas_castable<ArgT, test::Second>") !=
+                std::string::npos);
+        }
     }
 
     TEST_CASE("C++11 Compatibility")

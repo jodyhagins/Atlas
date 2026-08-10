@@ -17,7 +17,7 @@ This guide explains **how to work with values** inside strong types: how to avoi
   - [Interactions (Cross-Type Operators)](#interactions-cross-type-operators)
   - [Direct Access Operators](#direct-access-operators---and-)
   - [Conversion Operators](#conversion-operators)
-  - [Cross-Type Construction](#cross-type-construction-from_atlas_cast)
+  - [Cross-Type Construction](#cross-type-construction-from_atlas_casta-b-)
 - [When You Must Access the Raw Value](#when-you-must-access-the-raw-value)
   - [`atlas_value_for` (Hidden Friend)](#atlas_value_for-hidden-friend)
   - [`atlas::unwrap` (One Layer)](#atlasunwrap-one-layer)
@@ -184,7 +184,7 @@ Both types automatically get `std::hash`, `operator<<`, and `std::formatter` wit
 | `auto_ostream=true` | `operator<<` for all atlas types in the file (SFINAE-constrained) |
 | `auto_istream=true` | `operator>>` for all atlas types in the file (SFINAE-constrained) |
 | `auto_format=true` | `std::formatter<T>` for all atlas types in the file (C++20, requires `__cpp_lib_format`) |
-| `auto_from_atlas_cast=true` | Cross-type construction for all types in the file |
+| `auto_from_atlas_cast=true` | Cross-type construction among the types declared in the file (same-file only; use `from_atlas_cast<...>` per type for cross-file) |
 
 ### Member Function Forwarding (`forward`)
 
@@ -335,26 +335,33 @@ int raw = static_cast<int>(p);   // explicit cast<int>
 Use `implicit_cast<Type>` for implicit conversions (rare; reduces type safety).
 Use `bool` for explicit boolean conversion.
 
-### Cross-Type Construction (`from_atlas_cast`)
+### Cross-Type Construction (`from_atlas_cast<A, B, ...>`)
 
-When two types share a compatible underlying type, `from_atlas_cast` enables direct construction:
+When two *related* types share a compatible underlying type, `from_atlas_cast<...>` names the types you may construct from:
 
 ```
-auto_from_atlas_cast=true
-
 [struct net::TcpPort]
-description=uint16_t; ==, <=>
+description=uint16_t; ==, <=>, from_atlas_cast<net::UdpPort>
 
 [struct net::UdpPort]
-description=uint16_t; ==, <=>
+description=uint16_t; ==, <=>, from_atlas_cast<net::TcpPort>
 ```
 
 ```cpp
 TcpPort tcp{8080};
-UdpPort udp{tcp};    // OK: drills through to shared uint16_t
+UdpPort udp{tcp};    // OK: TcpPort is listed
+UdpPort bad{RetryCount{3}};  // Error: unlisted, even with the same underlying
 ```
 
+For a family declared in one file, `auto_from_atlas_cast=true` at file level
+allows cross-construction among the same-file types (and only those); an
+explicit list unions with it. A bare `from_atlas_cast` token is a
+generation-time error.
+
 Value categories are preserved: lvalue sources copy, rvalue sources move.
+If the constructed type's underlying *borrows* (a view-backed type), a
+temporary argument would leave it dangling, so that construction is a
+compile error — bind the source to a named variable first.
 
 ---
 
@@ -413,23 +420,50 @@ atlas::cast<double>(x);        // 42.0 -- found int, cast to double
 
 #### Value targets vs reference targets
 
-**Value targets** (`cast<int>`) always return by value:
+**Value targets** (`cast<int>`) always return by value, from any value
+category. Rvalue sources move, layer by layer:
 ```cpp
 auto val = atlas::cast<int>(std::move(x));   // int -- safe copy/move
 ```
 
-**Reference targets** (`cast<int&>`, `cast<int&&>`) return references to live storage:
+**Reference targets** (`cast<int&>`, `cast<int const&>`, `cast<int&&>`)
+require an **lvalue source** and bind to an actual layer of the chain:
 ```cpp
 // Mutable reference -- can modify the wrapped value
 int & ref = atlas::cast<int &>(x);
 ref = 100;   // modifies x's innermost value
 
-// Rvalue reference -- references live storage, no dangling
+// Move semantics from a named object: use a value target
 NestedInt n{SimpleInt{42}};
-int * addr = &atlas::undress(n);
-int && rref = atlas::cast<int &&>(std::move(n));
-assert(&rref == addr);   // same storage, not a temporary
+int moved = atlas::cast<int>(std::move(n));  // moves out, no reference held
+
+// Reference target from an rvalue is a compile error: the reference
+// would outlive the temporary it points into.
+// atlas::cast<int &&>(NestedInt{SimpleInt{7}});         // error
+// atlas::cast<std::string const &>(make_id());          // error
 ```
+
+A reference target also never binds through a conversion: if reaching `T`
+requires converting a layer's value (materializing a temporary `T`), the
+cast is rejected rather than returning a reference to that temporary.
+
+#### Borrowing targets and temporaries
+
+When the target *borrows* storage a layer *owns* (`std::string` →
+`std::string_view`), drilling a temporary would produce a dangling view, so
+it is rejected at compile time even for value targets:
+
+```cpp
+Plain make_plain();   // std::string-backed, no conversion clauses declared
+
+auto sv1 = atlas::cast<std::string_view>(make_plain());  // error: dangles
+Plain p = make_plain();
+auto sv2 = atlas::cast<std::string_view>(p);             // OK: views p
+auto s   = atlas::cast<std::string>(make_plain());       // OK: owns (moves)
+```
+
+The classification behind this (`atlas::borrow_policy`) is user-extensible;
+see [Rvalue Borrow Guards](description-language.md#rvalue-borrow-guards-lifetime-safety).
 
 ---
 
@@ -501,7 +535,7 @@ use `HoldsEnumC` if you need to exclude those.
 All non-template access utilities (`atlas_value_for`, `unwrap`, `undress`) return **by value** for rvalue sources.
 This prevents dangling references from temporaries.
 
-`atlas::cast<T>` with a **reference** target is the exception -- the user is explicitly requesting a reference, accepting lifetime responsibility.
+`atlas::cast<T>` with a **reference** target requires an lvalue source for the same reason: a reference into a temporary would dangle, so those casts are compile errors rather than lifetime hazards.
 
 ### `atlas_value_for`
 
@@ -538,12 +572,15 @@ This prevents dangling references from temporaries.
 | Target | Source | Return type |
 |--------|--------|-------------|
 | `int` (value) | `SimpleInt const &` | `int` |
-| `int` (value) | `SimpleInt &&` | `int` |
+| `int` (value) | `SimpleInt &&` | `int` (moves) |
 | `int const &` | `SimpleInt const &` | `int const &` |
 | `int &` | `SimpleInt &` | `int &` |
-| `int &&` | `SimpleInt &&` | `int &&` (live storage) |
 | `int &` | `NestedInt &` | `int &` (drills through) |
-| `int &&` | `NestedInt &&` | `int &&` (drills through) |
+| `int &&` | `SimpleInt &` | `int &&` (explicit move from lvalue) |
+| `int const &` | `SimpleInt &&` | compile error (would dangle) |
+| `int &&` | `SimpleInt &&` | compile error (would dangle) |
+| `std::string_view` | string-backed `&` | `std::string_view` (borrows lvalue) |
+| `std::string_view` | string-backed `&&` | compile error (would dangle) |
 
 ---
 
@@ -561,6 +598,8 @@ This prevents dangling references from temporaries.
 
 6. **Prefer `cast<T>` over `undress` when you want a specific type.** `cast<SimpleInt>` stops at the right level; `undress` always goes to the bottom.
 
-7. **Use reference targets on `cast` only when you need aliasing.** `cast<int&&>(std::move(x))` is safe, but value targets (`cast<int>`) are simpler when you just need the value.
+7. **Use reference targets on `cast` only when you need aliasing of a named object.** Reference targets require lvalue sources; to move out of an expiring object use a value target (`cast<int>(std::move(x))`).
 
-8. **If you're unwrapping everywhere, your type description is incomplete.** Go back and add the missing operators, forwardings, or interactions.
+8. **When a borrow guard rejects your call, bind a named variable.** `f(atlas::cast<std::string_view>(make_id()))` is rejected even though this one call would be safe, because the same expression pattern dangles everywhere else. Write `auto id = make_id();` and borrow from `id`.
+
+9. **If you're unwrapping everywhere, your type description is incomplete.** Go back and add the missing operators, forwardings, or interactions.

@@ -1,6 +1,10 @@
-# Test: from_atlas_cast constructor
-# Feature: Constructor from another atlas type via atlas::cast drilling
-# Expected: template<typename ArgT> explicit constructor with SFINAE guards
+# Test: from_atlas_cast constructor with an explicit allowlist
+# Feature: Constructor from the listed atlas types via atlas::cast drilling
+# Expected: template<typename ArgT> explicit constructor whose constraint
+#           accepts only arguments that are, or drill to, a listed type
+
+[struct test::SourceType]
+description=strong int
 
 [struct test::CastableType]
-description=strong int; from_atlas_cast
+description=strong int; from_atlas_cast<test::SourceType>

@@ -1,36 +1,50 @@
 # Test types for from_atlas_cast runtime tests
+#
+# Each type names the atlas types it may be constructed from with the
+# from_atlas_cast<A, B, ...> allowlist. Types that share an underlying
+# representation but are not listed must NOT be cross-constructible.
 
 [type]
 kind=struct
 namespace=test
 name=IntTypeA
-description=int; from_atlas_cast
+description=int; from_atlas_cast<test::IntTypeB>
 
 [type]
 kind=struct
 namespace=test
 name=IntTypeB
-description=int; from_atlas_cast
+description=int; from_atlas_cast<test::IntTypeA, test::NestedType>
 
 [type]
 kind=struct
 namespace=test
 name=NestedType
-description=test::IntTypeA; from_atlas_cast
+description=test::IntTypeA; from_atlas_cast<test::IntTypeB>
 
 [type]
 kind=struct
 namespace=test
 name=StringTypeA
-description=std::string; no-constexpr; from_atlas_cast
+description=std::string; no-constexpr; from_atlas_cast<test::StringTypeB>
 
 [type]
 kind=struct
 namespace=test
 name=StringTypeB
-description=std::string; no-constexpr; from_atlas_cast
+description=std::string; no-constexpr; from_atlas_cast<test::StringTypeA>
 
-# Type WITHOUT from_atlas_cast - should NOT accept other atlas types
+# The dangerous shape: a view-backed type whose from_atlas_cast constructor
+# would store a borrow of its argument. Lvalue arguments borrow safely;
+# rvalue arguments must be rejected by the lifetime guards.
+[type]
+kind=struct
+namespace=test
+name=ViewType
+description=std::string_view; no-constexpr; from_atlas_cast<test::StringTypeA>
+
+# Shares int with IntTypeA/IntTypeB but is not in any allowlist, and lists
+# nothing itself: no from_atlas_cast constructor is generated.
 [type]
 kind=struct
 namespace=test

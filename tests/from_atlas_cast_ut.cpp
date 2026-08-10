@@ -7,14 +7,17 @@
 // Runtime tests for the from_atlas_cast constructor feature.
 //
 // Tests:
-// - Construct one atlas type from another with same underlying type
-// - Multi-level drilling (nested atlas types)
+// - Construct one atlas type from a listed atlas type
+// - Multi-level drilling (a type that drills to a listed type)
 // - lvalue semantics (copy)
 // - rvalue semantics (move)
 // - constexpr construction
-// - SFINAE rejection: types without from_atlas_cast
+// - SFINAE rejection: unlisted types sharing the underlying representation
+// - SFINAE rejection: types without any from_atlas_cast allowlist
 // - SFINAE rejection: same type (copy/move ctors take priority)
 // - SFINAE rejection: non-atlas types (variadic ctor takes priority)
+// - View-backed types: lvalue arguments borrow, rvalue arguments are
+//   rejected by the lifetime guards
 // ----------------------------------------------------------------------
 
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
@@ -23,6 +26,7 @@
 
 #include <string>
 #include <type_traits>
+#include <utility>
 
 #include "doctest.hpp"
 
@@ -132,9 +136,20 @@ TEST_SUITE("from_atlas_cast - SFINAE")
 {
     TEST_CASE("Type without from_atlas_cast is not constructible from atlas types")
     {
-        // NoFromCastType does NOT have from_atlas_cast
+        // NoFromCastType does NOT have a from_atlas_cast allowlist
         CHECK_FALSE(std::is_constructible<test::NoFromCastType, test::IntTypeA>::value);
         CHECK_FALSE(std::is_constructible<test::NoFromCastType, test::IntTypeB>::value);
+    }
+
+    TEST_CASE("Unlisted type sharing the underlying representation is rejected")
+    {
+        // NoFromCastType wraps int just like IntTypeA/IntTypeB, but no
+        // allowlist names it, so nothing constructs from it
+        CHECK_FALSE(std::is_constructible<test::IntTypeA, test::NoFromCastType>::value);
+        CHECK_FALSE(std::is_constructible<test::IntTypeB, test::NoFromCastType>::value);
+
+        // NestedType is not in IntTypeA's list (only IntTypeB is)
+        CHECK_FALSE(std::is_constructible<test::IntTypeA, test::NestedType>::value);
     }
 
     TEST_CASE("Non-atlas types use variadic ctor, not from_atlas_cast")
@@ -155,5 +170,31 @@ TEST_SUITE("from_atlas_cast - SFINAE")
         // Move construction
         test::IntTypeA a3{std::move(a1)};
         CHECK(atlas::undress(a3) == 42);
+    }
+}
+
+// ======================================================================
+// TEST SUITE: VIEW-BACKED TYPES AND LIFETIME GUARDS
+// ======================================================================
+
+TEST_SUITE("from_atlas_cast - view-backed types")
+{
+    TEST_CASE("Lvalue argument borrows the source's storage")
+    {
+        test::StringTypeA source{std::string("hello")};
+        test::ViewType view{source};
+
+        CHECK(atlas::undress(view) == "hello");
+        CHECK(atlas::undress(view).data() == atlas::undress(source).data());
+    }
+
+    TEST_CASE("Rvalue argument that would store a borrow is rejected")
+    {
+        // Constructing from a temporary would leave the view dangling, so
+        // the lifetime guards make the constructor SFINAE out entirely.
+        CHECK_FALSE(
+            std::is_constructible<test::ViewType, test::StringTypeA>::value);
+        CHECK(
+            std::is_constructible<test::ViewType, test::StringTypeA &>::value);
     }
 }

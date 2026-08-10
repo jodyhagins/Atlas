@@ -152,6 +152,7 @@ parse_input_file(Arguments const & args)
         result.upcase_guard = parse_result.upcase_guard;
         result.file_level_cpp_standard = parse_result.file_level_cpp_standard;
         result.types = std::move(parse_result.types);
+        result.borrowed_types = std::move(parse_result.borrowed_types);
         result.auto_hash = parse_result.auto_hash;
         result.auto_ostream = parse_result.auto_ostream;
         result.auto_istream = parse_result.auto_istream;
@@ -271,6 +272,18 @@ INPUT FILE FORMAT:
     upcase_guard=true        # optional, default: true
     namespace=math           # optional default namespace for all types
     cpp_standard=20          # optional C++ standard (11, 14, 17, 20, 23)
+    auto_from_atlas_cast=true # optional; cross-construction among the types
+                             # declared in THIS file (same-file only)
+    borrowed_types=ext::Ref  # optional; declare third-party view-like types
+                             # so lifetime guards treat conversions to them
+                             # as borrowing (comma-separated, accumulates)
+
+    # Per-type cross-construction names an explicit allowlist. A bare
+    # 'from_atlas_cast' token is an error; list the permitted source types:
+    #     description=std::int64_t; ==, from_atlas_cast<ns::Millis, ns::Secs>
+    # Conversions that would let a temporary's storage escape (for example
+    # a std::string-backed type converting to std::string_view) reject
+    # rvalue sources at compile time; bind a named variable first.
 
     # Profile definitions (optional, reusable feature bundles)
     profile=NUMERIC; +, -, *, /

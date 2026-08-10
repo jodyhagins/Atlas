@@ -18,13 +18,13 @@ mkdir -p "$OUTPUT_DIR"
 
 echo "Generating strong types showcase..."
 "$ATLAS" \
-    --input="$SCRIPT_DIR/strong_types_showcase.txt" \
+    --input="$SCRIPT_DIR/strong_types_showcase.atlas" \
     --output="$OUTPUT_DIR/strong_types_showcase.hpp"
 
 echo "Generating interactions showcase..."
 "$ATLAS" \
     --interactions=true \
-    --input="$SCRIPT_DIR/interactions_showcase.txt" \
+    --input="$SCRIPT_DIR/interactions_showcase.atlas" \
     --output="$OUTPUT_DIR/interactions_showcase.hpp"
 
 echo ""

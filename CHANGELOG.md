@@ -7,10 +7,80 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 **Versioning scope:** Version numbers apply to the generated code's API. A major version bump means regenerated code may require changes to user code that consumes the generated types.
 
-## [Unreleased]
+## [2.0.0] - Unreleased
+
+### Changed (BREAKING)
+
+Version 2.0.0 closes two classes of lifetime and type-safety defects in
+generated code. Both were reproduced with ASan against 1.x output.
+
+- **Borrowing conversions from temporaries are now compile errors.** When the
+  underlying type owns storage and a conversion target borrows it
+  (`std::string` -> `std::string_view`), converting an rvalue dangled on every
+  route. All five routes are now rejected at compile time:
+  - `static_cast<std::string_view>(make_id())` and
+    `static_cast<std::string_view>(std::move(id))`
+  - copy-initialization / implicit conversion: `std::string_view sv = make_id();`
+  - drilling: `atlas::cast<std::string_view>(make_id())` — including for types
+    that declare no conversion clause at all
+  - reference targets: `atlas::cast<T const &>(rvalue)` / `atlas::cast<T &&>(rvalue)`
+  - the `from_atlas_cast` constructor of a view-backed type (which *stores*
+    the borrow)
+
+  Generated `cast<T>` / `explicit_cast<T>` / `implicit_cast<T>` conversions
+  are now `const &`-qualified, and every type carries one deleted,
+  non-explicit, rvalue-only conversion guard constrained on
+  `atlas::borrow_policy`. Detection idioms (`std::is_constructible`,
+  `requires`, `atlas::atlas_detail::is_directly_castable`) report `false`
+  for guarded operations instead of reporting viable and then erroring.
+
+  **Migration:** no `.atlas` edits needed. At a rejected call site, bind the
+  temporary to a named variable and borrow from that. The only safe pattern
+  this rejects is a borrow consumed within the same full expression
+  (`f(static_cast<std::string_view>(make_x()))`) — bind a variable there too.
+
+- **Reference-target casts require lvalue sources and bind only to actual
+  layers.** `atlas::cast<T &>` / `<T const &>` / `<T &&>` from an rvalue
+  returned a reference into a dying temporary; from an lvalue whose chain
+  merely *converts* to `T`, they returned a reference to a materialized
+  temporary. Both are now rejected; a reference target binds only to a real
+  layer of an lvalue chain. To move out of a temporary, use a value target
+  (`atlas::cast<int>(std::move(x))`), which drills by moving layer by layer.
+
+- **`from_atlas_cast` now requires an explicit allowlist.** The bare token
+  keyed only on the underlying type, so *every* type sharing a representation
+  was mutually constructible (`SpawnTimeoutMs{TotallyUnrelatedCount{5}}`
+  compiled). Now:
+  - `from_atlas_cast<A, B, ...>` names the permitted source types; an
+    argument is accepted only when it *is*, or *drills to*, a named type
+    (an actual layer of its chain — sharing the underlying does not qualify).
+  - bare `from_atlas_cast` is a generation-time error naming the type, its
+    line, and both fixes.
+  - `auto_from_atlas_cast=true` is narrowed to the types declared in the
+    same file, and unions with explicit lists.
+
+  **Migration:** replace `from_atlas_cast` with `from_atlas_cast<A, B>`
+  listing the related types (one entry per permitted source), or set
+  `auto_from_atlas_cast=true` for a family declared in one file.
 
 ### Added
 
+- **Borrow classification traits** in the shared preamble, identical at every
+  supported standard: `atlas::borrowed_type<T>` (C++11-compatible opt-in,
+  seeded for `std::basic_string_view` and `std::span`), `atlas::is_borrowed<T>`
+  (also honors `std::ranges::enable_borrowed_range` where available), and
+  `atlas::borrow_policy<Target, Underlying>` (the predicate every guard
+  checks; specializable per pair in either direction).
+- **`borrowed_types=` file-level directive** declaring third-party view types.
+  Each name gets an individually include-guarded `atlas::borrowed_type`
+  specialization, so duplicate declarations across generated headers are
+  benign. Hand-written specializations must be visible before any generated
+  header in every translation unit (inconsistent visibility is IFNDR).
+- **Deliberately unguarded:** `forward=` accessors and `iterable`'s
+  `begin()`/`end()` keep the underlying type's value-category behavior, so
+  `std::printf("%s", make_id().c_str())` and range-`for` over a temporary
+  keep working. Atlas guards what it invents; it stays faithful where you
+  ask for the underlying's own member.
 - **`atlas::unwrap_t<T>` and `atlas::undress_t<T>`** - type-level counterparts to the
   `atlas::unwrap` and `atlas::undress` function objects. `unwrap_t` names the type one
   layer down and is SFINAE-friendly for types with no layer to remove; `undress_t` names

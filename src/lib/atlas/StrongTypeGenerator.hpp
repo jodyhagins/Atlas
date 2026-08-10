@@ -308,12 +308,21 @@ struct StrongTypeDescription
     bool has_constraint = false;
 
     /**
-     * When true, generates a constructor that accepts another atlas type
-     * and constructs via atlas::cast drilling. This enables construction
-     * from any atlas type whose underlying value chain reaches a type
-     * convertible to this type's underlying type.
+     * When true, the file-level auto_from_atlas_cast directive applies to
+     * this type: the parser seeds from_atlas_cast_types with the other types
+     * declared in the same file.
      */
     bool generate_from_atlas_cast = false;
+
+    /**
+     * Allowlist for the from_atlas_cast constructor: the atlas types this
+     * type may be constructed from. Populated from a from_atlas_cast<A, B>
+     * description token, from auto_from_atlas_cast=true (same-file types),
+     * or both (union). The constructor accepts an argument only when it is,
+     * or drills to, one of these named types. When empty, no from_atlas_cast
+     * constructor is generated.
+     */
+    std::vector<std::string> from_atlas_cast_types = {};
 };
 
 struct StrongTypeGenerator
@@ -374,6 +383,10 @@ private:
  * @param guard_separator Separator between prefix and hash (default: "_")
  * @param upcase_guard Whether to uppercase the guard (default: true)
  * @param auto_opts Auto-generation options for hash, ostream, istream, format
+ * @param borrowed_types Third-party borrowing (view-like) type names from the
+ *        borrowed_types= directive; each is emitted as an individually
+ *        include-guarded atlas::borrowed_type specialization so that the
+ *        lifetime guards treat conversions to it as borrowing
  * @return Generated C++ header file content
  */
 std::string generate_strong_types_file(
@@ -381,7 +394,8 @@ std::string generate_strong_types_file(
     std::string const & guard_prefix = "",
     std::string const & guard_separator = "_",
     bool upcase_guard = true,
-    PreambleOptions auto_opts = {});
+    PreambleOptions auto_opts = {},
+    std::vector<std::string> const & borrowed_types = {});
 
 } // namespace wjh::atlas
 
