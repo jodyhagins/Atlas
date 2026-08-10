@@ -834,6 +834,60 @@ description=unsigned short; ==, !=, <=>
              output.find("ValidType2") != std::string::npos);
         CHECK(has_some_type);
     }
+
+    TEST_CASE("Bug: Multiple description= lines accumulate like forward=")
+    {
+        // description= used to overwrite, silently discarding earlier
+        // lines while forward= and constants= accumulated.
+        auto multi_line = run_atlas_on_content(R"(
+[type]
+kind=struct
+namespace=test
+name=TestType
+description=strong int; ==
+description=forward=foo
+description=<
+)");
+
+        INFO(multi_line.stderr_output);
+        REQUIRE_FALSE(multi_line.had_error());
+
+        auto single_line = run_atlas_on_content(R"(
+[type]
+kind=struct
+namespace=test
+name=TestType
+description=strong int; ==; forward=foo; <
+)");
+
+        REQUIRE_FALSE(single_line.had_error());
+        CHECK(multi_line.stdout_output == single_line.stdout_output);
+
+        // Segments from every line survive into the generated code.
+        auto const & output = multi_line.stdout_output;
+        CHECK(output.find("operator == (") != std::string::npos);
+        CHECK(output.find("operator < (") != std::string::npos);
+        CHECK(output.find("foo") != std::string::npos);
+    }
+
+    TEST_CASE("Bug: Multiple description= lines accumulate in templates")
+    {
+        auto result = run_atlas_on_content(R"(
+[template Wrapper T]
+description=strong {T}; ==
+description=<
+
+[use Wrapper int as Wrapped]
+namespace=test
+)");
+
+        INFO(result.stderr_output);
+        REQUIRE_FALSE(result.had_error());
+        auto const & output = result.stdout_output;
+        CHECK(output.find("struct Wrapped") != std::string::npos);
+        CHECK(output.find("operator == (") != std::string::npos);
+        CHECK(output.find("operator < (") != std::string::npos);
+    }
 }
 
 TEST_SUITE("Error Handling: Memfn Forwarding Errors")

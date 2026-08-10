@@ -716,7 +716,14 @@ parse_type_level_config(
         }
         current_name = value;
     } else if (key == "description") {
-        current_description = value;
+        // Accumulate multiple description= lines; each additional line
+        // contributes more semicolon-separated segments (forward= or
+        // operator lists) to the specification.
+        if (current_description.empty()) {
+            current_description = value;
+        } else {
+            current_description += "; " + value;
+        }
     } else if (key == "default_value") {
         current_default_value = value;
     } else if (key == "constants") {
