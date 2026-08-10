@@ -27,6 +27,7 @@ Quick facts:
 - Each `[type]` section = one strong type
 - All types share a header guard with SHA1 hash (collision-proof, even when you try)
 - The `strong` keyword in descriptions is optional (see "Optional Strong Keyword" section below)
+- Repeated `description=` lines accumulate, just like `forward=` and `constants=`: each extra line adds more semicolon-separated segments (operator lists or `forward=`) to the same specification
 
 ### File-Level Directives
 
