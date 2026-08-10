@@ -78,9 +78,20 @@ if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
 endif()
 
 if(ATLAS_USE_SYSTEM_BOOST)
+    # Prefer BoostConfig.cmake (modern Boost) over the removed FindBoost
+    # module. Boost >= 1.70 ships its own config; CMake 3.30 removed FindBoost.
+    if(POLICY CMP0167)
+        cmake_policy(SET CMP0167 NEW)
+    endif()
+
+    # Every Boost imported target referenced anywhere in this build (including
+    # by the bundled boost.mustache subproject) must be in COMPONENTS — under
+    # BoostConfig.cmake there is no implicit fallback that creates them.
+    # atlas_lib uses: json, describe, uuid.
+    # boost.mustache uses: config, core, json, assert.
     find_package(Boost
         REQUIRED
-        COMPONENTS json)
+        COMPONENTS json describe uuid config core assert)
 else()
     # Fetch Boost from release tarball (much faster than git clone)
     fetchcontent_declare(Boost
