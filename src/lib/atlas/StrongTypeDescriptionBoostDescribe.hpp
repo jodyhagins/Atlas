@@ -28,7 +28,6 @@ BOOST_DESCRIBE_STRUCT(
      upcase_guard,
      generate_iterators,
      generate_formatter,
-     generate_from_atlas_cast,
      from_atlas_cast_types,
      cpp_standard))
 

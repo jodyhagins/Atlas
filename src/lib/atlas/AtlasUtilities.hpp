@@ -78,6 +78,25 @@ std::string generate_header_guard(
 std::string trim(std::string const & str);
 
 /**
+ * @brief Split a type list on a separator at angle-bracket depth zero
+ *
+ * Every '<' opens a template-argument list and every '>' closes one, so
+ * commas inside names like some::Wrapper<int, 4> are not separators. This
+ * is the splitter for pure type lists (from_atlas_cast<...> contents,
+ * borrowed_types= values); description operator segments, where a bare '<'
+ * is a comparison operator token, use the identifier-gated split in
+ * AtlasUtilities.cpp instead.
+ *
+ * Segments are returned with surrounding whitespace stripped, and empty
+ * segments are preserved (one per separator pair, plus one for an empty
+ * input) so callers can reject them with their own context.
+ *
+ * @throws std::invalid_argument when the angle brackets are unbalanced: a
+ *         '>' with no matching '<', or a '<' never closed
+ */
+std::vector<std::string_view> split_top_level(std::string_view sv, char sep);
+
+/**
  * @brief Options for controlling what code is included in the preamble
  */
 struct PreambleOptions

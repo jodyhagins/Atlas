@@ -128,7 +128,7 @@ Set at the top of a `.atlas` file (before any `[type]` sections) or via CLI flag
 | `auto_istream=true` | `operator>>` for all types |
 | `auto_format=true` | `std::formatter<T>` for all types (C++20) |
 | `auto_from_atlas_cast=true` | Cross-type construction among the types declared in this file (same-file only; unions with explicit `from_atlas_cast<...>` lists) |
-| `borrowed_types=A, B` | Declare third-party view-like types as borrowing for the rvalue lifetime guards (emits guarded `atlas::borrowed_type` specializations) |
+| `borrowed_types=A, B` | Declare view-like types (third-party or same-file) as borrowing for the rvalue lifetime guards (emits guarded `atlas::borrowed_type` specializations; same-file names are forward-declared automatically) |
 
 ### Member Function Forwarding
 
@@ -268,7 +268,7 @@ Lifetime rules on `atlas::cast` (compile errors, not runtime hazards):
 
 | Trait | Answers |
 |-------|---------|
-| `atlas::is_borrowed<T>` | Does `T` borrow storage it does not own? (seeded for `string_view`/`span`, honors `enable_borrowed_range`, extensible via `atlas::borrowed_type`) |
+| `atlas::is_borrowed<T>` | Does `T` borrow storage it does not own? (seeded for `string_view`/`span`, honors `enable_borrowed_range`, extensible via `atlas::borrowed_type`; an Atlas-generated type is classified by the layers it wraps, so wrapper-of-view chains count as borrowing at every depth; hand-written `atlas_value_type` protocol adopters are never auto-classified and opt in explicitly) |
 | `atlas::borrow_policy<Target, Underlying>` | Would converting to `Target` borrow storage `Underlying` owns? (the predicate the guards check; per-pair specializable) |
 
 ---

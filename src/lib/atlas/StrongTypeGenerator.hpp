@@ -308,13 +308,6 @@ struct StrongTypeDescription
     bool has_constraint = false;
 
     /**
-     * When true, the file-level auto_from_atlas_cast directive applies to
-     * this type: the parser seeds from_atlas_cast_types with the other types
-     * declared in the same file.
-     */
-    bool generate_from_atlas_cast = false;
-
-    /**
      * Allowlist for the from_atlas_cast constructor: the atlas types this
      * type may be constructed from. Populated from a from_atlas_cast<A, B>
      * description token, from auto_from_atlas_cast=true (same-file types),

@@ -6,6 +6,8 @@
 // ----------------------------------------------------------------------
 #include "OperatorParser.hpp"
 
+#include "atlas/AtlasUtilities.hpp"
+
 #include <cctype>
 #include <stdexcept>
 
@@ -56,17 +58,37 @@ parse_cast_syntax(std::string_view token, bool & is_implicit)
         return "";
     }
 
-    // Extract type between < and >
-    auto start = prefix.length();
-    auto end = token.find_last_of('>');
-    if (end == std::string_view::npos || end <= start) {
+    // The type ends at the '>' matching the prefix's '<' -- same validation
+    // as parse_from_atlas_cast_syntax, so a stray '>' or trailing text is a
+    // generation-time error instead of invalid C++ in the emitted operator.
+    auto name = std::string(prefix.substr(0, prefix.length() - 1));
+    std::size_t depth = 1;
+    std::size_t end = std::string_view::npos;
+    for (std::size_t n = prefix.length(); n < token.size(); ++n) {
+        if (token[n] == '<') {
+            ++depth;
+        } else if (token[n] == '>' && --depth == 0) {
+            end = n;
+            break;
+        }
+    }
+    if (end == std::string_view::npos) {
         throw std::invalid_argument(
-            "Invalid " + std::string(prefix.substr(0, prefix.length() - 1)) +
-            "> syntax: " + std::string(token));
+            "Unbalanced angle brackets in " + name +
+            "<> syntax: " + std::string(token));
+    }
+    if (not strip(token.substr(end + 1)).empty()) {
+        throw std::invalid_argument(
+            "Unexpected text after '>' in " + name +
+            "<> syntax: " + std::string(token));
     }
 
-    // Return the type name with whitespace stripped
-    return std::string(strip(token.substr(start, end - start)));
+    auto type = strip(token.substr(prefix.length(), end - prefix.length()));
+    if (type.empty()) {
+        throw std::invalid_argument(
+            "Invalid " + name + "<> syntax: " + std::string(token));
+    }
+    return std::string(type);
 }
 
 bool
@@ -80,33 +102,42 @@ parse_from_atlas_cast_syntax(
         return false;
     }
 
-    auto end = token.find_last_of('>');
-    if (end == std::string_view::npos || end <= prefix.length()) {
+    // The list ends at the '>' matching the prefix's '<'. Anything else --
+    // a '>' that never brings the depth back to zero, or text after the one
+    // that does -- would bake the imbalance into the emitted constraint and
+    // surface as compile errors far from the .atlas typo.
+    std::size_t depth = 1;
+    std::size_t end = std::string_view::npos;
+    for (std::size_t n = prefix.size(); n < token.size(); ++n) {
+        if (token[n] == '<') {
+            ++depth;
+        } else if (token[n] == '>' && --depth == 0) {
+            end = n;
+            break;
+        }
+    }
+    if (end == std::string_view::npos) {
         throw std::invalid_argument(
-            "Invalid from_atlas_cast<> syntax: " + std::string(token));
+            "Unbalanced angle brackets in from_atlas_cast<> syntax: " +
+            std::string(token));
+    }
+    if (not strip(token.substr(end + 1)).empty()) {
+        throw std::invalid_argument(
+            "Unexpected text after '>' in from_atlas_cast<> syntax: " +
+            std::string(token));
     }
 
-    auto list = token.substr(prefix.length(), end - prefix.length());
+    auto list = token.substr(prefix.size(), end - prefix.size());
 
     // Split on commas at angle-bracket depth zero, so names like
     // some::Wrapper<int, 4> survive intact.
-    std::size_t depth = 0;
-    std::size_t begin = 0;
-    for (std::size_t n = 0; n <= list.size(); ++n) {
-        if (n == list.size() || (list[n] == ',' && depth == 0)) {
-            auto name = strip(list.substr(begin, n - begin));
-            if (name.empty()) {
-                throw std::invalid_argument(
-                    "Empty type name in from_atlas_cast<> list: " +
-                    std::string(token));
-            }
-            types.emplace_back(name);
-            begin = n + 1;
-        } else if (list[n] == '<') {
-            ++depth;
-        } else if (list[n] == '>' && depth > 0) {
-            --depth;
+    for (auto name : split_top_level(list, ',')) {
+        if (name.empty()) {
+            throw std::invalid_argument(
+                "Empty type name in from_atlas_cast<> list: " +
+                std::string(token));
         }
+        types.emplace_back(name);
     }
 
     return true;
