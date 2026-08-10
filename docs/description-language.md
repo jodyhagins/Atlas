@@ -43,7 +43,7 @@ These directives appear before the first `[type]` section and apply to all types
 | `auto_istream=true` | Generate `operator>>` for all atlas types in the file (SFINAE-constrained) |
 | `auto_format=true` | Generate `std::formatter<T>` for all atlas types in the file (C++20, requires `__cpp_lib_format`) |
 | `auto_from_atlas_cast=true` | Enable cross-construction among the types declared in this file (each type's allowlist is seeded with its same-file siblings) |
-| `borrowed_types=A, B, ...` | Declare third-party view-like types as borrowing: each name gets an `atlas::borrowed_type` specialization so the rvalue lifetime guards treat conversions to it as borrowing. Multiple lines accumulate. The named types must be declared before the generated header is included. |
+| `borrowed_types=A, B, ...` | Declare view-like types as borrowing: each name gets an `atlas::borrowed_type` specialization so the rvalue lifetime guards treat conversions to it as borrowing. Multiple lines accumulate. Types defined in the same file are forward-declared automatically; other types must be declared before the generated header is included. |
 
 ## Optional Strong Keyword
 
@@ -809,7 +809,11 @@ Value categories are preserved: lvalue sources copy, rvalue sources move
 
 Named types are emitted into the constraint as written. Types declared later
 in the same file are forward-declared automatically; types from other files
-must be declared before the generated header is used.
+must be declared before the generated header is used. Note the consequence
+for *mutual* allowlists across two files: each header would need the other's
+type declared first, so no include order works on its own. Keep mutually
+listed types in one `.atlas` file, or write a small header that
+forward-declares them and include it before either generated header.
 
 **Lifetime note:** when the constructed type's underlying *borrows* (e.g. a
 `std::string_view`-backed type listing a `std::string`-backed source),
@@ -886,7 +890,21 @@ preamble (identical at every C++ standard):
   `std::basic_string_view` and `std::span`. Works at C++11.
 - `atlas::is_borrowed<T>` — the query; where `<ranges>` exists it also
   honors `std::ranges::enable_borrowed_range<T>`, so C++20 view types are
-  classified without mentioning Atlas.
+  classified without mentioning Atlas. An Atlas-*generated* type is
+  classified by what it wraps: a wrapper is borrowed when any layer beneath
+  it is. Layering strong types on strong types therefore keeps working — a
+  chain rooted in a view converts, drills, and constructs from temporaries
+  at every depth (the view is copied out, nothing dangles), while a chain
+  rooted in an owner stays guarded at every depth, including against
+  drilling an expiring owner *into* a view-rooted wrapper. This recursion
+  applies only to generated types (those deriving from
+  `atlas::strong_type_tag`), whose accessor is a pure pass-through of the
+  wrapped member. A hand-written type that adopts the
+  `atlas_value_type`/`atlas_value_for` protocol may own storage and
+  *compute* a view from it — classifying it by its declared value type
+  would disarm the guards — so such types are never classified
+  automatically and must opt in explicitly via `atlas::borrowed_type` or
+  `enable_borrowed_range` when they genuinely borrow.
 - `atlas::borrow_policy<Target, Underlying>` — the predicate every guard
   checks; specializable per pair in either direction (relax it for a backing
   that keeps storage alive independently, or tighten it for a pair nothing
@@ -908,7 +926,9 @@ description=std::string; ==, cast<ext::StringRef>, #"ext/string_ref.hpp"
 Each specialization is individually include-guarded, so two generated
 headers declaring the same type can coexist in one translation unit. The
 named types must be declared before the generated header (use a `#"..."`
-include token, as above).
+include token, as above) — except types defined in the same `.atlas` file,
+which are forward-declared automatically ahead of the specializations, so a
+file may declare its own view-backed types as borrowing.
 
 **ODR rule for hand-written specializations:** a `borrowed_type` or
 `borrow_policy` specialization feeds overload resolution inside the
@@ -917,6 +937,21 @@ generated header in *every* translation unit that includes one — visible in
 one TU and not another is an ODR violation (no diagnostic required). The
 `borrowed_types=` directive and a shared header are the reliable ways to
 guarantee this.
+
+**One mechanism per type:** do not combine a hand-written
+`atlas::borrowed_type` specialization and a `borrowed_types=` declaration
+for the same type in one translation unit. The generated specializations
+are include-guarded against *each other*, but a hand-written one sits
+outside that guard, and the pair is a redefinition error. Pick one
+mechanism per type; prefer the directive.
+
+**Declare before first use:** the specialization must also be visible
+before anything instantiates `borrow_policy` for that type — including
+code in another generated header. A generated header that declares
+`borrowed_types=` for a type used by earlier headers must be included
+before that use, or the declaration must be made in every file that names
+the type; an explicit specialization that appears after the trait has
+already been implicitly instantiated makes the program ill-formed.
 
 ### What Is Deliberately Not Guarded
 

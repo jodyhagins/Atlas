@@ -29,6 +29,12 @@ static_assert(__cplusplus >= 202002L,
 #ifndef WJH_ATLAS_50E620B544874CB8BE4412EE6773BF90
 #define WJH_ATLAS_50E620B544874CB8BE4412EE6773BF90
 
+// Version of the shared boilerplate compiled under the guard above.  Every
+// generated header verifies it after this section, so mixing headers from
+// incompatible Atlas versions in one translation unit fails with one clear
+// message instead of confusing errors inside generated classes.
+#define WJH_ATLAS_PREAMBLE_VERSION 2
+
 // ======================================================================
 // ATLAS STRONG TYPE BOILERPLATE
 // ----------------------------------------------------------------------
@@ -152,66 +158,6 @@ using when = enable_if_t<B, bool>;
 template <typename T>
 using _t = typename T::type;
 
-} // namespace atlas_detail
-
-// ----------------------------------------------------------------------------
-// Borrow classification
-//
-// A conversion is dangerous when the target borrows storage that the source
-// owns: converting a temporary then dangles.  Neither type alone decides it,
-// so classification is a two-type predicate, built from three pieces:
-//
-// - borrowed_type<T>: C++11-compatible opt-in.  Specialize to std::true_type
-//   for any type that refers to storage it does not own.  Seeded for the
-//   standard view types; raw pointers are deliberately not seeded (classifying
-//   void* would false-positive on every opaque handle).
-// - is_borrowed<T>: the query.  Also honors
-//   std::ranges::enable_borrowed_range where the library provides it, as a
-//   disjunction of expressions -- not competing partial specializations -- so
-//   double opt-in is not ambiguous.
-// - borrow_policy<TargetT, UnderlyingT>: THE predicate every generated guard
-//   queries.  True when the target borrows and the underlying owns.
-//   Specializable per pair in either direction: relax it for a backing that
-//   keeps storage alive independently, or tighten it for a pair neither
-//   mechanism classified.
-// ----------------------------------------------------------------------------
-template <typename T>
-struct borrowed_type
-: std::false_type
-{ };
-
-#if defined(__cpp_lib_string_view) && __cpp_lib_string_view >= 201606L
-template <typename CharT, typename TraitsT>
-struct borrowed_type<std::basic_string_view<CharT, TraitsT>>
-: std::true_type
-{ };
-#endif
-
-#if defined(__cpp_lib_span) && __cpp_lib_span >= 202002L
-template <typename T, std::size_t ExtentV>
-struct borrowed_type<std::span<T, ExtentV>>
-: std::true_type
-{ };
-#endif
-
-template <typename T>
-struct is_borrowed
-: std::integral_constant<bool,
-    borrowed_type<atlas_detail::remove_cvref_t<T>>::value
-#if defined(__cpp_lib_ranges) && __cpp_lib_ranges >= 201911L
-    || std::ranges::enable_borrowed_range<atlas_detail::remove_cvref_t<T>>
-#endif
-    >
-{ };
-
-template <typename TargetT, typename UnderlyingT, typename = void>
-struct borrow_policy
-: std::integral_constant<bool,
-    is_borrowed<TargetT>::value && not is_borrowed<UnderlyingT>::value>
-{ };
-
-namespace atlas_detail {
-
 template <typename T, typename = void>
 struct has_atlas_value_type
 : std::false_type
@@ -280,6 +226,100 @@ struct undress_type<
 {
     using type = typename std::underlying_type<remove_cvref_t<T>>::type;
 };
+
+} // namespace atlas_detail
+
+// ----------------------------------------------------------------------------
+// Borrow classification
+//
+// A conversion is dangerous when the target borrows storage that the source
+// owns: converting a temporary then dangles.  Neither type alone decides it,
+// so classification is a two-type predicate, built from three pieces:
+//
+// - borrowed_type<T>: C++11-compatible opt-in.  Specialize to std::true_type
+//   for any type that refers to storage it does not own.  Seeded for the
+//   standard view types; raw pointers are deliberately not seeded (classifying
+//   void* would false-positive on every opaque handle).
+// - is_borrowed<T>: the query.  Also honors
+//   std::ranges::enable_borrowed_range where the library provides it, as a
+//   disjunction of expressions -- not competing partial specializations -- so
+//   double opt-in is not ambiguous.  An atlas type is classified by what it
+//   wraps: a wrapper is borrowed when any layer beneath it is, so a
+//   wrapper-of-view chain is a borrowing type at every depth.
+// - borrow_policy<TargetT, UnderlyingT>: THE predicate every generated guard
+//   queries.  True when the target borrows and the underlying owns.
+//   Specializable per pair in either direction: relax it for a backing that
+//   keeps storage alive independently, or tighten it for a pair neither
+//   mechanism classified.
+// ----------------------------------------------------------------------------
+template <typename T>
+struct borrowed_type
+: std::false_type
+{ };
+
+#if defined(__cpp_lib_string_view) && __cpp_lib_string_view >= 201606L
+template <typename CharT, typename TraitsT>
+struct borrowed_type<std::basic_string_view<CharT, TraitsT>>
+: std::true_type
+{ };
+#endif
+
+#if defined(__cpp_lib_span) && __cpp_lib_span >= 202002L
+template <typename T, std::size_t ExtentV>
+struct borrowed_type<std::span<T, ExtentV>>
+: std::true_type
+{ };
+#endif
+
+template <typename T>
+struct is_borrowed;
+
+namespace atlas_detail {
+
+// An atlas-generated type borrows when the value it wraps borrows:
+// classification recurses layer by layer, so any borrowed layer -- root or
+// intermediate -- makes every wrapper above it a borrowing type.  The
+// recursion is limited to types deriving from strong_type_tag: a generated
+// wrapper's atlas_value_for is a pure pass-through of the member its
+// atlas_value_type names, so the wrapped type's classification transfers.
+// A hand-written type that adopts the atlas_value_type protocol may OWN
+// storage and compute a view from it in atlas_value_for -- classifying it
+// as borrowed would disarm the guards and let that view dangle -- so such
+// types keep the explicit opt-in contract (atlas::borrowed_type or
+// std::ranges::enable_borrowed_range).
+template <typename T,
+    bool = has_atlas_value_type<T>::value &&
+        std::is_base_of<
+            strong_type_tag<remove_cvref_t<T>>,
+            remove_cvref_t<T>>::value>
+struct wraps_borrowed
+: std::false_type
+{ };
+
+template <typename T>
+struct wraps_borrowed<T, true>
+: is_borrowed<typename remove_cvref_t<T>::atlas_value_type>
+{ };
+
+} // namespace atlas_detail
+
+template <typename T>
+struct is_borrowed
+: std::integral_constant<bool,
+    borrowed_type<atlas_detail::remove_cvref_t<T>>::value
+#if defined(__cpp_lib_ranges) && __cpp_lib_ranges >= 201911L
+    || std::ranges::enable_borrowed_range<atlas_detail::remove_cvref_t<T>>
+#endif
+    || atlas_detail::wraps_borrowed<atlas_detail::remove_cvref_t<T>>::value>
+{ };
+
+template <typename TargetT, typename UnderlyingT, typename = void>
+struct borrow_policy
+: std::integral_constant<bool,
+    is_borrowed<TargetT>::value && not is_borrowed<UnderlyingT>::value>
+{ };
+
+namespace atlas_detail {
 
 void atlas_value_for();
 struct value_by_ref
@@ -902,6 +942,17 @@ cast(U && u)
 } // namespace atlas
 
 #endif // WJH_ATLAS_50E620B544874CB8BE4412EE6773BF90
+
+// This check runs in every generated header, outside the shared guard: when
+// a header generated by an older Atlas is included first, its boilerplate
+// claims the guard but lacks pieces this header's inline code needs.  Only
+// that order is detectable -- a header generated before this check existed
+// carries no check text, so including it after a newer header goes
+// undiagnosed (harmless while preamble revisions stay additive).  The real
+// remedy either way: regenerate every Atlas header with one Atlas version.
+#if !defined(WJH_ATLAS_PREAMBLE_VERSION) || WJH_ATLAS_PREAMBLE_VERSION < 2
+#error "An Atlas header generated by an older, incompatible Atlas version was included earlier in this translation unit. Regenerate all Atlas headers with the same Atlas version."
+#endif
 
 
 //////////////////////////////////////////////////////////////////////

@@ -164,6 +164,108 @@ description=strong int
         CHECK(error_msg.find("borrowed_types") != std::string::npos);
     }
 
+    TEST_CASE("Unbalanced from_atlas_cast<> is rejected, naming the token")
+    {
+        // Each of these used to pass generation and bake the imbalance into
+        // the emitted constraint, surfacing as compile errors far from the
+        // .atlas typo.
+        auto make_input = [](std::string const & token) {
+            return R"(
+[type]
+kind=struct
+namespace=test
+name=Millis
+description=std::int64_t; ==
+
+[type]
+kind=struct
+namespace=test
+name=TestType
+description=std::int64_t; ==, )" +
+                token + "\n";
+        };
+
+        for (auto token :
+             {"from_atlas_cast<test::Millis>>",
+              "from_atlas_cast<test::A<B,C>",
+              "from_atlas_cast<test::Millis>x"})
+        {
+            CAPTURE(token);
+            auto result = test_input_content_error(make_input(token));
+            CHECK(result.had_error());
+            auto error_msg = result.stderr_output + result.stdout_output;
+            CHECK(error_msg.find(token) != std::string::npos);
+        }
+    }
+
+    TEST_CASE("Balanced nested from_atlas_cast<> still parses")
+    {
+        auto result = run_atlas_on_content(R"(
+[type]
+kind=struct
+namespace=test
+name=TestType
+description=std::int64_t; ==, from_atlas_cast<ext::Ref<int, 2>>
+)");
+
+        INFO(result.stderr_output);
+        CHECK_FALSE(result.had_error());
+    }
+
+    TEST_CASE("Unbalanced cast<> is rejected, naming the token")
+    {
+        // Same defect class as the from_atlas_cast<> cases: these used to
+        // pass generation and bake invalid C++ into the emitted conversion
+        // operator (e.g. `operator long>()`).
+        for (auto token :
+             {"cast<long>>extra",
+              "implicit_cast<A<B,C>",
+              "explicit_cast<long>x"})
+        {
+            CAPTURE(token);
+            auto result = test_input_content_error(std::string(R"(
+[type]
+kind=struct
+namespace=test
+name=TestType
+description=int; ==, )") + token + "\n");
+            CHECK(result.had_error());
+            auto error_msg = result.stderr_output + result.stdout_output;
+            CHECK(error_msg.find(token) != std::string::npos);
+        }
+    }
+
+    TEST_CASE("Balanced nested cast<> still parses")
+    {
+        auto result = run_atlas_on_content(R"(
+[type]
+kind=struct
+namespace=test
+name=TestType
+description=std::vector<int>; ==, cast<std::vector<int>>, no-constexpr, #<vector>
+)");
+
+        INFO(result.stderr_output);
+        CHECK_FALSE(result.had_error());
+    }
+
+    TEST_CASE("Unbalanced angle brackets in borrowed_types= are rejected")
+    {
+        auto result = test_input_content_error(R"(
+borrowed_types=ext::Ref<int
+
+[type]
+kind=struct
+namespace=test
+name=TestType
+description=strong int
+)");
+
+        CHECK(result.had_error());
+        auto error_msg = result.stderr_output + result.stdout_output;
+        CHECK(error_msg.find("borrowed_types") != std::string::npos);
+    }
+
     TEST_CASE("Type specification: empty (only semicolon)")
     {
         auto result = test_input_content_error(R"(

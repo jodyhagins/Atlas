@@ -825,6 +825,90 @@ int main()
         CHECK(result.success);
     }
 
+    TEST_CASE("borrowed_types= may name a type defined in the same file")
+    {
+        CompilationTester tester;
+
+        // The specialization for a declared borrowing type is emitted at the
+        // top of the header, so a same-file type needs a forward declaration
+        // ahead of it; the header must compile on its own either way the
+        // file orders its types.
+        SUBCASE("defined before its user")
+        {
+            auto description = R"(borrowed_types=test::View
+
+[type]
+kind=struct
+namespace=test
+name=View
+description=std::string_view; ==, cast<std::string_view>, no-constexpr
+
+[type]
+kind=struct
+namespace=test
+name=Outer
+description=test::View; ==, cast<std::string_view>, no-constexpr
+)";
+            auto result = tester.compile_and_run(description, R"(
+#include <cassert>
+#include <string_view>
+
+static_assert(atlas::is_borrowed<test::View>::value, "");
+
+static char const storage[] = "hello";
+
+int main()
+{
+    test::Outer o{test::View{std::string_view{storage}}};
+    auto sv = static_cast<std::string_view>(o);
+    assert(sv == "hello" && sv.data() == storage);
+    return 0;
+}
+)");
+            INFO(result.output);
+            CHECK(result.success);
+        }
+
+        SUBCASE("defined after its user")
+        {
+            // The user references the later type through a from_atlas_cast
+            // allowlist, the reference a generated header can defer; a field
+            // of the not-yet-declared type would be invalid C++ regardless.
+            auto description = R"(borrowed_types=test::LateView
+
+[type]
+kind=struct
+namespace=test
+name=Early
+description=std::string_view; ==, no-constexpr, from_atlas_cast<test::LateView>
+
+[type]
+kind=struct
+namespace=test
+name=LateView
+description=std::string_view; ==, no-constexpr
+)";
+            auto result = tester.compile_and_run(description, R"(
+#include <cassert>
+#include <string_view>
+
+static_assert(atlas::is_borrowed<test::LateView>::value, "");
+
+static char const storage[] = "hello";
+
+int main()
+{
+    test::LateView v{std::string_view{storage}};
+    test::Early e{v};
+    assert(atlas::undress(e).data() == storage);
+    return 0;
+}
+)");
+            INFO(result.output);
+            CHECK(result.success);
+        }
+    }
+
     TEST_CASE("duplicate declaration across two headers in one TU is benign")
     {
         CompilationTester tester;
@@ -896,6 +980,278 @@ static_assert(atlas::is_borrowed<ext::StringRef>::value, "");
 
 int main() { return 0; }
 )");
+        INFO(result.output);
+        CHECK(result.success);
+    }
+}
+
+TEST_SUITE("Borrow Safety: multi-layer chains")
+{
+    // Chains of atlas types over one root: the guards must classify a
+    // wrapper by what it ultimately holds, so view-rooted chains stay inert
+    // at every depth and owner-rooted chains stay guarded at every depth.
+    constexpr char const * chain_description = R"([type]
+kind=struct
+namespace=test
+name=Token
+description=std::string_view; ==, cast<std::string_view>, no-constexpr
+
+[type]
+kind=struct
+namespace=test
+name=Outer
+description=test::Token; ==, no-constexpr
+
+[type]
+kind=struct
+namespace=test
+name=Middle
+description=test::Token; ==, no-constexpr
+
+[type]
+kind=struct
+namespace=test
+name=Deep
+description=test::Middle; ==, no-constexpr
+
+[type]
+kind=struct
+namespace=test
+name=Outer3
+description=test::Token; ==, cast<std::string_view>, no-constexpr
+
+[type]
+kind=struct
+namespace=test
+name=Owner
+description=std::string; ==, no-constexpr
+
+[type]
+kind=struct
+namespace=test
+name=OwnerWrap
+description=test::Owner; ==, no-constexpr
+
+[type]
+kind=struct
+namespace=test
+name=Dest
+description=std::string_view; ==, no-constexpr, from_atlas_cast<test::Outer>
+
+[type]
+kind=struct
+namespace=test
+name=DestOwn
+description=std::string_view; ==, no-constexpr, from_atlas_cast<test::OwnerWrap>
+)";
+
+    TEST_CASE("classification recurses through atlas layers")
+    {
+        CompilationTester tester;
+        auto result = tester.compile_and_run(chain_description, R"(
+#include <string>
+#include <string_view>
+
+// A wrapper whose root is a view is itself a borrowing type, at any depth
+static_assert(atlas::is_borrowed<test::Token>::value, "");
+static_assert(atlas::is_borrowed<test::Outer>::value, "");
+static_assert(atlas::is_borrowed<test::Deep>::value, "");
+
+// A wrapper whose root owns is not
+static_assert(!atlas::is_borrowed<test::Owner>::value, "");
+static_assert(!atlas::is_borrowed<test::OwnerWrap>::value, "");
+
+// So the policy is inert between a view target and a view-rooted layer...
+static_assert(!atlas::borrow_policy<std::string_view, test::Token>::value, "");
+// ...and guards an owner-rooted layer, same as the raw owner
+static_assert(atlas::borrow_policy<std::string_view, test::Owner>::value, "");
+static_assert(atlas::borrow_policy<test::Token, std::string>::value, "");
+
+int main() { return 0; }
+)");
+        INFO(result.output);
+        CHECK(result.success);
+    }
+
+    TEST_CASE("rvalue drilling through view-rooted chains succeeds")
+    {
+        CompilationTester tester;
+        auto result = tester.compile_and_run(chain_description, R"(
+#include <cassert>
+#include <string_view>
+
+static char const storage[] = "hello";
+
+test::Outer make_outer()
+{ return test::Outer{test::Token{std::string_view{storage}}}; }
+test::Deep make_deep()
+{ return test::Deep{test::Middle{test::Token{std::string_view{storage}}}}; }
+
+int main()
+{
+    // The view is copied out layer by layer; the viewed storage is static,
+    // so nothing dangles.
+    auto sv2 = atlas::cast<std::string_view>(make_outer());
+    assert(sv2 == "hello" && sv2.data() == storage);
+    auto sv3 = atlas::cast<std::string_view>(make_deep());
+    assert(sv3 == "hello" && sv3.data() == storage);
+    return 0;
+}
+)",
+            "c++20",
+            CompilationTester::is_asan_supported() ? "-fsanitize=address"
+                                                   : "");
+        INFO(result.output);
+        CHECK(result.success);
+    }
+
+    TEST_CASE("deleted guard is inert on a view-rooted declared conversion")
+    {
+        CompilationTester tester;
+        auto result = tester.compile_and_run(chain_description, R"(
+#include <cassert>
+#include <string_view>
+
+static char const storage[] = "hello";
+
+test::Outer3 make_outer3()
+{ return test::Outer3{test::Token{std::string_view{storage}}}; }
+
+int main()
+{
+    auto sv = static_cast<std::string_view>(make_outer3());
+    assert(sv == "hello" && sv.data() == storage);
+    return 0;
+}
+)",
+            "c++20",
+            CompilationTester::is_asan_supported() ? "-fsanitize=address"
+                                                   : "");
+        INFO(result.output);
+        CHECK(result.success);
+    }
+
+    TEST_CASE("owner-rooted chains stay guarded, in both directions")
+    {
+        CompilationTester tester;
+        auto result = tester.compile_and_run(
+            chain_description,
+            std::string(cast_probe) + R"(
+#include <string_view>
+#include <utility>
+
+// Drilling out of an expiring owner-rooted chain is still rejected...
+static_assert(!cast_ok<std::string_view, test::OwnerWrap>::value, "");
+static_assert(!cast_ok<std::string_view, test::OwnerWrap &&>::value, "");
+// ...and still borrows from an lvalue
+static_assert(cast_ok<std::string_view, test::OwnerWrap &>::value, "");
+
+// Drilling an expiring owner INTO a wrapper-of-view would store a dangling
+// view inside the wrapper; that is guarded too.
+static_assert(!cast_ok<test::Token, test::Owner>::value, "");
+static_assert(cast_ok<test::Token, test::Owner &>::value, "");
+
+int main() { return 0; }
+)");
+        INFO(result.output);
+        CHECK(result.success);
+    }
+
+    TEST_CASE("hand-written protocol adopters are not classified by recursion")
+    {
+        CompilationTester tester;
+
+        // A hand-written type may adopt the atlas_value_type/atlas_value_for
+        // protocol while OWNING storage and computing a view from it in
+        // atlas_value_for. Classifying it as borrowed would disarm the
+        // guards and let that view dangle, so the layer-by-layer recursion
+        // is limited to Atlas-generated types (which derive from
+        // strong_type_tag); protocol adopters keep the explicit
+        // borrowed_type / enable_borrowed_range opt-in.
+        auto description = R"([type]
+kind=struct
+namespace=test
+name=Outer
+description=ext::SelfRef; ==, no-constexpr, #"self_ref.hpp"
+
+[type]
+kind=struct
+namespace=test
+name=Dest
+description=std::string_view; ==, no-constexpr, from_atlas_cast<test::Outer>
+)";
+        tester.write_temp_file("self_ref.hpp", R"(
+#pragma once
+#include <string>
+#include <string_view>
+namespace ext {
+struct SelfRef
+{
+    std::string storage;                        // owns...
+    using atlas_value_type = std::string_view;  // ...and yields a view
+    SelfRef() = default;
+    explicit SelfRef(std::string s) : storage(std::move(s)) {}
+    friend std::string_view atlas_value_for(SelfRef const & s)
+    { return std::string_view(s.storage); }
+    bool operator == (SelfRef const &) const = default;
+};
+}
+)");
+        auto result = tester.compile_and_run(
+            description,
+            std::string(cast_probe) + R"(
+#include <string_view>
+#include <type_traits>
+
+// Not auto-classified: it owns the storage its view points into
+static_assert(!atlas::is_borrowed<ext::SelfRef>::value, "");
+static_assert(!atlas::is_borrowed<test::Outer>::value, "");
+
+// So every rvalue route stays guarded...
+static_assert(!cast_ok<std::string_view, test::Outer>::value, "");
+static_assert(!std::is_constructible<test::Dest, test::Outer>::value, "");
+// ...and borrowing from an lvalue still works
+static_assert(cast_ok<std::string_view, test::Outer &>::value, "");
+static_assert(std::is_constructible<test::Dest, test::Outer &>::value, "");
+
+int main() { return 0; }
+)");
+        INFO(result.output);
+        CHECK(result.success);
+    }
+
+    TEST_CASE("allowlist construction follows the chain's root")
+    {
+        CompilationTester tester;
+        auto result = tester.compile_and_run(chain_description, R"(
+#include <cassert>
+#include <string_view>
+#include <type_traits>
+
+static char const storage[] = "hello";
+
+test::Outer make_outer()
+{ return test::Outer{test::Token{std::string_view{storage}}}; }
+
+// View-rooted source: the view is copied out of the temporary, so
+// construction is allowed from any value category
+static_assert(std::is_constructible<test::Dest, test::Outer>::value, "");
+
+// Owner-rooted source: a temporary would leave the stored view dangling
+static_assert(!std::is_constructible<test::DestOwn, test::OwnerWrap>::value, "");
+static_assert(std::is_constructible<test::DestOwn, test::OwnerWrap &>::value, "");
+
+int main()
+{
+    test::Dest d{make_outer()};
+    assert(atlas::undress(d) == "hello");
+    assert(atlas::undress(d).data() == storage);
+    return 0;
+}
+)",
+            "c++20",
+            CompilationTester::is_asan_supported() ? "-fsanitize=address"
+                                                   : "");
         INFO(result.output);
         CHECK(result.success);
     }

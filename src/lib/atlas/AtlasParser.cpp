@@ -615,23 +615,21 @@ parse_file_level_config(
     } else if (key == "borrowed_types") {
         // Comma-separated type names; commas inside template argument lists
         // are not separators. Multiple borrowed_types= lines accumulate.
-        std::size_t depth = 0;
-        std::size_t begin = 0;
-        for (std::size_t n = 0; n <= value.size(); ++n) {
-            if (n == value.size() || (value[n] == ',' && depth == 0)) {
-                auto name = trim(value.substr(begin, n - begin));
-                if (name.empty()) {
-                    throw AtlasParserError(
-                        "Empty type name in borrowed_types= at line " +
-                        std::to_string(line_number) + " in " + filename);
-                }
-                result.borrowed_types.push_back(std::move(name));
-                begin = n + 1;
-            } else if (value[n] == '<') {
-                ++depth;
-            } else if (value[n] == '>' && depth > 0) {
-                --depth;
+        std::vector<std::string_view> names;
+        try {
+            names = split_top_level(value, ',');
+        } catch (std::invalid_argument const &) {
+            throw AtlasParserError(
+                "Unbalanced angle brackets in borrowed_types= at line " +
+                std::to_string(line_number) + " in " + filename);
+        }
+        for (auto name : names) {
+            if (name.empty()) {
+                throw AtlasParserError(
+                    "Empty type name in borrowed_types= at line " +
+                    std::to_string(line_number) + " in " + filename);
             }
+            result.borrowed_types.emplace_back(name);
         }
     } else if (key == "profile") {
         // Parse profile=NAME; features...
@@ -820,8 +818,7 @@ build_type_description(
         .guard_separator = result.guard_separator,
         .upcase_guard = result.upcase_guard,
         .cpp_standard = result.file_level_cpp_standard,
-        .forwarded_memfns = current_forward,
-        .generate_from_atlas_cast = result.auto_from_atlas_cast};
+        .forwarded_memfns = current_forward};
 }
 
 // Check if any type definition has been started

@@ -3,6 +3,8 @@ AGENTS.md
 CLAUDE.md
 openspec/
 build
+*.local.*
+*.local/
 
 # Build directories
 build/

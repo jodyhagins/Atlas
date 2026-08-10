@@ -242,16 +242,17 @@ render_borrowed_type_specializations(
 }
 
 // Forward-declare the types defined in this file when any of them carries a
-// from_atlas_cast allowlist: an allowlist may name a sibling that is defined
-// later in the file, and the constraint requires the name to be declared.
-// Nested type names cannot be forward-declared at namespace scope and are
-// skipped.
+// from_atlas_cast allowlist or the file declares borrowed_types=: either
+// directive may name a type that is defined in this file (possibly later in
+// it), and both the generated constraint and the borrowed_type
+// specialization require the name to be declared. Nested type names cannot
+// be forward-declared at namespace scope and are skipped.
 std::string
 render_forward_declarations(
     std::vector<StrongTypeDescription> const & descriptions,
-    bool any_allowlist)
+    bool needed)
 {
-    if (not any_allowlist) {
+    if (not needed) {
         return "";
     }
 
@@ -476,14 +477,15 @@ generate_strong_types_file(
     // Add strong_type_tag definition once for the entire file
     output << preamble(preamble_opts);
 
-    // Declared borrowing types and same-file forward declarations must
-    // precede every type definition: the specializations feed the lifetime
-    // guards' overload resolution, and a from_atlas_cast allowlist may name
-    // a sibling defined later in the file.
-    output << render_borrowed_type_specializations(borrowed_types);
+    // Same-file forward declarations must precede the borrowed-type
+    // specializations, which must precede every type definition: the
+    // specializations feed the lifetime guards' overload resolution, and
+    // either borrowed_types= or a from_atlas_cast allowlist may name a type
+    // this file defines (possibly later in it).
     output << render_forward_declarations(
         descriptions,
-        any_from_atlas_cast_allowlist);
+        any_from_atlas_cast_allowlist || not borrowed_types.empty());
+    output << render_borrowed_type_specializations(borrowed_types);
 
     output << content << "#endif // " << guard << '\n';
 
