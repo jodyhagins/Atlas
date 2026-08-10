@@ -72,7 +72,8 @@ atlas_main(int argc, char ** argv)
                 file_result.guard_prefix,
                 file_result.guard_separator,
                 file_result.upcase_guard,
-                auto_opts);
+                auto_opts,
+                file_result.borrowed_types);
         }
     } else { // Command-line mode - single type
         auto description = AtlasCommandLine::to_description(args);

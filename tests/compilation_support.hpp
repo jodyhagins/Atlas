@@ -12,6 +12,7 @@
 
 #include "atlas/AtlasMain.hpp"
 
+#include <array>
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
@@ -113,6 +114,40 @@ public:
         fs::remove_all(temp_dir, ec);
 
         // Cache and return result
+        cached = (result.exit_code == 0) ? 1 : 0;
+        return cached == 1;
+    }
+
+    // Check if the test compiler can build and link with AddressSanitizer
+    // (e.g. homebrew gcc on macOS cannot). Uses static cache.
+    static bool is_asan_supported()
+    {
+        static int cached = -1;
+
+        if (cached >= 0) {
+            return cached == 1;
+        }
+
+        auto temp_dir = fs::temp_directory_path() /
+            ("atlas_asan_check_" + std::to_string(::getpid()));
+        fs::create_directories(temp_dir);
+
+        auto test_file = temp_dir / "test.cpp";
+        std::ofstream out(test_file);
+        out << "int main() { return 0; }\n";
+        out.close();
+
+        auto exe_path = temp_dir / "test";
+        std::ostringstream cmd;
+        cmd << wjh::atlas::test::find_working_compiler()
+            << " -fsanitize=address " << test_file.string() << " -o "
+            << exe_path.string() << " 2>&1";
+
+        auto result = exec_command(cmd.str());
+
+        std::error_code ec;
+        fs::remove_all(temp_dir, ec);
+
         cached = (result.exit_code == 0) ? 1 : 0;
         return cached == 1;
     }
@@ -268,6 +303,93 @@ public:
         result.executable_path = exe_path.string();
 
         // If compilation succeeded, run the test
+        if (result.success) {
+            auto run_output = exec_command(exe_path.string());
+            result.success = (run_output.exit_code == 0);
+            result.exit_code = run_output.exit_code;
+            result.output = run_output.output;
+        }
+
+        return result;
+    }
+
+    // Generate two independent type headers, include both in one TU,
+    // compile the test, and run it. Used to verify that generated headers
+    // coexist (shared preamble guard, individually guarded specializations).
+    CompileResult compile_and_run_with_two_type_headers(
+        std::string const & first_description,
+        std::string const & second_description,
+        std::string const & test_code,
+        std::string cpp_standard = "c++20",
+        std::string extra_flags = "")
+    {
+        auto test_id = ++counter_;
+
+        std::array<std::string const *, 2> descriptions{
+            &first_description,
+            &second_description};
+        std::vector<std::string> header_names;
+
+        for (std::size_t n = 0; n < descriptions.size(); ++n) {
+            auto tag = std::to_string(test_id) + "_" + std::to_string(n);
+            auto input_path = temp_dir_ / ("input_" + tag + ".txt");
+            write_file(input_path, *descriptions[n]);
+
+            auto header_path = temp_dir_ / ("type_" + tag + ".hpp");
+            std::vector<std::string> arg_strings = {
+                "atlas",
+                "--input=" + input_path.string(),
+                "--output=" + header_path.string()};
+
+            std::vector<char *> argv;
+            for (auto & arg : arg_strings) {
+                argv.push_back(arg.data());
+            }
+
+            int exit_code = wjh::atlas::atlas_main(
+                static_cast<int>(argv.size()),
+                argv.data());
+
+            if (exit_code != EXIT_SUCCESS) {
+                CompileResult result;
+                result.success = false;
+                result.exit_code = exit_code;
+                result.output = "atlas_main failed to generate header " +
+                    std::to_string(n);
+                return result;
+            }
+            header_names.push_back(header_path.filename().string());
+        }
+
+        auto test_path = temp_dir_ /
+            ("test_" + std::to_string(test_id) + ".cpp");
+        {
+            std::ofstream test(test_path);
+            for (auto const & header : header_names) {
+                test << "#include \"" << header << "\"\n";
+            }
+            test << test_code;
+        }
+
+        auto exe_path = temp_dir_ / ("test_" + std::to_string(test_id));
+        std::ostringstream compile_cmd;
+        compile_cmd << "cd " << temp_dir_ << " && ";
+        compile_cmd << wjh::atlas::test::find_working_compiler()
+            << " -std=" << cpp_standard << " ";
+        if (not extra_flags.empty()) {
+            compile_cmd << extra_flags << " ";
+        }
+        compile_cmd << "-I. -o " << exe_path.filename().string() << " ";
+        compile_cmd << test_path.filename().string() << " 2>&1";
+
+        auto compile_output = exec_command(compile_cmd.str());
+
+        CompileResult result;
+        result.success = (compile_output.exit_code == 0);
+        result.output = compile_output.output;
+        result.exit_code = compile_output.exit_code;
+        result.executable_path = exe_path.string();
+
         if (result.success) {
             auto run_output = exec_command(exe_path.string());
             result.success = (run_output.exit_code == 0);

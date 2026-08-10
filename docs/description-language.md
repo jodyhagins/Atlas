@@ -42,7 +42,8 @@ These directives appear before the first `[type]` section and apply to all types
 | `auto_ostream=true` | Generate `operator<<` for all atlas types in the file (SFINAE-constrained) |
 | `auto_istream=true` | Generate `operator>>` for all atlas types in the file (SFINAE-constrained) |
 | `auto_format=true` | Generate `std::formatter<T>` for all atlas types in the file (C++20, requires `__cpp_lib_format`) |
-| `auto_from_atlas_cast=true` | Enable `from_atlas_cast` constructor on all types in the file |
+| `auto_from_atlas_cast=true` | Enable cross-construction among the types declared in this file (each type's allowlist is seeded with its same-file siblings) |
+| `borrowed_types=A, B, ...` | Declare third-party view-like types as borrowing: each name gets an `atlas::borrowed_type` specialization so the rvalue lifetime guards treat conversions to it as borrowing. Multiple lines accumulate. The named types must be declared before the generated header is included. |
 
 ## Optional Strong Keyword
 
@@ -559,9 +560,9 @@ atlas --kind=struct --namespace=util --name=MyString \
 | Option | Behavior |
 |--------|----------|
 | `bool` | Explicit conversion to `bool` |
-| `cast<Type>` | Explicit cast operator to `Type` (requires `static_cast`) |
+| `cast<Type>` | Explicit cast operator to `Type` (requires `static_cast`). `const &`-qualified: if `Type` borrows the underlying's storage (e.g. `std::string` → `std::string_view`), converting a temporary is a compile error — bind the source to a named variable first. |
 | `explicit_cast<Type>` | Explicit cast operator to `Type` (alias for `cast<Type>`) |
-| `implicit_cast<Type>` | Implicit cast operator to `Type` (reduces type safety, use sparingly) |
+| `implicit_cast<Type>` | Implicit cast operator to `Type` (reduces type safety, use sparingly). Subject to the same rvalue borrow guard as `cast<Type>`. |
 | `out` | **Deprecated.** Use `auto_ostream=true` at file level. (Still parses; enables `auto_ostream` for ALL types in the file.) |
 | `in` | **Deprecated.** Use `auto_istream=true` at file level. (Still parses; enables `auto_istream` for ALL types in the file.) |
 | `fmt` | **Deprecated.** Use `auto_format=true` at file level. (Still parses; enables `auto_format` for ALL types in the file.) |
@@ -572,7 +573,7 @@ atlas --kind=struct --namespace=util --name=MyString \
 ### Construction
 | Option | Behavior |
 |--------|----------|
-| `from_atlas_cast` | Constructor accepting other atlas types whose underlying value is reachable via `atlas::cast` |
+| `from_atlas_cast<A, B, ...>` | Constructor accepting the listed atlas types, or types that drill to one of them, via `atlas::cast`. A bare `from_atlas_cast` (no list) is a generation-time error — name the permitted types, or use `auto_from_atlas_cast=true` at file level for a same-file family. |
 
 ### Control
 | Option | Behavior |
@@ -756,7 +757,7 @@ Without a mode specified, arithmetic uses unchecked operations (standard C++ beh
 description=int; +, -, *  # No checking, standard overflow behavior
 ```
 
-## Cross-Type Construction (`from_atlas_cast`)
+## Cross-Type Construction (`from_atlas_cast<A, B, ...>`)
 
 Atlas strong types have no implicit conversions by design. This means you can't construct one atlas type from another, even if they share the same underlying type:
 
@@ -764,41 +765,61 @@ Atlas strong types have no implicit conversions by design. This means you can't 
 TcpBindAddress addr{UdpBindAddress{...}};  // Error: no matching constructor
 ```
 
-The `from_atlas_cast` feature adds an opt-in constructor that handles this by drilling through the wrapping chain via `atlas::cast`:
+The `from_atlas_cast<A, B, ...>` feature adds an opt-in constructor for the *named* types, drilling through the wrapping chain via `atlas::cast`:
 
 ```
 [struct net::TcpBindAddress]
-description=std::string; from_atlas_cast, ==, hash
+description=std::string; from_atlas_cast<net::UdpBindAddress>, ==, hash
 
 [struct net::UdpBindAddress]
-description=std::string; from_atlas_cast, ==, hash
+description=std::string; from_atlas_cast<net::TcpBindAddress>, ==, hash
 ```
 
-Now cross-type construction works:
+Now cross-type construction works — but only between the listed types:
 ```cpp
 UdpBindAddress udp{"192.168.1.1:8080"};
-TcpBindAddress tcp{udp};  // OK: drills through to shared std::string
+TcpBindAddress tcp{udp};       // OK: UdpBindAddress is listed
+TcpBindAddress bad{HostName{"x"}};  // Error: HostName is not listed, even
+                                    // though it also wraps std::string
 ```
+
+A bare `from_atlas_cast` with no type list is a generation-time error: it
+cannot express which types are related, so it silently accepted *every* type
+sharing the underlying representation.
 
 ### How It Works
 
-The generated constructor uses SFINAE to accept any atlas type whose underlying value chain reaches a type convertible to this type's underlying type:
+The generated constructor uses SFINAE to accept only arguments that are, or drill to, one of the named types:
 
 ```cpp
-// Accepts any atlas type ArgT where:
+// Accepts an atlas type ArgT where:
 // 1. ArgT is an atlas type (has atlas_value_type)
 // 2. ArgT is not the same type (copy/move ctors handle that)
 // 3. ArgT is not directly constructible to underlying (variadic ctor handles that)
-// 4. atlas::cast can reach the underlying type from ArgT
+// 4. ArgT is, or drills to, one of the listed types (an actual layer of its
+//    chain -- being constructible from the same underlying does not qualify)
+// 5. The cast the constructor performs is valid for the argument's value
+//    category (see the lifetime note below)
 template <typename ArgT, typename = /* SFINAE guards */>
 constexpr explicit TcpBindAddress(ArgT && arg);
 ```
 
-Value categories are preserved: lvalue sources copy, rvalue sources move.
+Value categories are preserved: lvalue sources copy, rvalue sources move
+(layer by layer for nested types).
+
+Named types are emitted into the constraint as written. Types declared later
+in the same file are forward-declared automatically; types from other files
+must be declared before the generated header is used.
+
+**Lifetime note:** when the constructed type's underlying *borrows* (e.g. a
+`std::string_view`-backed type listing a `std::string`-backed source),
+construction from an lvalue borrows its storage, but construction from a
+temporary would store a dangling view — it is rejected at compile time. Bind
+the source to a named variable first.
 
 ### File-Level Directive
 
-To enable `from_atlas_cast` on all types in a file:
+To enable cross-construction among all the types declared in one file:
 
 ```
 auto_from_atlas_cast=true
@@ -810,15 +831,108 @@ description=std::string; ==, hash
 description=std::string; ==, hash
 ```
 
+The directive is scoped to the file: each type's allowlist is seeded with its
+same-file siblings, and a type with the same underlying declared in another
+file is still rejected unless named in an explicit `from_atlas_cast<...>`
+list. A type combining the directive with an explicit list accepts the union
+of both sets.
+
 ### Multi-Level Drilling
 
-The constructor works with nested atlas types. If `A` wraps `B` and `B` wraps `int`, then a `from_atlas_cast`-enabled type wrapping `int` can be constructed from any of `A`, `B`, or another `int`-wrapping atlas type:
+Arguments that *drill to* a listed type are accepted. If `WrappedMillis`
+wraps `Milliseconds` and only `Milliseconds` is listed, construction from a
+`WrappedMillis` works — `Milliseconds` is an actual layer of its chain:
 
 ```cpp
-InnerType inner{42};
-OuterType outer{inner};      // OuterType wraps InnerType
-IntWrapper w{outer};          // Drills through OuterType -> InnerType -> int
+Milliseconds ms{42};
+WrappedMillis wrapped{ms};    // WrappedMillis wraps Milliseconds
+SpawnTimeoutMs t{wrapped};    // OK: drills to the listed Milliseconds
 ```
+
+The reverse does not hold: a type merely *constructible from* what the
+argument drills down to (e.g. any other `int64_t`-backed type) is not
+accepted.
+
+## Rvalue Borrow Guards (Lifetime Safety)
+
+A conversion is dangerous when the *target borrows* storage that the
+*source owns*: `std::string` → `std::string_view` from a temporary is a
+use-after-free. Every generated type carries a deleted, rvalue-only
+conversion guard that turns this into a compile error on every route —
+`static_cast`, copy-initialization, implicit conversion, `atlas::cast`
+drilling, and the `from_atlas_cast` constructor:
+
+```cpp
+UserId make_id();
+
+std::string_view sv1 = static_cast<std::string_view>(make_id()); // error
+std::string_view sv2 = make_id();                 // error (implicit_cast)
+auto sv3 = atlas::cast<std::string_view>(make_id());             // error
+
+UserId id = make_id();                             // the remedy:
+std::string_view sv = id;                          // bind a named variable
+```
+
+The guard is a two-type predicate — `atlas::borrow_policy<Target,
+Underlying>` is true when the target borrows and the underlying owns — so it
+is inert everywhere else: view-backed and scalar-backed types convert freely
+from temporaries, and owning targets (`cast<std::string>`) still move.
+
+Classification comes from three user-extensible traits in the shared
+preamble (identical at every C++ standard):
+
+- `atlas::borrowed_type<T>` — specialize to `std::true_type` for any type
+  that refers to storage it does not own. Seeded for
+  `std::basic_string_view` and `std::span`. Works at C++11.
+- `atlas::is_borrowed<T>` — the query; where `<ranges>` exists it also
+  honors `std::ranges::enable_borrowed_range<T>`, so C++20 view types are
+  classified without mentioning Atlas.
+- `atlas::borrow_policy<Target, Underlying>` — the predicate every guard
+  checks; specializable per pair in either direction (relax it for a backing
+  that keeps storage alive independently, or tighten it for a pair nothing
+  classified, such as a `char const *`-yielding handle).
+
+### Declaring Third-Party View Types (`borrowed_types=`)
+
+For third-party view types (or on projects below C++20), declare them at
+file level and the generated header emits the `atlas::borrowed_type`
+specializations for you:
+
+```
+borrowed_types=ext::StringRef, ext::BytesView
+
+[struct api::Name]
+description=std::string; ==, cast<ext::StringRef>, #"ext/string_ref.hpp"
+```
+
+Each specialization is individually include-guarded, so two generated
+headers declaring the same type can coexist in one translation unit. The
+named types must be declared before the generated header (use a `#"..."`
+include token, as above).
+
+**ODR rule for hand-written specializations:** a `borrowed_type` or
+`borrow_policy` specialization feeds overload resolution inside the
+generated types. If you write one by hand, it must be visible before any
+generated header in *every* translation unit that includes one — visible in
+one TU and not another is an ODR violation (no diagnostic required). The
+`borrowed_types=` directive and a shared header are the reliable ways to
+guarantee this.
+
+### What Is Deliberately Not Guarded
+
+`forward=` accessors and `iterable`'s `begin()`/`end()` keep the underlying
+type's value-category behavior: `std::printf("%s", make_id().c_str())` and
+range-`for` over a temporary work exactly as they do on the underlying type.
+Guarding them would make the wrapper stricter than the type it wraps. The
+rule: Atlas guards what it invents (conversions, drilling); it stays
+faithful where you explicitly ask for the underlying's own member. The
+residual hazard — storing such a pointer or iterator past the full
+expression — is inherited from the underlying type.
+
+Also out of scope: `std::span<T const>{temporary}` binds through span's own
+range constructor and cannot be intercepted from the source side (the same
+is true of `std::vector`), and mutable views like `std::span<std::byte>`
+are not produced by the `const &`-qualified conversions in the first place.
 
 ## Constrained Types
 
@@ -1307,13 +1421,27 @@ math::TripleNestedInt x{math::NestedInt{math::SimpleInt{42}}};
 auto val = atlas::cast<int>(x);        // 42 - found int at the bottom
 auto mid = atlas::cast<math::SimpleInt>(x);  // SimpleInt{42} - stopped at SimpleInt
 
-// Reference casts
+// Reference casts (lvalue sources only)
 auto & ref = atlas::cast<int &>(x);    // int& - reference to innermost
 ref = 100;                              // Modifies the wrapped value
 
 // Unlike unwrap/undress, cast has a TARGET type and finds the first
 // level where static_cast<TargetT>(...) succeeds
 ```
+
+Two lifetime rules make `cast` safe to use with temporaries:
+
+- **Reference targets require lvalue sources.** `cast<int &>`, `cast<T const &>`,
+  and `cast<T &&>` from a temporary would return a reference into a value
+  that dies at the end of the expression, so they are compile errors. A
+  reference target also only binds to an *actual layer* of the chain, never
+  to a temporary materialized by a conversion.
+- **Borrowing targets require lvalue sources when the layer owns.** Drilling
+  a temporary `std::string`-backed type to `std::string_view` would produce
+  a dangling view, so `atlas::cast<std::string_view>(make_id())` is a
+  compile error — bind the source to a named variable first. Lvalue sources
+  (`atlas::cast<std::string_view>(id)`) borrow safely, and value targets
+  from temporaries (`atlas::cast<std::string>(make_id())`) move.
 
 ### Comparison Summary
 

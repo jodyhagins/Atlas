@@ -146,6 +146,29 @@ get_template_impl() const noexcept
     {
         return static_cast<{{{underlying_type}}} &&>(self.{{{value}}});
     }
+
+    /**
+     * Lifetime guard: converting an expiring object to a type that borrows
+     * its storage would dangle.  Deleted, non-explicit, and rvalue-only, so
+     * every conversion route from a temporary -- static_cast,
+     * copy-initialization, and implicit conversion -- is rejected at compile
+     * time.  Inert (never a candidate) unless the target borrows and the
+     * underlying type owns; specialize atlas::borrow_policy to adjust.
+     * The remedy at a rejected call site is to bind the source to a named
+     * variable first.
+     */
+    template <
+        typename BorrowTargetT,
+        typename = atlas::atlas_detail::enable_if_t<
+            atlas::borrow_policy<BorrowTargetT, {{{underlying_type}}}>::value>>
+    operator BorrowTargetT () const &&
+#if defined(__cpp_deleted_function) && __cpp_deleted_function >= 202403L \
+    && __cplusplus > 202302L
+    = delete("converting an expiring object to a type that borrows its "
+        "storage dangles; bind the source to a named variable first");
+#else
+    = delete;
+#endif
     {{#explicit_cast_operators}}
     {{>explicit_cast_operator}}
     {{/explicit_cast_operators}}

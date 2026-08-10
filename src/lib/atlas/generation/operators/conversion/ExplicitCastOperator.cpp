@@ -29,8 +29,11 @@ get_template_impl() const
     static constexpr std::string_view tmpl = R"(
     /**
      * Explicit cast to {{{cast_type}}}
+     *
+     * const &-qualified so that, together with the deleted rvalue lifetime
+     * guard, a borrowing conversion from an expiring object is rejected.
      */
-    {{{const_expr}}}explicit operator {{{cast_type}}}() const
+    {{{const_expr}}}explicit operator {{{cast_type}}}() const &
     noexcept(noexcept(static_cast<{{{cast_type}}}>(
         std::declval<{{{underlying_type}}} const&>())))
     {

@@ -64,6 +64,9 @@ public:
         int file_level_cpp_standard = 11;
         std::vector<StrongTypeDescription> types;
 
+        // Third-party borrowing types from the borrowed_types= directive
+        std::vector<std::string> borrowed_types;
+
         // Auto-generation options
         bool auto_hash = false;
         bool auto_ostream = false;

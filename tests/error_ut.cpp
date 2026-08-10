@@ -114,6 +114,56 @@ description=strong int; +++++
         // Should reject invalid operator
     }
 
+    TEST_CASE("Bare from_atlas_cast is rejected with the full remedy")
+    {
+        auto result = test_input_content_error(R"(
+[type]
+kind=struct
+namespace=test
+name=SpawnTimeoutMs
+description=std::int64_t; ==, from_atlas_cast
+)");
+
+        CHECK(result.had_error());
+        auto error_msg = result.stderr_output + result.stdout_output;
+        // Names the offending type and its line
+        CHECK(error_msg.find("SpawnTimeoutMs") != std::string::npos);
+        CHECK(error_msg.find("line") != std::string::npos);
+        // Names both fixes
+        CHECK(error_msg.find("from_atlas_cast<") != std::string::npos);
+        CHECK(error_msg.find("auto_from_atlas_cast=true") != std::string::npos);
+    }
+
+    TEST_CASE("Empty from_atlas_cast<> list is rejected")
+    {
+        auto result = test_input_content_error(R"(
+[type]
+kind=struct
+namespace=test
+name=TestType
+description=strong int; from_atlas_cast<>
+)");
+
+        CHECK(result.had_error());
+    }
+
+    TEST_CASE("Empty name in borrowed_types= is rejected")
+    {
+        auto result = test_input_content_error(R"(
+borrowed_types=ext::Ref,,other::View
+
+[type]
+kind=struct
+namespace=test
+name=TestType
+description=strong int
+)");
+
+        CHECK(result.had_error());
+        auto error_msg = result.stderr_output + result.stdout_output;
+        CHECK(error_msg.find("borrowed_types") != std::string::npos);
+    }
+
     TEST_CASE("Type specification: empty (only semicolon)")
     {
         auto result = test_input_content_error(R"(

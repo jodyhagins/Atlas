@@ -10,6 +10,7 @@
 #include <array>
 #include <string>
 #include <string_view>
+#include <vector>
 
 namespace wjh::atlas::generation {
 
@@ -247,6 +248,25 @@ public:
     static std::string parse_cast_syntax(
         std::string_view token,
         bool & is_implicit);
+
+    /**
+     * @brief Parse a from_atlas_cast<A, B, ...> allowlist token
+     *
+     * Parses the allowlist form of the from_atlas_cast feature, naming the
+     * atlas types a generated type may be constructed from. Type names may
+     * themselves contain nested template argument lists; commas are only
+     * treated as separators at angle-bracket depth zero.
+     *
+     * @param token The operator token to parse
+     * @param types [out] The parsed type names, whitespace-stripped, appended
+     * @return true if the token is a from_atlas_cast<...> allowlist
+     *
+     * @throws std::invalid_argument if the syntax is invalid (missing '>',
+     * empty list, or empty name in the list)
+     */
+    static bool parse_from_atlas_cast_syntax(
+        std::string_view token,
+        std::vector<std::string> & types);
 };
 
 // Inline constexpr implementations
